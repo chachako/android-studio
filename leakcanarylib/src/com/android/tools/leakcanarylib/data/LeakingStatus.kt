@@ -18,5 +18,15 @@ package com.android.tools.leakcanarylib.data
 enum class LeakingStatus {
     YES,
     NO,
-    UNKNOWN
+    UNKNOWN;
+
+    companion object {
+        fun fromString(status: String): LeakingStatus {
+            return when (status) {
+                "YES" -> YES
+                "UNKNOWN" -> UNKNOWN
+                else -> NO
+            }
+        }
+    }
 }

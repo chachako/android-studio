@@ -15,15 +15,54 @@
  */
 package com.android.tools.leakcanarylib.data
 
-class ReferencingField(
-    var name: String,
+/**
+ * Represents a field referenced within a heap analysis.
+ * This class captures details about the field's name, type, likelihood of being a root cause in a particular scenario, and additional
+ * reference details.
+ */
+data class ReferencingField(
+    var className: String,
     var type: ReferencingFieldType,
-    var isLikelyCause: Boolean
+    var isLikelyCause: Boolean,
+    var referenceName: String
 ) {
+
+    /**
+     * Enum representing the different types of field references.
+     */
     enum class ReferencingFieldType {
         INSTANCE_FIELD,
         STATIC_FIELD,
         LOCAL,
         ARRAY_ENTRY,
+    }
+
+    private val displayClassName: String get() = className.substringAfterLast('.')
+
+    private val displayReference: String
+        get() = when (type) {
+            ReferencingFieldType.ARRAY_ENTRY -> "[$referenceName]"
+            ReferencingFieldType.STATIC_FIELD, ReferencingFieldType.INSTANCE_FIELD -> referenceName
+            ReferencingFieldType.LOCAL -> "<Java Local>"
+        }
+
+    override fun toString(): String {
+        val static = if (this.type == ReferencingFieldType.STATIC_FIELD) " static" else ""
+
+        val referenceLinePrefix = "    ↓$static ${this.displayClassName.removeSuffix("[]")}" +
+                when (this.type) {
+                    ReferencingFieldType.STATIC_FIELD, ReferencingFieldType.INSTANCE_FIELD -> "."
+                    else -> ""
+                }
+
+        val referenceLine = referenceLinePrefix + this.displayReference
+
+        return if (this.isLikelyCause) {
+            val spaces = " ".repeat(referenceLinePrefix.length)
+            val underline = "~".repeat(displayReference.length)
+            "\n│$referenceLine\n│$spaces$underline"
+        } else {
+            "\n│$referenceLine"
+        }
     }
 }
