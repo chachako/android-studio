@@ -93,6 +93,45 @@ class DisabledAndroidResourcesInLibModelTest: ReferenceModelComparator(
     }
 }
 
+class EnabledDataBindingInLibModelTest: ReferenceModelComparator(
+    referenceConfig = {
+        rootProject {
+            plugins.add(PluginType.ANDROID_LIB)
+            android {
+                setUpHelloWorld()
+            }
+        }
+    },
+    deltaConfig = {
+        rootProject {
+            android {
+                buildFeatures {
+                    dataBinding = true
+                }
+            }
+        }
+    },
+    syncOptions = {
+        ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+    }
+) {
+
+    @Test
+    fun `test BasicAndroidProject model`() {
+        compareBasicAndroidProjectWith(goldenFileSuffix = "BasicAndroidProject")
+    }
+
+    @Test
+    fun `test AndroidProject model`() {
+        compareAndroidProjectWith(goldenFileSuffix = "AndroidProject")
+    }
+
+    @Test
+    fun `test AndroidDsl model`() {
+        compareAndroidDslWith(goldenFileSuffix = "AndroidDsl")
+    }
+}
+
 class EnabledTestFixturesInLibModelTest: ReferenceModelComparator(
     referenceConfig = {
         rootProject {

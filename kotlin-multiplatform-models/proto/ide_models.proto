@@ -104,6 +104,9 @@ message AndroidGradlePluginProjectFlags {
 
         // Whether constraints for library components are disabled
         EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS = 9;
+
+        // Whether data binding is enabled for this library (never expected in KMP)
+        DATA_BINDING_ENABLED = 10;
     }
 
     message BooleanFlagValue {

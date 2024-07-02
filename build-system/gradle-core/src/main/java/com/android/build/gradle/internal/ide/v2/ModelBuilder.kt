@@ -206,7 +206,7 @@ class ModelBuilder<
          * method not called by current versions of Studio, the MINIMUM_MODEL_CONSUMER version must
          * be increased to exclude all older versions of Studio that called that method.
          */
-        val modelProducer = VersionImpl(8, 9, humanReadable = "Android Gradle Plugin 8.4")
+        val modelProducer = VersionImpl(9, 0, humanReadable = "Android Gradle Plugin 8.7")
         /**
          * The minimum required model consumer version, to allow AGP to control support for older
          * versions of Android Studio.
@@ -1199,6 +1199,10 @@ class ModelBuilder<
             flags.put(
                 BooleanFlag.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS,
                 projectOptions[BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS]
+            )
+            flags.put(
+                BooleanFlag.DATA_BINDING_ENABLED,
+                variants.any { it.buildFeatures.dataBinding }
             )
 
             return AndroidGradlePluginProjectFlagsImpl(flags.build())

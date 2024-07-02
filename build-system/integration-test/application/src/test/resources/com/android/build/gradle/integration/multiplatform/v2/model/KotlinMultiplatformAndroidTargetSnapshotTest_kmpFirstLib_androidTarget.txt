@@ -209,6 +209,10 @@
           {
             "flag": "EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS",
             "value": false
+          },
+          {
+            "flag": "DATA_BINDING_ENABLED",
+            "value": false
           }
         ]
       },

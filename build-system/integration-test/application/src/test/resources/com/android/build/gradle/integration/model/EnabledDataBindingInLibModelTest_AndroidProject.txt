@@ -1,0 +1,18 @@
+> AndroidProject:
+   > variants:
+      - debug:
+         - mainArtifact:
+            - generatedSourceFolders:
+               * {PROJECT}/build/generated/data_binding_base_class_source_out/debug/out{!}{ADDED}
+         - androidTestArtifact:
+            - generatedSourceFolders:
+               * {PROJECT}/build/generated/data_binding_base_class_source_out/debugAndroidTest/out{!}{ADDED}
+      - release:
+         - mainArtifact:
+            - generatedSourceFolders:
+               * {PROJECT}/build/generated/data_binding_base_class_source_out/release/out{!}{ADDED}
+   < variants
+   - flags:
+      * "DATA_BINDING_ENABLED -> true"{ADDED}
+      * "DATA_BINDING_ENABLED -> false"{REMOVED}
+< AndroidProject

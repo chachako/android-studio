@@ -155,6 +155,7 @@
    > flags:
       * "APPLICATION_R_CLASS_CONSTANT_IDS -> false"
       * "BUILD_FEATURE_ANDROID_RESOURCES -> true"
+      * "DATA_BINDING_ENABLED -> false"
       * "ENABLE_VCS_INFO -> false"
       * "EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS -> false"
       * "JETPACK_COMPOSE -> false"
