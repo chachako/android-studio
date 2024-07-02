@@ -49,9 +49,9 @@ class TestLabGradlePlugin : Plugin<Project> {
                 project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
             if (agpVersion.previewType != "dev" &&
                     (agpVersion < AndroidPluginVersion(8, 3, 0).alpha(1) ||
-                    agpVersion >= AndroidPluginVersion(8, 7, 0).alpha(1))) {
+                    agpVersion >= AndroidPluginVersion(8, 8, 0).alpha(1))) {
                 error("Firebase TestLab plugin is an experimental feature. It requires Android " +
-                        "Gradle plugin version between 8.3 and 8.6. Current version is $agpVersion.")
+                        "Gradle plugin version between 8.3 and 8.7. Current version is $agpVersion.")
             }
 
             // Registering with the Device registry will take care of the test options binding.

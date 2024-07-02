@@ -87,7 +87,7 @@ class TestLabGradlePluginTest {
                 AndroidPluginVersion(8, 1),
                 AndroidPluginVersion(8, 2),
                 AndroidPluginVersion(8, 2, 0).alpha(9),
-                AndroidPluginVersion(8, 7),
+                AndroidPluginVersion(8, 8),
         )
         val supportedVersions = listOf(
                 AndroidPluginVersion(8, 1).dev(),
@@ -104,7 +104,7 @@ class TestLabGradlePluginTest {
             }
             assertThat(e).hasMessageThat()
                     .contains("Firebase TestLab plugin is an experimental feature. It requires Android " +
-                            "Gradle plugin version between 8.3 and 8.6.")
+                            "Gradle plugin version between 8.3 and 8.7.")
         }
 
         supportedVersions.forEach {
