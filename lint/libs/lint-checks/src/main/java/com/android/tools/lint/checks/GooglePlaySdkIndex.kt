@@ -571,7 +571,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     val outdatedIssue = labels.outdatedIssueInfo ?: return ""
     return generateRecommendedList(
       outdatedIssue.recommendedVersionsList,
-      isThirdPartyLibrary(groupId, artifactId),
+      isThirdPartyLibrary(groupId),
     )
   }
 
@@ -584,18 +584,13 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     val policyIssue = labels.policyIssuesInfo ?: return ""
     return generateRecommendedList(
       policyIssue.recommendedVersionsList,
-      isThirdPartyLibrary(groupId, artifactId),
+      isThirdPartyLibrary(groupId),
     )
   }
 
-  private fun isThirdPartyLibrary(groupId: String, artifactId: String): Boolean {
-    // Check first if there is information available in the SDK Index itself
-    val coordinate = createCoordinateString(groupId, artifactId)
-    val sdk = libraryToSdk[coordinate]
-    if (sdk != null) {
-      return !sdk.sdk.isGoogleOwned
-    }
-    // Not possible to tell from the Index data, use Google Maven
+  private fun isThirdPartyLibrary(groupId: String): Boolean {
+    // TODO(b/339237338): Currently looking into Google Maven repository but this information could
+    // be included in future snapshots
     return if (googleMaven == null) {
       // Google Maven is not defined, assume everything is 3rd party
       true

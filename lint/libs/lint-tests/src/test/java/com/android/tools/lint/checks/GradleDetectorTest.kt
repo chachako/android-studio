@@ -8342,7 +8342,6 @@ class GradleDetectorTest : AbstractCheckTest() {
           )
           .addSdks(
             Sdk.newBuilder()
-              .setIsGoogleOwned(true)
               .setIndexUrl("http://sdk.google.com/")
               .addLibraries(
                 Library.newBuilder()

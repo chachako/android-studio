@@ -489,7 +489,6 @@ class GooglePlaySdkIndexTest {
         // First party libraries
         .addSdks(
           Sdk.newBuilder()
-            .setIsGoogleOwned(true)
             .setIndexUrl("http://google.com")
             .addLibraries(
               Library.newBuilder()
@@ -513,15 +512,6 @@ class GooglePlaySdkIndexTest {
                             // Add recommended version to make sure the note is not added
                             .addRecommendedVersions(
                               LibraryVersionRange.newBuilder().setLowerBound("1.1.2")
-                            )
-                        )
-                        .setPolicyIssuesInfo(
-                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
-                            .addViolatedSdkPolicies(
-                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
-                            )
-                            .addRecommendedVersions(
-                              LibraryVersionRange.newBuilder().setLowerBound("1.1.3")
                             )
                         )
                     )
@@ -559,7 +549,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `policy issues shown`() {
-    assertThat(countPolicyIssues()).isEqualTo(16)
+    assertThat(countPolicyIssues()).isEqualTo(15)
   }
 
   @Test
@@ -777,18 +767,6 @@ class GooglePlaySdkIndexTest {
         "${it.lowerBound} to ${if (it.upperBound.isNullOrBlank()) "<null>" else it.upperBound}"
       }
     assertThat(asText).containsAllIn(expectedVersions)
-  }
-
-  @Test
-  fun `Policy with recommended versions first party`() {
-    val expectedMessages =
-      listOf(
-        "android.arch.core:common version 1.1.1 has Permissions policy issues that will block publishing of your app to Play Console in the future.\n" +
-          "The library author recommends using versions:\n" +
-          "  - 1.1.3 or higher\n"
-      )
-    assertThat(index.generatePolicyMessages("android.arch.core", "common", "1.1.1"))
-      .isEqualTo(expectedMessages)
   }
 
   private fun countOutdatedIssues(): Int {
