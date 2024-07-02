@@ -5565,6 +5565,41 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testNestedWithinAnonymousClass() {
+    // Regression test for b/350324869
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Build.VERSION.SDK_INT
+            import androidx.annotation.RequiresApi
+
+            fun test() {
+                if (SDK_INT <= 33) {
+                    return
+                }
+                requires34() // OK 1
+                object : Runnable {
+                    override fun run() {
+                        requires34() // OK 2
+                        java.util.zip.CRC32C() // OK 3. (Class also requires 34.)
+                    }
+                }
+            }
+
+            @RequiresApi(34)
+            fun requires34() { }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
+
   override fun getDetector(): Detector {
     return ApiDetector()
   }

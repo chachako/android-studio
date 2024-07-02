@@ -54,7 +54,6 @@ import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
-import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UField
@@ -487,8 +486,7 @@ class VersionChecks(
     ): Boolean {
       val check = VersionChecks(client, evaluator, project)
       var prev = element
-      var current: UExpression? =
-        prev.getParentOfType(UExpression::class.java, true, UMethod::class.java, UClass::class.java)
+      var current: UExpression? = prev.parentExpression()
       while (current != null) {
         val visitor = check.VersionCheckWithExitFinder(prev, api)
         current.accept(visitor)
@@ -496,17 +494,21 @@ class VersionChecks(
           return true
         }
         prev = current
-        current =
-          current.getParentOfType(
-            UExpression::class.java,
-            true,
-            UMethod::class.java,
-            UClass::class.java,
-          )
+        current = current.parentExpression()
+
         // TODO: what about lambdas?
       }
       return false
     }
+
+    /**
+     * Returns the parent UAST expressions if any.
+     *
+     * Normally, this terminates at the method or class level, but as a special case, we allow
+     * jumping out through nested anonymous class methods.
+     */
+    private fun UElement.parentExpression(): UExpression? =
+      this.getParentOfType(UExpression::class.java, true)
 
     /**
      * If the given [element] represents a version lookup, such as SdkInt or getExtensionVersion(),
