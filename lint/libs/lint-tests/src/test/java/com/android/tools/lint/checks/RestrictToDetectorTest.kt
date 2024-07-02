@@ -2302,8 +2302,8 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             }
 
             // Multi Preview
-            @Preview(name = "phone", device = "spec:shape=Normal,width=360,height=640,unit=dp,dpi=480")
-            @Preview(name = "landscape", device = "spec:shape=Normal,width=640,height=360,unit=dp,dpi=480")
+            @Preview(name = "phone", device = "spec:width=360dp,height=640dp,dpi=480")
+            @Preview(name = "landscape", device = "spec:width=640dp,height=360dp,dpi=480")
             annotation class DevicePreviews
 
             @DevicePreviews
