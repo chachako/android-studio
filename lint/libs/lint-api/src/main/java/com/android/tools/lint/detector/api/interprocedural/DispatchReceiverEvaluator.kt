@@ -354,7 +354,7 @@ fun UCallExpression.getDispatchReceivers(
 fun UCallExpression.getTarget(dispatchReceiver: DispatchReceiver): CallTarget? {
 
   // TODO(kotlin-uast-cleanup): See comment in getDispatchReceivers.
-  if (methodName == "invoke" && classReference != null) {
+  if (methodName == "invoke") {
     return when (dispatchReceiver) {
       is DispatchReceiver.Class -> null
       is DispatchReceiver.Functional -> dispatchReceiver.toTarget()
