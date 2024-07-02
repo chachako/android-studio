@@ -171,7 +171,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
         node.getArgumentForParameter(2)?.skipParenthesizedExprDown() ?: return null
       else node.getArgumentForParameter(0)?.skipParenthesizedExprDown() ?: return null
 
-    return findPendingIntentConstruction(pendingIntentArgument, node)
+    return findPendingIntentConstruction(pendingIntentArgument, node, mutableSetOf())
   }
 
   private fun getTrampolineType(pendingConstruction: UCallExpression): TrampolineType? =
@@ -184,8 +184,12 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
   private fun findPendingIntentConstruction(
     pendingIntentArgument: UExpression?,
     node: UElement,
+    seen: MutableSet<UExpression>,
   ): UCallExpression? {
     pendingIntentArgument ?: return null
+    if (!seen.add(pendingIntentArgument)) {
+      return null
+    }
     when (val resolved = pendingIntentArgument.tryResolve()) {
       is PsiVariable -> {
         return findLastAssignment(resolved, node)?.findSelector() as? UCallExpression
@@ -212,7 +216,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
             override fun visitReturnExpression(node: UReturnExpression): Boolean {
               node.returnExpression?.let {
                 val construction =
-                  findPendingIntentConstruction(it.skipParenthesizedExprDown(), node)
+                  findPendingIntentConstruction(it.skipParenthesizedExprDown(), node, seen)
                 if (construction != null && getTrampolineType(construction) != null) {
                   ref.set(construction)
                 }

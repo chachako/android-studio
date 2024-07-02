@@ -650,6 +650,67 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testPendingIntentFromRecursiveMethod() {
+    // Like NotificationTrampolineDetectorTest.testPendingIntentFromMethod but with recursion
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.app.Notification;
+            import android.app.NotificationManager;
+            import android.app.PendingIntent;
+            import android.content.Context;
+            import android.content.Intent;
+            import androidx.core.app.NotificationCompat;
+            @SuppressWarnings("unused")
+            public class NotificationTest {
+                private PendingIntent createIntent(int n) {
+                    if (n <= 0) {
+                      Intent notificationIntent = new Intent(context, ServiceTrampoline.class);
+                      return PendingIntent.getService(context, 0, notificationIntent, 0);
+                    } else {
+                      return createIntent(n - 1);
+                    }
+                }
+
+                private static class OkTrampoline extends Service { }
+
+                public void testServices(Context context, String channelId, int id) {
+                    NotificationManager notificationManager =
+                            context.getSystemService(NotificationManager.class);
+                    NotificationCompat.Builder builder =
+                            new NotificationCompat.Builder(context, channelId)
+                                    .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
+                                    .setContentTitle("Notification Trampoline Test")
+                                    .setContentText("Tap this notification to launch a new service")
+                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                    .setContentIntent(createIntent(4))
+                                    .setAutoCancel(true);
+                    Notification notification = builder.build();
+                    notificationManager.notify(id, notification);
+                }
+            }
+            """
+          )
+          .indented(),
+        *notificationStubs,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/NotificationTest.java:31: Warning: Notifications should only launch a Service from notification actions (addAction) [LaunchActivityFromNotification]
+                                .setContentIntent(createIntent(4))
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/NotificationTest.java:14: This Service intent is launched from a notification; this is discouraged except as notification actions
+                  return PendingIntent.getService(context, 0, notificationIntent, 0);
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
   companion object {
     val notificationStubs =
       arrayOf(
