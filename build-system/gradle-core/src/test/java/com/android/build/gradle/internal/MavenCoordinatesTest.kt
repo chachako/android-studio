@@ -25,7 +25,7 @@ class MavenCoordinatesTest {
     fun mavenCoordinateFormatsCorrectlyAsAString() {
         assertEquals(
             MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_APIGENERATOR.toString(),
-            "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha08"
+            "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha09"
         )
     }
 

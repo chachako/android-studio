@@ -368,7 +368,6 @@ class PrivacySandboxMediatorSdkTest {
 
 
 
-    @Ignore("b/349877400")
     @Test
     fun asbSdkBundleConfigProtoContainsCorrectSdkDependencyInfo() {
         val sdkMediatorProject = project.getSubproject(":privacy-sandbox-sdk-mediator")

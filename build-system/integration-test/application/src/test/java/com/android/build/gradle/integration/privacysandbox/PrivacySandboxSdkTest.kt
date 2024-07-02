@@ -136,7 +136,6 @@ class PrivacySandboxSdkTest {
         }
     }
 
-    @Ignore("b/349877400")
     @Test
     fun testAsb() {
         executor().run(":privacy-sandbox-sdk:assemble")
@@ -234,7 +233,6 @@ class PrivacySandboxSdkTest {
         }
     }
 
-    @Ignore("b/349877400")
     @Test
     fun testAsbSigning() {
         val privacySandboxSdkProject = project.getSubproject(":privacy-sandbox-sdk")
@@ -307,7 +305,6 @@ class PrivacySandboxSdkTest {
         assertThat(kspDir.exists()).isTrue()
     }
 
-    @Ignore("b/349877400")
     @Test
     fun testNoServiceDefinedInModuleUsedBySdk() {
         executor()

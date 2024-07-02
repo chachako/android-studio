@@ -57,7 +57,6 @@ class PrivacySandboxSdkConsumptionTest {
             .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
 
-    @Ignore("b/349877400")
     @Test
     fun testConsumptionViaBundle() {
         // TODO(b/235469089) expand this to verify installation also
@@ -169,7 +168,6 @@ class PrivacySandboxSdkConsumptionTest {
         }
     }
 
-    @Ignore("b/349877400")
     @Test
     fun testConsumptionViaApk() {
         declarePrivacySandboxSdkServiceOnSdkA()
@@ -263,7 +261,6 @@ class PrivacySandboxSdkConsumptionTest {
 
     }
 
-    @Ignore("b/349877400")
     @Test
     fun producesApkSplitsFromSdks() {
         // For API S-, ensure that APKs are produced for each SDK that the app requires.
@@ -369,7 +366,6 @@ class PrivacySandboxSdkConsumptionTest {
         }
     }
 
-    @Ignore("b/349877400")
     @Test
     fun testPublicationAndConsumptionCanBeToggledSeparately() {
         val buildFailsPublicationNotEnabled = executor()

@@ -48,7 +48,6 @@ class PrivacySandboxSdkToSdkTest {
         .withPerTestPrefsRoot(true)
         .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
 
-    @Ignore("b/349877400")
     @Test
     fun testSdkToSdk() {
         // There is usage of the privacy-sandbox-sdk-b Shim generated symbols in
