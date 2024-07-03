@@ -2604,8 +2604,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     return googlePlaySdkIndex
       ?: run {
         val cacheDir = client.getCacheDir(GOOGLE_PLAY_SDK_INDEX_KEY, true)
-        val repository =
-          playSdkIndexFactory(cacheDir?.toPath(), client, getGoogleMavenRepository(client))
+        val repository = playSdkIndexFactory(cacheDir?.toPath(), client)
         googlePlaySdkIndex = repository
         repository
       }
@@ -4060,8 +4059,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     }
 
     @JvmStatic
-    var playSdkIndexFactory: (Path?, LintClient, GoogleMavenRepository) -> GooglePlaySdkIndex =
-      { path: Path?, client: LintClient, gmaven: GoogleMavenRepository ->
+    var playSdkIndexFactory: (Path?, LintClient) -> GooglePlaySdkIndex =
+      { path: Path?, client: LintClient ->
         val index =
           object : GooglePlaySdkIndex(path) {
             public override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
@@ -4071,7 +4070,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               client.log(throwable, message)
             }
           }
-        index.initialize(googleMaven = gmaven)
+        index.initialize()
         index
       }
   }

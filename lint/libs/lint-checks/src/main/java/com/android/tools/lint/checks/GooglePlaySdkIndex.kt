@@ -15,7 +15,6 @@
  */
 package com.android.tools.lint.checks
 
-import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.NetworkCache
 import com.android.tools.lint.detector.api.LintFix
 import java.io.File
@@ -64,14 +63,13 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   private var initialized: Boolean = false
   private var status: GooglePlaySdkIndexStatus = GooglePlaySdkIndexStatus.NOT_READY
   private val libraryToSdk = HashMap<String, LibraryToSdk>()
-  private var googleMaven: GoogleMavenRepository? = null
 
   /**
    * Read Index snapshot (locally if it is not old and remotely if old and network is available) and
    * store results in maps for later consumption.
    */
-  fun initialize(googleMaven: GoogleMavenRepository?) {
-    initialize(null, googleMaven)
+  fun initialize() {
+    initialize(null)
   }
 
   private fun readIndexData(readFunction: () -> InputStream?): ReadDataResult {
@@ -99,13 +97,12 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   }
 
   @VisibleForTesting
-  fun initialize(overriddenData: InputStream? = null, googleMaven: GoogleMavenRepository?) {
+  fun initialize(overriddenData: InputStream? = null) {
     synchronized(this) {
       if (initialized) {
         return
       }
       initialized = true
-      this.googleMaven = googleMaven
       status = GooglePlaySdkIndexStatus.NOT_READY
     }
     var index: Index? = null
@@ -569,10 +566,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   ): String {
     val labels = getLabels(groupId, artifactId, versionString) ?: return ""
     val outdatedIssue = labels.outdatedIssueInfo ?: return ""
-    return generateRecommendedList(
-      outdatedIssue.recommendedVersionsList,
-      isThirdPartyLibrary(groupId),
-    )
+    return generateRecommendedList(outdatedIssue.recommendedVersionsList)
   }
 
   private fun getPolicyRecommendedVersions(
@@ -582,27 +576,10 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   ): String {
     val labels = getLabels(groupId, artifactId, versionString) ?: return ""
     val policyIssue = labels.policyIssuesInfo ?: return ""
-    return generateRecommendedList(
-      policyIssue.recommendedVersionsList,
-      isThirdPartyLibrary(groupId),
-    )
+    return generateRecommendedList(policyIssue.recommendedVersionsList)
   }
 
-  private fun isThirdPartyLibrary(groupId: String): Boolean {
-    // TODO(b/339237338): Currently looking into Google Maven repository but this information could
-    // be included in future snapshots
-    return if (googleMaven == null) {
-      // Google Maven is not defined, assume everything is 3rd party
-      true
-    } else {
-      !googleMaven!!.hasGroupId(groupId)
-    }
-  }
-
-  private fun generateRecommendedList(
-    listOfVersions: List<LibraryVersionRange?>?,
-    isThirdParty: Boolean,
-  ): String {
+  private fun generateRecommendedList(listOfVersions: List<LibraryVersionRange?>?): String {
     val ranges =
       (listOfVersions ?: return "").filterNotNull().joinToString("\n") { range ->
         if (range.upperBound.isNullOrBlank()) {
@@ -614,9 +591,8 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
         }
       }
     if (ranges.isEmpty()) return ""
-    return ".\nThe library author recommends using versions:\n$ranges\n${
-      if (isThirdParty) "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. Carefully evaluate any third-party SDKs before integrating them into your app."
-      else ""
-    }"
+    return ".\nThe library author recommends using versions:\n$ranges\n" +
+      "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. " +
+      "Carefully evaluate any third-party SDKs before integrating them into your app."
   }
 }
