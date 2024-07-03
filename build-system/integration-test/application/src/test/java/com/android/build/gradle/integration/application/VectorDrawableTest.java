@@ -586,6 +586,46 @@ public class VectorDrawableTest {
         );
     }
 
+    @Test
+    public void testVectorDrawableWithGradientNotNestedInAaptTag()
+            throws IOException, InterruptedException {
+        File vector = new File(project.getProjectDir(), "src/main/res/drawable/invalid_icon.xml");
+        Files.asCharSink(
+                        vector,
+                        StandardCharsets.UTF_8)
+                .write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    xmlns:aapt=\"http://schemas.android.com/aapt\"\n"
+                        + "    android:width=\"100dp\"\n"
+                        + "    android:height=\"100dp\"\n"
+                        + "    android:viewportWidth=\"100\"\n"
+                        + "    android:viewportHeight=\"100\">\n"
+                        + "    <path android:pathData=\"M0,870l0,-870l987,0l0,870z\">\n"
+                        + "            <gradient\n"
+                        + "                android:endX=\"50\"\n"
+                        + "                android:endY=\"0\"\n"
+                        + "                android:startX=\"50\"\n"
+                        + "                android:startY=\"100\"\n"
+                        + "                android:type=\"linear\">\n"
+                        + "                <item\n"
+                        + "                    android:color=\"#003420\"\n"
+                        + "                    android:offset=\"0\" />\n"
+                        + "                <item\n"
+                        + "                    android:color=\"@android:color/transparent\"\n"
+                        + "                    android:offset=\"0.2\" />\n"
+                        + "            </gradient>\n"
+                        + "    </path>\n"
+                        + "</vector>");
+        AssumeBuildToolsUtil.assumeBuildToolsAtLeast(19);
+        GradleBuildResult result = project.executor().expectFailure().run("assembleDebug");
+        assertThat(result.getFailureMessage()).contains(
+                "gradient resource not declared as an inline resource in the vector drawable.\n"
+                + "Recommended Action: Surround the gradient tag with "
+                        + "<aapt:attr name=[attribute, such as \"android:fillcolor\"]> </aapt:attr>\n"
+                + "More Information: "
+                        + "https://developer.android.com/guide/topics/resources/complex-xml-resources");
+    }
+
     @NonNull
     private File getMergedResDir() {
         return new File(
