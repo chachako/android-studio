@@ -381,9 +381,8 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     artifactId: String,
     versionString: String,
   ): List<String> {
-    val recommendedVersions = getPolicyRecommendedVersions(groupId, artifactId, versionString)
     return getPolicyLabels(getLabels(groupId, artifactId, versionString)).map { label ->
-      "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console$recommendedVersions"
+      "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console"
     }
   }
 
@@ -393,9 +392,8 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     artifactId: String,
     versionString: String,
   ): List<String> {
-    val recommendedVersions = getPolicyRecommendedVersions(groupId, artifactId, versionString)
     return getPolicyLabels(getLabels(groupId, artifactId, versionString)).map { label ->
-      "$groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console in the future$recommendedVersions"
+      "$groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console in the future"
     }
   }
 
@@ -421,15 +419,12 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     artifactId: String,
     versionString: String,
   ): String {
-    val recommendedVersions = getOutdatedRecommendedVersions(groupId, artifactId, versionString)
-    return "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has been reported as outdated by its author and will block publishing of your app to Play Console$recommendedVersions"
+    return "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has been reported as outdated by its author and will block publishing of your app to Play Console"
   }
 
   /** Generate a message for a library that has non-blocking outdated issues */
-  fun generateOutdatedMessage(groupId: String, artifactId: String, versionString: String): String {
-    val recommendedVersions = getOutdatedRecommendedVersions(groupId, artifactId, versionString)
-    return "$groupId:$artifactId version $versionString has been reported as outdated by its author$recommendedVersions"
-  }
+  fun generateOutdatedMessage(groupId: String, artifactId: String, versionString: String) =
+    "$groupId:$artifactId version $versionString has been reported as outdated by its author"
 
   /** Generate a message for a library that has blocking issues */
   fun generateBlockingGenericIssueMessage(
@@ -534,42 +529,5 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     val message = criticalIssue.description
     if (message.isNullOrBlank()) return ""
     return ".\n**Note:** $message"
-  }
-
-  private fun getOutdatedRecommendedVersions(
-    groupId: String,
-    artifactId: String,
-    versionString: String,
-  ): String {
-    val labels = getLabels(groupId, artifactId, versionString) ?: return ""
-    val outdatedIssue = labels.outdatedIssueInfo ?: return ""
-    return generateRecommendedList(outdatedIssue.recommendedVersionsList)
-  }
-
-  private fun getPolicyRecommendedVersions(
-    groupId: String,
-    artifactId: String,
-    versionString: String,
-  ): String {
-    val labels = getLabels(groupId, artifactId, versionString) ?: return ""
-    val policyIssue = labels.policyIssuesInfo ?: return ""
-    return generateRecommendedList(policyIssue.recommendedVersionsList)
-  }
-
-  private fun generateRecommendedList(listOfVersions: List<LibraryVersionRange?>?): String {
-    val ranges =
-      (listOfVersions ?: return "").filterNotNull().joinToString("\n") { range ->
-        if (range.upperBound.isNullOrBlank()) {
-          "  - ${range.lowerBound} or higher"
-        } else if (range.upperBound != range.lowerBound) {
-          "  - From ${range.lowerBound} to ${range.upperBound}"
-        } else {
-          "  - ${range.lowerBound}"
-        }
-      }
-    if (ranges.isEmpty()) return ""
-    return ".\nThe library author recommends using versions:\n$ranges\n" +
-      "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. " +
-      "Carefully evaluate any third-party SDKs before integrating them into your app."
   }
 }
