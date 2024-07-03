@@ -1111,15 +1111,6 @@ public class TestLintTask {
     }
 
     /**
-     * Utility method to enable UAST injection host handling (where all literal strings are wrapped
-     * in an UInjectionHost.
-     */
-    static void setForceUiInjection(boolean on) {
-        //noinspection UnstableApiUsage
-        org.jetbrains.uast.kotlin.KotlinConverter.INSTANCE.setForceUInjectionHost(on);
-    }
-
-    /**
      * Creates lint test projects according to the configured project descriptions. Note that these
      * are not the same projects that will be used if the {@link #run()} method is called. This
      * method is intended mainly for testing the lint infrastructure itself. Most detector tests
