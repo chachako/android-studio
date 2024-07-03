@@ -443,28 +443,6 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun generateGenericIssueMessage(groupId: String, artifactId: String, versionString: String) =
     "$groupId:$artifactId version $versionString has one or more issues that could block publishing of your app to Play Console in the future"
 
-  /**
-   * Generate a list of versions that the library owner has recommended to use instead of the passed
-   * version.
-   */
-  fun recommendedVersions(
-    groupId: String,
-    artifactId: String,
-    versionString: String,
-  ): Collection<LibraryVersionRange> {
-    val recommendations = LinkedHashSet<LibraryVersionRange>()
-    val labels = getLabels(groupId, artifactId, versionString)
-    if (labels != null) {
-      labels.policyIssuesInfo.recommendedVersionsList?.filterNotNull()?.forEach {
-        recommendations.add(it)
-      }
-      labels.outdatedIssueInfo.recommendedVersionsList?.filterNotNull()?.forEach {
-        recommendations.add(it)
-      }
-    }
-    return recommendations
-  }
-
   protected open fun logHasCriticalIssues(
     groupId: String,
     artifactId: String,

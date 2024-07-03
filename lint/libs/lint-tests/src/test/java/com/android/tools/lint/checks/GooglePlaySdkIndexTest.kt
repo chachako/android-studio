@@ -135,26 +135,11 @@ class GooglePlaySdkIndexTest {
                     .setVersionLabels(
                       LibraryVersionLabels.newBuilder()
                         .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
-                        .setOutdatedIssueInfo(
-                          LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
-                            .addRecommendedVersions(
-                              LibraryVersionRange.newBuilder().setLowerBound("8.0.0")
-                            )
-                            .addRecommendedVersions(
-                              LibraryVersionRange.newBuilder()
-                                .setLowerBound("7.2.1")
-                                .setUpperBound("7.3.0")
-                            )
-                        )
+                        .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
                         .setPolicyIssuesInfo(
                           LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
                             .addViolatedSdkPolicies(
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
-                            )
-                            .addRecommendedVersions(
-                              LibraryVersionRange.newBuilder()
-                                .setLowerBound("7.2.1")
-                                .setUpperBound("7.3.0")
                             )
                         )
                     )
@@ -571,15 +556,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `policy with other issues message`() {
-    verifyPolicyMessages(
-      "7.2.0",
-      listOf("User Data policy"),
-      recommendedVersions =
-        ".\nThe library author recommends using versions:\n" +
-          "  - From 7.2.1 to 7.3.0\n" +
-          "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. " +
-          "Carefully evaluate any third-party SDKs before integrating them into your app.",
-    )
+    verifyPolicyMessages("7.2.0", listOf("User Data policy"))
   }
 
   @Test
@@ -698,27 +675,6 @@ class GooglePlaySdkIndexTest {
         "Carefully evaluate any third-party SDKs before integrating them into your app."
     assertThat(index.generateOutdatedMessage("no.url.group", "no.url.artifact", "1.0.0"))
       .isEqualTo(expectedMessage)
-  }
-
-  @Test
-  fun `No recommended versions generates empty list`() {
-    val recommendedVersions =
-      index.recommendedVersions("com.example.ads.third.party", "example", "8.0.0")
-    assertThat(recommendedVersions).isNotNull()
-    assertThat(recommendedVersions).isEmpty()
-  }
-
-  @Test
-  fun `Recommended versions generated from all types without repeated ranges`() {
-    val expectedVersions = listOf("7.2.1 to 7.3.0", "8.0.0 to <null>")
-    val recommendedVersions =
-      index.recommendedVersions("com.example.ads.third.party", "example", "7.2.0")
-    assertThat(recommendedVersions).isNotNull()
-    val asText =
-      recommendedVersions.map {
-        "${it.lowerBound} to ${if (it.upperBound.isNullOrBlank()) "<null>" else it.upperBound}"
-      }
-    assertThat(asText).containsAllIn(expectedVersions)
   }
 
   private fun countOutdatedIssues(): Int {

@@ -5181,22 +5181,14 @@ class GradleDetectorTest : AbstractCheckTest() {
       """
         Fix for build.gradle line 3: Change to 8.0.0:
         @@ -3 +3
-        -     compile 'com.example.ads.third.party:example:7.2.1' // Suggest 8.0.0 since it does not have issues
-        +     compile 'com.example.ads.third.party:example:8.0.0' // Suggest 8.0.0 since it does not have issues
+        -     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
+        +     compile 'com.example.ads.third.party:example:8.0.0' // suggest 8.0.0 since it does not have issues
         Fix for build.gradle line 4: Change to 1.2.11:
         @@ -4 +4
         -     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
         +     compile 'log4j:log4j:1.2.11' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
-        Fix for build.gradle line 2: Change to 8.0.0:
-        @@ -2 +2
-        -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
-        +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
-        Fix for build.gradle line 2: Change to 8.0.0:
-        @@ -2 +2
-        -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
-        +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
       """
@@ -5205,8 +5197,8 @@ class GradleDetectorTest : AbstractCheckTest() {
         gradle(
             """
                 dependencies {
-                    compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
-                    compile 'com.example.ads.third.party:example:7.2.1' // Suggest 8.0.0 since it does not have issues
+                    compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+                    compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                 }
                 """
@@ -5252,16 +5244,16 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(
         """
           build.gradle:3: Warning: A newer version of com.example.ads.third.party:example than 7.2.1 is available: 8.0.0 [NewerVersionAvailable]
-              compile 'com.example.ads.third.party:example:7.2.1' // Suggest 8.0.0 since it does not have issues
+              compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:4: Warning: A newer version of log4j:log4j than 1.2.10 is available: 1.2.11 [NewerVersionAvailable]
               compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-              compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
+              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
-              compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
+              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 4 warnings
         """
@@ -5345,20 +5337,20 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSdkIndexLibraryUpgradeToVersionWithCustomMessage() {
     val expectedFixes =
       """
-        Fix for build.gradle line 4: Change to 18.3.0:
-        @@ -4 +4
-        -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
-        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
         Fix for build.gradle line 2: Change to 1.2.0:
         @@ -2 +2
         -     compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
         +     compile 'androidx.slidingpanelayout:slidingpanelayout:1.2.0' // Current has issues but there is a custom message
-        Show URL for build.gradle line 2: View details in Google Play SDK Index:
-        http://sdk.google.com/
         Fix for build.gradle line 3: Change to 18.3.0:
         @@ -3 +3
         -     compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
         +     compile 'com.google.android.gms:play-services-maps:18.3.0' // Current has issues but there is a custom message
+        Fix for build.gradle line 4: Change to 18.3.0:
+        @@ -4 +4
+        -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
+        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
+        Show URL for build.gradle line 2: View details in Google Play SDK Index:
+        http://sdk.google.com/
         Show URL for build.gradle line 3: View details in Google Play SDK Index:
         http://sdk.google.com/
       """
