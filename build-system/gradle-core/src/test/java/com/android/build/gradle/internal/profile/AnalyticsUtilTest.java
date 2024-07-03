@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.dsl.ModulePropertyKey;
 import com.android.build.gradle.internal.dsl.Splits;
 import com.android.build.gradle.internal.dsl.decorator.AndroidPluginDslDecoratorKt;
 import com.android.build.gradle.internal.fixtures.FakeProviderFactory;
+import com.android.build.gradle.internal.res.ConvertResourcesTask;
 import com.android.build.gradle.internal.services.DslServices;
 import com.android.build.gradle.internal.services.FakeServices;
 import com.android.build.gradle.internal.tasks.AndroidGlobalTask;
@@ -35,6 +36,7 @@ import com.android.build.gradle.options.OptionalBooleanOption;
 import com.android.build.gradle.options.ProjectOptions;
 import com.android.build.gradle.options.StringOption;
 import com.android.tools.build.gradle.internal.profile.VariantApiArtifactType;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
@@ -45,6 +47,13 @@ import com.google.wireless.android.sdk.stats.DeviceInfo;
 import com.google.wireless.android.sdk.stats.GradleBuildProject;
 import com.google.wireless.android.sdk.stats.GradleBuildSplits;
 import com.google.wireless.android.sdk.stats.GradleProjectOptionsSettings;
+
+import kotlin.Unit;
+
+import org.gradle.api.Plugin;
+import org.gradle.api.Task;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -53,21 +62,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kotlin.Unit;
-import org.gradle.api.Plugin;
-import org.gradle.api.Task;
-import org.junit.Test;
 
 public class AnalyticsUtilTest {
 
     /**
      * Base tasks that concrete task classes extend from (not exhaustive).
      *
-     * These will be ignored in {@link #checkHaveAllEnumValues} because they are not concrete tasks
-     * that AGP creates, so they don't need to have the corresponding analytic enums.
+     * <p>These will be ignored in {@link #checkHaveAllEnumValues} because they are not concrete
+     * tasks that AGP creates, so they don't need to have the corresponding analytic enums.
      */
     private static final Set<String> baseTasks =
-            ImmutableSet.of(AndroidGlobalTask.class.getName(), UnsafeOutputsGlobalTask.class.getName());
+            ImmutableSet.of(
+                    AndroidGlobalTask.class.getName(),
+                    UnsafeOutputsGlobalTask.class.getName(),
+                    ConvertResourcesTask.class.getName());
 
     @Test
     public void checkAllTasksHaveEnumValues() throws IOException {
@@ -340,8 +348,9 @@ public class AnalyticsUtilTest {
             StringBuilder errorMessage =
                     new StringBuilder("Missing analytics enum constants: ")
                             .append(descriptor.getName())
+                            .append("\n")
                             .append(
-                                    "\nSee tools/analytics-library/protos/src/main/proto/analytics_enums.proto\n\n");
+                                    "See tools/analytics-library/protos/src/main/proto/analytics_enums.proto\n\n");
             for (OptionT option : missing) {
                 max++;
                 errorMessage
@@ -371,8 +380,9 @@ public class AnalyticsUtilTest {
             StringBuilder errorMessage =
                     new StringBuilder("Missing analytics enum constants: ")
                             .append(descriptor.getName())
+                            .append("\n")
                             .append(
-                                    "\nSee tools/analytics-library/protos/src/main/proto/analytics_enums.proto\n\n");
+                                    "See tools/analytics-library/protos/src/main/proto/analytics_enums.proto\n\n");
             for (String modulePropertyKey : missing) {
                 max++;
                 errorMessage

@@ -219,6 +219,9 @@ InternalArtifactType<T : FileSystemLocation>(
     /** Linked resources (output of `aapt2 link`) in binary format. */
     object LINKED_RESOURCES_BINARY_FORMAT: InternalArtifactType<Directory>(DIRECTORY), ContainsMany
 
+    /** Linked resources (output of `aapt2 link`) in proto format. */
+    object LINKED_RESOURCES_PROTO_FORMAT: InternalArtifactType<Directory>(DIRECTORY), ContainsMany
+
     /** Linked resources (output of `aapt2 link`) in proto format, used when building a bundle. */
     object LINKED_RESOURCES_FOR_BUNDLE_PROTO_FORMAT: InternalArtifactType<RegularFile>(FILE)
 

@@ -135,13 +135,13 @@ class ResourceShrinkerTest {
                 .isEqualTo(numberOfReleaseApkEntries -
                                    (debugMetaFiles.size + removedFiles.size))
 
-        assertThat(getZipPaths(project.getOriginalResources()))
+        assertThat(getZipPaths(project.getLinkedProtoResources()))
             .containsAtLeastElementsIn(removedFiles)
         assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
 
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
-        assertThat(getZipPaths(project.getOriginalResources()))
+        assertThat(getZipPaths(project.getLinkedProtoResources()))
             .containsAtLeastElementsIn(removedFiles)
         assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
 
@@ -202,7 +202,7 @@ class ResourceShrinkerTest {
         removed: Array<String>,
         splitName: String? = null
     ) {
-        var originalResources = project.getOriginalResources(splitName)
+        var originalResources = project.getLinkedProtoResources(splitName)
         var shrunkResources = project.getShrunkProtoResources(splitName)
         onlyInOriginal(originalResources, shrunkResources, removed)
     }
@@ -594,22 +594,18 @@ class ResourceShrinkerTest {
                     "intermediary-bundle.aab"
             )
 
-    private fun GradleTestProject.getOriginalResources(splitName: String? = null) =
-            if (splitName!=null) {
-                InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
-                    .resolve("release/shrinkReleaseRes/original-resources-$splitName-release-proto-format.ap_")
-            } else {
-                InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
-                    .resolve("release/shrinkReleaseRes/original-resources-release-proto-format.ap_")
-            }
+    private fun GradleTestProject.getLinkedProtoResources(splitName: String? = null) =
+        InternalArtifactType.LINKED_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
+            .resolve("release/convertLinkedResourcesToProtoRelease")
+            .resolve(listOfNotNull("linked-resources-proto-format", splitName, "release.ap_").joinToString("-"))
 
     private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File =
         InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
             .resolve("release/shrinkReleaseRes")
-            .resolve(listOfNotNull("shrunk-resources", splitName, "release", "proto-format.ap_").joinToString("-"))
+            .resolve(listOfNotNull("shrunk-resources-proto-format", splitName, "release.ap_").joinToString("-"))
 
     private fun GradleTestProject.getShrunkBinaryResources(splitName: String? = null): File =
         InternalArtifactType.SHRUNK_RESOURCES_BINARY_FORMAT.getOutputDir(buildDir)
-            .resolve("release/convertReleaseProtoResources")
-            .resolve(listOfNotNull("shrunk-resources", splitName, "release", "binary-format.ap_").joinToString("-"))
+            .resolve("release/convertShrunkResourcesToBinaryRelease")
+            .resolve(listOfNotNull("shrunk-resources-binary-format", splitName, "release.ap_").joinToString("-"))
 }

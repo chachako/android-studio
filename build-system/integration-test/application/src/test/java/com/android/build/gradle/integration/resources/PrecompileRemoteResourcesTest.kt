@@ -239,7 +239,7 @@ class PrecompileRemoteResourcesTest {
 
         val compressed = InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT
             .getOutputDir(project.getSubproject(":app").buildDir)
-            .resolve("release/shrinkReleaseRes/shrunk-resources-release-proto-format.ap_")
+            .resolve("release/shrinkReleaseRes/shrunk-resources-proto-format-release.ap_")
 
         assertThat(compressed.isFile).isTrue()
 
