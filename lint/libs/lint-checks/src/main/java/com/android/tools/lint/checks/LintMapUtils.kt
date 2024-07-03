@@ -16,6 +16,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.LintMap
+import com.android.tools.lint.detector.api.Location
 
 fun LintMap.getOrPutLintMap(key: String): LintMap {
   val result = this.getMap(key)
@@ -23,4 +24,23 @@ fun LintMap.getOrPutLintMap(key: String): LintMap {
   val newMap = LintMap()
   this.put(key, newMap)
   return newMap
+}
+
+/**
+ * Returns a Sequence of [Location], assuming the [LintMap] contains key-value pairs, where each key
+ * is some arbitrary String (often "0", "1", "2", etc.) and each value is a [Location].
+ */
+fun LintMap.asLocationSequence() = sequence {
+  for (key in this@asLocationSequence) {
+    yield(this@asLocationSequence.getLocation(key)!!)
+  }
+}
+
+/**
+ * Appends a location to the [LintMap], assuming the [LintMap] contains key-value pairs, where each
+ * key is "0", "1", "2", etc. and each value is a [Location].
+ */
+fun LintMap.appendLocation(location: Location): LintMap {
+  this.put("${this.size}", location)
+  return this
 }
