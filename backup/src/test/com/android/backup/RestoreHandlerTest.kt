@@ -49,6 +49,7 @@ class RestoreHandlerTest {
     assertThat(result).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "bmgr enable true",
         "settings put secure backup_enable_android_studio_mode 1",
@@ -73,6 +74,7 @@ class RestoreHandlerTest {
 
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "settings put secure backup_enable_android_studio_mode 1",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
@@ -94,6 +96,7 @@ class RestoreHandlerTest {
 
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "bmgr enable true",
         "settings put secure backup_enable_android_studio_mode 1",
@@ -117,16 +120,17 @@ class RestoreHandlerTest {
 
     assertThat(backupServices.getProgress())
       .containsExactly(
-        "1/8: Pushing backup file",
-        "2/8: Checking if BMGR is enabled",
-        "3/10: Enabling BMGR",
-        "4/10: Enabling test mode",
-        "5/10: Setting backup transport",
-        "6/10: Restoring com.app",
-        "7/10: Disabling test mode",
-        "8/10: Disabling BMGR",
-        "9/10: Deleting backup directory",
-        "10/10: Done",
+        "1/9: Pushing backup file",
+        "2/9: Verifying Google services",
+        "3/9: Checking if BMGR is enabled",
+        "4/11: Enabling BMGR",
+        "5/11: Enabling test mode",
+        "6/11: Setting backup transport",
+        "7/11: Restoring com.app",
+        "8/11: Disabling test mode",
+        "9/11: Disabling BMGR",
+        "10/11: Deleting backup directory",
+        "11/11: Done",
       )
       .inOrder()
   }

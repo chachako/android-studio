@@ -45,6 +45,7 @@ class BackupHandlerTest {
     assertThat(result).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "bmgr enable true",
         "settings put secure backup_enable_android_studio_mode 1",
@@ -79,6 +80,7 @@ class BackupHandlerTest {
     assertThat(result).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "settings put secure backup_enable_android_studio_mode 1",
         "bmgr transport com.google.android.gms/.backup.migrate.service.D2dTransport",
@@ -103,6 +105,7 @@ class BackupHandlerTest {
     assertThat(result).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
+        "dumpsys package com.google.android.gms",
         "bmgr enabled",
         "bmgr enable true",
         "settings put secure backup_enable_android_studio_mode 1",
@@ -126,19 +129,20 @@ class BackupHandlerTest {
 
     assertThat(backupServices.getProgress())
       .containsExactly(
-        "1/10: Checking if BMGR is enabled",
-        "2/12: Enabling BMGR",
-        "3/12: Enabling test mode",
-        "4/12: Setting backup transport",
-        "5/13: Initializing backup transport",
-        "6/13: Running backup",
-        "7/13: Fetching backup",
-        "8/13: Cleaning up",
-        "9/13: Deleting backup directory",
-        "10/13: Restoring backup transport",
-        "11/13: Disabling test mode",
-        "12/13: Disabling BMGR",
-        "13/13: Done",
+        "1/11: Verifying Google services",
+        "2/11: Checking if BMGR is enabled",
+        "3/13: Enabling BMGR",
+        "4/13: Enabling test mode",
+        "5/13: Setting backup transport",
+        "6/14: Initializing backup transport",
+        "7/14: Running backup",
+        "8/14: Fetching backup",
+        "9/14: Cleaning up",
+        "10/14: Deleting backup directory",
+        "11/14: Restoring backup transport",
+        "12/14: Disabling test mode",
+        "13/14: Disabling BMGR",
+        "14/14: Done",
       )
       .inOrder()
   }

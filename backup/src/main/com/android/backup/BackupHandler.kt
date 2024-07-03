@@ -105,6 +105,6 @@ internal constructor(
   }
 
   companion object {
-    const val NUMBER_OF_STEPS = 10
+    const val NUMBER_OF_STEPS = 11
   }
 }

@@ -30,6 +30,7 @@ private const val INIT_TRANSPORT = "bmgr init "
 private const val BACKUP_NOW = "bmgr backupnow "
 private const val RESTORE = "bmgr restore "
 private const val DELETE_FILES = "rm -rf "
+private const val DUMPSYS_GMSCORE = "dumpsys package com.google.android.gms"
 
 /** A fake [com.android.backup.BackupServices] */
 internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
@@ -63,6 +64,7 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
       command.startsWith(BACKUP_NOW) -> handleBackupNow()
       command.startsWith(RESTORE) -> handleRestore()
       command.startsWith(DELETE_FILES) -> ""
+      command == DUMPSYS_GMSCORE -> handleDumpsysGmsCore()
       else -> throw NotImplementedError("Command '$command' is not implemented")
     }
   }
@@ -117,6 +119,19 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
       true -> "Initialization result: 0"
       false -> "Error: $transport not supported"
     }
+  }
+
+  private fun handleDumpsysGmsCore(): String {
+    // Small extract of actual command
+    return """
+      Packages:
+        Package [com.google.android.gms] (19e117e):
+          userId=10105
+          versionCode=242335038 minSdk=31 targetSdk=34
+          minExtensionVersions=[]
+          versionName=24.23.35 (190400-646585959)
+    """
+      .trimIndent()
   }
 
   private fun handleBackupNow(): String {

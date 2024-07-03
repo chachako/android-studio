@@ -23,6 +23,7 @@ import com.android.tools.environment.Logger
 
 private val TRANSPORT_COMMAND_REGEX =
   "Selected transport [^ ]+ \\(formerly (?<old>[^ ]+)\\)".toRegex()
+private val PACKAGE_VERSION_CODE_REGEX = "^ {4}versionCode=(?<version>\\d+).*$".toRegex()
 
 abstract class AbstractBackupServices(
   protected val serialNumber: String,
@@ -44,6 +45,7 @@ abstract class AbstractBackupServices(
   }
 
   override suspend fun withSetup(transport: String, block: suspend () -> Unit) {
+    verifyGmsCore()
     withBmgr { withTestMode { withTransport(transport) { block() } } }
   }
 
@@ -75,6 +77,18 @@ abstract class AbstractBackupServices(
         enableBmgr(false)
       }
     }
+  }
+
+  private suspend fun verifyGmsCore() {
+    reportProgress("Verifying Google services")
+    val lines = executeCommand("dumpsys package com.google.android.gms").lineSequence()
+    val versionMatch = lines.firstNotNullOfOrNull { PACKAGE_VERSION_CODE_REGEX.matchEntire(it) }
+    if (versionMatch == null) {
+      throw BackupException("Google Services not found on devices")
+    }
+    val version = versionMatch.getGroup("version")
+    // TODO(b/348406593): Verify version
+    logger.debug("GmsCore version: $version")
   }
 
   private suspend fun withTestMode(block: suspend () -> Unit) {

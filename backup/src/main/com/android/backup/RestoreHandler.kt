@@ -96,7 +96,7 @@ internal constructor(private val backupServices: BackupServices, private val pat
 
   companion object {
 
-    const val NUMBER_OF_STEPS = 8
+    const val NUMBER_OF_STEPS = 9
 
     /**
      * Verifies a backup file is valid and returns the application id of the associated app
