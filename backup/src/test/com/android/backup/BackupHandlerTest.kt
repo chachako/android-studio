@@ -21,7 +21,9 @@ import com.android.backup.testing.FakeBackupServices
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.util.zip.ZipFile
+import kotlin.io.path.createFile
 import kotlin.io.path.exists
+import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -145,6 +147,29 @@ class BackupHandlerTest {
         "14/14: Done",
       )
       .inOrder()
+  }
+
+  @Test
+  fun backup_deletesExistingFileBeforeRunning(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    backupFile.createFile()
+    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    backupServices.transports = emptyList()
+
+    handler.backup()
+
+    assertThat(backupFile.notExists()).isTrue()
+  }
+
+  @Test
+  fun backup_pullFails_deletesFile(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    backupServices.failSync = true
+
+    handler.backup()
+
+    assertThat(backupFile.notExists()).isTrue()
   }
 }
 

@@ -25,6 +25,7 @@ import java.io.OutputStream
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 private const val TRANSPORT = "com.google.android.gms/.backup.migrate.service.D2dTransport"
@@ -33,7 +34,7 @@ private const val TRANSPORT = "com.google.android.gms/.backup.migrate.service.D2
 class BackupHandler
 internal constructor(
   private val backupServices: BackupServices,
-  private val path: Path,
+  private val backupFile: Path,
   private val applicationId: String,
 ) {
 
@@ -70,6 +71,7 @@ internal constructor(
       }
       Success
     } catch (e: Throwable) {
+      backupFile.deleteIfExists()
       Error(e)
     }
   }
@@ -84,7 +86,7 @@ internal constructor(
   }
 
   private suspend fun pullBackup() {
-    ZipOutputStream(path.outputStream()).use { zip ->
+    ZipOutputStream(backupFile.outputStream()).use { zip ->
       (BACKUP_METADATA_FILES + applicationId).forEach {
         zip.putNextEntry(ZipEntry(it))
         backupServices.syncRecv(KeepOpenOutputStream(zip), "$BACKUP_DIR/$it")

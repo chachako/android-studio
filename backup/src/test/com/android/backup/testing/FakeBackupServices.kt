@@ -19,6 +19,7 @@ package com.android.backup.testing
 import ai.grazie.utils.dropPrefix
 import com.android.backup.AbstractBackupServices
 import com.android.tools.environment.log.NoopLogger
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -37,8 +38,9 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
   AbstractBackupServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
 
   var bmgrEnabled = false
+  var failSync = false
   var testMode = 0
-  private var transports =
+  var transports =
     listOf(
       "com.android.localtransport/.LocalTransport",
       "com.google.android.gms/.backup.migrate.service.D2dTransport",
@@ -71,12 +73,18 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
 
   @Suppress("BlockingMethodInNonBlockingContext")
   override suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String) {
+    if (failSync) {
+      throw IOException()
+    }
     outputStream.write(remoteFilePath.toByteArray())
     // AdbLib closes the stream after a recv, so we do as well.
     outputStream.close()
   }
 
   override suspend fun syncSend(inputStream: InputStream, remoteFilePath: String) {
+    if (failSync) {
+      throw IOException()
+    }
     pushedFiles.add(remoteFilePath)
     @Suppress("BlockingMethodInNonBlockingContext") inputStream.close()
   }
