@@ -403,15 +403,12 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     artifactId: String,
     versionString: String,
   ): String {
-    val note = getNoteFromDeveloper(groupId, artifactId, versionString)
-    return "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has been reported as problematic by its author and will block publishing of your app to Play Console$note"
+    return "**[Prevents app release in Google Play Console]** $groupId:$artifactId version $versionString has been reported as problematic by its author and will block publishing of your app to Play Console"
   }
 
   /** Generate a message for a library that has non-blocking critical issues */
-  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String): String {
-    val note = getNoteFromDeveloper(groupId, artifactId, versionString)
-    return "$groupId:$artifactId version $versionString has an associated message from its author$note"
-  }
+  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String) =
+    "$groupId:$artifactId version $versionString has an associated message from its author"
 
   /** Generate a message for a library that has blocking outdated issues */
   fun generateBlockingOutdatedMessage(
@@ -517,17 +514,5 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       result.addAll(types)
     }
     return result
-  }
-
-  private fun getNoteFromDeveloper(
-    groupId: String,
-    artifactId: String,
-    versionString: String,
-  ): String {
-    val labels = getLabels(groupId, artifactId, versionString) ?: return ""
-    val criticalIssue = labels.criticalIssueInfo ?: return ""
-    val message = criticalIssue.description
-    if (message.isNullOrBlank()) return ""
-    return ".\n**Note:** $message"
   }
 }

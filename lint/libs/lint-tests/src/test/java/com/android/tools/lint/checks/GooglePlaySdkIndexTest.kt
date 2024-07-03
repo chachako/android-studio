@@ -55,7 +55,7 @@ class GooglePlaySdkIndexTest {
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("1.2.17").setIsLatestVersion(false)
                 )
-                // Critical (with description)
+                // Critical
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("1.2.16")
@@ -86,16 +86,6 @@ class GooglePlaySdkIndexTest {
                     .setVersionLabels(
                       LibraryVersionLabels.newBuilder()
                         .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
-                    )
-                )
-                // Critical (without description)
-                .addVersions(
-                  LibraryVersion.newBuilder()
-                    .setVersionString("1.2.13")
-                    .setIsLatestVersion(false)
-                    .setVersionLabels(
-                      LibraryVersionLabels.newBuilder()
-                        .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
                     )
                 )
             )
@@ -474,7 +464,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `critical issues shown`() {
-    assertThat(countCriticalIssues()).isEqualTo(3)
+    assertThat(countCriticalIssues()).isEqualTo(2)
   }
 
   @Test
@@ -599,35 +589,6 @@ class GooglePlaySdkIndexTest {
         buildFile = null,
       )
     assertThat(lintLink).isNull()
-  }
-
-  @Test
-  fun `There is a note if description is present in blocking critical`() {
-    val expectedMessage =
-      "**[Prevents app release in Google Play Console]** log4j:log4j version 1.2.16 has been reported as problematic by its author and will block publishing of your app to Play Console.\n**Note:** This is a custom message from sdk developer."
-    assertThat(index.generateBlockingCriticalMessage("log4j", "log4j", "1.2.16"))
-      .isEqualTo(expectedMessage)
-  }
-
-  @Test
-  fun `There is a note if description is present in non blocking critical`() {
-    val expectedMessage =
-      "log4j:log4j version 1.2.16 has an associated message from its author.\n**Note:** This is a custom message from sdk developer."
-    assertThat(index.generateCriticalMessage("log4j", "log4j", "1.2.16")).isEqualTo(expectedMessage)
-  }
-
-  @Test
-  fun `Note not present if description is not present in blocking critical`() {
-    val expectedMessage =
-      "**[Prevents app release in Google Play Console]** log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console"
-    assertThat(index.generateBlockingCriticalMessage("log4j", "log4j", "1.2.13"))
-      .isEqualTo(expectedMessage)
-  }
-
-  @Test
-  fun `Note not present if description is not present in non blocking critical`() {
-    val expectedMessage = "log4j:log4j version 1.2.13 has an associated message from its author"
-    assertThat(index.generateCriticalMessage("log4j", "log4j", "1.2.13")).isEqualTo(expectedMessage)
   }
 
   private fun countOutdatedIssues(): Int {
