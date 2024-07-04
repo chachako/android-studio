@@ -84,6 +84,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
+import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
@@ -632,7 +633,10 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                 InternalArtifactType.MANIFEST_MERGE_BLAME_FILE
             )
             creationConfig.services.initializeAapt2Input(task.aapt2)
-            task.symbolTableBuildService.set(getBuildService(creationConfig.services.buildServiceRegistry))
+            getBuildService<SymbolTableBuildService, BuildServiceParameters.None>(creationConfig.services.buildServiceRegistry).let {
+                task.symbolTableBuildService.setDisallowChanges(it)
+                task.usesService(it)
+            }
             task.androidJarInput.initialize(creationConfig)
 
             task.useStableIds = projectOptions[BooleanOption.ENABLE_STABLE_IDS]

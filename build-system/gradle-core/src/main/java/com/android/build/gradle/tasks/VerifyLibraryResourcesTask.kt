@@ -20,12 +20,12 @@ import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.aapt.WorkerExecutorResourceCompilationService
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.initialize
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.processResources
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.Aapt2Input
-import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLeasingAapt2
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NewIncrementalTask
@@ -255,11 +255,7 @@ abstract class VerifyLibraryResourcesTask : NewIncrementalTask() {
             }
 
             creationConfig.services.initializeAapt2Input(task.aapt2)
-            task.androidJarInput.sdkBuildService.setDisallowChanges(
-                getBuildService(creationConfig.services.buildServiceRegistry)
-            )
-            task.androidJarInput.compileSdkVersion.setDisallowChanges(creationConfig.global.compileSdkHashString)
-            task.androidJarInput.buildToolsRevision.setDisallowChanges(creationConfig.global.buildToolsRevision)
+            task.androidJarInput.initialize(creationConfig)
 
             val sourceSetMap =
                     creationConfig.artifacts.get(InternalArtifactType.SOURCE_SET_PATH_MAP)

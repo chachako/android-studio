@@ -28,6 +28,8 @@ import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.util.regex.Pattern
+import kotlin.streams.asSequence
 
 class BasicConfigurationCacheTest {
 
@@ -106,6 +108,47 @@ class BasicConfigurationCacheTest {
         executor().run("clean")
         executor().run(":app:assembleDebugAndroidTest")
     }
+
+    /** Regression test for b/300617088. */
+    @Test
+    fun testStableConfigurationCacheFeatureFlag() {
+        project.settingsFile.appendText("\nenableFeaturePreview(\"STABLE_CONFIGURATION_CACHE\")")
+
+        val result = executor().expectFailure().run("assemble")
+
+        val violations = result.stdout.findAll(usesServiceWarningRegex).asSequence()
+            .map {
+                val buildService = it.group(1)
+                val task = it.group(2)
+                "$buildService is used by $task"
+            }.sorted().toList()
+        // TODO(b/300617088): We'll need to fix all the issues in this list
+        Truth.assertThat(violations).containsAtLeastElementsIn(
+            listOf(
+                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :app:processDebugResources",
+                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :app:processReleaseResources",
+                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :test:processDebugResources",
+                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :lib:verifyReleaseResources",
+                "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
+                "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:lintVitalAnalyzeRelease",
+                "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
+                "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:lintVitalAnalyzeRelease",
+                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:optimizeReleaseResources",
+                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:processDebugResources",
+                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:processReleaseResources",
+                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :lib:verifyReleaseResources",
+                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :test:processDebugResources",
+            )
+        )
+    }
+
+    /**
+     * Regex to capture warnings about Task.usesService (https://docs.gradle.org/current/userguide/configuration_cache.html#config_cache:stable).
+     * Example warning:
+     *    > Build service 'com.android.build.gradle.internal.services.SymbolTableBuildService_a3ab9d9e-ea4f-497b-a09a-35aa9e17dcdb'
+     *    > is being used by task ':app:processDebugResources' without the corresponding declaration via 'Task#usesService'.
+     */
+    private val usesServiceWarningRegex = Pattern.compile("Build service '([a-zA-Z0-9.]+)_[a-zA-Z0-9\\-]+' is being used by task '([a-zA-Z0-9:]+)'")
 
     @Test
     fun testWithProjectIsolation() {

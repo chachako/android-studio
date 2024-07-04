@@ -98,6 +98,7 @@ import com.android.utils.PathUtils
 import com.android.utils.appendCapitalized
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
@@ -114,6 +115,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.provider.SetProperty
+import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -199,9 +201,12 @@ abstract class LintTool {
     @get:Internal
     abstract val lintClassLoaderBuildService: Property<LintClassLoaderBuildService>
 
-    fun initialize(taskCreationServices: TaskCreationServices, taskName: String) {
+    fun initialize(taskCreationServices: TaskCreationServices, task: Task) {
         classpath.fromDisallowChanges(taskCreationServices.lintFromMaven.files)
-        lintClassLoaderBuildService.setDisallowChanges(getBuildService(taskCreationServices.buildServiceRegistry))
+        getBuildService<LintClassLoaderBuildService, BuildServiceParameters.None>(taskCreationServices.buildServiceRegistry).let {
+            lintClassLoaderBuildService.setDisallowChanges(it)
+            task.usesService(it)
+        }
         versionKey.setDisallowChanges(deriveVersionKey(taskCreationServices, lintClassLoaderBuildService))
         val projectOptions = taskCreationServices.projectOptions
         runInProcess.setDisallowChanges(projectOptions.getProvider(BooleanOption.RUN_LINT_IN_PROCESS))
@@ -209,7 +214,7 @@ abstract class LintTool {
         lintCacheDirectory.setDisallowChanges(
             taskCreationServices.projectInfo
                 .buildDirectory
-                .dir("${SdkConstants.FD_INTERMEDIATES}/lint-cache/$taskName")
+                .dir("${SdkConstants.FD_INTERMEDIATES}/lint-cache/${task.name}")
         )
     }
 

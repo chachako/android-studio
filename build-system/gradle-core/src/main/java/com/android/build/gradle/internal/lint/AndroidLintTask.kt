@@ -776,7 +776,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             task.dependencyPartialResults.disallowChanges()
             task.nestedComponentLintModels.disallowChanges()
             task.nestedComponentPartialResults.disallowChanges()
-            task.lintTool.initialize(creationConfig.services, task.name)
+            task.lintTool.initialize(creationConfig.services, task)
             if (autoFix) {
                 task.outputs.upToDateWhen {
                     it.logger.debug("Lint fix task potentially modifies sources so cannot be up-to-date")
@@ -931,7 +931,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
         this.lintFixBuildService.disallowChanges()
         this.checkOnly.setDisallowChanges(lintOptions.checkOnly)
-        this.lintTool.initialize(taskCreationServices, this.name)
+        this.lintTool.initialize(taskCreationServices, this)
         this.projectInputs
             .initializeForStandalone(project, javaPluginExtension, lintOptions, lintMode)
         // Workaround for b/193244776 - Ensure the task runs if a baseline file is set and the file

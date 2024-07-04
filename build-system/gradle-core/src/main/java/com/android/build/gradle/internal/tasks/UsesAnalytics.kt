@@ -32,7 +32,10 @@ interface UsesAnalytics {
     object ConfigureAction {
 
         fun <TaskT> configure(task: TaskT) where TaskT: Task, TaskT: UsesAnalytics {
-            task.analyticsService.setDisallowChanges(getBuildService(task.project.gradle.sharedServices))
+            getBuildService<AnalyticsService, AnalyticsService.Params>(task.project.gradle.sharedServices).let {
+                task.analyticsService.setDisallowChanges(it)
+                task.usesService(it)
+            }
         }
     }
 }

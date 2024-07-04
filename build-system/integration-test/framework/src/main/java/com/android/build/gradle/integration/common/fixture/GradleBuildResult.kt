@@ -59,7 +59,13 @@ class GradleBuildResult(
         get() = Scanner(stdoutFile)
 
     @Suppress("unused") // Keep this property as it is useful for debugging
-    val stdoutAsText: String by lazy { stdout.asText() }
+    @Deprecated(
+        "This property is used for debugging only," +
+                " do not actually use it in tests because stdout is often large" +
+                " and can cause memory issues if loaded as a string" +
+                " (stderr is fine)"
+    )
+    val stdoutAsTextForDebug: String by lazy { stdout.asText() }
 
     private fun Scanner.asText(): String = use {
         StringBuilder().apply {
