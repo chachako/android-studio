@@ -26711,6 +26711,171 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.databinding.viewbinding_4.0.0",
+    pom = "repository/com/android/databinding/viewbinding/4.0.0/viewbinding-4.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/4.0.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_4.1.0",
+    pom = "repository/com/android/databinding/viewbinding/4.1.0/viewbinding-4.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/4.1.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_4.2.0",
+    pom = "repository/com/android/databinding/viewbinding/4.2.0/viewbinding-4.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/4.2.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_7.0.0",
+    pom = "repository/com/android/databinding/viewbinding/7.0.0/viewbinding-7.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/7.0.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_7.1.0",
+    pom = "repository/com/android/databinding/viewbinding/7.1.0/viewbinding-7.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/7.1.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_7.2.0",
+    pom = "repository/com/android/databinding/viewbinding/7.2.0/viewbinding-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/7.2.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_7.3.0",
+    pom = "repository/com/android/databinding/viewbinding/7.3.0/viewbinding-7.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/7.3.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_7.4.1",
+    pom = "repository/com/android/databinding/viewbinding/7.4.1/viewbinding-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/7.4.1",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.0.2",
+    pom = "repository/com/android/databinding/viewbinding/8.0.2/viewbinding-8.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.0.2",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.1.0",
+    pom = "repository/com/android/databinding/viewbinding/8.1.0/viewbinding-8.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.1.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.2.0",
+    pom = "repository/com/android/databinding/viewbinding/8.2.0/viewbinding-8.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.2.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.2.2",
+    pom = "repository/com/android/databinding/viewbinding/8.2.2/viewbinding-8.2.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.2.2",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.3.1",
+    pom = "repository/com/android/databinding/viewbinding/8.3.1/viewbinding-8.3.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.3.1",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.4.0",
+    pom = "repository/com/android/databinding/viewbinding/8.4.0/viewbinding-8.4.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.4.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.viewbinding_8.5.0",
+    pom = "repository/com/android/databinding/viewbinding/8.5.0/viewbinding-8.5.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/viewbinding/8.5.0",
+    deps = [
+        "com.android.support.support-annotations_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.library.com.android.library.gradle.plugin_7.2.0",
     pom = "repository/com/android/library/com.android.library.gradle.plugin/7.2.0/com.android.library.gradle.plugin-7.2.0.pom",
     repo_root_path = "repository",

@@ -4,6 +4,7 @@ load("//tools/base/bazel:maven.bzl", "maven_repository")
 #keep sorted
 AGP_8_5_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.5.0",
+    "@maven//:com.android.databinding.viewbinding_8.5.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.5.0",
     "@maven//:com.android.tools.build.aapt2_8.5.0-11315950",
     "@maven//:com.android.tools.build.gradle_8.5.0",
@@ -19,6 +20,7 @@ maven_repository(
 #keep sorted
 AGP_8_4_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.4.0",
+    "@maven//:com.android.databinding.viewbinding_8.4.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.4.0",
     "@maven//:com.android.tools.build.aapt2_8.4.0-11315950",
     "@maven//:com.android.tools.build.gradle_8.4.0",
@@ -34,6 +36,7 @@ maven_repository(
 #keep sorted
 AGP_8_3_1_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.3.1",
+    "@maven//:com.android.databinding.viewbinding_8.3.1",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.3.1",
     "@maven//:com.android.tools.build.aapt2_8.3.1-10880808",
     "@maven//:com.android.tools.build.gradle_8.3.1",
@@ -48,6 +51,7 @@ maven_repository(
 
 AGP_8_2_2_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.2.2",
+    "@maven//:com.android.databinding.viewbinding_8.2.2",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.2.2",
     "@maven//:com.android.tools.build.aapt2_8.2.2-10154469",
     "@maven//:com.android.tools.build.gradle_8.2.2",
@@ -62,6 +66,7 @@ maven_repository(
 
 AGP_8_2_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.2.0",
+    "@maven//:com.android.databinding.viewbinding_8.2.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.2.0",
     "@maven//:com.android.tools.build.aapt2_8.2.0-10154469",
     "@maven//:com.android.tools.build.gradle_8.2.0",
@@ -77,6 +82,7 @@ maven_repository(
 #keep sorted
 AGP_8_1_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.1.0",
+    "@maven//:com.android.databinding.viewbinding_8.1.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.1.0",
     "@maven//:com.android.tools.build.aapt2_8.1.0-10154469",
     "@maven//:com.android.tools.build.gradle_8.1.0",
@@ -92,6 +98,7 @@ maven_repository(
 #keep sorted
 AGP_8_0_2_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.0.2",
+    "@maven//:com.android.databinding.viewbinding_8.0.2",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.0.2",
     "@maven//:com.android.tools.build.aapt2_8.0.2-9289358",
     "@maven//:com.android.tools.build.gradle_8.0.2",
@@ -107,6 +114,7 @@ maven_repository(
 #keep sorted
 AGP_7_4_1_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_7.4.1",
+    "@maven//:com.android.databinding.viewbinding_7.4.1",
     "@maven//:com.android.library.com.android.library.gradle.plugin_7.4.1",
     "@maven//:com.android.tools.build.aapt2_7.4.1-8841542",
     "@maven//:com.android.tools.build.gradle_7.4.1",
@@ -121,6 +129,7 @@ maven_repository(
 
 #keep sorted
 AGP_7_3_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_7.3.0",
     "@maven//:com.android.tools.build.aapt2_7.3.0-8691043",
     "@maven//:com.android.tools.build.gradle_7.3.0",
     "@maven//:com.android.tools.lint.lint-gradle_30.3.0",
@@ -135,6 +144,7 @@ maven_repository(
 #keep sorted
 AGP_7_2_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_7.2.0",
+    "@maven//:com.android.databinding.viewbinding_7.2.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_7.2.0",
     "@maven//:com.android.tools.build.aapt2_7.2.0-7984345",
     "@maven//:com.android.tools.build.gradle_7.2.0",
@@ -149,6 +159,7 @@ maven_repository(
 
 #keep sorted
 AGP_7_1_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_7.1.0",
     "@maven//:com.android.tools.build.aapt2_7.1.0-7984345",
     "@maven//:com.android.tools.build.gradle_7.1.0",
     "@maven//:com.android.tools.lint.lint-gradle_30.1.0",
@@ -162,6 +173,7 @@ maven_repository(
 
 #keep sorted
 AGP_7_0_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_7.0.0",
     "@maven//:com.android.tools.build.aapt2_7.0.0-7396180",
     "@maven//:com.android.tools.build.gradle_7.0.0",
     "@maven//:com.android.tools.lint.lint-gradle_30.0.0",
@@ -174,6 +186,7 @@ maven_repository(
 )
 
 AGP_4_2_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_4.2.0",
     "@maven//:com.android.tools.build.gradle_4.2.0",
     "@maven//:com.android.tools.build.aapt2_4.2.0-7147631",
     "@maven//:com.android.tools.lint.lint-gradle_27.2.0",
@@ -186,6 +199,7 @@ maven_repository(
 )
 
 AGP_4_1_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_4.1.0",
     "@maven//:com.android.tools.build.gradle_4.1.0",
     "@maven//:com.android.tools.build.aapt2_4.1.0-6503028",
     "@maven//:com.android.tools.lint.lint-gradle_27.1.0",
@@ -198,6 +212,7 @@ maven_repository(
 )
 
 AGP_4_0_0_ARTIFACTS = [
+    "@maven//:com.android.databinding.viewbinding_4.0.0",
     "@maven//:com.android.tools.build.gradle_4.0.0",
     "@maven//:com.android.tools.build.aapt2_4.0.0-6051327",
     "@maven//:com.android.tools.lint.lint-gradle_27.0.0",
