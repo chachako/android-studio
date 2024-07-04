@@ -437,7 +437,6 @@ DATA = [
     "androidx.test:core:1.3.0",  # TODO: To be removed once dependent tests pass b/273872043
     "androidx.test:core:1.4.0-alpha06",
     "androidx.test:core:1.5.0",
-    "androidx.test:core:1.6.1",
     "androidx.test.espresso:espresso-contrib:3.5.1",
     "androidx.test.espresso:espresso-core:3.1.0",
     "androidx.test.espresso:espresso-core:3.2.0",
@@ -446,7 +445,6 @@ DATA = [
     "androidx.test.ext:junit:1.1.2",  # TODO: To be removed once dependent tests pass b/273872043
     "androidx.test.ext:junit:1.1.3-alpha02",
     "androidx.test.ext:junit:1.1.5",
-    "androidx.test.ext:junit:1.2.1",
     "androidx.test:monitor:1.6.1",
     "androidx.test:orchestrator:1.5.0-alpha02",
     "androidx.test:rules:1.1.0",

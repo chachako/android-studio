@@ -12468,17 +12468,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.annotation.annotation-jvm_1.7.0-beta01",
-    pom = "repository/androidx/annotation/annotation-jvm/1.7.0-beta01/annotation-jvm-1.7.0-beta01.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/annotation/annotation-jvm/1.7.0-beta01",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.annotation.annotation-jvm_1.8.0",
     pom = "repository/androidx/annotation/annotation-jvm/1.8.0/annotation-jvm-1.8.0.pom",
     repo_root_path = "repository",
@@ -12593,18 +12582,6 @@ maven_artifact(
     repo_path = "androidx/annotation/annotation/1.7.0",
     deps = [
         "androidx.annotation.annotation-jvm_1.7.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.annotation.annotation_1.7.0-beta01",
-    pom = "repository/androidx/annotation/annotation/1.7.0-beta01/annotation-1.7.0-beta01.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/annotation/annotation/1.7.0-beta01",
-    deps = [
-        "androidx.annotation.annotation-jvm_1.7.0-beta01",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
     ],
     visibility = ["//visibility:public"],
@@ -24920,22 +24897,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.test.ext.junit_1.2.1",
-    pom = "repository/androidx/test/ext/junit/1.2.1/junit-1.2.1.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/ext/junit/1.2.1",
-    deps = [
-        "androidx.annotation.annotation_1.7.0-beta01",
-        "androidx.test.services.storage_1.5.0",
-        "androidx.test.core_1.6.1",
-        "androidx.test.monitor_1.7.1",
-        "junit.junit_4.13.2",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.test.services.storage_1.4.0",
     pom = "repository/androidx/test/services/storage/1.4.0/storage-1.4.0.pom",
     repo_root_path = "repository",
@@ -24969,18 +24930,6 @@ maven_artifact(
         "androidx.test.monitor_1.6.0",
         "com.google.code.findbugs.jsr305_2.0.2",
         "androidx.test.annotation_1.0.1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.test.services.storage_1.5.0",
-    pom = "repository/androidx/test/services/storage/1.5.0/storage-1.5.0.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/services/storage/1.5.0",
-    deps = [
-        "androidx.annotation.annotation_1.7.0-beta01",
-        "androidx.test.monitor_1.7.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -25132,24 +25081,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.test.core_1.6.1",
-    pom = "repository/androidx/test/core/1.6.1/core-1.6.1.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/core/1.6.1",
-    deps = [
-        "androidx.annotation.annotation_1.7.0-beta01",
-        "androidx.concurrent.concurrent-futures-ktx_1.1.0",
-        "androidx.lifecycle.lifecycle-common_2.3.1",
-        "androidx.test.monitor_1.7.1",
-        "androidx.tracing.tracing_1.1.0",
-        "com.google.guava.listenablefuture_1.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.7.1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.test.monitor_1.1.0",
     pom = "repository/androidx/test/monitor/1.1.0/monitor-1.1.0.pom",
     repo_root_path = "repository",
@@ -25243,19 +25174,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.test.monitor_1.7.0",
-    pom = "repository/androidx/test/monitor/1.7.0/monitor-1.7.0.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/monitor/1.7.0",
-    deps = [
-        "androidx.annotation.annotation_1.7.0-beta01",
-        "androidx.tracing.tracing_1.1.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.test.monitor_1.7.0-alpha01",
     pom = "repository/androidx/test/monitor/1.7.0-alpha01/monitor-1.7.0-alpha01.pom",
     repo_root_path = "repository",
@@ -25265,19 +25183,6 @@ maven_artifact(
         "androidx.test.annotation_1.1.0-alpha01",
         "androidx.tracing.tracing_1.1.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.test.monitor_1.7.1",
-    pom = "repository/androidx/test/monitor/1.7.1/monitor-1.7.1.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/monitor/1.7.1",
-    deps = [
-        "androidx.annotation.annotation_1.7.0-beta01",
-        "androidx.tracing.tracing_1.1.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
     ],
     visibility = ["//visibility:public"],
 )
