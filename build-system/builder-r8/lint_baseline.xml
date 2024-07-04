@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.7.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.7.0-dev">
+
+    <issue
+        id="CommonForkJoinPool"
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="                    GenerateMainDexList.run(command.build(), ForkJoinPool.commonPool()));"
+        errorLine2="                                                                          ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/builder/multidex/D8MainDexList.java"
+            line="101"
+            column="75"/>
+    </issue>
+
+</issues>

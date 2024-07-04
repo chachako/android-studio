@@ -1,0 +1,66 @@
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+
+kotlin_library(
+    name = "builder-r8",
+    srcs = glob([
+        "src/main/java/**/*.java",
+        "src/main/java/**/*.kt",
+        "src/main/kotlin/**/*.kt",
+    ]),
+    lint_baseline = "lint_baseline.xml",
+    module_name = "shrinker",
+    resource_strip_prefix = "tools/base/build-system/shrinker",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prebuilts/r8",
+        "//tools/base/build-system/aapt2-proto",
+        "//tools/base/common:tools.common",
+        "//tools/base/layoutlib-api:tools.layoutlib-api",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "@maven//:com.google.guava.guava",
+    ],
+)
+
+kotlin_test(
+    name = "tests",
+    srcs = glob([
+        "src/test/java/**/*.kt",
+        "src/test/kotlin/**/*.kt",
+        "src/test/java/**/*.java",
+    ]),
+    data = [
+        "//tools/base/build-system:android_platform_for_tests",
+        "@maven//:com.android.tools.desugar_jdk_libs",
+        "@maven//:com.android.tools.desugar_jdk_libs_configuration",
+    ],
+    friends = [":builder-r8"],
+    jvm_flags = ["-Dtest.suite.jar=tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
+    resources = glob(["src/test/resources/**"]),
+    test_class = "com.android.testutils.JarTestSuite",
+    deps = [
+        ":builder-r8",
+        "//prebuilts/r8",
+        "//tools/apkzlib",
+        "//tools/base/common:tools.common",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "//tools/base/testutils:tools.testutils",
+        "//tools/base/zipflinger",
+        "@maven//:com.google.jimfs.jimfs",
+        "@maven//:com.google.truth.truth",
+        "@maven//:junit.junit",
+        "@maven//:org.ow2.asm.asm",
+    ],
+)
+
+filegroup(
+    name = "agp_gradle_build_files",
+    srcs = glob([
+        "src/main/**/*.java",
+        "src/main/**/*.kt",
+        "src/main/resources/**",
+    ]) + [
+        "build.gradle",
+    ],
+    visibility = ["//tools/base/build-system:__pkg__"],
+)

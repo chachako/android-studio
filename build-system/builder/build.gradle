@@ -81,7 +81,11 @@ tasks.compileJava {
 jar.manifest.attributes("Builder-Version": version)
 
 configurations {
+    // Dependencies that are compiled against and merged into builder for maven publication
     includeInJar
+    // Dependencies that are only merged into builder for maven publication, not compiled against
+    includeInJarRuntime
+    // Sources of dependencies being merged into builder.
     includeInJarSources {
         attributes {
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, DocsType.SOURCES))
@@ -97,25 +101,33 @@ dependencies {
     includeInJarSources(project(':base:profile')) {
         transitive = false
     }
-    includeInJar(files('../../../../prebuilts/r8/r8.jar'))
+    includeInJarRuntime(project(':base:build-system:builder-r8')) {
+        transitive = false
+    }
+    includeInJarSources(project(':base:build-system:builder-r8')) {
+        transitive = false
+    }
+
+    includeInJarRuntime(files('../../../../prebuilts/r8/r8.jar'))
 }
 
 sourceSets.main.compileClasspath += configurations.includeInJar
 sourceSets.test.compileClasspath += configurations.includeInJar
 sourceSets.test.runtimeClasspath += configurations.includeInJar
-
-tasks.compileJava.dependsOn(configurations.includeInJar)
-tasks.sourcesJar.dependsOn(configurations.includeInJarSources)
+sourceSets.test.runtimeClasspath += configurations.includeInJarRuntime
 
 tasks.jar {
     from {
-        configurations.includeInJar.collect({zipTree(it)})
+        configurations.includeInJar.elements.map { elements -> elements.stream().map { zipTree(it) }.toList() }
+    }
+    from {
+        configurations.includeInJarRuntime.elements.map { elements -> elements.stream().map { zipTree(it) }.toList() }
     }
 }
 
 tasks.sourcesJar {
     from({
-        configurations.includeInJarSources.collect({zipTree(it)})
+        configurations.includeInJarSources.elements.map { elements -> elements.stream().map { zipTree(it) }.toList() }
     })
 }
 

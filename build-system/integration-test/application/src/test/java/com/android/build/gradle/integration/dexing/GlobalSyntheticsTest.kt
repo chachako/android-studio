@@ -23,7 +23,6 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.IntegerOption
-import com.android.builder.dexing.globalSyntheticsFileExtension
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.apk.AndroidArchive
 import com.google.common.io.Resources
@@ -224,7 +223,7 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         Truth.assertThat(localeGlobalFromApp.exists()).isTrue()
 
         val localeGlobalFromLib = lib.buildDir.resolve(".transforms").walk()
-            .filter { it.path.endsWith(globalSyntheticsFileExtension) }.toList()
+            .filter { it.path.endsWith(".globals") }.toList()
         Truth.assertThat(localeGlobalFromLib).hasSize(1)
 
         checkPackagedGlobal(exceptionGlobalDex)

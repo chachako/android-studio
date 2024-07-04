@@ -31,7 +31,6 @@ kotlin_library(
         "@maven//:com.squareup.javawriter",
     ],
     deps = [
-        "//prebuilts/r8",
         "//tools/analytics-library/protos/src/main/proto",
         "//tools/analytics-library/tracker:tools.analytics-tracker",
         "//tools/base/build-system/builder-model",

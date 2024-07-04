@@ -262,6 +262,9 @@ dependencies {
     provided(project(':base:build-system:shrinker')) {
         transitive = false
     }
+    provided(project(':base:build-system:builder-r8')) {
+        transitive = false
+    }
 }
 
 protobuf {

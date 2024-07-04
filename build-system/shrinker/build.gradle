@@ -3,7 +3,6 @@ apply plugin: 'com.android.tools.kotlin'
 
 dependencies {
     implementation project(':base:build-system:aapt2-proto')
-    implementation project(':base:builder')
     implementation libs.com.android.tools.layoutlib.layoutlibApi
     implementation libs.com.android.tools.common
     implementation libs.com.android.tools.sdkCommon

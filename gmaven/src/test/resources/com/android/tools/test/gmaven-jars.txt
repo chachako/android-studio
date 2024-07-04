@@ -284,6 +284,7 @@ com/android/tools/build/builder
   LICENSE
   META-INF/
   META-INF/MANIFEST.MF
+  META-INF/builder-r8.kotlin_module
   META-INF/builder.kotlin_module
   META-INF/profile.kotlin_module
   META-INF/services/

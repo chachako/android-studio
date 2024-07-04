@@ -74,6 +74,7 @@ kotlin_library(
         "//tools/base/build-system:gradle-api_neverlink",
         "//tools/base/build-system/aapt2-proto",
         "//tools/base/build-system/aaptcompiler",
+        "//tools/base/build-system/builder-r8",
         "//tools/base/build-system/builder-test-api:tools.builder-test-api",
         "//tools/base/build-system/gradle-settings-api",
         "//tools/base/build-system/shrinker",

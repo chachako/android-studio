@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.4.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.4.0-dev">
+<issues format="6" by="lint 8.7.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.7.0-dev">
 
     <issue
         id="FileComparisons"
@@ -32,17 +32,6 @@
             file="src/test/java/com/android/builder/files/KeyedFileCacheTest.java"
             line="118"
             column="21"/>
-    </issue>
-
-    <issue
-        id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
-        errorLine1="                        ForkJoinPool.commonPool());"
-        errorLine2="                                     ~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/builder/dexing/DexArchiveTestUtil.java"
-            line="226"
-            column="38"/>
     </issue>
 
 </issues>
