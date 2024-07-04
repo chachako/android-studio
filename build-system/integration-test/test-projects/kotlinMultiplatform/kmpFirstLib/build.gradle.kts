@@ -40,7 +40,7 @@ kotlin {
         implementation("androidx.test:core:1.4.0-alpha06", {
             exclude(group="com.google.guava", module="listenablefuture")
         })
-        implementation("androidx.test.ext:junit:1.1.2", {
+        implementation("androidx.test.ext:junit:1.1.5", {
             exclude(group="com.google.guava", module="listenablefuture")
         })
       }

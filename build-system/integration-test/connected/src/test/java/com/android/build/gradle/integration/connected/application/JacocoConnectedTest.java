@@ -23,18 +23,21 @@ import com.android.build.gradle.integration.common.fixture.app.KotlinHelloWorldA
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import com.android.utils.FileUtils;
+
 import com.google.common.truth.Truth;
+
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExternalResource;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
 
 public class JacocoConnectedTest {
 
@@ -61,7 +64,8 @@ public class JacocoConnectedTest {
     @Test
     public void connectedCheck() throws Exception {
         project.executor().run("connectedCheck");
-        assertThat(project.file("build/reports/coverage/androidTest/debug/connected/index.html")).exists();
+        assertThat(project.file("build/reports/coverage/androidTest/debug/connected/index.html"))
+                .exists();
         assertThat(
                         project.file(
                                 "build/reports/coverage/androidTest/debug/connected/com.example.helloworld/HelloWorld.html"))
@@ -98,11 +102,15 @@ public class JacocoConnectedTest {
                 project.getBuildFile(),
                 "\n"
                         + "android.defaultConfig.minSdkVersion 16\n"
-                        + "android.defaultConfig.testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n"
-                        + "android.defaultConfig.testInstrumentationRunnerArguments package: 'com.example.helloworld'\n"
+                        + "android.defaultConfig.testInstrumentationRunner"
+                        + " 'androidx.test.runner.AndroidJUnitRunner'\n"
+                        + "android.defaultConfig.testInstrumentationRunnerArguments package:"
+                        + " 'com.example.helloworld'\n"
                         + (enableClearPackageDataOption
-                                ? "android.defaultConfig.testInstrumentationRunnerArguments clearPackageData: 'true'\n"
-                                        + "android.defaultConfig.testInstrumentationRunnerArguments useTestStorageService: 'true'\n"
+                                ? "android.defaultConfig.testInstrumentationRunnerArguments"
+                                        + " clearPackageData: 'true'\n"
+                                        + "android.defaultConfig.testInstrumentationRunnerArguments"
+                                        + " useTestStorageService: 'true'\n"
                                 : "")
                         + "android.testOptions.execution 'ANDROIDX_TEST_ORCHESTRATOR'\n"
                         // Orchestrator requires some setup time and it usually takes
@@ -185,46 +193,38 @@ public class JacocoConnectedTest {
                                 "build/reports/coverage/androidTest/debug/connected/com.example.helloworld/HelloWorld.html"))
                 .exists();
         String expectedReportXml =
-                "<package name=\"com/example/helloworld\">"
-                        + "<class name=\"com/example/helloworld/HelloWorld\" sourcefilename=\"HelloWorld.kt\">"
-                        + "<method name=\"&lt;init&gt;\" desc=\"()V\" line=\"6\">"
-                        + "<counter type=\"INSTRUCTION\" missed=\"0\" covered=\"3\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"1\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"1\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"1\"/>"
-                        + "</method><method name=\"onCreate\" desc=\"(Landroid/os/Bundle;)V\" line=\"9\">"
-                        + "<counter type=\"INSTRUCTION\" missed=\"0\" covered=\"7\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"3\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"1\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"1\"/>"
-                        + "</method><counter type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"4\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"CLASS\" missed=\"0\" covered=\"1\"/>"
-                        + "</class>"
-                        + "<sourcefile name=\"HelloWorld.kt\">"
-                        + "<line nr=\"6\" mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/>"
-                        + "<line nr=\"9\" mi=\"0\" ci=\"2\" mb=\"0\" cb=\"0\"/>"
-                        + "<line nr=\"10\" mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/>"
-                        + "<line nr=\"12\" mi=\"0\" ci=\"1\" mb=\"0\" cb=\"0\"/>"
-                        + "<counter type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"4\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"CLASS\" missed=\"0\" covered=\"1\"/>"
-                        + "</sourcefile><counter type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"4\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"CLASS\" missed=\"0\" covered=\"1\"/>"
-                        + "</package>"
-                        + "<counter type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/>"
-                        + "<counter type=\"LINE\" missed=\"0\" covered=\"4\"/>"
-                        + "<counter type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"METHOD\" missed=\"0\" covered=\"2\"/>"
-                        + "<counter type=\"CLASS\" missed=\"0\" covered=\"1\"/>"
-                        + "</report>";
+                "<package name=\"com/example/helloworld\"><class"
+                    + " name=\"com/example/helloworld/HelloWorld\""
+                    + " sourcefilename=\"HelloWorld.kt\"><method name=\"&lt;init&gt;\" desc=\"()V\""
+                    + " line=\"6\"><counter type=\"INSTRUCTION\" missed=\"0\""
+                    + " covered=\"3\"/><counter type=\"LINE\" missed=\"0\" covered=\"1\"/><counter"
+                    + " type=\"COMPLEXITY\" missed=\"0\" covered=\"1\"/><counter type=\"METHOD\""
+                    + " missed=\"0\" covered=\"1\"/></method><method name=\"onCreate\""
+                    + " desc=\"(Landroid/os/Bundle;)V\" line=\"9\"><counter type=\"INSTRUCTION\""
+                    + " missed=\"0\" covered=\"7\"/><counter type=\"LINE\" missed=\"0\""
+                    + " covered=\"3\"/><counter type=\"COMPLEXITY\" missed=\"0\""
+                    + " covered=\"1\"/><counter type=\"METHOD\" missed=\"0\""
+                    + " covered=\"1\"/></method><counter type=\"INSTRUCTION\" missed=\"0\""
+                    + " covered=\"10\"/><counter type=\"LINE\" missed=\"0\" covered=\"4\"/><counter"
+                    + " type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/><counter type=\"METHOD\""
+                    + " missed=\"0\" covered=\"2\"/><counter type=\"CLASS\" missed=\"0\""
+                    + " covered=\"1\"/></class><sourcefile name=\"HelloWorld.kt\"><line nr=\"6\""
+                    + " mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/><line nr=\"9\" mi=\"0\" ci=\"2\""
+                    + " mb=\"0\" cb=\"0\"/><line nr=\"10\" mi=\"0\" ci=\"3\" mb=\"0\""
+                    + " cb=\"0\"/><line nr=\"12\" mi=\"0\" ci=\"1\" mb=\"0\" cb=\"0\"/><counter"
+                    + " type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/><counter type=\"LINE\""
+                    + " missed=\"0\" covered=\"4\"/><counter type=\"COMPLEXITY\" missed=\"0\""
+                    + " covered=\"2\"/><counter type=\"METHOD\" missed=\"0\""
+                    + " covered=\"2\"/><counter type=\"CLASS\" missed=\"0\""
+                    + " covered=\"1\"/></sourcefile><counter type=\"INSTRUCTION\" missed=\"0\""
+                    + " covered=\"10\"/><counter type=\"LINE\" missed=\"0\" covered=\"4\"/><counter"
+                    + " type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/><counter type=\"METHOD\""
+                    + " missed=\"0\" covered=\"2\"/><counter type=\"CLASS\" missed=\"0\""
+                    + " covered=\"1\"/></package><counter type=\"INSTRUCTION\" missed=\"0\""
+                    + " covered=\"10\"/><counter type=\"LINE\" missed=\"0\" covered=\"4\"/><counter"
+                    + " type=\"COMPLEXITY\" missed=\"0\" covered=\"2\"/><counter type=\"METHOD\""
+                    + " missed=\"0\" covered=\"2\"/><counter type=\"CLASS\" missed=\"0\""
+                    + " covered=\"1\"/></report>";
         assertThat(project.file("build/reports/coverage/androidTest/debug/connected/report.xml"))
                 .contains(expectedReportXml);
     }

@@ -1,6 +1,6 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
-load("//tools/base/build-system/integration-test:integration-test.bzl", "single_gradle_integration_test", "gradle_integration_test")
+load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test", "single_gradle_integration_test")
 
 #keep sorted
 DATA = [
@@ -566,7 +566,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "@maven//:androidx.test.core_1.4.0-alpha06",
-        "@maven//:androidx.test.ext.junit_1.1.2",
+        "@maven//:androidx.test.ext.junit_1.1.5",
         "@maven//:androidx.test.runner_1.4.0-alpha06",
         "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",

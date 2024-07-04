@@ -273,8 +273,8 @@
       ],
       "attributes": {
         "artifactType": "android-classes-jar",
-        "org.gradle.status": "release",
         "org.gradle.usage": "java-api",
+        "org.gradle.status": "release",
         "org.gradle.libraryelements": "jar",
         "org.gradle.category": "library"
       }
@@ -305,8 +305,8 @@
       ],
       "attributes": {
         "artifactType": "android-classes-jar",
-        "org.gradle.status": "release",
         "org.gradle.usage": "java-api",
+        "org.gradle.status": "release",
         "org.gradle.libraryelements": "jar",
         "org.gradle.category": "library"
       }
@@ -337,8 +337,8 @@
       ],
       "attributes": {
         "artifactType": "android-classes-jar",
-        "org.gradle.status": "release",
         "org.gradle.usage": "java-api",
+        "org.gradle.status": "release",
         "org.gradle.libraryelements": "jar",
         "org.gradle.category": "library"
       }
@@ -366,8 +366,8 @@
       ],
       "attributes": {
         "artifactType": "android-classes-jar",
-        "org.gradle.status": "release",
         "org.gradle.usage": "java-api",
+        "org.gradle.status": "release",
         "org.gradle.libraryelements": "jar",
         "org.gradle.category": "library"
       }
