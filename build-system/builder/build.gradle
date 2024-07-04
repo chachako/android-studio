@@ -81,49 +81,44 @@ tasks.compileJava {
 jar.manifest.attributes("Builder-Version": version)
 
 configurations {
-    provided
-    sourcesProvided {
+    includeInJar
+    includeInJarSources {
         attributes {
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, DocsType.SOURCES))
             attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
         }
     }
-    resourcesRuntime
 }
 
 dependencies {
-    provided(project(':base:profile')) {
+    includeInJar(project(':base:profile')) {
         transitive = false
     }
-
-    sourcesProvided(project(path:':base:profile')) {
+    includeInJarSources(project(':base:profile')) {
         transitive = false
     }
-
-    provided(files('../../../../prebuilts/r8/r8.jar'))
+    includeInJar(files('../../../../prebuilts/r8/r8.jar'))
 }
 
-sourceSets.main.compileClasspath += configurations.provided
-sourceSets.test.compileClasspath += configurations.provided
-sourceSets.test.runtimeClasspath += configurations.provided
-tasks.compileJava.dependsOn(configurations.provided)
-tasks.sourcesJar.dependsOn(configurations.sourcesProvided)
+sourceSets.main.compileClasspath += configurations.includeInJar
+sourceSets.test.compileClasspath += configurations.includeInJar
+sourceSets.test.runtimeClasspath += configurations.includeInJar
+
+tasks.compileJava.dependsOn(configurations.includeInJar)
+tasks.sourcesJar.dependsOn(configurations.includeInJarSources)
 
 tasks.jar {
     from {
-        configurations.provided.collect({zipTree(it)})
-    }
-    from {
-        configurations.resourcesRuntime
+        configurations.includeInJar.collect({zipTree(it)})
     }
 }
 
 tasks.sourcesJar {
     from({
-        configurations.sourcesProvided.collect({zipTree(it)})
+        configurations.includeInJarSources.collect({zipTree(it)})
     })
 }
 
 javadoc {
-    classpath += configurations.provided
+    classpath += configurations.includeInJar
 }
