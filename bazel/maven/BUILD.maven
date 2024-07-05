@@ -27604,6 +27604,186 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.databinding.adapters_4.0.0",
+    pom = "repository/com/android/databinding/adapters/4.0.0/adapters-4.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/4.0.0",
+    deps = [
+        "com.android.databinding.baseLibrary_4.0.0",
+        "com.android.databinding.library_4.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_4.1.0",
+    pom = "repository/com/android/databinding/adapters/4.1.0/adapters-4.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/4.1.0",
+    deps = [
+        "com.android.databinding.baseLibrary_4.1.0",
+        "com.android.databinding.library_4.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_4.2.0",
+    pom = "repository/com/android/databinding/adapters/4.2.0/adapters-4.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/4.2.0",
+    deps = [
+        "com.android.databinding.baseLibrary_4.2.0",
+        "com.android.databinding.library_4.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_7.0.0",
+    pom = "repository/com/android/databinding/adapters/7.0.0/adapters-7.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/7.0.0",
+    deps = [
+        "com.android.databinding.baseLibrary_7.0.0",
+        "com.android.databinding.library_7.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_7.1.0",
+    pom = "repository/com/android/databinding/adapters/7.1.0/adapters-7.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/7.1.0",
+    deps = [
+        "com.android.databinding.baseLibrary_7.1.0",
+        "com.android.databinding.library_7.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_7.2.0",
+    pom = "repository/com/android/databinding/adapters/7.2.0/adapters-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/7.2.0",
+    deps = [
+        "com.android.databinding.baseLibrary_7.2.0",
+        "com.android.databinding.library_7.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_7.3.0",
+    pom = "repository/com/android/databinding/adapters/7.3.0/adapters-7.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/7.3.0",
+    deps = [
+        "com.android.databinding.baseLibrary_7.3.0",
+        "com.android.databinding.library_7.3.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_7.4.1",
+    pom = "repository/com/android/databinding/adapters/7.4.1/adapters-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/7.4.1",
+    deps = [
+        "com.android.databinding.baseLibrary_7.4.1",
+        "com.android.databinding.library_7.4.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.0.2",
+    pom = "repository/com/android/databinding/adapters/8.0.2/adapters-8.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.0.2",
+    deps = [
+        "com.android.databinding.baseLibrary_8.0.2",
+        "com.android.databinding.library_8.0.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.1.0",
+    pom = "repository/com/android/databinding/adapters/8.1.0/adapters-8.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.1.0",
+    deps = [
+        "com.android.databinding.baseLibrary_8.1.0",
+        "com.android.databinding.library_8.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.2.0",
+    pom = "repository/com/android/databinding/adapters/8.2.0/adapters-8.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.2.0",
+    deps = [
+        "com.android.databinding.baseLibrary_8.2.0",
+        "com.android.databinding.library_8.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.2.2",
+    pom = "repository/com/android/databinding/adapters/8.2.2/adapters-8.2.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.2.2",
+    deps = [
+        "com.android.databinding.baseLibrary_8.2.2",
+        "com.android.databinding.library_8.2.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.3.1",
+    pom = "repository/com/android/databinding/adapters/8.3.1/adapters-8.3.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.3.1",
+    deps = [
+        "com.android.databinding.baseLibrary_8.3.1",
+        "com.android.databinding.library_8.3.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.4.0",
+    pom = "repository/com/android/databinding/adapters/8.4.0/adapters-8.4.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.4.0",
+    deps = [
+        "com.android.databinding.baseLibrary_8.4.0",
+        "com.android.databinding.library_8.4.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.adapters_8.5.0",
+    pom = "repository/com/android/databinding/adapters/8.5.0/adapters-8.5.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/adapters/8.5.0",
+    deps = [
+        "com.android.databinding.baseLibrary_8.5.0",
+        "com.android.databinding.library_8.5.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.databinding.baseLibrary_3.0.0",
     pom = "repository/com/android/databinding/baseLibrary/3.0.0/baseLibrary-3.0.0.pom",
     repo_root_path = "repository",
@@ -27834,6 +28014,216 @@ maven_artifact(
         "org.jetbrains.kotlin.kotlin-stdlib-jre8_1.2.0",
         "com.google.code.gson.gson_2.7",
         "com.android.tools.annotations_26.1.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_4.0.0",
+    pom = "repository/com/android/databinding/library/4.0.0/library-4.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/4.0.0",
+    deps = [
+        "com.android.databinding.viewbinding_4.0.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_4.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_4.1.0",
+    pom = "repository/com/android/databinding/library/4.1.0/library-4.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/4.1.0",
+    deps = [
+        "com.android.databinding.viewbinding_4.1.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_4.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_4.2.0",
+    pom = "repository/com/android/databinding/library/4.2.0/library-4.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/4.2.0",
+    deps = [
+        "com.android.databinding.viewbinding_4.2.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_4.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_7.0.0",
+    pom = "repository/com/android/databinding/library/7.0.0/library-7.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/7.0.0",
+    deps = [
+        "com.android.databinding.viewbinding_7.0.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_7.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_7.1.0",
+    pom = "repository/com/android/databinding/library/7.1.0/library-7.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/7.1.0",
+    deps = [
+        "com.android.databinding.viewbinding_7.1.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_7.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_7.2.0",
+    pom = "repository/com/android/databinding/library/7.2.0/library-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/7.2.0",
+    deps = [
+        "com.android.databinding.viewbinding_7.2.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_7.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_7.3.0",
+    pom = "repository/com/android/databinding/library/7.3.0/library-7.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/7.3.0",
+    deps = [
+        "com.android.databinding.viewbinding_7.3.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_7.3.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_7.4.1",
+    pom = "repository/com/android/databinding/library/7.4.1/library-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/7.4.1",
+    deps = [
+        "com.android.databinding.viewbinding_7.4.1",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_7.4.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.0.2",
+    pom = "repository/com/android/databinding/library/8.0.2/library-8.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.0.2",
+    deps = [
+        "com.android.databinding.viewbinding_8.0.2",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.0.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.1.0",
+    pom = "repository/com/android/databinding/library/8.1.0/library-8.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.1.0",
+    deps = [
+        "com.android.databinding.viewbinding_8.1.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.2.0",
+    pom = "repository/com/android/databinding/library/8.2.0/library-8.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.2.0",
+    deps = [
+        "com.android.databinding.viewbinding_8.2.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.2.2",
+    pom = "repository/com/android/databinding/library/8.2.2/library-8.2.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.2.2",
+    deps = [
+        "com.android.databinding.viewbinding_8.2.2",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.2.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.3.1",
+    pom = "repository/com/android/databinding/library/8.3.1/library-8.3.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.3.1",
+    deps = [
+        "com.android.databinding.viewbinding_8.3.1",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.3.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.4.0",
+    pom = "repository/com/android/databinding/library/8.4.0/library-8.4.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.4.0",
+    deps = [
+        "com.android.databinding.viewbinding_8.4.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.4.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.databinding.library_8.5.0",
+    pom = "repository/com/android/databinding/library/8.5.0/library-8.5.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/databinding/library/8.5.0",
+    deps = [
+        "com.android.databinding.viewbinding_8.5.0",
+        "android.arch.lifecycle.runtime_1.0.3",
+        "com.android.support.support-core-utils_26.1.0",
+        "com.android.databinding.baseLibrary_8.5.0",
     ],
     visibility = ["//visibility:public"],
 )
