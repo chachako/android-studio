@@ -41,6 +41,7 @@ import com.android.tools.lint.detector.api.isScopingThis
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import com.intellij.util.containers.headTail
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
@@ -500,6 +501,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       symbol: KtFunctionLikeSymbol,
       typeParameterCheck: (KtTypeParameterSymbol) -> Boolean = { true },
     ): Boolean {
+      @OptIn(KaExperimentalApi::class)
       val typeParameters = symbol.typeParameters
       if (typeParameters.size != 1) return false
       val typeParam = typeParameters[0]

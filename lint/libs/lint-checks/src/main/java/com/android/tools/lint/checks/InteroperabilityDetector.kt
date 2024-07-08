@@ -43,6 +43,7 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KtTypeRendererForSource
@@ -302,11 +303,13 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           val typeString =
             if (ktType is KtFlexibleType) null
             else {
+              @OptIn(KaExperimentalApi::class)
               val renderer = KtTypeRendererForSource.WITH_SHORT_NAMES.with {
                 // By default, nullability flexible type is rendered with ! at the end,
                 // e.g., Lazy<String!>
                 flexibleTypeRenderer = KaFlexibleTypeRenderer.AS_RANGE
               }
+              @OptIn(KaExperimentalApi::class)
               ktType.render(renderer, position = Variance.INVARIANT)
             }
           reportMissingExplicitType(node, typeString)
