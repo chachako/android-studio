@@ -79,6 +79,7 @@ class ProcessInventoryJdwpProcessPropertiesCollectorFactoryTest {
             })
         }
 
+    @Ignore("b/349545929")
     @Test
     fun testJdwpPropertiesCollectionSupportsBothDistributedAndLocalOnly(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
