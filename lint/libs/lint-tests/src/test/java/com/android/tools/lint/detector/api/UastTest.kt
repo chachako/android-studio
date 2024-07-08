@@ -4448,4 +4448,152 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testResolveWithTimeout() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import my.coroutines.*
+
+            suspend fun <T> test(body: suspend CoroutineScope.() -> T): T =
+              withTimeout(42) {
+                body()
+              }
+          """
+        ),
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+            """
+              package my.time
+
+              @JvmInline
+              value class Duration(private val rawValue: Long) { }
+            """
+          ),
+          0x4a472a3d,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S7hUuTiza3US84v
+                yi8tycxLLRYScIaxg5PzC1K9S5QYtBgAukIp7UcAAAA=
+                """,
+          """
+                my/time/Duration.class:
+                H4sIAAAAAAAA/31UUU8bRxD+dn1nn88HHE5CMKQGmoYYB2JD0zQtCRBI09g1
+                SQqpG0L7cJgTHNh39O5M0zeUl/a5iio1j33pSyq1UguokSpC3vqbqqqz5zNG
+                BlU67c7Mznwz883u/f3vn38BuIYvGfTaNznfqpm5O3XX8C3HjoGRdcPYNnJV
+                w17LPVjZMCt+DBGGDt9Z9F3LXhuzaltVhnOZ4kip5dk4m2Q4326brVvVVdON
+                IcYQvWnZlj/FEMmMlDXEoapQkGBINivIuMbXZaNaN28p6KAAY2vLtFcZxjIn
+                k53MH+aa1NAFXUB3M1w4rdDjjmeE41nhOPf/jj3C8TyD0qSC4WzmFBI0pNAn
+                fPsZJMNdyzOwIoU1W9MwgHQcHIMaZERVkt4mT3/d8oiJUvtQiNSOdcNbn3NW
+                zZB8iXoqMHS2Upccey2GDGVpumrI4rKKEVwJ6C5oGBY6x1WGhPlV3ah6IVpP
+                plhqn/nkyBMGtW6vOE9DL8IoapjAuwLjGoPs+OumKwo+EUtzayQQ1+Q0aA15
+                jAucDxu9lFVI4hroFcf2fLde8R33WKuCvFYhwc07QZK4TTcF5Cyxvc2gHWuR
+                BiBnikXREt8aF8sEdV3adPyqZec2tmu54natYJNiUu3dzYN50zdWDd8gG69t
+                R+jVMLHExQLKskn2p5bQKAFfJeDXBztZlfdylesHOyp9XI+rXInQnqBdol0J
+                9U7auXL47Uzvwc4Ez7PZZDKq8z6ej7zZZwc7hz9FJUXS5WKfHiVjbELRlT6p
+                l+XZvTc/RILTuK4WdT1BpxrZWGDr0DvJ1kU2/cjWrScXOhvQjw+fSWTjVNrh
+                d4wffs+O8j3jVJ2SEo0QOdReoknt1U2fxiCulBi2UzGqZcO1jJWq+UgsdDsX
+                faOyOW9shXpXiYi8X6+tmG5oURedulsx71pCSS3UbTG7suVZdHrbth0/SORh
+                nOYnBeQmxRshKUFjpTdCls9Jex8R8gBSr6As7UFLdu4imd7FOX1kF727uPBr
+                EPyYVo12csRbAQwTTzIEGSYIcaZkf8fQPi62xyh4B5fEnMWDCWMuUoxILKf3
+                MfqyLUA+SpLF2OlJcu0xrST0EsKYh9S7THv/6GvwF5AjL0cPwHfx3mx66PmP
+                QpcEDMcSrTHw+D/okgLMnqC4/rAOIV0nrkQFN/BBiD4echcXFV3Zx2SrpEZ4
+                PCxJSCKc6Vy8qTB8isLFVVeze7iVHfgDQ78FtTyhNRrS0MJSj7DUYJCMkKYw
+                HWINhmzy9C9ttPDG2PUUZnA79L5MtAT1vQJfSu9hrn1gcdwJgrrF3+nYwIKi
+                RLftWeSwuhQ+wt0wYJqyiKunpQefv0BM+hlSpMW2DK7OHCdLw8ch1xrukSQa
+                Wg7cy/iC9nWSCrQXKfSTZUQKKBUwX8B9PCARDwv4FAvLYB4W8WgZZzxc8vCZ
+                h4FgnfIw7eFGIF/3kKeX4SEbqMMeLntIBbLsIfofUyexjNAHAAA=
+                """,
+        ),
+        bytecode(
+          "libs/lib2.jar",
+          kotlin(
+            """
+              package my.coroutines
+
+              interface CoroutineScope {}
+            """
+          ),
+          0xe72a63a7,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S7hEufiza3US84v
+                yi8tycxLLYZJKDFoMQAAnaLdHj0AAAA=
+                """,
+          """
+                my/coroutines/CoroutineScope.class:
+                H4sIAAAAAAAA/31OTUvDQBB9s9GmjV+JWqgg/gTTFm+eRBACFcGCl5y26Srb
+                JLvS3RS99Xd5kJ79UeJE8eDFGXjz5g28Nx+fb+8ALtAnnNavaWGXtvHaKJde
+                /9JpYZ9VCCLEC7mSaSXNU3o3W6jChwgIyaS0vtImvVVezqWXlwRRrwL2pRZ6
+                LYBAJesvut2GzOYjQn+z7kZiICIRM3scbNZjMaT2OCacTf57iEPYM/krnpee
+                EE1tsyzUja4U4eS+MV7X6kE7PavUlTHWS6+tcR2OwRZ+SuDoGw9xzHPEztvc
+                nRxBhjBDN0MPEVPsZNjFXg5y2MdBDuEQOyRfbTwqNkgBAAA=
+                """,
+        ),
+        bytecode(
+          "libs/lib3.jar",
+          kotlin(
+            "src/my/coroutines/Timeout.kt",
+            """
+              package my.coroutines
+              import my.time.Duration
+
+              suspend fun <T> withTimeout(timeMillis: Long, block: suspend CoroutineScope.() -> T): T = TODO()
+
+              suspend fun <T> withTimeout(timeout: Duration, block: suspend CoroutineScope.() -> T): T = TODO()
+            """,
+          ),
+          0x23c05912,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S7hkuLiza3US84v
+                yi8tycxLLRbiDMnMTQVyvEuUGLQYAPhcsp9AAAAA
+                """,
+          """
+                my/coroutines/TimeoutKt.class:
+                H4sIAAAAAAAA/6VTX28TRxCfPf87nwM5jj+JTRv+JJQEMGfcPtVR1CoB5cCh
+                ETaRqjytL0vY+HyLdvcMvFk89Hu0X6JVK7VW+lb1m/Q7VJ01d+AQIEJ9uLmZ
+                2d/8ZnZm9q9/f/0dAL6CLwnMDV76oZAi0Txmyu/yAUP9gS4BIeAe0CH1Ixrv
+                +9/1DliI3hyBynOun6ZAAo+X77f7Qkc89g+GA/9JEoeai1j591Kt2crOp/Ks
+                ixiVhBpAa6X9bp4Wgb9Xu18f96+dmG213j56pfVM7YTiGWvVT6hmtd7tttZa
+                N9+T+6SLpKHvvc5SW8h9/4DpnqQc66VxLDR9XfvDJIpoL2IIW/wYTGiDRFQt
+                rQM9weBZxAYs1mzvrpRClsAhUFzlMddrBDaWp2rpaMnj/VYw3UCOgTKmkb/B
+                ntAk0ngdpWUSaiG3qOwz2VrZmYEZOOVABU4TcDTOfYtHEVcEyH0ChV4kwj6B
+                yyctAe7NUihMtcaeCvjQVhA4O7Vo9fVhf7sTCwIlna3emYxii2m6RzXFGGsw
+                zOFuEyPKRgDW2TeKhYcvuNEaqO3dIfDPeLTsWHbOsdyyMx451rz19nMzh/3a
+                MR7VNtFXszbJ1bw9HrmkWXStmtXINa+7+dqiTby8ZzWKnuPZRtskjZJX9PLz
+                pGE3Coc/FS27vHn4wzd//kLGI2O6Tm37GGEFCWc+mZBMSDPmvH3KdQ5fWRWs
+                veoU7MMfFxrEXLmJregS0xEv69z0fBY+/nAMII26+0KzWGFYFt59OQF4hsGM
+                x99IZDZFJ53g7T6OLL8u9hiB2TbSPkwGPSa7ZvNNqAhptEMlN3bqLHf4fkx1
+                IlG/+CiJDXUQD7niePzt26eBz+vd020q6YDhch+BOR2RyJDd44a9msbsHOOD
+                O2BB3iwP/qtQgCJaN9EKUDf+ym9Q+Z7kyc8w+8cEdAtlERsLCKijvAxm0Srg
+                wpkJTQU8OIs4o52D83h6exJXAj+NtM1i4jc7WV8ov5FVuPAp+UtH8s/9//wW
+                dsPIG9DE/2P0zmMV1V3IBVAL4GIAn8HnASzApQDTXtkFouAqLO7CaQUFBUsK
+                XAXXFHgKvlBwXcH5ibmsoKhgTsGKggv/AT68tf+SBgAA
+                """,
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            if (node.sourcePsi?.text?.startsWith("withTimeout") != true) {
+              return super.visitCallExpression(node)
+            }
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("withTimeout", resolved!!.name)
+            assertEquals("TimeoutKt", resolved.containingClass?.name)
+            // Including compiler-added Continuation
+            assertEquals(3, resolved.parameterList.parametersCount)
+            // long, not Duration
+            assertEquals("long", resolved.parameterList.parameters[0].type.canonicalText)
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
