@@ -40,7 +40,6 @@ class LintGeneratedResourcesTest {
                                 lint {
                                     abortOnError = false
                                     textOutput = file("lint-results.txt")
-                                    ignoreTestSources = true
                                     checkGeneratedSources = true
                                 }
                             }
@@ -61,6 +60,20 @@ class LintGeneratedResourcesTest {
 
                             android.applicationVariants.all { variant ->
                                 ConfigurableFileCollection resFolder = files("${"$"}{buildDir}/customRes/${"$"}{variant.dirName}")
+                                def resGenerationTask = tasks.create(name: "generateResFor${"$"}{variant.name.capitalize()}", type: GenerateRes) {
+                                    value '<resources>\n' +
+                                            '    <!-- xml comment -->\n' +
+                                            '    <string\n' +
+                                            '        name="foo">Foo</string>\n' +
+                                            '</resources>'
+                                    outputFile file("${"$"}{resFolder.singleFile.absolutePath}/values/generated.xml")
+                                }
+                                resFolder.builtBy(resGenerationTask)
+                                variant.registerGeneratedResFolders(resFolder)
+                            }
+
+                            android.testVariants.all { variant ->
+                                ConfigurableFileCollection resFolder = files("${"$"}{buildDir}/customRes/${"$"}{variant.name}")
                                 def resGenerationTask = tasks.create(name: "generateResFor${"$"}{variant.name.capitalize()}", type: GenerateRes) {
                                     value '<resources>\n' +
                                             '    <!-- xml comment -->\n' +
@@ -99,5 +112,12 @@ class LintGeneratedResourcesTest {
         assertThat(lintReport).contains(
             "generated.xml:3: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]"
         )
+    }
+
+    /** Regression test for b/337776938 */
+    @Test
+    fun testDependencyOnGeneratedResForAndroidTest() {
+        project.executor().run("clean", "lintDebug")
+        assertThat(project.buildResult.getTask(":generateResForDebugAndroidTest")).didWork()
     }
 }
