@@ -16,6 +16,7 @@ maven_library(
         "//tools/base/bazel:__subpackages__",
         "//tools/base/build-system:__subpackages__",
         "//tools/base/deploy/deployer:__subpackages__",
+        "//tools/base/kexter:__pkg__",
         "//tools/base/lint:__subpackages__",
         "//tools/base/signflinger:__subpackages__",
         "//tools/base/standalone-render/compose-cli:__subpackages__",
