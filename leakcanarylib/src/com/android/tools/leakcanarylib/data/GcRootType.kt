@@ -27,4 +27,11 @@ enum class GcRootType(val description: String) {
     ),
     THREAD_OBJECT("Thread object"),
     JNI_MONITOR("Root JNI monitor");
+
+    companion object {
+        fun fromDescription(description: String): GcRootType {
+            return entries.find { it.description == description }
+                ?: throw IllegalArgumentException("Invalid GC root type description: $description")
+        }
+    }
 }
