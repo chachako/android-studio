@@ -142,6 +142,7 @@ import com.intellij.psi.util.TypeConversionUtil
 import java.io.IOException
 import java.util.EnumSet
 import kotlin.math.max
+import org.jetbrains.kotlin.analysis.decompiled.light.classes.KtLightClassForDecompiledDeclaration
 import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
@@ -1726,7 +1727,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
       }
 
-      if (method !is PsiCompiledElement && method !is KtLightElementBase) {
+      val fromBinary =
+        method is PsiCompiledElement ||
+          containingClass is PsiCompiledElement ||
+          containingClass is KtLightClassForDecompiledDeclaration
+
+      if (!fromBinary && method !is KtLightElementBase) {
         // We're only checking the Android SDK below, which should
         // be provided as binary (android.jar) and if we're actually
         // running on sources we don't want to perform this check
@@ -2142,7 +2148,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             )
           }
         }
-        owner == "kotlin.collections.CollectionsKt__MutableCollectionsKt" &&
+        (owner == "kotlin.collections.CollectionsKt__MutableCollectionsKt" ||
+          owner == "kotlin.collections.CollectionsKt") &&
           (name == "removeFirst" || name == "removeLast") -> {
           val incident =
             Incident(
