@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.privacysandbox
 
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -89,7 +90,7 @@ class PrivacySandboxMediatorSdkTest {
                 defaultCompileSdk()
                 minSdk = 14
                 namespace = "com.example.privacysandboxsdk.consumer"
-                compileSdk = 34
+                compileSdk = DEFAULT_COMPILE_SDK_VERSION
             }
             addFile("src/main/java/com/example/privacysandboxsdk/consumer/Main.kt",
                     """

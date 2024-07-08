@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.privacysandbox
 
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -45,7 +46,7 @@ class PrivacySandboxAsarConsumptionSmokeTest {
                 defaultCompileSdk()
                 minSdk = 14
                 namespace = "com.example.privacysandboxsdk.consumer"
-                compileSdk = 34
+                compileSdk = DEFAULT_COMPILE_SDK_VERSION
 
             }
             dependencies {
