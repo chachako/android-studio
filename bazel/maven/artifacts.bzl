@@ -177,7 +177,7 @@ ARTIFACTS = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.6.4",
     "org.jetbrains:markdown:pom:0.2.1",
     "org.jspecify:jspecify:0.2.0",
-    "org.mockito:mockito-core:5.6.0",
+    "org.mockito:mockito-core:5.12.0",
     "org.mortbay.jetty:jetty:6.1.26",
     "org.ow2.asm:asm:9.6",
     "org.ow2.asm:asm-analysis:9.6",
@@ -1076,8 +1076,6 @@ DATA = [
     "org.junit:junit-bom:pom:5.9.3",
     "org.junit.platform:junit-platform-engine:1.10.1",
     "org.junit.platform:junit-platform-launcher:1.10.1",
-    "org.mockito:mockito-core:4.3.1",
-    "org.mockito:mockito-core:5.6.0",
     "org.robolectric:android-all-instrumented:7.0.0_r1-robolectric-r1-i4",  # Runtime for Android N
     "org.robolectric:android-all-instrumented:9-robolectric-4913185-2-i4",  # Runtime for Android P
     "org.robolectric:robolectric:4.8.2",
