@@ -88,7 +88,9 @@ internal suspend fun executeShellCommand(
     if (maxTimeout > 0) {
         shellCommand.withCommandTimeout(Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)))
     }
-    val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
+
+    val synchronizedReceiver = SynchronizedIShellOutputReceiver(receiver)
+    val stdoutCollector = ShellCollectorToIShellOutputReceiver(synchronizedReceiver)
     if (inputStream != null) {
       shellCommand.withStdin(connectedDevice.session.channelFactory.wrapInputStream(inputStream))
     }
@@ -97,7 +99,7 @@ internal suspend fun executeShellCommand(
     // Note: We know there is only one item in the flow (Unit), because our
     //       ShellCollector implementation forwards buffers directly to
     //       the IShellOutputReceiver
-    shellCommand.execute().singleCancellableByReceiver(receiver)
+    shellCommand.execute().singleCancellableByReceiver(synchronizedReceiver)
 }
 
 private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelper.AdbService) {
@@ -153,12 +155,13 @@ internal suspend fun executeAbbCommand(
         abbCommand.withStdin(connectedDevice.session.channelFactory.wrapInputStream(inputStream))
     }
 
-    val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
+    val synchronizedReceiver = SynchronizedIShellOutputReceiver(receiver)
+    val stdoutCollector = ShellCollectorToIShellOutputReceiver(synchronizedReceiver)
     abbCommand.withLegacyCollector(stdoutCollector)
     // Note: We know there is only one item in the flow (Unit), because our
     //       ShellCollector implementation forwards buffers directly to
     //       the IShellOutputReceiver
-    abbCommand.execute().singleCancellableByReceiver(receiver)
+    abbCommand.execute().singleCancellableByReceiver(synchronizedReceiver)
 }
 
 private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbService) {
@@ -171,10 +174,33 @@ private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbS
 }
 
 /**
+ * This class is needed to ensure that `isCancelled` check inside `singleCancellableByReceiver` call
+ * is thread safe.
+ */
+private class SynchronizedIShellOutputReceiver(private val wrappedReceiver: IShellOutputReceiver) :
+    IShellOutputReceiver {
+
+    @Synchronized
+    override fun addOutput(data: ByteArray, offset: Int, length: Int) {
+        wrappedReceiver.addOutput(data, offset, length)
+    }
+
+    @Synchronized
+    override fun flush() {
+        wrappedReceiver.flush()
+    }
+
+    @Synchronized
+    override fun isCancelled(): Boolean {
+        return wrappedReceiver.isCancelled()
+    }
+}
+
+/**
  * Returns `Flow<T>.single()`, but cancels its execution if
  * `IShellOutputReceiver.isCancelled` returns `true` in the meantime.
  */
-private suspend fun <T> Flow<T>.singleCancellableByReceiver(receiver: IShellOutputReceiver) {
+private suspend fun <T> Flow<T>.singleCancellableByReceiver(receiver: SynchronizedIShellOutputReceiver) {
     coroutineScope {
         val shellExecuteJob = async {
             single()

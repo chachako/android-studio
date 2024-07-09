@@ -24,6 +24,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.ddmlib.AdbHelper
+import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.MultiLineReceiver
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
@@ -31,10 +32,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class ShellTest {
 
@@ -160,6 +163,60 @@ class ShellTest {
         Assert.fail() // should not be reached
     }
 
+    @Test
+    fun executeShellCommand_doesntCallReceiverConcurrently() = runBlockingWithTimeout {
+        // Prepare
+        val device = createConnectedDevice("42")
+        val receiver = ConcurrencyTrackingIShellOutputReceiver()
+
+        // Act
+        executeShellCommand(
+            AdbHelper.AdbService.SHELL,
+            device,
+            "getprop",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS,
+            null,
+            true
+        )
+
+        // Assert
+        assertEquals(0, receiver.concurrentCallsDetected.get())
+        assertEquals(1, receiver.addOutputCallCount.get())
+        assertEquals(1, receiver.flushCallCount.get())
+        // isCancelledCallCount is non-deterministic as there is a cancellation prober
+        assertTrue(receiver.isCancelledCallCount.get() >= 1)
+    }
+
+    @Test
+    fun executeAbbCommand_doesntCallReceiverConcurrently() = runBlockingWithTimeout {
+        // Prepare
+        val device = createConnectedDevice("42", sdk = "30")
+        val receiver = ConcurrencyTrackingIShellOutputReceiver()
+
+        // Act
+        executeAbbCommand(
+            AdbHelper.AdbService.ABB_EXEC,
+            device,
+            "package path com.foo.bar.appp",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS,
+            null,
+            true
+        )
+
+        // Assert
+        assertEquals(0, receiver.concurrentCallsDetected.get())
+        assertEquals(1, receiver.addOutputCallCount.get())
+        assertEquals(1, receiver.flushCallCount.get())
+        // isCancelledCallCount is non-deterministic as there is a cancellation prober
+        assertTrue(receiver.isCancelledCallCount.get() >= 1)
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         sdk: String = "29"
@@ -199,4 +256,37 @@ internal class ListReceiver : MultiLineReceiver() {
     }
 
     override fun isCancelled() = false
+}
+
+private class ConcurrencyTrackingIShellOutputReceiver : IShellOutputReceiver {
+    val addOutputCallCount = AtomicInteger(0)
+    val flushCallCount = AtomicInteger(0)
+    val isCancelledCallCount = AtomicInteger(0)
+    val concurrentCallsDetected = AtomicInteger(0)
+    private val executionCounter = AtomicInteger(0)
+
+    override fun addOutput(data: ByteArray, offset: Int, length: Int) {
+        addOutputCallCount.incrementAndGet()
+        sleepAndCheckConcurrency()
+    }
+
+    override fun flush() {
+        flushCallCount.incrementAndGet()
+        sleepAndCheckConcurrency()
+    }
+
+    override fun isCancelled(): Boolean {
+        isCancelledCallCount.incrementAndGet()
+        sleepAndCheckConcurrency()
+        return false
+    }
+
+    private fun sleepAndCheckConcurrency() {
+        val currentCount = executionCounter.incrementAndGet()
+        if (currentCount != 1) {
+            concurrentCallsDetected.incrementAndGet()
+        }
+        Thread.sleep(50)
+        executionCounter.decrementAndGet()
+    }
 }
