@@ -169,10 +169,6 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
             Test#uiThread -> Test#unannotated -> Test#workerThread [WrongThreadInterprocedural]
               @UiThread fun uiThread() { unannotated() }
                                          ~~~~~~~~~~~~~
-            src/test/pkg/Test.kt:9: Error: Interprocedural thread annotation violation (UiThread to WorkerThread):
-            Test#uiThread -> Test#unannotated -> Test#workerThread [WrongThreadInterprocedural]
-              @UiThread fun uiThread() { unannotated() }
-                                         ~~~~~~~~~~~~~
             src/test/pkg/Test.kt:15: Error: Interprocedural thread annotation violation (WorkerThread to UiThread):
             Test#callRunIt -> Test#runIt -> Test#callRunIt#lambda -> Test#runUi [WrongThreadInterprocedural]
               @WorkerThread fun callRunIt() { runIt({ runUi() }) }
@@ -197,7 +193,7 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
             Test#uiThreadStatic -> Test#unannotatedStatic -> Test#workerThreadStatic [WrongThreadInterprocedural]
                 @UiThread fun uiThreadStatic() { unannotatedStatic() }
                                                  ~~~~~~~~~~~~~~~~~~~
-            8 errors, 0 warnings
+            7 errors, 0 warnings
             """
     lint()
       .files(
@@ -283,7 +279,7 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
-      .allowSystemErrors(true)
+      .allowDuplicates()
       .run()
       .expect(expected)
   }

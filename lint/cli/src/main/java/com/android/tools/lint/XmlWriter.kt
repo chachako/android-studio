@@ -327,7 +327,7 @@ open class XmlWriter(
       writer.write("\"")
     }
     writer.write(">\n")
-    loop@ for ((key, value) in entries) {
+    for ((key, value) in entries.sortedBy { it.key }) {
       val valueName =
         when (value) {
           is String -> ATTR_STRING
@@ -336,25 +336,25 @@ open class XmlWriter(
           is Severity -> ATTR_SEVERITY
           is Location -> {
             writeLocation(project, value, TAG_LOCATION, indent + 1, key)
-            continue@loop
+            continue
           }
           is LintMap -> {
             writeLintMap(value, indent + 2, key, project)
-            continue@loop
+            continue
           }
           is Incident -> {
             writeIncident(value, indent + 2)
-            continue@loop
+            continue
           }
           is Constraint -> {
             val id = if (key != LintDriver.Companion.KEY_CONDITION) key else null
             writeCondition(value, indent + 1, id)
-            continue@loop
+            continue
           }
           is ApiConstraint -> {
             val id = if (key != LintDriver.Companion.KEY_CONDITION) key else null
             writeApiLevels(value, indent, id)
-            continue@loop
+            continue
           }
           else -> error("Unexpected map value type ${value.javaClass}")
         }
@@ -742,7 +742,7 @@ open class XmlWriter(
     // TODO: Switch root tags
     writeOpenTag(TAG_INCIDENTS, getDefaultRootAttributes().toMap())
     if (resultMap.isNotEmpty()) {
-      for ((issue, map) in resultMap.entries) {
+      for ((issue, map) in resultMap.entries.sortedBy { it.key }) {
         val id = issue.id
         if (map.isNotEmpty()) {
           writeLintMap(map, 1, id, project)
@@ -760,7 +760,7 @@ open class XmlWriter(
     writeOpenTag(TAG_INCIDENTS, getDefaultRootAttributes().toMap())
 
     if (severityMap.isNotEmpty()) {
-      for ((id, severity) in severityMap) {
+      for ((id, severity) in severityMap.iterator().asSequence().sortedBy { it.key }) {
         indent(1)
         writer.write("<$TAG_CONFIG id=\"$id\" severity=\"${severity.toName()}\"/>\n")
       }

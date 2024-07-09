@@ -359,6 +359,7 @@ class Incident(
   override fun hashCode(): Int {
     var result = message.hashCode()
     result = 31 * result + file.path.hashCode()
+    result = 31 * result + line
     return result
   }
 

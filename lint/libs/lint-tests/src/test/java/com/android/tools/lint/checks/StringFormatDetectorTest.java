@@ -293,6 +293,7 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
                         + "9 errors, 2 warnings";
         lint().files(mFormatstrings, mFormatstrings2, mStringFormatActivity)
                 .skipTestModes(TestMode.CDATA)
+                .allowDuplicates()
                 .run()
                 .expect(expected);
     }
@@ -305,6 +306,7 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
         lint().projects(app, lib)
                 .testModes(TestMode.DEFAULT, TestMode.PARTIAL)
                 .expectIdenticalTestModeOutput(false)
+                .allowDuplicates()
                 .run()
                 .expect(
                         ""
@@ -429,12 +431,6 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
                                 + "    ../lib/res/values/formatstrings.xml:3: Conflicting argument type (`s') here\n"
                                 + "    <string name=\"hello\">Hello %1＄s</string>\n"
                                 + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "../lib/res/values-es/formatstrings.xml:3: Error: Inconsistent formatting types for argument #1 in format string hello ('%1＄d'): Found both 'd' here and 's' in values/formatstrings.xml [StringFormatMatches]\n"
-                                + "    <string name=\"hello\">%1＄d</string>\n"
-                                + "                         ~~~~\n"
-                                + "    ../lib/res/values/formatstrings.xml:3: Conflicting argument type (`s') here\n"
-                                + "    <string name=\"hello\">Hello %1＄s</string>\n"
-                                + "                         ~~~~~~~~~~\n"
                                 + "../lib/res/values-es/formatstrings.xml:4: Warning: Inconsistent number of arguments in formatting string hello2; found both 3 here and 2 in values/formatstrings.xml [StringFormatCount]\n"
                                 + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
                                 + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
@@ -450,7 +446,7 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
                                 + "../lib/res/values/formatstrings.xml:5: Warning: Formatting string 'missing' is not referencing numbered arguments [1, 2] [StringFormatCount]\n"
                                 + "    <string name=\"missing\">Hello %3＄s World</string>\n"
                                 + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "10 errors, 3 warnings",
+                                + "9 errors, 3 warnings",
                         null, output -> output, TestMode.PARTIAL);
     }
 

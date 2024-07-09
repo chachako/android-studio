@@ -1181,6 +1181,7 @@ class AnnotationHandlerTest {
           .indented(),
         javaAnnotation,
       )
+      .allowDuplicates()
       .run()
       .expect(
         """
@@ -1191,8 +1192,7 @@ class AnnotationHandlerTest {
                     use(api.field);
                             ~~~~~
             libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
-            libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
-            4 errors, 0 warnings
+            3 errors, 0 warnings
             """
       )
   }

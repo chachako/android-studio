@@ -312,7 +312,6 @@ open class LintCliClient : LintClient {
     analyze()
 
     kotlinPerformanceManager?.report(lintRequest)
-    sortResults()
     var projects: Collection<Project>? = lintRequest.getProjects()
     if (projects == null) {
       projects = knownProjects
@@ -332,6 +331,7 @@ open class LintCliClient : LintClient {
   }
 
   private fun performReporting(): Int {
+    sortResults() // Only sorts definiteIncidents.
     val baseline = driver.baseline
     val stats = create(definiteIncidents, baseline)
     writeReports(stats)
@@ -477,6 +477,7 @@ open class LintCliClient : LintClient {
     return incidentsToWrite
   }
 
+  /** Sorts [definiteIncidents]. */
   protected open fun sortResults() {
     definiteIncidents.sort()
   }
@@ -490,8 +491,13 @@ open class LintCliClient : LintClient {
 
   /** Stores the various analysis state (incidents, conditional incidents, partial state, etc). */
   override fun storeState(project: Project) {
+    sortResults() // Only sorts definiteIncidents.
     writeIncidents(project, XmlFileType.INCIDENTS, definiteIncidents)
+
+    provisionalIncidents.sort()
     writeIncidents(project, XmlFileType.CONDITIONAL_INCIDENTS, provisionalIncidents)
+
+    // XmlWriter ensures sorted iteration when writing partial results and configured issues.
     writePartialResults(project)
     writeConfiguredIssues(project)
   }

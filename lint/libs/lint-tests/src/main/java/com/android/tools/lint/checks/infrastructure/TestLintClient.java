@@ -165,6 +165,9 @@ public class TestLintClient extends LintCliClient {
 
     private TextReporter reporter;
 
+    /** Used to check for duplicate incidents */
+    private final Set<Incident> definiteIncidentsSet = new HashSet<>();
+
     public TestLintClient() {
         this(CLIENT_UNIT_TESTS);
     }
@@ -1061,76 +1064,74 @@ public class TestLintClient extends LintCliClient {
         super.report(context, incident, format);
 
         // Make sure errors are unique! See documentation for #allowDuplicates.
-        List<Incident> incidents = getDefiniteIncidents();
-        int incidentCount = incidents.size();
-        if (incidentCount > 1) {
-            Incident prev = incidents.get(incidentCount - 2);
-            if (incident.equals(prev)) {
-                if (task.allowDuplicates) {
-                    // If we allow duplicates, don't list them multiple times.
-                    incidents.remove(incidentCount - 1);
-                    if (incident.getSeverity().isError()) {
-                        setErrorCount(getErrorCount() - 1);
-                    } else if (incident.getSeverity() == Severity.WARNING) {
-                        // Don't count informational as a warning
-                        setWarningCount(getWarningCount() - 1);
-                    }
-                } else {
-                    TestMode mode = task.runner.getCurrentTestMode();
-                    String field = mode.getFieldName();
-                    String prologue =
-                            ""
-                                    + "java.lang.AssertionError: Incident (message, location) reported more\n"
-                                    + "than once";
-
-                    if (mode != TestMode.DEFAULT) {
-                        prologue += " in test mode " + field;
-                    }
-
-                    prologue +=
-                            "; this typically "
-                                    + "means that your detector is incorrectly reaching the same element "
-                                    + "twice (for example, visiting each call of a method and reporting the "
-                                    + "error on the method itself), or that you should incorporate more "
-                                    + "details in your error message such as specific names of methods or "
-                                    + "variables to make each message unique if overlapping errors are "
-                                    + "expected.\n"
-                                    + "\n";
-
-                    if (mode != TestMode.DEFAULT) {
-                        prologue +=
-                                ""
-                                        + "To debug the unit test in this test mode, add the following to the "
-                                        + "lint() test task: testModes("
-                                        + field
-                                        + ")\n"
-                                        + "\n";
-                    }
-
-                    prologue = SdkUtils.wrap(prologue.substring(prologue.indexOf(':') + 2), 72, "");
-
-                    String interlogue = "";
-                    if (driver.getMode() == LintDriver.DriverMode.MERGE) {
-                        interlogue =
-                                ""
-                                        + "This error happened while merging in provisional results; a common\n"
-                                        + "cause for this is that your detector is\tusing the merged manifest from\n"
-                                        + "each project to report problems. This means that these same errors are\n"
-                                        + "reported repeatedly, from each sub project,\tinstead\tof only\tbeing\n"
-                                        + "reported on the\tmain/app project. To fix this, consider\tadding a check\n"
-                                        + "for (context.project == context.mainProject).\n"
-                                        + "\n";
-                    }
-                    String epilogue =
-                            ""
-                                    + "If you *really* want to allow this, add .allowDuplicates() to the test\n"
-                                    + "task.\n"
-                                    + "\n"
-                                    + "Identical incident encountered at the same location more than once:\n"
-                                    + incident;
-
-                    fail(prologue + interlogue + epilogue);
+        if (!definiteIncidentsSet.contains(incident)) {
+            definiteIncidentsSet.add(incident);
+        } else {
+            if (task.allowDuplicates) {
+                // If we allow duplicates, don't list them multiple times.
+                List<Incident> incidents = getDefiniteIncidents();
+                incidents.remove(incidents.size() - 1);
+                if (incident.getSeverity().isError()) {
+                    setErrorCount(getErrorCount() - 1);
+                } else if (incident.getSeverity() == Severity.WARNING) {
+                    // Don't count informational as a warning
+                    setWarningCount(getWarningCount() - 1);
                 }
+            } else {
+                TestMode mode = task.runner.getCurrentTestMode();
+                String field = mode.getFieldName();
+                String prologue =
+                        ""
+                                + "java.lang.AssertionError: Incident (message, location) reported more\n"
+                                + "than once";
+
+                if (mode != TestMode.DEFAULT) {
+                    prologue += " in test mode " + field;
+                }
+
+                prologue +=
+                        "; this typically "
+                                + "means that your detector is incorrectly reaching the same element "
+                                + "twice (for example, visiting each call of a method and reporting the "
+                                + "error on the method itself), or that you should incorporate more "
+                                + "details in your error message such as specific names of methods or "
+                                + "variables to make each message unique if overlapping errors are "
+                                + "expected.\n"
+                                + "\n";
+
+                if (mode != TestMode.DEFAULT) {
+                    prologue +=
+                            ""
+                                    + "To debug the unit test in this test mode, add the following to the "
+                                    + "lint() test task: testModes("
+                                    + field
+                                    + ")\n"
+                                    + "\n";
+                }
+
+                prologue = SdkUtils.wrap(prologue.substring(prologue.indexOf(':') + 2), 72, "");
+
+                String interlogue = "";
+                if (driver.getMode() == LintDriver.DriverMode.MERGE) {
+                    interlogue =
+                            ""
+                                    + "This error happened while merging in provisional results; a common\n"
+                                    + "cause for this is that your detector is\tusing the merged manifest from\n"
+                                    + "each project to report problems. This means that these same errors are\n"
+                                    + "reported repeatedly, from each sub project,\tinstead\tof only\tbeing\n"
+                                    + "reported on the\tmain/app project. To fix this, consider\tadding a check\n"
+                                    + "for (context.project == context.mainProject).\n"
+                                    + "\n";
+                }
+                String epilogue =
+                        ""
+                                + "If you *really* want to allow this, add .allowDuplicates() to the test\n"
+                                + "task.\n"
+                                + "\n"
+                                + "Identical incident encountered at the same location more than once:\n"
+                                + incident;
+
+                fail(prologue + interlogue + epilogue);
             }
         }
 
