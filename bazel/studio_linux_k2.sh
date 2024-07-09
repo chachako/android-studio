@@ -2,4 +2,5 @@
 #
 # Build and test targets using the Kotlin K2 plugin.
 
-"$(dirname $0)"/ci/ci studio-linux-k2
+export BUILD_KOTLIN_K2=true
+exec "$(dirname "$0")"/studio_linux.sh "$@"
