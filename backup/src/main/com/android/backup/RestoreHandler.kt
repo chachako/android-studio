@@ -17,10 +17,11 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
-import com.android.backup.BackupResult.Error
 import com.android.backup.BackupResult.Success
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.backup.BackupServices.Companion.BACKUP_METADATA_FILES
+import com.android.backup.ErrorCode.INVALID_BACKUP_FILE
+import com.android.backup.ErrorCode.RESTORE_FAILED
 import com.android.tools.environment.Logger
 import java.math.BigInteger
 import java.nio.file.Path
@@ -60,15 +61,15 @@ internal constructor(private val backupServices: BackupServices, private val pat
         Success
       }
     } catch (e: Throwable) {
-      Error(e)
+      e.toBackupResult()
     }
   }
 
   private suspend fun restore(token: String, applicationId: String) {
     with(backupServices) {
-      val out = executeCommand("bmgr restore $token $applicationId")
+      val out = executeCommand("bmgr restore $token $applicationId", RESTORE_FAILED)
       if (out.indexOf("restoreFinished: 0\n") < 0) {
-        throw BackupException("Error restoring app: $out")
+        throw BackupException(RESTORE_FAILED, "Error restoring app: $out")
       }
     }
   }
@@ -112,7 +113,8 @@ internal constructor(private val backupServices: BackupServices, private val pat
         val filenames = zip.entries().asSequence().mapTo(mutableSetOf()) { it.name }
         if (filenames != BACKUP_METADATA_FILES + applicationId) {
           throw BackupException(
-            "File is not a valid backup file: ${backupFile.pathString} ($filenames)"
+            INVALID_BACKUP_FILE,
+            "File is not a valid backup file: ${backupFile.pathString} ($filenames)",
           )
         }
         return applicationId
@@ -125,7 +127,11 @@ private fun ZipFile.getRestoreToken(): String {
   return try {
     BigInteger(getInputStream(getEntry("restore_token_file")).reader().readText()).toString(16)
   } catch (e: Exception) {
-    throw BackupException("Backup file does not contain a valid token: $name", e)
+    throw BackupException(
+      INVALID_BACKUP_FILE,
+      "Backup file does not contain a valid token: $name",
+      e,
+    )
   }
 }
 
@@ -133,6 +139,10 @@ private fun ZipFile.getApplicationId(): String {
   return try {
     entries().asSequence().map { it.name }.first { it !in BACKUP_METADATA_FILES }
   } catch (e: Exception) {
-    throw BackupException("Backup file does not contain an application file: $name", e)
+    throw BackupException(
+      INVALID_BACKUP_FILE,
+      "Backup file does not contain an application file: $name",
+      e,
+    )
   }
 }

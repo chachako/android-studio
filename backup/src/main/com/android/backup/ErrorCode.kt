@@ -16,15 +16,15 @@
 
 package com.android.backup
 
-import com.android.backup.BackupResult.Error
-import com.android.backup.ErrorCode.UNEXPECTED_ERROR
-
-/** The result of a backup/restore operation */
-sealed class BackupResult {
-  data object Success : BackupResult()
-
-  data class Error(val errorCode: ErrorCode, val throwable: Throwable) : BackupResult()
+enum class ErrorCode {
+  CANNOT_ENABLE_BMGR,
+  TRANSPORT_NOT_SELECTED,
+  TRANSPORT_INIT_FAILED,
+  GMSCORE_NOT_FOUND,
+  @Suppress("unused") // Will use when testing for GmsCore version is implemented
+  GMSCORE_IS_TOO_OLD,
+  BACKUP_FAILED,
+  RESTORE_FAILED,
+  INVALID_BACKUP_FILE,
+  UNEXPECTED_ERROR,
 }
-
-internal fun Throwable.toBackupResult() =
-  if (this is BackupException) Error(errorCode, this) else Error(UNEXPECTED_ERROR, this)

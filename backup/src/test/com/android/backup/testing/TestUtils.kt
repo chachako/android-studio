@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.backup
+package com.android.backup.testing
 
+import com.android.backup.BackupException
 import com.android.backup.BackupResult.Error
-import com.android.backup.ErrorCode.UNEXPECTED_ERROR
+import com.android.backup.ErrorCode
 
-/** The result of a backup/restore operation */
-sealed class BackupResult {
-  data object Success : BackupResult()
-
-  data class Error(val errorCode: ErrorCode, val throwable: Throwable) : BackupResult()
-}
-
-internal fun Throwable.toBackupResult() =
-  if (this is BackupException) Error(errorCode, this) else Error(UNEXPECTED_ERROR, this)
+internal fun ErrorCode.asBackupResult(message: String = "Fake failure") =
+  Error(this, BackupException(this, message))

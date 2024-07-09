@@ -48,7 +48,10 @@ internal interface BackupServices {
    * @return The stdout of the command.
    * @throws BackupException on error
    */
-  suspend fun executeCommand(command: String): String
+  suspend fun executeCommand(
+    command: String,
+    errorCode: ErrorCode = ErrorCode.UNEXPECTED_ERROR,
+  ): String
 
   /**
    * Pulls a file from a device

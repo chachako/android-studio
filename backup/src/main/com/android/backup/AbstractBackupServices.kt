@@ -19,6 +19,11 @@ import ai.grazie.utils.dropPrefix
 import com.android.adblib.DeviceSelector
 import com.android.backup.BackupProgressListener.Step
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
+import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
+import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
+import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
+import com.android.backup.ErrorCode.TRANSPORT_NOT_SELECTED
+import com.android.backup.ErrorCode.UNEXPECTED_ERROR
 import com.android.tools.environment.Logger
 
 private val TRANSPORT_COMMAND_REGEX =
@@ -55,9 +60,9 @@ abstract class AbstractBackupServices(
   }
 
   override suspend fun initializeTransport(transport: String) {
-    val out = executeCommand("bmgr init $transport")
+    val out = executeCommand("bmgr init $transport", TRANSPORT_INIT_FAILED)
     if (out.lines().last() != "Initialization result: 0") {
-      throw BackupException("Failed to initialize '$transport`: $out")
+      throw BackupException(TRANSPORT_INIT_FAILED, "Failed to initialize '$transport`: $out")
     }
   }
 
@@ -84,7 +89,7 @@ abstract class AbstractBackupServices(
     val lines = executeCommand("dumpsys package com.google.android.gms").lineSequence()
     val versionMatch = lines.firstNotNullOfOrNull { PACKAGE_VERSION_CODE_REGEX.matchEntire(it) }
     if (versionMatch == null) {
-      throw BackupException("Google Services not found on devices")
+      throw BackupException(GMSCORE_NOT_FOUND, "Google Services not found on device")
     }
     val version = versionMatch.getGroup("version")
     // TODO(b/348406593): Verify version
@@ -124,31 +129,35 @@ abstract class AbstractBackupServices(
   }
 
   private suspend fun isBmgrEnabled(): Boolean {
-    return when (val out = executeCommand("bmgr enabled").trim()) {
+    return when (val out = executeCommand("bmgr enabled", CANNOT_ENABLE_BMGR).trim()) {
       "Backup Manager currently enabled" -> true
       "Backup Manager currently disabled" -> false
-      else -> throw BackupException("Unexpected output from 'bmgr enabled':\n$out")
+      else ->
+        throw BackupException(CANNOT_ENABLE_BMGR, "Unexpected output from 'bmgr enabled':\n$out")
     }
   }
 
   private suspend fun setTransport(transport: String, verify: Boolean): String {
-    val out = executeCommand("bmgr transport $transport").trim()
+    val out = executeCommand("bmgr transport $transport", TRANSPORT_NOT_SELECTED).trim()
     val result =
       TRANSPORT_COMMAND_REGEX.matchEntire(out)
-        ?: throw BackupException("Unexpected result from 'bmgr transport' command: $out")
+        ?: throw BackupException(
+          TRANSPORT_NOT_SELECTED,
+          "Unexpected result from 'bmgr transport' command: $out",
+        )
 
     if (verify) {
-      val transports = executeCommand("bmgr list transports").lines()
+      val transports = executeCommand("bmgr list transports", TRANSPORT_NOT_SELECTED).lines()
       val currentTransport = transports.find { it.startsWith("  *") }?.dropPrefix("  * ")
       if (currentTransport != transport) {
-        throw throw BackupException("Requested transport was not set: $out")
+        throw throw BackupException(TRANSPORT_NOT_SELECTED, "Requested transport was not set: $out")
       }
     }
     return result.getGroup("old")
   }
 
   private suspend fun enableBmgr(enabled: Boolean) {
-    executeCommand("bmgr enable $enabled")
+    executeCommand("bmgr enable $enabled", CANNOT_ENABLE_BMGR)
   }
 
   private suspend fun enableTestMode(enabled: Boolean) {
@@ -158,4 +167,4 @@ abstract class AbstractBackupServices(
 
 /** Get a named group value. Should only throw if the regex is bad. */
 private fun MatchResult.getGroup(name: String) =
-  groups[name]?.value ?: throw BackupException("Group $name not found")
+  groups[name]?.value ?: throw BackupException(UNEXPECTED_ERROR, "Group $name not found")

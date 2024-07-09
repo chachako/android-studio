@@ -18,6 +18,8 @@ package com.android.backup.testing
 
 import ai.grazie.utils.dropPrefix
 import com.android.backup.AbstractBackupServices
+import com.android.backup.BackupException
+import com.android.backup.ErrorCode
 import com.android.tools.environment.log.NoopLogger
 import java.io.IOException
 import java.io.InputStream
@@ -37,6 +39,24 @@ private const val DUMPSYS_GMSCORE = "dumpsys package com.google.android.gms"
 internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
   AbstractBackupServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
 
+  sealed class CommandOverride(val command: String) {
+    class Output(command: String, val output: String) : CommandOverride(command) {
+
+      override fun handle(errorCode: ErrorCode) = output
+    }
+
+    class Throw(command: String) : CommandOverride(command) {
+
+      override fun handle(errorCode: ErrorCode): String {
+        throw BackupException(errorCode, "Fake failure")
+      }
+    }
+
+    abstract fun handle(errorCode: ErrorCode): String
+  }
+
+  private val commandOverrides = mutableMapOf<String, CommandOverride>()
+
   var bmgrEnabled = false
   var failSync = false
   var testMode = 0
@@ -54,8 +74,12 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
 
   fun getProgress() = (progressListener as FakeProgressListener).getSteps()
 
-  override suspend fun executeCommand(command: String): String {
+  override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
     commands.add(command)
+    val result = commandOverrides[command]?.handle(errorCode)
+    if (result != null) {
+      return result
+    }
     return when {
       command == "bmgr enabled" -> handleBmgrEnabled()
       command.startsWith(BMGR_ENABLE) -> handleEnableBmgr(command)
@@ -87,6 +111,11 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
     }
     pushedFiles.add(remoteFilePath)
     @Suppress("BlockingMethodInNonBlockingContext") inputStream.close()
+  }
+
+  fun addCommandOverride(override: CommandOverride): FakeBackupServices {
+    commandOverrides[override.command] = override
+    return this
   }
 
   private fun handleBmgrEnabled(): String {

@@ -16,10 +16,10 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
-import com.android.backup.BackupResult.Error
 import com.android.backup.BackupResult.Success
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.backup.BackupServices.Companion.BACKUP_METADATA_FILES
+import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.tools.environment.Logger
 import java.io.OutputStream
 import java.nio.file.Path
@@ -72,15 +72,15 @@ internal constructor(
       Success
     } catch (e: Throwable) {
       backupFile.deleteIfExists()
-      Error(e)
+      e.toBackupResult()
     }
   }
 
   private suspend fun doBackup() {
     with(backupServices) {
-      val out = executeCommand("bmgr backupnow $applicationId")
+      val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED)
       if (out.lines().last() != "Backup finished with result: Success") {
-        throw BackupException("Failed to backup '$applicationId`: $out")
+        throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
       }
     }
   }

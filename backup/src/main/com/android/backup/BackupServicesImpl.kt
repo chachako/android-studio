@@ -36,7 +36,7 @@ internal class BackupServicesImpl(
   totalSteps: Int,
 ) : AbstractBackupServices(serialNumber, logger, progressListener, totalSteps) {
 
-  override suspend fun executeCommand(command: String): String {
+  override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
     val output =
       adbSession.deviceServices
         .shellCommand(deviceSelector, command)
@@ -50,7 +50,10 @@ internal class BackupServicesImpl(
       output.describe().lines().filter { it.isNotEmpty() }.forEach { logger.debug("  $it") }
     }
     if (output.exitCode != 0) {
-      throw BackupException("Failed to run '$command' on $serialNumber\n${output.describe()}")
+      throw BackupException(
+        errorCode,
+        "Failed to run '$command' on $serialNumber\n${output.describe()}",
+      )
     }
     return output.stdout.trimEnd('\n')
   }

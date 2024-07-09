@@ -17,7 +17,13 @@
 package com.android.backup
 
 import com.android.backup.BackupResult.Success
+import com.android.backup.ErrorCode.BACKUP_FAILED
+import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
+import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
 import com.android.backup.testing.FakeBackupServices
+import com.android.backup.testing.FakeBackupServices.CommandOverride.Output
+import com.android.backup.testing.FakeBackupServices.CommandOverride.Throw
+import com.android.backup.testing.asBackupResult
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.util.zip.ZipFile
@@ -170,6 +176,44 @@ class BackupHandlerTest {
     handler.backup()
 
     assertThat(backupFile.notExists()).isTrue()
+  }
+
+  @Test
+  fun backup_initTransportFails(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    backupServices.addCommandOverride(
+      Throw("bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport")
+    )
+
+    val result = handler.backup()
+
+    assertThat(result).isEqualTo(TRANSPORT_INIT_FAILED.asBackupResult())
+  }
+
+  @Test
+  fun backup_gmsCoreNotFound(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    backupServices.addCommandOverride(
+      Output("dumpsys package com.google.android.gms", "dumpsys package com.google.android.gms")
+    )
+
+    val result = handler.backup()
+
+    assertThat(result)
+      .isEqualTo(GMSCORE_NOT_FOUND.asBackupResult("Google Services not found on device"))
+  }
+
+  @Test
+  fun backup_backupFailed(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    backupServices.addCommandOverride(Output("bmgr backupnow com.app", "Error"))
+
+    val result = handler.backup()
+
+    assertThat(result).isEqualTo(BACKUP_FAILED.asBackupResult("Failed to backup 'com.app`: Error"))
   }
 }
 
