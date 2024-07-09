@@ -96,7 +96,10 @@ class JvmOverloadsTestMode :
       object : EditVisitor() {
         override fun visitMethod(node: UMethod): Boolean {
           rewriteMethod(node)
-          return super.visitMethod(node)
+          // By adding `@JvmOverloads`, method's annotation is invalid.
+          // K2's stricter symbol resolution/cache invalidates annotations,
+          // and thus we should make this visitor stop here.
+          return !node.javaPsi.isValid || super.visitMethod(node)
         }
 
         private fun rewriteMethod(node: UMethod) {
