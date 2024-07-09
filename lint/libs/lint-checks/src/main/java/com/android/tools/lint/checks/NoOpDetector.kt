@@ -548,7 +548,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
     when (containingClassFqName) {
       JAVA_LANG_STRING,
       JAVA_LANG_CHAR_SEQUENCE,
-      "kotlin.text.StringsKt__StringsKt" -> {
+      "kotlin.text.StringsKt__StringsKt",
+      "kotlin.text.StringsKt" -> {
         // Strings are immutable and all the methods are pure, except for a couple
         // that copy into a destination array (getChars, getBytes)
         if (

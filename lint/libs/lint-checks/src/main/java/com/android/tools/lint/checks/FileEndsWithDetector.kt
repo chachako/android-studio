@@ -131,7 +131,9 @@ class FileEndsWithDetector : Detector(), SourceCodeScanner {
   }
 
   private fun isFileExtension(context: JavaContext, member: PsiElement?): Boolean =
-    context.evaluator.isMemberInClass(member as? PsiMember, "kotlin.io.FilesKt__UtilsKt")
+    context.evaluator.isMemberInClass(member as? PsiMember) { fqName ->
+      fqName == "kotlin.io.FilesKt__UtilsKt" || fqName == "kotlin.io.FilesKt"
+    }
 
   private fun isExtension(s: String?): Boolean {
     return s != null &&

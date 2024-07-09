@@ -124,6 +124,14 @@ class JavaEvaluator {
     return className == containingClass
   }
 
+  inline fun isMemberInClass(member: PsiMember?, classNameChecker: (String) -> Boolean): Boolean {
+    if (member == null) {
+      return false
+    }
+    val containingClass = member.containingClass?.qualifiedName ?: return false
+    return classNameChecker.invoke(containingClass)
+  }
+
   open fun getParameterCount(method: PsiMethod): Int {
     return method.parameterList.parametersCount
   }

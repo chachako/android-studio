@@ -98,7 +98,11 @@ class ByLazyDetector : Detector(), SourceCodeScanner {
   override fun getApplicableMethodNames(): List<String> = listOf("lazy")
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-    if (!context.evaluator.isMemberInClass(node.resolve(), "kotlin.LazyKt__LazyJVMKt")) {
+    if (
+      !context.evaluator.isMemberInClass(node.resolve()) { fqName ->
+        fqName == "kotlin.LazyKt__LazyJVMKt" || fqName == "kotlin.LazyKt"
+      }
+    ) {
       return
     }
 

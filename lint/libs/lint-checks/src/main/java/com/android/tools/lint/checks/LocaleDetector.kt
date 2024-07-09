@@ -67,7 +67,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         TO_LOWER_CASE,
         TO_UPPER_CASE -> checkJavaToUpperLowerCase(context, method, node)
       }
-    } else if (containingClass == KOTLIN_STRINGS_JVM_KT) {
+    } else if (containingClass == KOTLIN_STRINGS_JVM_KT || containingClass == KOTLIN_STRINGS_KT) {
       when (methodName) {
         FORMAT_METHOD ->
           checkFormat(context, method, node, 1) // 1: extension function, 0 arg is this
@@ -229,6 +229,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
     const val GET_DEFAULT = "getDefault"
     // Declared in
     // $KOTLIN/libraries/stdlib/jvm/build/stdlib-declarations.json
+    const val KOTLIN_STRINGS_KT = "kotlin.text.StringsKt"
     const val KOTLIN_STRINGS_JVM_KT = "kotlin.text.StringsKt__StringsJVMKt"
     const val CAPITALIZE = "capitalize"
     const val DECAPITALIZE = "decapitalize"

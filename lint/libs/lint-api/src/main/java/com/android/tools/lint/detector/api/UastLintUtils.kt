@@ -657,8 +657,9 @@ fun isScopingFunction(node: UCallExpression): Boolean {
 /** Returns true if the given node appears to be one of the scope functions. */
 fun isScopingFunction(method: PsiMethod): Boolean {
   return if (isScopingFunctionName(method.name)) {
+    val fqName = method.containingClass?.qualifiedName ?: return false
     // See libraries/stdlib/jvm/build/stdlib-declarations.json
-    method.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
+    fqName == "kotlin.StandardKt__StandardKt" || fqName == "kotlin.StandardKt"
   } else {
     false
   }

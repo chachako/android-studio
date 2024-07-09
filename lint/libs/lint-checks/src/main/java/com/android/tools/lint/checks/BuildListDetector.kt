@@ -59,14 +59,21 @@ class BuildListDetector : Detector(), SourceCodeScanner {
         implementation = IMPLEMENTATION,
       )
 
-    private const val BUILD_LIST_OWNER = "kotlin.collections.CollectionsKt__CollectionsKt"
+    private const val BUILD_LIST_OWNER_CLASS_PART =
+      "kotlin.collections.CollectionsKt__CollectionsKt"
+    private const val BUILD_LIST_OWNER_FACADE = "kotlin.collections.CollectionsKt"
   }
 
   override fun getApplicableMethodNames(): List<String> = listOf("buildList")
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val evaluator = context.evaluator
-    if (node.valueArgumentCount == 1 && evaluator.isMemberInClass(method, BUILD_LIST_OWNER)) {
+    if (
+      node.valueArgumentCount == 1 &&
+        evaluator.isMemberInClass(method) { fqName ->
+          fqName == BUILD_LIST_OWNER_CLASS_PART || fqName == BUILD_LIST_OWNER_FACADE
+        }
+    ) {
       val argument = node.valueArguments[0] as? ULambdaExpression ?: return
       val lambda = argument.sourcePsi as? KtLambdaExpression ?: return
       var isAdding = false

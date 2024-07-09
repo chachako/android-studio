@@ -272,10 +272,12 @@ public class CommentDetector extends ResourceXmlDetector
         String message =
                 "`TODO` call found; points to code which must be fixed prior " + "to release";
         PsiClass containingClass = method.getContainingClass();
-        if (containingClass == null
-                ||
-                // See libraries/stdlib/jvm/build/stdlib-declarations.json
-                !"kotlin.StandardKt__StandardKt".equals(containingClass.getQualifiedName())) {
+        if (containingClass == null) {
+          return;
+        }
+        String fqName = containingClass.getQualifiedName();
+        // See libraries/stdlib/jvm/build/stdlib-declarations.json
+        if (!"kotlin.StandardKt__StandardKt".equals(fqName) && !"kotlin.StandardKt".equals(fqName)) {
             return;
         }
 

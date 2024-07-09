@@ -202,7 +202,9 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           node,
           if (method.parameterList.parametersCount == 3) 1 else 0,
         )
-      } else if (cls == LocaleDetector.KOTLIN_STRINGS_JVM_KT) {
+      } else if (
+        cls == LocaleDetector.KOTLIN_STRINGS_JVM_KT || cls == LocaleDetector.KOTLIN_STRINGS_KT
+      ) {
         // Kotlin stdlib extension functions from kotlin.txt
         //   public inline fun String.Companion.format(format: String, vararg args: Any?): String =
         // java.lang.String.format(format, *args)

@@ -189,8 +189,8 @@ class AssertDetector : Detector(), SourceCodeScanner {
 
     val containingClass = method.containingClass?.qualifiedName ?: return
     if (
-      containingClass != "kotlin.PreconditionsKt" &&
-        containingClass != "kotlin.PreconditionsKt__AssertionsJVMKt"
+      containingClass != "kotlin.PreconditionsKt__AssertionsJVMKt" &&
+        containingClass != "kotlin.PreconditionsKt"
     ) {
       return
     }

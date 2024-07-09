@@ -566,10 +566,6 @@ open class ControlFlowGraph<T : Any> private constructor() {
   companion object {
     const val FINALLY_KEY = "finally"
 
-    /** The Kotlin stdlib class containing the `error` method */
-    private const val STDLIB_ERROR_CLASS = "kotlin.PreconditionsKt__PreconditionsKt"
-    /** The Kotlin stdlib class containing the `TODO` method */
-    private const val STDLIB_TODO_CLASS = "kotlin.StandardKt__StandardKt"
     /** Marker interface on interfaces that have a single function */
     private const val FUNCTIONAL_INTERFACE_CLASS = "java.lang.FunctionalInterface"
     /** *Prefix* for the function interfaces -- Function1, Function2, Function3, etc. */
