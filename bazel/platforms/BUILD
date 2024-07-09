@@ -1,8 +1,8 @@
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "@bazel_toolchains//rules/exec_properties:exec_properties.bzl",
     "create_rbe_exec_properties_dict",
 )
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,8 +15,9 @@ config_setting(
     },
     visibility = [
         "//tools/adt/idea/streaming/integration/event-logger:__pkg__",
+        "//tools/adt/idea/streaming/integration/languages:__pkg__",
         "//tools/adt/idea/streaming/testSrc/testApp/src/main:__pkg__",
-    ]
+    ],
 )
 
 config_setting(
@@ -80,4 +81,3 @@ platform(
     # N.B. we pick the CPU based on the host (x86_64 or arm64).
     parents = ["@local_config_platform//:host"],
 )
-
