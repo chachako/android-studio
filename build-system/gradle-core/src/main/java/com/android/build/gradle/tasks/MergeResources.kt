@@ -100,20 +100,12 @@ import java.io.File
 import java.io.IOException
 import java.util.Locale
 import java.util.function.Supplier
-import java.util.stream.Collectors
 import javax.xml.bind.JAXBException
 import javax.xml.parsers.DocumentBuilderFactory
 
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ANDROID_RESOURCES, secondaryTaskCategories = [TaskCategory.MERGING])
 abstract class MergeResources : NewIncrementalTask() {
-    // ----- PUBLIC TASK API -----
-    /** Directory to write the merged resources to  */
-    @get:Optional
-    @get:OutputDirectory
-    abstract val generatedPngsOutputDir: DirectoryProperty
-
-    // ----- PRIVATE TASK API -----
     /**
      * Optional file to write any publicly imported resource types and names to
      */
@@ -125,23 +117,25 @@ abstract class MergeResources : NewIncrementalTask() {
     var crunchPng = false
         private set
 
-    private var processedInputs: MutableList<ResourceSet> = mutableListOf()
-    private val fileValidity = FileValidity<ResourceSet>()
-    private var disableVectorDrawables = false
+    @get:Input
+    abstract val minSdk: Property<Int>
+
+    @Input
+    fun getFlags(): String {
+        return flags.map { it.name }.sorted().joinToString { "," }
+    }
 
     @get:Input
     var isVectorSupportLibraryUsed = false
         private set
 
     @get:Input
-    var generatedDensities: Collection<String>? = null
+    var enableVectorDrawables = true
         private set
-    private var mergedNotCompiledResourcesOutputDirectory: Provider<Directory>? = null
-    private var precompileDependenciesResources = false
-    private var flags: Set<Flag>? = null
 
-    @get:Nested
-    abstract val resourcesComputer: DependencyResourcesComputer
+    @get:Input
+    var generatedDensities: Collection<String> = emptySet()
+        private set
 
     @get:Input
     abstract val dataBindingEnabled: Property<Boolean>
@@ -175,31 +169,72 @@ abstract class MergeResources : NewIncrementalTask() {
     @get:Input
     abstract val pseudoLocalesEnabled: Property<Boolean>
 
-    @get:Internal
-    abstract val aapt2ThreadPoolBuildService: Property<Aapt2ThreadPoolBuildService>
-
-    @get:Nested
-    abstract val aapt2: Aapt2Input
-
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
     @get:InputFiles
     abstract val renderscriptGeneratedResDir: DirectoryProperty
 
-    @get:Internal
-    val aaptWorkerFacade: WorkerExecutorFacade
-        get() = withGradleWorkers(projectPath.get(), path, workerExecutor, analyticsService)
+    @get:Nested
+    abstract val aapt2: Aapt2Input
+
+    @get:Nested
+    abstract val resourcesComputer: DependencyResourcesComputer
+
+    /**
+     * Directory to write the generated vector drawable resources to
+     */
+    @get:Optional
+    @get:OutputDirectory
+    abstract val generatedPngsOutputDir: DirectoryProperty
 
     @get:Optional
     @get:OutputDirectory
     abstract val dataBindingLayoutInfoOutFolder: DirectoryProperty
-    private var errorFormatMode: ErrorFormatMode? = null
+
+    /**
+     * Directory to write the merged resources to
+     */
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:OutputFile
+    @get:Optional
+    abstract val publicFile: RegularFileProperty
+
+    /**
+     * Optional blame output folder for the case where the task generates it.
+     */
+    @get:Optional
+    @get:OutputDirectory
+    abstract val blameLogOutputFolder: DirectoryProperty
+
+    @get:Optional
+    @get:OutputDirectory
+    abstract val incrementalFolder: DirectoryProperty
+
+    @Optional
+    @OutputDirectory
+    abstract fun getMergedNotCompiledResourcesOutputDirectory(): DirectoryProperty?
 
     @get:Internal
     abstract val aaptEnv: Property<String?>
 
     @get:Internal
     abstract val projectRootDir: DirectoryProperty
+
+    @get:Internal
+    val aaptWorkerFacade: WorkerExecutorFacade
+        get() = withGradleWorkers(projectPath.get(), path, workerExecutor, analyticsService)
+
+    @get:Internal
+    abstract val aapt2ThreadPoolBuildService: Property<Aapt2ThreadPoolBuildService>
+
+    private var mergedNotCompiledResourcesOutputDirectory: Provider<Directory>? = null
+    private var precompileDependenciesResources = false
+    private var flags: Set<Flag> = emptySet()
+    private var errorFormatMode: ErrorFormatMode? = null
+    private var processedInputs: MutableList<ResourceSet> = mutableListOf()
+    private val fileValidity = FileValidity<ResourceSet>()
 
     @Throws(IOException::class, JAXBException::class)
     protected fun doFullTaskAction() {
@@ -636,14 +671,14 @@ abstract class MergeResources : NewIncrementalTask() {
     private class MergeResourcesVectorDrawableRenderer(
         minSdk: Int,
         supportLibraryIsUsed: Boolean,
-        outputDir: File?,
-        densities: Collection<Density>?,
+        outputDir: File,
+        densities: Collection<Density>,
         loggerSupplier: Supplier<ILogger?>?
     ) : VectorDrawableRenderer(
         minSdk,
         supportLibraryIsUsed,
-        outputDir!!,
-        densities!!,
+        outputDir,
+        densities,
         loggerSupplier!!
     ) {
         @Throws(IOException::class)
@@ -673,13 +708,11 @@ abstract class MergeResources : NewIncrementalTask() {
      */
     private val preprocessor: ResourcePreprocessor
         get() {
-            if (disableVectorDrawables) {
+            if (enableVectorDrawables.not()) {
                 // If the user doesn't want any PNGs, leave the XML file alone as well.
                 return NoOpResourcePreprocessor.INSTANCE
             }
-            val densities: Collection<Density> =
-                generatedDensities!!.stream().map { value: String? -> Density.getEnum(value) }
-                    .collect(Collectors.toList())
+            val densities = generatedDensities.map { value -> Density.getEnum(value) }
             return MergeResourcesVectorDrawableRenderer(
                 minSdk.get(),
                 isVectorSupportLibraryUsed,
@@ -743,55 +776,19 @@ abstract class MergeResources : NewIncrementalTask() {
         processedInputs.clear()
     }
 
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @get:OutputFile
-    @get:Optional
-    abstract val publicFile: RegularFileProperty
-
-    // the optional blame output folder for the case where the task generates it.
-    @get:Optional
-    @get:OutputDirectory
-    abstract val blameLogOutputFolder: DirectoryProperty
-
-    @get:Input
-    abstract val minSdk: Property<Int>
-
-    @OutputDirectory
-    @Optional
-    abstract fun getMergedNotCompiledResourcesOutputDirectory(): DirectoryProperty?
-    @Input
-    fun getFlags(): String {
-        return flags!!.stream().map { obj: Flag -> obj.name }
-            .sorted().collect(Collectors.joining(","))
-    }
-
-    @get:Optional
-    @get:OutputDirectory
-    abstract val incrementalFolder: DirectoryProperty
-
     class CreationAction(
         creationConfig: ComponentCreationConfig,
         private val mergeType: TaskManager.MergeType,
         private val mergedNotCompiledOutputDirectory: Provider<Directory>?,
         private val includeDependencies: Boolean,
         private val processResources: Boolean,
-        flags: Set<Flag>,
-        isLibrary: Boolean
+        private val flags: Set<Flag>,
+        private val isLibrary: Boolean
     ) : VariantTaskCreationAction<MergeResources, ComponentCreationConfig>(creationConfig),
         AndroidResourcesTaskCreationAction by AndroidResourcesTaskCreationActionImpl(
             creationConfig
         ) {
-        private val processVectorDrawables: Boolean
-        private val flags: Set<Flag>
-        private val isLibrary: Boolean
-
-        init {
-            processVectorDrawables = flags.contains(Flag.PROCESS_VECTOR_DRAWABLES)
-            this.flags = flags
-            this.isLibrary = isLibrary
-        }
+        private val processVectorDrawables: Boolean = flags.contains(Flag.PROCESS_VECTOR_DRAWABLES)
 
         override val name: String
             get() = computeTaskName(mergeType.name.lowercase(Locale.ENGLISH), "Resources")
@@ -862,12 +859,8 @@ abstract class MergeResources : NewIncrementalTask() {
             task.processResources = processResources
             task.crunchPng = androidResourcesCreationConfig.isCrunchPngs
             val vectorDrawablesOptions = androidResourcesCreationConfig.vectorDrawables
-            task.generatedDensities = vectorDrawablesOptions.generatedDensities
-            if (task.generatedDensities == null) {
-                task.generatedDensities = emptySet()
-            }
-            task.disableVectorDrawables =
-                !processVectorDrawables || task.generatedDensities!!.isEmpty()
+            task.generatedDensities = vectorDrawablesOptions.generatedDensities ?: emptySet()
+            task.enableVectorDrawables = processVectorDrawables && task.generatedDensities.isNotEmpty()
 
             // TODO: When support library starts supporting gradients (http://b/62421666), remove
             // the vectorSupportLibraryIsUsed field and set disableVectorDrawables when
@@ -893,10 +886,8 @@ abstract class MergeResources : NewIncrementalTask() {
 
             task.resourcesComputer.initFromVariantScope(
                 creationConfig = creationConfig,
-                androidResourcesCreationConfig = androidResourcesCreationConfig,
                 microApkResDir = microApk,
                 libraryDependencies = libraryArtifacts,
-                relativeLocalResources = true
             )
             val features = creationConfig.buildFeatures
             val isDataBindingEnabled = features.dataBinding
@@ -950,37 +941,6 @@ abstract class MergeResources : NewIncrementalTask() {
                 )
             task.projectRootDir.set(task.project.rootDir)
         }
-
-        companion object {
-            @Throws(IOException::class)
-            private fun getResourcesDirsOutsideRoot(
-                task: MergeResources,
-                isDataBindingEnabled: Boolean,
-                isViewBindingEnabled: Boolean
-            ): Set<String> {
-                val resourceDirsOutsideRootProjectDir: MutableSet<String> = HashSet()
-                if (!isDataBindingEnabled && !isViewBindingEnabled) {
-                    // This set is used only when data binding / view binding is enabled
-                    return resourceDirsOutsideRootProjectDir
-                }
-
-                // In this task, data binding doesn't process layout files that come from dependencies
-                // (see the code at processSingleFile()). Therefore, we'll look at resources in the
-                // current subproject only (via task.getLocalResources()). These resources are usually
-                // located inside the root project directory, but some of them may come from custom
-                // resource sets that are outside the root project directory, so we need to collect
-                // the latter set.
-                val rootProjectDir = task.project.rootDir
-                for (resourceSourceSet in task.resourcesComputer.resources.get().values) {
-                    for (resDir in resourceSourceSet.sourceDirectories.files) {
-                        if (!FileUtils.isFileInDirectory(resDir, rootProjectDir)) {
-                            resourceDirsOutsideRootProjectDir.add(resDir.canonicalPath)
-                        }
-                    }
-                }
-                return resourceDirsOutsideRootProjectDir
-            }
-        }
     }
 
     enum class Flag {
@@ -988,15 +948,43 @@ abstract class MergeResources : NewIncrementalTask() {
     }
 
     companion object {
+        @Throws(IOException::class)
+        private fun getResourcesDirsOutsideRoot(
+            task: MergeResources,
+            isDataBindingEnabled: Boolean,
+            isViewBindingEnabled: Boolean
+        ): Set<String> {
+            val resourceDirsOutsideRootProjectDir: MutableSet<String> = HashSet()
+            if (!isDataBindingEnabled && !isViewBindingEnabled) {
+                // This set is used only when data binding / view binding is enabled
+                return resourceDirsOutsideRootProjectDir
+            }
+
+            // In this task, data binding doesn't process layout files that come from dependencies
+            // (see the code at processSingleFile()). Therefore, we'll look at resources in the
+            // current subproject only (via task.getLocalResources()). These resources are usually
+            // located inside the root project directory, but some of them may come from custom
+            // resource sets that are outside the root project directory, so we need to collect
+            // the latter set.
+            val rootProjectDir = task.project.rootDir
+            for (resourceSourceSet in task.resourcesComputer.resources.get().values) {
+                for (resDir in resourceSourceSet.sourceDirectories.files) {
+                    if (!FileUtils.isFileInDirectory(resDir, rootProjectDir)) {
+                        resourceDirsOutsideRootProjectDir.add(resDir.canonicalPath)
+                    }
+                }
+            }
+            return resourceDirsOutsideRootProjectDir
+        }
         private fun getResourceProcessor(
             mergeResourcesTask: MergeResources,
-            flags: Set<Flag>?,
+            flags: Set<Flag>,
             processResources: Boolean,
             aapt2Input: Aapt2Input
         ): ResourceCompilationService {
             // If we received the flag for removing namespaces we need to use the namespace remover to
             // process the resources.
-            if (flags!!.contains(Flag.REMOVE_RESOURCE_NAMESPACES)) {
+            if (flags.contains(Flag.REMOVE_RESOURCE_NAMESPACES)) {
                 return NamespaceRemover
             }
 
