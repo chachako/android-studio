@@ -194,7 +194,7 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
                     .map { it.dir("res-process-intermediate").dir(creationConfig.dirName) }
             )
 
-            task.androidJarInput.initialize(creationConfig)
+            task.androidJarInput.initialize(task, creationConfig)
             if (creationConfig is ApkCreationConfig) {
                 task.noCompress.set(creationConfig.androidResources.noCompress)
             }

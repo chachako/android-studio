@@ -521,6 +521,7 @@ class DependencyConfigurator(
                     apiGeneratorConfiguration.isCanBeResolved = true
                     params.apiGenerator.setFrom(apiGeneratorConfiguration)
                     params.buildTools.initialize(
+                        task = null,
                         projectServices.buildServiceRegistry,
                         compileSdkHashString,
                         buildToolsRevision

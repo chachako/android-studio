@@ -255,7 +255,7 @@ abstract class VerifyLibraryResourcesTask : NewIncrementalTask() {
             }
 
             creationConfig.services.initializeAapt2Input(task.aapt2)
-            task.androidJarInput.initialize(creationConfig)
+            task.androidJarInput.initialize(task, creationConfig)
 
             val sourceSetMap =
                     creationConfig.artifacts.get(InternalArtifactType.SOURCE_SET_PATH_MAP)

@@ -17,7 +17,6 @@
 package com.android.build.gradle.internal.res
 
 import com.android.SdkConstants
-import com.android.SdkConstants.FN_RES_BASE
 import com.android.SdkConstants.FN_R_CLASS_JAR
 import com.android.SdkConstants.RES_QUALIFIER_SEP
 import com.android.build.api.artifact.SingleArtifact
@@ -637,7 +636,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                 task.symbolTableBuildService.setDisallowChanges(it)
                 task.usesService(it)
             }
-            task.androidJarInput.initialize(creationConfig)
+            task.androidJarInput.initialize(task, creationConfig)
 
             task.useStableIds = projectOptions[BooleanOption.ENABLE_STABLE_IDS]
 

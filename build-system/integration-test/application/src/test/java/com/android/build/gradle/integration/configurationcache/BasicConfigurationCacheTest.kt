@@ -123,12 +123,8 @@ class BasicConfigurationCacheTest {
                 "$buildService is used by $task"
             }.sorted().toList()
         // TODO(b/300617088): We'll need to fix all the issues in this list
-        Truth.assertThat(violations).containsAtLeastElementsIn(
+        Truth.assertThat(violations).containsExactlyElementsIn(
             listOf(
-                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :app:processDebugResources",
-                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :app:processReleaseResources",
-                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :test:processDebugResources",
-                "com.android.build.gradle.internal.SdkComponentsBuildService is used by :lib:verifyReleaseResources",
                 "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
                 "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:lintVitalAnalyzeRelease",
                 "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:generateReleaseLintVitalReportModel",

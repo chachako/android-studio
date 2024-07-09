@@ -77,24 +77,13 @@ import com.android.builder.testing.api.DeviceProvider;
 import com.android.ide.common.workers.ExecutorServiceAdapter;
 import com.android.utils.FileUtils;
 import com.android.utils.StringHelper;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
+
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.JavaVersion;
@@ -126,6 +115,21 @@ import org.gradle.internal.logging.ConsoleRenderer;
 import org.gradle.process.ExecOperations;
 import org.gradle.work.DisableCachingByDefault;
 import org.gradle.workers.WorkerExecutor;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 /** Run instrumentation tests for a given variant */
 @DisableCachingByDefault
@@ -849,7 +853,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                     creationConfig.getServices().getBuildServiceRegistry(),
                                     SdkComponentsBuildService.class));
 
-            SdkComponentsKt.initialize(task.getTestRunnerFactory().getBuildTools(), creationConfig);
+            SdkComponentsKt.initialize(
+                    task.getTestRunnerFactory().getBuildTools(), task, creationConfig);
 
             task.getTestRunnerFactory()
                     .getExecutionEnum()

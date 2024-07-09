@@ -185,7 +185,7 @@ abstract class PrivacySandboxSdkLinkAndroidResourcesTask : NonIncrementalTask() 
                         task.project.gradle.startParameter.maxWorkerCount
                 )
             }
-            task.androidJarInput.initialize(creationConfig, task)
+            task.androidJarInput.initialize(task, creationConfig)
 
             val mergedRes =
                     creationConfig.artifacts.get(PrivacySandboxSdkInternalArtifactType.MERGED_RES)

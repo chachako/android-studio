@@ -334,7 +334,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
                 creationConfig.artifacts.get(InternalArtifactType.SUPPORTED_LOCALE_LIST))
 
             creationConfig.services.initializeAapt2Input(task.aapt2)
-            task.androidJarInput.initialize(creationConfig)
+            task.androidJarInput.initialize(task, creationConfig)
 
             val resConfigs = creationConfig.androidResourcesCreationConfig?.resourceConfigurations
             if (!resConfigs.isNullOrEmpty()) {

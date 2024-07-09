@@ -195,7 +195,7 @@ abstract class LinkLibraryAndroidResourcesTask : NonIncrementalTask() {
 
             creationConfig.services.initializeAapt2Input(task.aapt2)
 
-            task.androidJarInput.initialize(creationConfig)
+            task.androidJarInput.initialize(task, creationConfig)
         }
     }
 }
