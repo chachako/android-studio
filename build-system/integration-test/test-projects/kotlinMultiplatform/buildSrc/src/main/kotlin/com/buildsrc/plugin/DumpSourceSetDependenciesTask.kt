@@ -49,6 +49,7 @@ abstract class DumpSourceSetDependenciesTask: DefaultTask() {
         val gson = GsonBuilder().setLenient().setPrettyPrinting()
             .registerTypeHierarchyAdapter(Extras::class.java, ExtrasAdapter)
             .registerTypeHierarchyAdapter(IdeDependencyResolver::class.java, IdeDependencyResolverAdapter)
+            .registerTypeHierarchyAdapter(Map::class.java, MapAdapter())
             .registerTypeAdapter(File::class.java, FileAdapter(project))
             .create()
 
@@ -101,6 +102,21 @@ abstract class DumpSourceSetDependenciesTask: DefaultTask() {
     private class FileAdapter(private val project: Project) : JsonSerializer<File> {
         override fun serialize(src: File, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
             return JsonPrimitive(src.path)
+        }
+    }
+
+    private class MapAdapter : JsonSerializer<Map<String, String>> {
+        override fun serialize(
+            src: Map<String, String>,
+            typeOfSrc: Type?,
+            context: JsonSerializationContext?
+        ): JsonElement {
+            val sortedMap = src.toSortedMap()
+            return JsonObject().apply {
+                for ((key, value) in sortedMap) {
+                    add(key, context?.serialize(value))
+                }
+            }
         }
     }
 }

@@ -77,13 +77,13 @@
         }
       ],
       "attributes": {
+        "artifactType": "jar",
         "org.gradle.category": "library",
         "org.gradle.jvm.environment": "standard-jvm",
         "org.gradle.libraryelements": "jar",
-        "org.gradle.usage": "java-api",
-        "org.jetbrains.kotlin.platform.type": "jvm",
         "org.gradle.status": "release",
-        "artifactType": "jar"
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
       }
     },
     "extras": {
@@ -108,11 +108,11 @@
         }
       ],
       "attributes": {
-        "org.gradle.status": "release",
-        "org.gradle.usage": "java-api",
-        "org.gradle.libraryelements": "jar",
+        "artifactType": "jar",
         "org.gradle.category": "library",
-        "artifactType": "jar"
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
       }
     },
     "extras": {
