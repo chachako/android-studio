@@ -243,7 +243,7 @@ class AutoNamespaceTransformFunctionalTest {
 
     private fun AutoNamespaceParameters.initialize() {
         projectName.set(project.name)
-        createProjectServices(project).initializeAapt2Input(aapt2)
+        createProjectServices(project).initializeAapt2Input(aapt2, task = null)
     }
 
     companion object {

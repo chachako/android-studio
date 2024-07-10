@@ -929,7 +929,7 @@ abstract class MergeResources : NewIncrementalTask() {
                     Aapt2ThreadPoolBuildService::class.java
                 )
             )
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.aaptEnv
                 .set(
                     creationConfig

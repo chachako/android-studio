@@ -282,7 +282,7 @@ class DependencyConfigurator(
                 AndroidArtifacts.ArtifactType.EXPLODED_AAR,
                 AndroidArtifacts.ArtifactType.COMPILED_DEPENDENCIES_RESOURCES
             ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+                projectServices.initializeAapt2Input(params.aapt2, task = null)
             }
         }
         // API Jar: Produce a single API jar that can also contain the library R class from the AAR
@@ -359,14 +359,14 @@ class DependencyConfigurator(
                 AndroidArtifacts.ArtifactType.MAYBE_NON_NAMESPACED_PROCESSED_AAR,
                 AndroidArtifacts.ArtifactType.PREPROCESSED_AAR_FOR_AUTO_NAMESPACE
             ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+                projectServices.initializeAapt2Input(params.aapt2, task = null)
             }
             registerTransform(
                 AutoNamespacePreProcessTransform::class.java,
                 AndroidArtifacts.ArtifactType.JAR,
                 AndroidArtifacts.ArtifactType.PREPROCESSED_AAR_FOR_AUTO_NAMESPACE
             ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+                projectServices.initializeAapt2Input(params.aapt2, task = null)
             }
 
             registerTransform(
@@ -374,7 +374,7 @@ class DependencyConfigurator(
                 AndroidArtifacts.ArtifactType.PREPROCESSED_AAR_FOR_AUTO_NAMESPACE,
                 AndroidArtifacts.ArtifactType.PROCESSED_AAR
             ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+                projectServices.initializeAapt2Input(params.aapt2, task = null)
             }
         }
         // Transform to go from external jars to CLASSES and JAVA_RES artifacts. This returns the
@@ -664,7 +664,7 @@ class DependencyConfigurator(
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
             ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+                projectServices.initializeAapt2Input(params.aapt2, task = null)
 
                 params.signingConfigData.set(signingConfigProvider)
                 params.signingConfigValidationResultDir.set(

@@ -631,7 +631,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
             task.manifestMergeBlameFile = creationConfig.artifacts.get(
                 InternalArtifactType.MANIFEST_MERGE_BLAME_FILE
             )
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             getBuildService<SymbolTableBuildService, BuildServiceParameters.None>(creationConfig.services.buildServiceRegistry).let {
                 task.symbolTableBuildService.setDisallowChanges(it)
                 task.usesService(it)

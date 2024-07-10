@@ -129,11 +129,6 @@ class BasicConfigurationCacheTest {
                 "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:lintVitalAnalyzeRelease",
                 "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
                 "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:lintVitalAnalyzeRelease",
-                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:optimizeReleaseResources",
-                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:processDebugResources",
-                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :app:processReleaseResources",
-                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :lib:verifyReleaseResources",
-                "com.android.build.gradle.internal.services.Aapt2DaemonBuildService is used by :test:processDebugResources",
             )
         )
     }

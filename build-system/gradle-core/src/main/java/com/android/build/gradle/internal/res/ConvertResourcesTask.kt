@@ -121,7 +121,7 @@ sealed class ConvertResourcesTask<TaskT: ConvertResourcesTask<TaskT>> : NonIncre
 
             task.artifactTransformationRequest.setDisallowChanges(transformationRequest)
             task.multiOutputHandler.setDisallowChanges(MultiOutputHandler.create(creationConfig))
-            creationConfig.services.initializeAapt2Input(task.aapt2Input)
+            creationConfig.services.initializeAapt2Input(task.aapt2Input, task)
         }
     }
 }

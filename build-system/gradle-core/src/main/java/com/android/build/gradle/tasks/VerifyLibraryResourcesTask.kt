@@ -195,7 +195,7 @@ abstract class VerifyLibraryResourcesTask : NewIncrementalTask() {
                     aaptConfig = config,
                     rJar = null,
                     logger = Logging.getLogger(this::class.java),
-                    errorFormatMode = aapt2Input.buildService.get().parameters.errorFormatMode.get()
+                    errorFormatMode = aapt2Input.aapt2DaemonBuildService.get().parameters.errorFormatMode.get()
                 )
             } finally {
                 Files.deleteIfExists(linkedApk.toPath())
@@ -254,7 +254,7 @@ abstract class VerifyLibraryResourcesTask : NewIncrementalTask() {
                     ))
             }
 
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.androidJarInput.initialize(task, creationConfig)
 
             val sourceSetMap =

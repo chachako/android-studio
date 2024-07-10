@@ -120,7 +120,7 @@ abstract class LinkManifestForAssetPackTask : NonIncrementalTask() {
             artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.ASSET_PACK_MANIFESTS, task.manifestsDirectory
             )
-            projectServices.initializeAapt2Input(task.aapt2)
+            projectServices.initializeAapt2Input(task.aapt2, task)
 
             task.androidJarInput.initializeSdkComponentsBuildService(task)
             task.androidJarInput.buildToolsRevision.setDisallowChanges(
@@ -157,7 +157,7 @@ abstract class LinkManifestForAssetPackTask : NonIncrementalTask() {
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.ASSET_PACK_MANIFESTS, task.manifestsDirectory)
 
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.androidJarInput.initialize(task, creationConfig)
         }
     }

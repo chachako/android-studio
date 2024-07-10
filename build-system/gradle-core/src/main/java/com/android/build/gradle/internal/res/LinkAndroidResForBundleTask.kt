@@ -299,7 +299,7 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
                     AndroidArtifacts.ArtifactType.COMPILED_DEPENDENCIES_RESOURCES
                 )
             }
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.androidJarInput.initialize(task, creationConfig)
 
             val sourceSetMap =

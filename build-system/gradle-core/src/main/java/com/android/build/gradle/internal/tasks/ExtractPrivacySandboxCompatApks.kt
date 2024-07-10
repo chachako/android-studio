@@ -203,7 +203,7 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
             task.componentBaseName.setDisallowChanges(creationConfig.baseName)
             task.versionCode.setDisallowChanges(creationConfig.outputs.getMainSplit().versionCode)
             task.androidJarInput.initialize(task, creationConfig)
-            creationConfig.services.initializeAapt2Input(task.aapt2)
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.signingConfig.setDisallowChanges(SigningConfigDataProvider.create(creationConfig))
         }
 

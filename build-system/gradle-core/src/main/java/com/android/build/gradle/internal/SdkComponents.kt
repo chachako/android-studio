@@ -536,7 +536,7 @@ fun BuildToolsExecutableInput.initialize(task: Task, creationConfig: ComponentCr
 }
 
 fun BuildToolsExecutableInput.initialize(
-        task: Task?, // null if the caller is a transform
+        task: Task?, // null iff the caller is a transform
         buildServiceRegistry: BuildServiceRegistry,
         compileSdkHashString: String,
         buildToolsRevision: Revision) {
