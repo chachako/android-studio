@@ -1,9 +1,15 @@
 """Continuous Integration scripts."""
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag", "bool_flag")
 
 string_flag(
     name = "ab_target",
     build_setting_default = "",
+    visibility = ["//tools/base/bazel/ci:__subpackages__"],
+)
+
+bool_flag(
+    name = "is_ci",
+    build_setting_default = False,
     visibility = ["//tools/base/bazel/ci:__subpackages__"],
 )
 
