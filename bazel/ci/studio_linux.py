@@ -190,8 +190,6 @@ def build_flags(
       '--tool_tag=studio_linux.sh',
       f'--embed_label={as_build_number}',
 
-      '--runs_per_test=//tools/base/bazel:iml_to_build_consistency_test@2',
-
       '--jobs=500',
   ]
 

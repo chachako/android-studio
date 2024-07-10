@@ -135,14 +135,12 @@ java_test(
     data = ["//tools/adt/idea/android:artifacts"],
     # This test requires the tools/idea IML project and all corresponding
     # Bazel BUILD files as input. Rather than trying to model that, this
-    # test is just run locally, without sandbox, and with caching disabled
-    # (see tags).
-    # Note that due to https://github.com/bazelbuild/bazel/issues/6038 the tag
-    # isn't effective when run with --config=remote, hence the workaround in
-    # test_studio.sh
+    # test is just run locally, without sandbox, and uses the "external" tag
+    # to disable caching.
+    # https://bazel.build/reference/test-encyclopedia#tag-conventions
     local = True,
     tags = [
-        "no-cache",  # As this test doesn't model all of its inputs.
+        "external",  # As this test doesn't model all of its inputs.
         "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.ImlToBazelConsistencyTest",
