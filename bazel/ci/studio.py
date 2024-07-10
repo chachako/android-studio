@@ -83,7 +83,7 @@ def run_bazel_test(
       f'--build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/{invocation_id}"',
       f'--build_metadata=ab_build_id={build_env.build_number}',
       f'--build_metadata=ab_target={build_env.build_target_name}',
-      f'--//tools/base/bazel/ci:ab_target="{build_env.build_target_name}"',
+      f'--//tools/base/bazel/ci:ab_target={build_env.build_target_name}',
 
       f'--worker_max_instances={worker_instances}',
 
@@ -120,7 +120,8 @@ def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
       str(dist_path),
   ]
   if build_type == BuildType.POSTSUBMIT:
-    args.append(f'-perfzip {perfgate_data_path}')
+    args.append('-perfzip')
+    args.append(perfgate_data_path)
 
   bazel_cmd = bazel.BazelCmd(build_env)
   bazel_cmd.run(*args)

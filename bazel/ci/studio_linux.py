@@ -28,6 +28,7 @@ _EXTRA_TARGETS = [
     '//tools/base/profiler/native/trace_processor_daemon',
     '//tools/base/deploy/deployer:deployer.runner_deploy.jar',
     '//tools/base/preview/screenshot:preview_screenshot_maven_repo.zip',
+    '//tools/base/firebase/testlab/testlab-gradle-plugin:testlab-gradle-plugin.zip',
     '//tools/adt/idea/studio:test_studio',
     '//tools/vendor/google/game-tools/packaging:packaging-linux',
     '//tools/vendor/google/game-tools/packaging:packaging-win',
@@ -44,7 +45,7 @@ _EXTRA_TARGETS = [
     '//tools/vendor/google/asfp/studio:asfp.deb',
     '//tools/vendor/intel:android-studio-intel-haxm.zip',
     '//tools/vendor/google/ml:aiplugin',
-    '//tools/vendor/google3/aswb/java/com/google/devtools/intellij/g3plugins:aswb_build_test',
+    '//tools/vendor/google3/aswb/third_party/intellij/bazel/plugin/aswb:aswb_bazel_zip',
 ]
 
 
@@ -117,7 +118,6 @@ def studio_linux_very_flaky(build_env: bazel.BuildEnv) -> None:
   ]
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
   if is_build_successful(result):
-    copy_artifacts(build_env)
     return
 
   raise studio.BazelTestError(exit_code=result.exit_code)
