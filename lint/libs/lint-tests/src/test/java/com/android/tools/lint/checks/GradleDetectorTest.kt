@@ -5349,10 +5349,6 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -4 +4
         -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
         +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
-        Show URL for build.gradle line 2: View details in Google Play SDK Index:
-        http://sdk.google.com/
-        Show URL for build.gradle line 3: View details in Google Play SDK Index:
-        http://sdk.google.com/
       """
     lint()
       .files(
@@ -8014,9 +8010,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       // ensure stable SDK library suggestions in the tests
       val index =
         Index.newBuilder()
+          // Source not defined (should behave as coming from SDK Index)
           .addSdks(
             Sdk.newBuilder()
               .setIndexUrl("http://index.example.url/")
+              .setIndexAvailability(Sdk.IndexAvailability.UNKNOWN_INDEX_AVAILABILITY)
               .addLibraries(
                 Library.newBuilder()
                   .setLibraryId(
@@ -8092,9 +8090,11 @@ class GradleDetectorTest : AbstractCheckTest() {
                   )
               )
           )
+          // From SDK Index
           .addSdks(
             Sdk.newBuilder()
               .setIndexUrl("http://another.example.url/")
+              .setIndexAvailability(Sdk.IndexAvailability.AVAILABLE_IN_PUBLIC_SDK_INDEX)
               .addLibraries(
                 Library.newBuilder()
                   .setLibraryId(
@@ -8312,9 +8312,11 @@ class GradleDetectorTest : AbstractCheckTest() {
                   )
               )
           )
+          // From Console
           .addSdks(
             Sdk.newBuilder()
               .setIndexUrl("http://sdk.google.com/")
+              .setIndexAvailability(Sdk.IndexAvailability.NOT_AVAILABLE)
               .addLibraries(
                 Library.newBuilder()
                   .setLibraryId(
@@ -8330,7 +8332,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   .addVersions(
                     LibraryVersion.newBuilder().setVersionString("18.3.0").setIsLatestVersion(true)
                   )
-                  // Ok, latest, no issues
+                  // Ok, no issues
                   .addVersions(
                     LibraryVersion.newBuilder().setVersionString("18.2.0").setIsLatestVersion(false)
                   )
