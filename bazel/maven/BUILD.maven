@@ -45319,15 +45319,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.fasterxml.jackson.core.jackson-core_2.9.9",
-    pom = "repository/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.pom",
-    repo_root_path = "repository",
-    repo_path = "com/fasterxml/jackson/core/jackson-core/2.9.9",
-    parent = "com.fasterxml.jackson.jackson-base_2.9.9",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.github.ajalt.clikt.clikt-jvm_3.5.3",
     pom = "repository/com/github/ajalt/clikt/clikt-jvm/3.5.3/clikt-jvm-3.5.3.pom",
     repo_root_path = "repository",
@@ -46883,27 +46874,28 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.auth.google-auth-library-credentials_0.17.1",
-    pom = "repository/com/google/auth/google-auth-library-credentials/0.17.1/google-auth-library-credentials-0.17.1.pom",
+    name = "com.google.auth.google-auth-library-credentials_1.24.0",
+    pom = "repository/com/google/auth/google-auth-library-credentials/1.24.0/google-auth-library-credentials-1.24.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/auth/google-auth-library-credentials/0.17.1",
-    parent = "com.google.auth.google-auth-library-parent_0.17.1",
+    repo_path = "com/google/auth/google-auth-library-credentials/1.24.0",
+    parent = "com.google.auth.google-auth-library-parent_1.24.0",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.auth.google-auth-library-oauth2-http_0.17.1",
-    pom = "repository/com/google/auth/google-auth-library-oauth2-http/0.17.1/google-auth-library-oauth2-http-0.17.1.pom",
+    name = "com.google.auth.google-auth-library-oauth2-http_1.24.0",
+    pom = "repository/com/google/auth/google-auth-library-oauth2-http/1.24.0/google-auth-library-oauth2-http-1.24.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/auth/google-auth-library-oauth2-http/0.17.1",
-    parent = "com.google.auth.google-auth-library-parent_0.17.1",
+    repo_path = "com/google/auth/google-auth-library-oauth2-http/1.24.0",
+    parent = "com.google.auth.google-auth-library-parent_1.24.0",
     deps = [
-        "com.google.auto.value.auto-value-annotations_1.6.6",
+        "com.google.auto.value.auto-value-annotations_1.10.4",
         "com.google.code.findbugs.jsr305_3.0.2",
-        "com.google.auth.google-auth-library-credentials_0.17.1",
-        "com.google.http-client.google-http-client_1.31.0",
-        "com.google.http-client.google-http-client-jackson2_1.31.0",
-        "com.google.guava.guava_28.0-android",
+        "com.google.auth.google-auth-library-credentials_1.24.0",
+        "com.google.http-client.google-http-client_1.44.2",
+        "com.google.http-client.google-http-client-gson_1.44.2",
+        "com.google.guava.guava_33.2.1-android",
+        "com.google.errorprone.error_prone_annotations_2.28.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -46922,6 +46914,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.auto.value.auto-value-annotations_1.10.4",
+    pom = "repository/com/google/auto/value/auto-value-annotations/1.10.4/auto-value-annotations-1.10.4.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/auto/value/auto-value-annotations/1.10.4",
+    parent = "com.google.auto.value.auto-value-parent_1.10.4",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.auto.value.auto-value-annotations_1.6.2",
     pom = "repository/com/google/auto/value/auto-value-annotations/1.6.2/auto-value-annotations-1.6.2.pom",
     repo_root_path = "repository",
@@ -46936,15 +46937,6 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/auto/value/auto-value-annotations/1.6.3",
     parent = "com.google.auto.value.auto-value-parent_1.6.3",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.auto.value.auto-value-annotations_1.6.6",
-    pom = "repository/com/google/auto/value/auto-value-annotations/1.6.6/auto-value-annotations-1.6.6.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/auto/value/auto-value-annotations/1.6.6",
-    parent = "com.google.auto.value.auto-value-parent_1.6.6",
     visibility = ["//visibility:public"],
 )
 
@@ -47898,6 +47890,24 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.errorprone.error_prone_annotations_2.23.0",
+    pom = "repository/com/google/errorprone/error_prone_annotations/2.23.0/error_prone_annotations-2.23.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/errorprone/error_prone_annotations/2.23.0",
+    parent = "com.google.errorprone.error_prone_parent_2.23.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.errorprone.error_prone_annotations_2.26.1",
+    pom = "repository/com/google/errorprone/error_prone_annotations/2.26.1/error_prone_annotations-2.26.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/errorprone/error_prone_annotations/2.26.1",
+    parent = "com.google.errorprone.error_prone_parent_2.26.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.errorprone.error_prone_annotations_2.3.1",
     pom = "repository/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.pom",
     repo_root_path = "repository",
@@ -48036,6 +48046,15 @@ maven_artifact(
         "com.google.guava.guava_22.0",
         "com.google.errorprone.javac-shaded_9-dev-r4023-3",
     ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.guava.failureaccess_1.0.2",
+    pom = "repository/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/failureaccess/1.0.2",
+    parent = "com.google.guava.guava-parent_26.0-android",
     visibility = ["//visibility:public"],
 )
 
@@ -48510,6 +48529,22 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.guava.guava_33.2.1-android",
+    pom = "repository/com/google/guava/guava/33.2.1-android/guava-33.2.1-android.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava/33.2.1-android",
+    parent = "com.google.guava.guava-parent_33.2.1-android",
+    deps = [
+        "com.google.guava.failureaccess_1.0.2",
+        "com.google.guava.listenablefuture_9999.0-empty-to-avoid-conflict-with-guava",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "org.checkerframework.checker-qual_3.42.0",
+        "com.google.errorprone.error_prone_annotations_2.26.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.guava.listenablefuture_1.0",
     pom = "repository/com/google/guava/listenablefuture/1.0/listenablefuture-1.0.pom",
     repo_root_path = "repository",
@@ -48599,6 +48634,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client-gson_1.44.2",
+    pom = "repository/com/google/http-client/google-http-client-gson/1.44.2/google-http-client-gson-1.44.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-gson/1.44.2",
+    parent = "com.google.http-client.google-http-client-parent_1.44.2",
+    deps = [
+        "com.google.http-client.google-http-client_1.44.2",
+        "com.google.code.gson.gson_2.10.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.http-client.google-http-client-jackson2_1.25.0",
     pom = "repository/com/google/http-client/google-http-client-jackson2/1.25.0/google-http-client-jackson2-1.25.0.pom",
     repo_root_path = "repository",
@@ -48607,19 +48655,6 @@ maven_artifact(
     deps = [
         "com.google.http-client.google-http-client_1.25.0",
         "com.fasterxml.jackson.core.jackson-core_2.9.6",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.http-client.google-http-client-jackson2_1.31.0",
-    pom = "repository/com/google/http-client/google-http-client-jackson2/1.31.0/google-http-client-jackson2-1.31.0.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client-jackson2/1.31.0",
-    parent = "com.google.http-client.google-http-client-parent_1.31.0",
-    deps = [
-        "com.google.http-client.google-http-client_1.31.0",
-        "com.fasterxml.jackson.core.jackson-core_2.9.9",
     ],
     visibility = ["//visibility:public"],
 )
@@ -48647,24 +48682,6 @@ maven_artifact(
         "com.google.code.findbugs.jsr305_3.0.2",
         "org.apache.httpcomponents.httpclient_4.5.5",
         "com.google.j2objc.j2objc-annotations_1.1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.http-client.google-http-client_1.31.0",
-    pom = "repository/com/google/http-client/google-http-client/1.31.0/google-http-client-1.31.0.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client/1.31.0",
-    parent = "com.google.http-client.google-http-client-parent_1.31.0",
-    deps = [
-        "org.apache.httpcomponents.httpclient_4.5.9",
-        "org.apache.httpcomponents.httpcore_4.4.11",
-        "com.google.code.findbugs.jsr305_3.0.2",
-        "com.google.guava.guava_26.0-android",
-        "com.google.j2objc.j2objc-annotations_1.3",
-        "io.opencensus.opencensus-api_0.21.0",
-        "io.opencensus.opencensus-contrib-http-util_0.21.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -48736,6 +48753,26 @@ maven_artifact(
         "com.google.errorprone.error_prone_annotations_2.16",
         "com.google.guava.guava_30.1.1-android",
         "com.google.j2objc.j2objc-annotations_1.3",
+        "io.opencensus.opencensus-api_0.31.1",
+        "io.opencensus.opencensus-contrib-http-util_0.31.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.http-client.google-http-client_1.44.2",
+    pom = "repository/com/google/http-client/google-http-client/1.44.2/google-http-client-1.44.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client/1.44.2",
+    parent = "com.google.http-client.google-http-client-parent_1.44.2",
+    deps = [
+        "org.apache.httpcomponents.httpclient_4.5.14",
+        "org.apache.httpcomponents.httpcore_4.4.16",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "com.google.errorprone.error_prone_annotations_2.23.0",
+        "com.google.guava.guava_30.1.1-android",
+        "com.google.j2objc.j2objc-annotations_2.8",
+        "io.grpc.grpc-context_1.60.1",
         "io.opencensus.opencensus-api_0.31.1",
         "io.opencensus.opencensus-contrib-http-util_0.31.1",
     ],
@@ -49847,6 +49884,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "io.grpc.grpc-api_1.60.1",
+    pom = "repository/io/grpc/grpc-api/1.60.1/grpc-api-1.60.1.pom",
+    repo_root_path = "repository",
+    repo_path = "io/grpc/grpc-api/1.60.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "io.grpc.grpc-context_1.14.0",
     pom = "repository/io/grpc/grpc-context/1.14.0/grpc-context-1.14.0.pom",
     repo_root_path = "repository",
@@ -49891,6 +49936,17 @@ maven_artifact(
     pom = "repository/io/grpc/grpc-context/1.45.1/grpc-context-1.45.1.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-context/1.45.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "io.grpc.grpc-context_1.60.1",
+    pom = "repository/io/grpc/grpc-context/1.60.1/grpc-context-1.60.1.pom",
+    repo_root_path = "repository",
+    repo_path = "io/grpc/grpc-context/1.60.1",
+    deps = [
+        "io.grpc.grpc-api_1.60.1",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -51062,18 +51118,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "io.opencensus.opencensus-contrib-http-util_0.21.0",
-    pom = "repository/io/opencensus/opencensus-contrib-http-util/0.21.0/opencensus-contrib-http-util-0.21.0.pom",
-    repo_root_path = "repository",
-    repo_path = "io/opencensus/opencensus-contrib-http-util/0.21.0",
-    deps = [
-        "io.opencensus.opencensus-api_0.21.0",
-        "com.google.guava.guava_26.0-android",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "io.opencensus.opencensus-contrib-http-util_0.28.0",
     pom = "repository/io/opencensus/opencensus-contrib-http-util/0.28.0/opencensus-contrib-http-util-0.28.0.pom",
     repo_root_path = "repository",
@@ -51913,6 +51957,14 @@ maven_artifact(
     pom = "repository/org/checkerframework/checker-qual/3.21.2/checker-qual-3.21.2.pom",
     repo_root_path = "repository",
     repo_path = "org/checkerframework/checker-qual/3.21.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.checkerframework.checker-qual_3.42.0",
+    pom = "repository/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/checkerframework/checker-qual/3.42.0",
     visibility = ["//visibility:public"],
 )
 
@@ -63577,14 +63629,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.fasterxml.jackson.jackson-base_2.9.9",
-    pom = "repository/com/fasterxml/jackson/jackson-base/2.9.9/jackson-base-2.9.9.pom",
-    repo_root_path = "repository",
-    repo_path = "com/fasterxml/jackson/jackson-base/2.9.9",
-    parent = "com.fasterxml.jackson.jackson-bom_2.9.9",
-)
-
-maven_artifact(
     name = "com.fasterxml.jackson.jackson-bom_2.11.1",
     pom = "repository/com/fasterxml/jackson/jackson-bom/2.11.1/jackson-bom-2.11.1.pom",
     repo_root_path = "repository",
@@ -63598,14 +63642,6 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/fasterxml/jackson/jackson-bom/2.9.6",
     parent = "com.fasterxml.jackson.jackson-parent_2.9.1.1",
-)
-
-maven_artifact(
-    name = "com.fasterxml.jackson.jackson-bom_2.9.9",
-    pom = "repository/com/fasterxml/jackson/jackson-bom/2.9.9/jackson-bom-2.9.9.pom",
-    repo_root_path = "repository",
-    repo_path = "com/fasterxml/jackson/jackson-bom/2.9.9",
-    parent = "com.fasterxml.jackson.jackson-parent_2.9.1.2",
 )
 
 maven_artifact(
@@ -63625,25 +63661,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.fasterxml.jackson.jackson-parent_2.9.1.2",
-    pom = "repository/com/fasterxml/jackson/jackson-parent/2.9.1.2/jackson-parent-2.9.1.2.pom",
-    repo_root_path = "repository",
-    repo_path = "com/fasterxml/jackson/jackson-parent/2.9.1.2",
-    parent = "com.fasterxml.oss-parent_34",
-)
-
-maven_artifact(
     name = "com.fasterxml.oss-parent_33",
     pom = "repository/com/fasterxml/oss-parent/33/oss-parent-33.pom",
     repo_root_path = "repository",
     repo_path = "com/fasterxml/oss-parent/33",
-)
-
-maven_artifact(
-    name = "com.fasterxml.oss-parent_34",
-    pom = "repository/com/fasterxml/oss-parent/34/oss-parent-34.pom",
-    repo_root_path = "repository",
-    repo_path = "com/fasterxml/oss-parent/34",
 )
 
 maven_artifact(
@@ -63754,10 +63775,11 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.auth.google-auth-library-parent_0.17.1",
-    pom = "repository/com/google/auth/google-auth-library-parent/0.17.1/google-auth-library-parent-0.17.1.pom",
+    name = "com.google.auth.google-auth-library-parent_1.24.0",
+    pom = "repository/com/google/auth/google-auth-library-parent/1.24.0/google-auth-library-parent-1.24.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/auth/google-auth-library-parent/0.17.1",
+    repo_path = "com/google/auth/google-auth-library-parent/1.24.0",
+    parent = "com.google.cloud.google-cloud-shared-config_1.9.0",
 )
 
 maven_artifact(
@@ -63775,6 +63797,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.auto.value.auto-value-parent_1.10.4",
+    pom = "repository/com/google/auto/value/auto-value-parent/1.10.4/auto-value-parent-1.10.4.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/auto/value/auto-value-parent/1.10.4",
+)
+
+maven_artifact(
     name = "com.google.auto.value.auto-value-parent_1.6.2",
     pom = "repository/com/google/auto/value/auto-value-parent/1.6.2/auto-value-parent-1.6.2.pom",
     repo_root_path = "repository",
@@ -63788,14 +63817,6 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/auto/value/auto-value-parent/1.6.3",
     parent = "com.google.auto.auto-parent_7",
-)
-
-maven_artifact(
-    name = "com.google.auto.value.auto-value-parent_1.6.6",
-    pom = "repository/com/google/auto/value/auto-value-parent/1.6.6/auto-value-parent-1.6.6.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/auto/value/auto-value-parent/1.6.6",
-    parent = "org.sonatype.oss.oss-parent_7",
 )
 
 maven_artifact(
@@ -63852,6 +63873,28 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/auto/auto-parent/7",
     parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.cloud.google-cloud-shared-config_1.9.0",
+    pom = "repository/com/google/cloud/google-cloud-shared-config/1.9.0/google-cloud-shared-config-1.9.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/cloud/google-cloud-shared-config/1.9.0",
+    parent = "com.google.cloud.native-image-shared-config_1.9.0",
+)
+
+maven_artifact(
+    name = "com.google.cloud.native-image-shared-config_1.7.6",
+    pom = "repository/com/google/cloud/native-image-shared-config/1.7.6/native-image-shared-config-1.7.6.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/cloud/native-image-shared-config/1.7.6",
+)
+
+maven_artifact(
+    name = "com.google.cloud.native-image-shared-config_1.9.0",
+    pom = "repository/com/google/cloud/native-image-shared-config/1.9.0/native-image-shared-config-1.9.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/cloud/native-image-shared-config/1.9.0",
 )
 
 maven_artifact(
@@ -63997,6 +64040,20 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/errorprone/error_prone_parent/2.2.0",
     parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.errorprone.error_prone_parent_2.23.0",
+    pom = "repository/com/google/errorprone/error_prone_parent/2.23.0/error_prone_parent-2.23.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/errorprone/error_prone_parent/2.23.0",
+)
+
+maven_artifact(
+    name = "com.google.errorprone.error_prone_parent_2.26.1",
+    pom = "repository/com/google/errorprone/error_prone_parent/2.26.1/error_prone_parent-2.26.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/errorprone/error_prone_parent/2.26.1",
 )
 
 maven_artifact(
@@ -64318,6 +64375,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.guava.guava-parent_33.2.1-android",
+    pom = "repository/com/google/guava/guava-parent/33.2.1-android/guava-parent-33.2.1-android.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava-parent/33.2.1-android",
+)
+
+maven_artifact(
     name = "com.google.http-client.google-http-client-parent_1.22.0",
     pom = "repository/com/google/http-client/google-http-client-parent/1.22.0/google-http-client-parent-1.22.0.pom",
     repo_root_path = "repository",
@@ -64330,14 +64394,6 @@ maven_artifact(
     pom = "repository/com/google/http-client/google-http-client-parent/1.25.0/google-http-client-parent-1.25.0.pom",
     repo_root_path = "repository",
     repo_path = "com/google/http-client/google-http-client-parent/1.25.0",
-    parent = "org.sonatype.oss.oss-parent_7",
-)
-
-maven_artifact(
-    name = "com.google.http-client.google-http-client-parent_1.31.0",
-    pom = "repository/com/google/http-client/google-http-client-parent/1.31.0/google-http-client-parent-1.31.0.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client-parent/1.31.0",
     parent = "org.sonatype.oss.oss-parent_7",
 )
 
@@ -64374,6 +64430,14 @@ maven_artifact(
     pom = "repository/com/google/http-client/google-http-client-parent/1.43.3/google-http-client-parent-1.43.3.pom",
     repo_root_path = "repository",
     repo_path = "com/google/http-client/google-http-client-parent/1.43.3",
+)
+
+maven_artifact(
+    name = "com.google.http-client.google-http-client-parent_1.44.2",
+    pom = "repository/com/google/http-client/google-http-client-parent/1.44.2/google-http-client-parent-1.44.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-parent/1.44.2",
+    parent = "com.google.cloud.native-image-shared-config_1.7.6",
 )
 
 maven_artifact(
