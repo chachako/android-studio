@@ -28,18 +28,36 @@ class GeneratedManifestInAndroidTestTest {
     @JvmField
     var project = GradleTestProject.builder().fromTestProject("androidManifestInTest").create()
 
-    fun addManifestGenerationToManifest() {
+    fun addManifestGenerationToManifest(toAndroidTest: Boolean = true) {
         project.buildFile.appendText(
             """
             androidComponents {
                 onVariants(selector().all(), { variant ->
                     def generateCustomManifestTask = tasks.register("generate${"$"}{variant.name.capitalize()}CustomManifest", GenerateCustomManifestTask)
+            """.trimIndent())
+        if (toAndroidTest) {
+            project.buildFile.appendText(
+                """
 
                     if (variant.androidTest != null) {
                         variant.androidTest.sources.manifests.addGeneratedManifestFile(generateCustomManifestTask, { it.getManifestProperty() })
                     }
                 })
             }
+            """.trimIndent()
+            )
+        } else {
+            project.buildFile.appendText(
+                """
+
+                    variant.sources.manifests.addGeneratedManifestFile(generateCustomManifestTask, { it.getManifestProperty() })
+                })
+            }
+            """.trimIndent()
+            )
+        }
+
+        project.buildFile.appendText("""
 
             abstract class GenerateCustomManifestTask extends DefaultTask {
                 @OutputFile
@@ -125,5 +143,12 @@ class GeneratedManifestInAndroidTestTest {
                 Truth.assertThat(content).contains("instrumentation")
             }
         }
+    }
+
+    @Test
+    fun testSyncWithGeneratedManifests() {
+        // ensure that generated manifest file does not trigger a sync exception.
+        addManifestGenerationToManifest(toAndroidTest = false)
+        project.modelV2().fetchModels()
     }
 }
