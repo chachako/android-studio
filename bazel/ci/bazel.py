@@ -3,6 +3,7 @@
 from typing import List
 import subprocess
 import os
+import getpass
 
 
 EXITCODE_SUCCESS = 0
@@ -29,7 +30,7 @@ class BuildEnv:
 
   def is_ci(self) -> bool:
     """Returns true if in a continuous integration environment."""
-    return self.build_target_name != ""
+    return self.build_target_name and getpass.getuser() == "android-build"
 
 
 class BazelCmd:

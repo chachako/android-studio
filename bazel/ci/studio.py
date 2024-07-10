@@ -90,6 +90,8 @@ def run_bazel_test(
       '--experimental_enable_execution_graph_log',
       '--experimental_execution_graph_log_dep_type=all',
   ])
+  if build_env.is_ci():
+    flags.append('--//tools/base/bazel/ci:is_ci')
 
   bazel_cmd = bazel.BazelCmd(build_env)
   bazel_cmd.startup_options = ['--max_idle_secs=60']
