@@ -212,9 +212,9 @@ abstract class MergeResources : NewIncrementalTask() {
     @get:OutputDirectory
     abstract val incrementalFolder: DirectoryProperty
 
-    @Optional
-    @OutputDirectory
-    abstract fun getMergedNotCompiledResourcesOutputDirectory(): DirectoryProperty?
+    @get:Optional
+    @get:OutputDirectory
+    abstract val mergedNotCompiledResourcesOutputDirectory: DirectoryProperty
 
     @get:Internal
     abstract val aaptEnv: Property<String?>
@@ -229,7 +229,6 @@ abstract class MergeResources : NewIncrementalTask() {
     @get:Internal
     abstract val aapt2ThreadPoolBuildService: Property<Aapt2ThreadPoolBuildService>
 
-    private var mergedNotCompiledResourcesOutputDirectory: Provider<Directory>? = null
     private var precompileDependenciesResources = false
     private var flags: Set<Flag> = emptySet()
     private var errorFormatMode: ErrorFormatMode? = null
@@ -292,7 +291,7 @@ abstract class MergeResources : NewIncrementalTask() {
                             resourceCompilationService = resourceCompiler,
                             temporaryDirectory = incrementalFolder,
                             dataBindingExpressionRemover = dataBindingLayoutProcessor,
-                            notCompiledOutputDirectory = mergedNotCompiledResourcesOutputDirectory?.get()?.asFile,
+                            notCompiledOutputDirectory = mergedNotCompiledResourcesOutputDirectory.orNull?.asFile,
                             pseudoLocalesEnabled = pseudoLocalesEnabled.get(),
                             crunchPng = crunchPng,
                             moduleSourceSets = sourceSetPaths
@@ -452,7 +451,7 @@ abstract class MergeResources : NewIncrementalTask() {
                             resourceCompiler,
                             incrementalFolder,
                             dataBindingLayoutProcessor,
-                            mergedNotCompiledResourcesOutputDirectory?.get()?.asFile,
+                            mergedNotCompiledResourcesOutputDirectory.orNull?.asFile,
                             pseudoLocalesEnabled.get(),
                             crunchPng,
                             sourceSetPaths
@@ -524,14 +523,15 @@ abstract class MergeResources : NewIncrementalTask() {
     private fun getRelativeSourceSetMap(
         resourceSets: List<ResourceSet>, destinationDir: File, incrementalFolder: File
     ): Map<String, String> {
-        val sourceSets: MutableList<File> =
-            resourceSets.flatMap(ResourceSet::getSourceFiles).toMutableList()
+        val sourceSets = resourceSets.flatMap { it.sourceFiles }.toMutableList()
 
         if (generatedPngsOutputDir.isPresent) {
             sourceSets.add(generatedPngsOutputDir.get().asFile)
         }
-        mergedNotCompiledResourcesOutputDirectory?.get()?.asFile?.let {
-            if (it.exists()) { sourceSets.add(it) }
+        mergedNotCompiledResourcesOutputDirectory.orNull?.asFile?.let {
+            if (it.exists()) {
+                sourceSets.add(it)
+            }
         }
         sourceSets.add(destinationDir)
         sourceSets.add(FileUtils.join(incrementalFolder, SdkConstants.FD_MERGED_DOT_DIR))
@@ -809,7 +809,7 @@ abstract class MergeResources : NewIncrementalTask() {
             artifacts.setInitialProvider(taskProvider) { obj: MergeResources -> obj.outputDir }
                 .on(mergeType.outputType)
             if (mergedNotCompiledOutputDirectory != null) {
-                artifacts.setInitialProvider(taskProvider) { obj: MergeResources -> obj.getMergedNotCompiledResourcesOutputDirectory()!! }
+                artifacts.setInitialProvider(taskProvider) { obj: MergeResources -> obj.mergedNotCompiledResourcesOutputDirectory }
                     .atLocation(mergedNotCompiledOutputDirectory)
                     .on(MERGED_NOT_COMPILED_RES)
             }
@@ -833,9 +833,8 @@ abstract class MergeResources : NewIncrementalTask() {
                 .wiredWith { obj: MergeResources -> obj.incrementalFolder }
                 .toCreate(MERGED_RES_INCREMENTAL_FOLDER)
             val vectorDrawablesOptions = androidResourcesCreationConfig.vectorDrawables
-            val disableVectorDrawables = (!processVectorDrawables
-                    || vectorDrawablesOptions.generatedDensities == null)
-            if (!disableVectorDrawables) {
+            val enableVectorDrawables = processVectorDrawables && vectorDrawablesOptions.generatedDensities != null
+            if (enableVectorDrawables) {
                 artifacts.setInitialProvider(
                     taskProvider
                 ) { obj: MergeResources -> obj.generatedPngsOutputDir }.atLocation(
@@ -844,8 +843,7 @@ abstract class MergeResources : NewIncrementalTask() {
                         .get()
                         .asFile
                         .absolutePath
-                )
-                    .on(InternalArtifactType.GENERATED_PNGS_RES)
+                ).on(InternalArtifactType.GENERATED_PNGS_RES)
             }
         }
 
@@ -901,7 +899,7 @@ abstract class MergeResources : NewIncrementalTask() {
                         .projectOptions[BooleanOption.USE_ANDROID_X]
                 )
             }
-            task.mergedNotCompiledResourcesOutputDirectory = mergedNotCompiledOutputDirectory
+
             task.pseudoLocalesEnabled.setDisallowChanges(
                 androidResourcesCreationConfig.pseudoLocalesEnabled
             )
