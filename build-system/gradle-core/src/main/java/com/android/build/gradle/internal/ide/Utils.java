@@ -24,15 +24,19 @@ import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.builder.compiling.BuildConfigType;
+
 import com.google.common.collect.Streams;
+
+import kotlin.Unit;
+
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
+import org.gradle.api.file.FileCollection;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-import kotlin.Unit;
-import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.Directory;
-import org.gradle.api.file.FileCollection;
 
 public class Utils {
 
@@ -90,12 +94,8 @@ public class Utils {
         ArtifactsImpl artifacts = component.getArtifacts();
         fileCollection.from(getGeneratedSourceFoldersFileCollectionForUnitTests(component));
         if (component.getBuildFeatures().getAidl()) {
-            Callable<Directory> aidlCallable =
-                    () ->
-                            artifacts
-                                    .get(InternalArtifactType.AIDL_SOURCE_OUTPUT_DIR.INSTANCE)
-                                    .getOrNull();
-            fileCollection.from(aidlCallable);
+            fileCollection.from(
+                    artifacts.get(InternalArtifactType.AIDL_SOURCE_OUTPUT_DIR.INSTANCE));
         }
         if (component.getBuildConfigCreationConfig() != null
                 && component.getBuildConfigCreationConfig().getBuildConfigType()
@@ -118,26 +118,15 @@ public class Utils {
                     mainVariant.getRenderscriptCreationConfig().getDslRenderscriptNdkModeEnabled();
         }
         if (!ndkMode && component.getBuildFeatures().getRenderScript()) {
-            Callable<Directory> renderscriptCallable =
-                    () ->
-                            artifacts
-                                    .get(
-                                            InternalArtifactType.RENDERSCRIPT_SOURCE_OUTPUT_DIR
-                                                    .INSTANCE)
-                                    .getOrNull();
-            fileCollection.from(renderscriptCallable);
+            fileCollection.from(
+                    artifacts.get(InternalArtifactType.RENDERSCRIPT_SOURCE_OUTPUT_DIR.INSTANCE));
         }
         boolean isDataBindingEnabled = component.getBuildFeatures().getDataBinding();
         boolean isViewBindingEnabled = component.getBuildFeatures().getViewBinding();
         if (isDataBindingEnabled || isViewBindingEnabled) {
-            Callable<Directory> dataBindingCallable =
-                    () ->
-                            artifacts
-                                    .get(
-                                            InternalArtifactType.DATA_BINDING_BASE_CLASS_SOURCE_OUT
-                                                    .INSTANCE)
-                                    .getOrNull();
-            fileCollection.from(dataBindingCallable);
+            fileCollection.from(
+                    artifacts.get(
+                            InternalArtifactType.DATA_BINDING_BASE_CLASS_SOURCE_OUT.INSTANCE));
         }
         fileCollection.disallowChanges();
         return fileCollection;
