@@ -1,5 +1,15 @@
 package com.android.adblib
 
+import com.android.adblib.WaitForState.Companion.ANY
+import com.android.adblib.WaitForState.Companion.BOOTLOADER
+import com.android.adblib.WaitForState.Companion.DISCONNECT
+import com.android.adblib.WaitForState.Companion.ONLINE
+import com.android.adblib.WaitForState.Companion.RECOVERY
+import com.android.adblib.WaitForState.Companion.RESCUE
+import com.android.adblib.WaitForState.Companion.SIDELOAD
+import com.android.adblib.WaitForTransport.Companion.ANY
+import com.android.adblib.WaitForTransport.Companion.LOCAL
+import com.android.adblib.WaitForTransport.Companion.USB
 import com.android.adblib.utils.toImmutableSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +35,9 @@ interface AdbHostServices {
      * The internal version is an integer value that is incremented when newer builds of ADB
      * are incompatible with older ADB clients. This value is somewhat opaque to
      * public consumers, but this API is provided for completeness.
+     *
+     * Note: See [serverStatus] to obtain more complete information about ADB server.
+     *
      */
     suspend fun version(): Int
 
@@ -130,6 +143,15 @@ interface AdbHostServices {
     suspend fun features(device: DeviceSelector): List<String>
 
     /**
+     * Returns the state of ADB server (see "host:server-status" query). See adb adb_host.proto
+     * and class [ServerStatus] for details.
+     *
+     * Note: This service is only available if [AdbFeatures.SERVER_STATUS] is contained in
+     * the list returned by [hostFeatures]. If not supported an Exception will be thrown.
+     */
+    suspend fun serverStatus(): ServerStatus
+
+    /**
      * Returns the list of all forward socket connections ("`host:list-forward`" query)
      * as a [list][ForwardSocketList] of [ForwardSocketInfo].
      */
@@ -206,6 +228,62 @@ interface AdbHostServices {
         deviceState: WaitForState,
         transport: WaitForTransport = WaitForTransport.ANY
     )
+}
+
+/**
+ * Status of the ADB server
+ */
+data class ServerStatus(
+    /**
+     * The USB backend used by the ADB server.
+     */
+    val usbBackend: UsbBackend = UsbBackend.UNKNOWN,
+
+    /**
+     * Whether the USB backend was forced by the user.
+     */
+    val usbBackendForced: Boolean = false,
+
+    /**
+     * The mDNS backend used by the ADB server.
+     */
+    val mdnsBackEnd: MdnsBackend = MdnsBackend.UNKNOWN,
+
+    /**
+     * Whether the mDNS backend was forced by the user.
+     */
+    val mdnsBackEndForced: Boolean = false,
+
+    /**
+     * The version of the ADB server. Format: "Major"."Minor"."Patch". e.g.: "34.0.1"
+     * This is the first part (before dash) of what is retrieved with `adb --version`
+     */
+    val version: String = "unknown",
+
+    /**
+     * The build of the ADB server.
+     * This is the second part (after the dash) of what is retrieved with `adb --version`
+     */
+    val build: String = "unknown",
+
+    /**
+     * The path to the log of the ADB server (if enabled).
+     */
+    val absoluteLogPath: String = "unknown",
+
+    /**
+     * The path to the ADB server executable.
+     */
+    val absoluteExecutablePath: String = "unknown",
+
+    /**
+     * The operating system ADB server is running on.
+     */
+    val os: String = "unknown",
+
+) {
+    enum class UsbBackend{UNKNOWN, LIBUSB, NATIVE}
+    enum class MdnsBackend{UNKNOWN, BONJOUR, OPENSCREEN}
 }
 
 /**

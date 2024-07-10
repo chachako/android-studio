@@ -54,4 +54,12 @@ object AdbFeatures {
      * Note: "track-app" was added in API 31 (Android "S")
      */
     const val TRACK_APP = "track_app"
+
+    /**
+     * If the result of [AdbHostServices.features] contains this value, the
+     * [AdbHostServices.serverStatus] invocation is supported by the host.
+     *
+     * Note: "server-status" was added in adb v35.0.2
+     */
+    const val SERVER_STATUS = "server_status"
 }

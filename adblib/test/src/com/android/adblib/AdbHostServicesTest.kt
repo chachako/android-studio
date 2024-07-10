@@ -162,6 +162,20 @@ class AdbHostServicesTest {
     }
 
     @Test
+    fun testServerStatusWorks() {
+        val features = runBlocking { hostServices.hostFeatures() }
+        val status = runBlocking { hostServices.serverStatus() }
+
+        Assert.assertTrue(features.contains(AdbFeatures.SERVER_STATUS))
+        Assert.assertEquals(status.usbBackend, ServerStatus.UsbBackend.LIBUSB)
+        Assert.assertEquals(status.mdnsBackEnd, ServerStatus.MdnsBackend.OPENSCREEN)
+        Assert.assertEquals(status.absoluteExecutablePath, "/path/to/adb")
+        Assert.assertEquals(status.absoluteLogPath, "/tmp/adb.log")
+        Assert.assertEquals(status.version, "35.0.2")
+        Assert.assertEquals(status.os, System.getProperty("os.name"))
+    }
+
+    @Test
     fun testDevicesShortFormatWorks() {
         // Prepare
         val fakeDevice =

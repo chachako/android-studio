@@ -26,6 +26,7 @@ import com.android.adblib.ForwardSocketList
 import com.android.adblib.MdnsCheckResult
 import com.android.adblib.MdnsServiceList
 import com.android.adblib.PairResult
+import com.android.adblib.ServerStatus
 import com.android.adblib.SocketSpec
 import com.android.adblib.WaitForState
 import com.android.adblib.WaitForTransport
@@ -155,32 +156,31 @@ class FakeAdbHostServices(override val session: AdbSession) : AdbHostServices, C
     }
 
     override suspend fun kill() {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun mdnsCheck(): MdnsCheckResult {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun mdnsServices(): MdnsServiceList {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun pair(deviceAddress: DeviceAddress, pairingCode: String): PairResult {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun getState(device: DeviceSelector): DeviceState {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun getSerialNo(device: DeviceSelector, forceRoundTrip: Boolean): String {
-        return device.serialNumber ?:
-            TODO("Not yet implemented: Unsupported device selector format")
+        return device.serialNumber ?: throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun getDevPath(device: DeviceSelector): String {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun features(device: DeviceSelector): List<String> {
@@ -201,7 +201,7 @@ class FakeAdbHostServices(override val session: AdbSession) : AdbHostServices, C
     }
 
     override suspend fun listForward(): ForwardSocketList {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun forward(
@@ -210,15 +210,15 @@ class FakeAdbHostServices(override val session: AdbSession) : AdbHostServices, C
         remote: SocketSpec,
         rebind: Boolean
     ): String? {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun killForward(device: DeviceSelector, local: SocketSpec) {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun killForwardAll(device: DeviceSelector) {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     override suspend fun connect(deviceAddress: DeviceAddress) {
@@ -234,7 +234,7 @@ class FakeAdbHostServices(override val session: AdbSession) : AdbHostServices, C
       deviceState: WaitForState,
       transport: WaitForTransport
     ) {
-        TODO("Not yet implemented")
+        throw NotImplementedError("An operation is not implemented")
     }
 
     private fun <T> MutableSharedFlow<T>.emitOrThrow(value: T) {
@@ -245,5 +245,9 @@ class FakeAdbHostServices(override val session: AdbSession) : AdbHostServices, C
                         "Increase the 'extraBufferCapacity' value"
             )
         }
+    }
+
+    override suspend fun serverStatus(): ServerStatus {
+        throw NotImplementedError("An operation is not implemented")
     }
 }

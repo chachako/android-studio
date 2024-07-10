@@ -14,6 +14,7 @@ import com.android.adblib.ForwardSocketList
 import com.android.adblib.MdnsCheckResult
 import com.android.adblib.MdnsServiceList
 import com.android.adblib.PairResult
+import com.android.adblib.ServerStatus
 import com.android.adblib.SocketSpec
 import com.android.adblib.WaitForState
 import com.android.adblib.WaitForTransport
@@ -21,6 +22,7 @@ import com.android.adblib.adbLogger
 import com.android.adblib.impl.services.AdbServiceRunner
 import com.android.adblib.impl.services.OkayDataExpectation
 import com.android.adblib.impl.services.TrackDevicesService
+import com.android.server.adb.protos.DevicesProto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.io.EOFException
@@ -174,6 +176,30 @@ internal class AdbHostServicesImpl(
         val tracker = TimeoutTracker(timeout, unit)
         val featuresString = serviceRunner.runHostDeviceQuery(device, "features", tracker)
         return featuresString.split(",")
+    }
+
+    override suspend fun serverStatus(): ServerStatus {
+        val tracker = TimeoutTracker(timeout, unit)
+        val buffer = serviceRunner.runHostQueryBinary("host:server-status", tracker)
+        val status = DevicesProto.AdbServerStatus.parseFrom(buffer)
+        val usbBackend = when(status.usbBackend) {
+            DevicesProto.AdbServerStatus.UsbBackend.NATIVE -> ServerStatus.UsbBackend.NATIVE
+            DevicesProto.AdbServerStatus.UsbBackend.LIBUSB -> ServerStatus.UsbBackend.LIBUSB
+            null,
+            DevicesProto.AdbServerStatus.UsbBackend.UNRECOGNIZED,
+            DevicesProto.AdbServerStatus.UsbBackend.UNKNOWN_USB -> ServerStatus.UsbBackend.UNKNOWN
+        }
+        val mdnsBackend = when(status.mdnsBackend) {
+            DevicesProto.AdbServerStatus.MdnsBackend.BONJOUR -> ServerStatus.MdnsBackend.BONJOUR
+            DevicesProto.AdbServerStatus.MdnsBackend.OPENSCREEN -> ServerStatus.MdnsBackend.OPENSCREEN
+            null,
+            DevicesProto.AdbServerStatus.MdnsBackend.UNRECOGNIZED,
+            DevicesProto.AdbServerStatus.MdnsBackend.UNKNOWN_MDNS -> ServerStatus.MdnsBackend.UNKNOWN
+        }
+
+        return ServerStatus(usbBackend, status.usbBackendForced, mdnsBackend, status.mdnsBackendForced,
+                            status.version, status.build, status.logAbsolutePath,
+                            status.executableAbsolutePath, status.os)
     }
 
     override suspend fun listForward(): ForwardSocketList {

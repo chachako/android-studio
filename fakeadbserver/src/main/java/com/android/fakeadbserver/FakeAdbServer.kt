@@ -43,6 +43,7 @@ import com.android.fakeadbserver.hostcommandhandlers.MdnsCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkConnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ServerStatusCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.WaitForCommandHandler
@@ -538,6 +539,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             addHostHandler(NetworkConnectCommandHandler())
             addHostHandler(NetworkDisconnectCommandHandler())
             addHostHandler(WaitForCommandHandler())
+            addHostHandler(ServerStatusCommandHandler())
 
             addDeviceHandler(TrackJdwpCommandHandler())
             addDeviceHandler(TrackAppCommandHandler())
@@ -616,7 +618,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
                     "cmd",
                     "abb",
                     "abb_exec",
-                    "track_app"
+                    "track_app",
+                    "server_status",
                 )
             )
         )
