@@ -12,11 +12,8 @@ readonly script_name="$(basename "$0")"
 # Invocation ID must be lower case in Upsalite URL
 readonly invocation_id=$(uuidgen | tr A-F a-f)
 
-readonly config_options="--config=local --config=_remote_base --config=sponge"
+readonly config_options="--config=local --config=rcache --config=release --config=ants"
 readonly target_filters="qa_smoke,ui_test,-qa_unreliable,-no_test_mac,-requires_emulator"
-
-# The BAZEL_* variable is configured on the Mac Host.
-export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
 
 # Use test strategy to run 1 test at a time after all build dependencies are built
 "${script_dir}/../bazel" \
