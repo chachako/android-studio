@@ -322,7 +322,7 @@ internal class AnnotationHandler(
   fun visitParameter(context: JavaContext, node: UParameter) {
     val annotations = mutableListOf<AnnotationInfo>()
     val psiParameter = node.javaPsi as? PsiParameter ?: return
-    annotations.addAnnotations(context.evaluator, psiParameter, PARAMETER, inHierarhcy = false)
+    annotations.addAnnotations(context.evaluator, psiParameter, PARAMETER, inHierarchy = false)
     checkAnnotations(context, node, DEFINITION, psiParameter, annotations)
   }
 
@@ -335,9 +335,9 @@ internal class AnnotationHandler(
     owner: PsiModifierListOwner,
     source: AnnotationOrigin,
     prepend: Boolean = false,
-    inHierarhcy: Boolean = true,
+    inHierarchy: Boolean = true,
   ): Int {
-    val annotations = getRelevantAnnotations(evaluator, owner, inHierarhcy)
+    val annotations = getRelevantAnnotations(evaluator, owner, inHierarchy)
     val count = addAnnotations(owner, annotations, source, prepend)
     if (source == PARAMETER || source == METHOD || source == FIELD) {
       return addDefaultAnnotations(evaluator, owner) + count

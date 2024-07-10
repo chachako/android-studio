@@ -56,6 +56,7 @@ import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.getContainingUFile
+import org.jetbrains.uast.kotlin.psi.UastFakeLightMethodBase
 
 open class DefaultJavaEvaluator(
   private val myProject: com.intellij.openapi.project.Project?,
@@ -181,8 +182,18 @@ open class DefaultJavaEvaluator(
 
     // withInferred=false when running outside the IDE: we don't have an InferredAnnotationsManager
     val withInferred = false
-    return AnnotationUtil.getAllAnnotations(owner, inHierarchy, null, withInferred).mapNotNull { psi
-      ->
+    val psiAnnotations =
+      when (owner) {
+        is UastFakeLightMethodBase -> {
+          // For `reified inline` or `@Deprecated(Hidden)`, UAST creates a "fake" PSI
+          // since LC doesn't model that. Such modeling has a separate list of annotations,
+          // while [AnnotationUtil] expects to retrieve annotations from modifier list.
+          // As a stopgap, we better read the underlying annotations directly here.
+          owner.annotations
+        }
+        else -> AnnotationUtil.getAllAnnotations(owner, inHierarchy, null, withInferred)
+      }
+    return psiAnnotations.mapNotNull { psi ->
       UastFacade.convertElement(psi, if (inHierarchy) null else parent, UAnnotation::class.java)
         as? UAnnotation
     }

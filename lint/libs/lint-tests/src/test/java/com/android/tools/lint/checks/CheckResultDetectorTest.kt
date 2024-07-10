@@ -2062,7 +2062,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
             """
                 package test.pkg
 
-                import javax.annotation.CheckReturnValue;
+                import javax.annotation.CheckReturnValue
                 import androidx.annotation.CheckResult
 
                 @CheckReturnValue
@@ -2348,5 +2348,56 @@ class CheckResultDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testAnnotationOnReifiedInline() {
+    // Regression from b/351244334
+    lint()
+      .files(
+        kotlin(
+            """
+            import androidx.annotation.CheckResult
+
+            class Example {
+                @CheckResult
+                fun regular(): Int = 1
+
+                @CheckResult
+                inline fun inlined(crossinline block: () -> Int) = block()
+
+                @CheckResult
+                inline fun <reified T : Any> reified(crossinline block: () -> T): String {
+                    val t = block()
+                    return t::class.java.simpleName
+                }
+
+                // usage example
+                fun call() {
+                    val a = Example()
+                    a.regular() // ERROR 1
+                    a.inlined { 1 } // ERROR 2
+                    a.reified { 1 } // ERROR 3
+                }
+            }
+          """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+src/Example.kt:19: Warning: The result of regular is not used [CheckResult]
+        a.regular() // ERROR 1
+        ~~~~~~~~~~~
+src/Example.kt:20: Warning: The result of inlined is not used [CheckResult]
+        a.inlined { 1 } // ERROR 2
+        ~~~~~~~~~~~~~~~
+src/Example.kt:21: Warning: The result of reified is not used [CheckResult]
+        a.reified { 1 } // ERROR 3
+        ~~~~~~~~~~~~~~~
+0 errors, 3 warnings
+        """
+      )
   }
 }
