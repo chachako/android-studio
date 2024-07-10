@@ -95,7 +95,7 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      '-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky',
+      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky',
   )
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
   copy_agp_supported_versions(build_env)
@@ -107,15 +107,30 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   raise studio.BazelTestError(exit_code=result.exit_code)
 
 
+def studio_linux_large(build_env: bazel.BuildEnv) -> None:
+  """Runs studio-linux-large target."""
+  setup_environment(build_env)
+  flags = build_flags(
+      build_env,
+      test_tag_filters='ci:studio-linux_large',
+  )
+  result = run_tests(build_env, flags, _BASE_TARGETS)
+  if is_build_successful(result):
+    if result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
+      return
+
+  raise studio.BazelTestError(exit_code=result.exit_code)
+
+
 def studio_linux_very_flaky(build_env: bazel.BuildEnv) -> None:
   """Runs studio-linux_very_flaky target."""
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      'very_flaky',
-  ) + [
-      '--build_tests_only',
-  ]
+      test_tag_filters='very_flaky',
+  )
+  flags.append('--build_tests_only')
+
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
   if is_build_successful(result):
     return
@@ -128,11 +143,12 @@ def studio_linux_k2(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      '-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky,-no_k2,-kotlin-plugin-k2',
-  ) + [
+      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky,-no_k2,-kotlin-plugin-k2',
+  )
+  flags.extend([
       '--bes_keywords=k2',
       '--jvmopt="-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true"',
-  ]
+  ])
   result = run_tests(build_env, flags, _BASE_TARGETS)
   copy_agp_supported_versions(build_env)
   if is_build_successful(result) and result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
@@ -150,6 +166,7 @@ def setup_environment(build_env: bazel.BuildEnv) -> None:
 
 def build_flags(
     build_env: bazel.BuildEnv,
+    *,
     test_tag_filters: str = '',
   ) -> List[str]:
   """Returns the flags to use for testing."""
