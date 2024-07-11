@@ -33,12 +33,15 @@ import com.android.annotations.concurrency.Immutable;
 import com.android.manifmerger.XmlDocument.Type;
 import com.android.utils.SdkUtils;
 import com.android.xml.AndroidManifest;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import java.util.EnumSet;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import java.util.EnumSet;
 
 /**
  * Model for the manifest file merging activities.
@@ -851,7 +854,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          * Returns true if multiple declaration for the same type and key are allowed or false if
          * there must be only one declaration of this element for a particular key value.
          */
-        boolean areMultipleDeclarationAllowed() {
+        public boolean areMultipleDeclarationAllowed() {
             return mMultipleDeclarationAllowed;
         }
 

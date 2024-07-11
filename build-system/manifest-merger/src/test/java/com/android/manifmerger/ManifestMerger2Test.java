@@ -19,6 +19,7 @@ package com.android.manifmerger;
 import static com.android.manifmerger.ManifestMergerTestUtil.loadTestData;
 import static com.android.manifmerger.ManifestMergerTestUtil.transformParameters;
 import static com.android.manifmerger.MergingReport.Record;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -26,11 +27,18 @@ import com.android.annotations.Nullable;
 import com.android.testutils.TestUtils;
 import com.android.utils.PositionXmlParser;
 import com.android.utils.StdLogger;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.truth.Expect;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -47,10 +55,6 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /** Tests for the {@link ManifestMerger2} class */
 @RunWith(Parameterized.class)
@@ -148,14 +152,18 @@ public class ManifestMerger2Test {
                 "99_info_severity_on_non_unique_androidx_test_package.xml",
                 "100_enforce_unique_package_name_warning.xml",
                 "101_enforce_unique_package_name_same_as_app_warning.xml",
-                "102_tools_node_opeartion_ordering.xml",
+                "102_tools_node_operation_ordering.xml",
                 "103_attribution_node.xml",
                 "104_merging_privacy_sandbox_tagged_permissions.xml",
                 "104b_merging_privacy_sandbox_tagged_permissions_all_untagged.xml",
                 "105_ignore_use_embedded_dex_from_library.xml",
                 "106_ignore_extract_native_libs_from_library.xml",
                 "107_sdk_library.xml",
-                "108_uses_sdk_library.xml"
+                "108_uses_sdk_library.xml",
+                "109_activity_feature_flag_node_addition.xml",
+                "109b_activity_feature_flag_node_matching",
+                "109c_activity_feature_flag_node_single_incoming_match",
+                "109d_activity_feature_flag_node_multiple_incoming_match"
             };
 
     private static final Multimap<Predicate<String>, ManifestMerger2.Invoker.Feature>
@@ -300,7 +308,9 @@ public class ManifestMerger2Test {
         String expectedResult = testFiles.getExpectedResult();
         String actualResult = xmlDocument.trim().replace("\r\n", "\n");
         expect.that(actualResult).isEqualTo(expectedResult.trim());
-        expect.that(PositionXmlParser.parse(actualResult)).named("output xml can be parsed").isNotNull();
+        expect.that(PositionXmlParser.parse(actualResult))
+                .named("output xml can be parsed")
+                .isNotNull();
 
         // process any warnings.
         compareExpectedAndActualErrors(mergeReport, testFiles.getExpectedErrors());
