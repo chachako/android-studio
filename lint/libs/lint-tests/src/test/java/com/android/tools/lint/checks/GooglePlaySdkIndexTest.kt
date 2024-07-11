@@ -468,6 +468,48 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
+        // First party libraries
+        .addSdks(
+          Sdk.newBuilder()
+            .setIsGoogleOwned(true)
+            .setIndexUrl("http://google.com")
+            .addLibraries(
+              Library.newBuilder()
+                .setLibraryId(
+                  LibraryIdentifier.newBuilder()
+                    .setMavenId(
+                      LibraryIdentifier.MavenIdentifier.newBuilder()
+                        .setGroupId("android.arch.core")
+                        .setArtifactId("common")
+                        .build()
+                    )
+                )
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("1.1.1")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setOutdatedIssueInfo(
+                          LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
+                            // Add recommended version to make sure the note is not added
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder().setLowerBound("1.1.2")
+                            )
+                        )
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder().setLowerBound("1.1.3")
+                            )
+                        )
+                    )
+                )
+            )
+        )
         .build()
     index =
       object : GooglePlaySdkIndex() {
@@ -487,7 +529,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `outdated issues shown`() {
-    assertThat(countOutdatedIssues()).isEqualTo(3)
+    assertThat(countOutdatedIssues()).isEqualTo(4)
   }
 
   @Test
@@ -497,12 +539,12 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `policy issues shown`() {
-    assertThat(countPolicyIssues()).isEqualTo(15)
+    assertThat(countPolicyIssues()).isEqualTo(16)
   }
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(17)
+    assertThat(countHasErrorOrWarning()).isEqualTo(18)
   }
 
   @Test
@@ -540,7 +582,7 @@ class GooglePlaySdkIndexTest {
 
         override fun error(throwable: Throwable, message: String?) {}
       }
-    offlineIndex.initialize()
+    offlineIndex.initialize(null)
     assertThat(offlineIndex.isReady()).isTrue()
     assertThat(offlineIndex.getLastReadSource()).isEqualTo(NetworkCache.DataSourceType.DEFAULT_DATA)
   }
@@ -717,6 +759,27 @@ class GooglePlaySdkIndexTest {
       "no.url.group:no.url.artifact version 1.0.0 has been reported as outdated by its author"
     assertThat(index.generateOutdatedMessage("no.url.group", "no.url.artifact", "1.0.0"))
       .isEqualTo(expectedMessage)
+  }
+
+  fun `Outdated issue with recommended versions for first party`() {
+    val expectedMessage =
+      "android.arch.core:common version 1.1.1 has been reported as outdated by its author.\n" +
+        "The library author recommends using versions:\n" +
+        "  - 1.1.2 or higher\n"
+    assertThat(index.generateOutdatedMessage("android.arch.core", "common", "1.1.1"))
+      .isEqualTo(expectedMessage)
+  }
+
+  @Test
+  fun `Policy with recommended versions first party`() {
+    val expectedMessages =
+      listOf(
+        "android.arch.core:common version 1.1.1 has Permissions policy issues that will block publishing of your app to Play Console in the future.\n" +
+          "The library author recommends using versions:\n" +
+          "  - 1.1.3 or higher\n"
+      )
+    assertThat(index.generatePolicyMessages("android.arch.core", "common", "1.1.1"))
+      .isEqualTo(expectedMessages)
   }
 
   private fun countOutdatedIssues(): Int {
