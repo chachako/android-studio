@@ -25,7 +25,14 @@ import com.android.build.gradle.integration.common.truth.ApkSubject;
 import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Charsets;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
 
 /**
  * test for packaging of asset files.
@@ -96,6 +97,7 @@ public class AssetPackagingTest {
         createOriginalAsset(createAssetFile(appDir, "main", "subdir", "file.txt"), "app:defg");
         createOriginalAsset(createAssetFile(appDir, "main", "_anotherdir", "file.txt"), "app:hijk");
         createOriginalAsset(createAssetFile(appDir, "androidTest", "filetest.txt"), "appTest:abcd");
+        createOriginalAsset(createAssetFile(appDir, "static", "static.txt"), "app:static");
 
         File testDir = testProject.getProjectDir();
         createOriginalAsset(createAssetFile(testDir, "main", "file.txt"), "test:abcd");
@@ -317,7 +319,9 @@ public class AssetPackagingTest {
                     it.replaceInFile(
                             appProject.getBuildFile().getPath(),
                             "aaptOptions \\{\\}",
-                            "aaptOptions \\{ ignoreAssetsPattern \"!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~\" \\}");
+                            "aaptOptions \\{ ignoreAssetsPattern"
+                                + " \"!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~\""
+                                + " \\}");
 
                     // Override AaptOptions and check that the file has been included.
                     execute("app:assembleDebug");
@@ -627,6 +631,20 @@ public class AssetPackagingTest {
                 .doesNotContain("assets/ba");
         TruthHelper.assertThat(appProject.getApk(GradleTestProject.ApkType.DEBUG))
                 .doesNotContain("assets/bb");
+    }
+
+    /** Regression test for b/352352252 */
+    @Test
+    public void testAddStaticSourceDirectory() throws Exception {
+        TestFileUtils.appendToFile(
+                appProject.getBuildFile(),
+                "androidComponents {\n"
+                    + "  onVariants(selector().all()) { variant ->\n"
+                    + "    variant.sources.assets?.addStaticSourceDirectory('src/static/assets')\n"
+                    + "  }\n"
+                    + "}");
+        execute("assembleDebug");
+        checkApk(appProject, "static.txt", "app:static");
     }
 
     /**

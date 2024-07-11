@@ -83,7 +83,7 @@
             - manifestFile            = {PROJECT}/src/debug/AndroidManifest.xml{!}
             - javaDirectories:
                * {PROJECT}/src/debug/java{!}
-               * {PROJECT}/src/debug/static{D}
+               * {PROJECT}/src/debug/staticJava{D}
             - kotlinDirectories:
                * {PROJECT}/src/debug/java{!}
                * {PROJECT}/src/debug/kotlin{!}
@@ -95,6 +95,7 @@
                * {PROJECT}/src/debug/res{!}
             - assetsDirectories:
                * {PROJECT}/src/debug/assets{!}
+               * {PROJECT}/src/debug/staticAssets{D}
             - jniLibsDirectories:
                * {PROJECT}/src/debug/jniLibs{!}
             - shadersDirectories:
@@ -156,7 +157,7 @@
             - manifestFile            = {PROJECT}/src/release/AndroidManifest.xml{!}
             - javaDirectories:
                * {PROJECT}/src/release/java{!}
-               * {PROJECT}/src/release/static{D}
+               * {PROJECT}/src/release/staticJava{D}
             - kotlinDirectories:
                * {PROJECT}/src/release/java{!}
                * {PROJECT}/src/release/kotlin{!}
@@ -168,6 +169,7 @@
                * {PROJECT}/src/release/res{!}
             - assetsDirectories:
                * {PROJECT}/src/release/assets{!}
+               * {PROJECT}/src/release/staticAssets{D}
             - jniLibsDirectories:
                * {PROJECT}/src/release/jniLibs{!}
             - shadersDirectories:

@@ -57,7 +57,7 @@ class SourcesDirectoryModelTest : ModelComparator() {
     """.trimIndent()
 
     @Test
-    fun `test adding generated source directory to IDE model with addGeneratedSourceDirectory and addStaticSourceDirectory`() {
+    fun `test adding source directories to IDE model with addGeneratedSourceDirectory and addStaticSourceDirectory`() {
         val buildFile = project.buildFile.readText()
         with(buildFile) {
             project.buildFile.writeText(this)
@@ -68,7 +68,7 @@ class SourcesDirectoryModelTest : ModelComparator() {
 
                 androidComponents {
                     onVariants(selector().all()) { variant ->
-                    // use addGeneratedSourceDirectory for adding generated resources
+                    // use addGeneratedSourceDirectory for adding generated source directories
                     TaskProvider<AssetCreatorTask> assetCreationTask =
                         project.tasks.register('create' + variant.getName() + 'Asset', AssetCreatorTask.class){
                             getOutputDirectory().set(new File(project.layout.buildDirectory.asFile.get(), "assets"))
@@ -78,11 +78,6 @@ class SourcesDirectoryModelTest : ModelComparator() {
                             assetCreationTask,
                             { it.getOutputDirectory() })
 
-                    // use addStaticSourceDirectory to add static directory
-                    String staticPath = 'src/' + variant.getName() + '/static'
-                    new File(project.projectDir, staticPath).mkdirs()
-
-                    variant.sources.java?.addStaticSourceDirectory(staticPath)
 
                     // add java generator task
                     TaskProvider<JavaCreatorTask> javaCreationTask =
@@ -93,6 +88,17 @@ class SourcesDirectoryModelTest : ModelComparator() {
                     variant.sources.java?.addGeneratedSourceDirectory(
                             javaCreationTask,
                             { it.getOutputDirectory() })
+
+                    // use addStaticSourceDirectory to add static directories
+                    String staticJavaPath = 'src/' + variant.getName() + '/staticJava'
+                    new File(project.projectDir, staticJavaPath).mkdirs()
+
+                    variant.sources.java?.addStaticSourceDirectory(staticJavaPath)
+
+                    String staticAssetsPath = 'src/' + variant.getName() + '/staticAssets'
+                    new File(project.projectDir, staticAssetsPath).mkdirs()
+
+                    variant.sources.assets?.addStaticSourceDirectory(staticAssetsPath)
                 }
             }
             """.trimIndent())
