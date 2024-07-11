@@ -16,8 +16,6 @@
 
 package com.android.compose.screenshot.report
 
-import org.gradle.api.tasks.testing.TestResult.ResultType
-
 /**
  * Custom test result based on Gradle's TestResult
  */
@@ -32,6 +30,7 @@ class TestResult(
 
 
     val failures: MutableList<TestFailure> = ArrayList()
+    val errors: MutableList<TestError> = ArrayList()
     private var ignored = false
 
     val id: Any
@@ -43,7 +42,7 @@ class TestResult(
         if (ignored) {
             return ResultType.SKIPPED
         }
-        return if (failures.isEmpty()) ResultType.SUCCESS else ResultType.FAILURE
+        return if (failures.isEmpty() && errors.isEmpty()) ResultType.SUCCESS else ResultType.FAILURE
     }
 
     override fun getFormattedDuration(): String {
@@ -59,6 +58,17 @@ class TestResult(
                 message,
                 stackTrace,
                 null
+            )
+        )
+    }
+
+    fun addError(
+        message: String, projectName: String, flavorName: String
+    ) {
+        classResults.error(this, projectName, flavorName)
+        errors.add(
+            TestError(
+                message
             )
         )
     }
@@ -87,5 +97,6 @@ class TestResult(
     }
 
     data class TestFailure(val message: String, val stackTrace: String?, val exceptionType: String?)
+    data class TestError(val message: String)
 
 }

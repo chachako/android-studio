@@ -60,6 +60,26 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
         }
     }
 
+    override fun renderErrors(htmlWriter: SimpleHtmlWriter) {
+        for (test in results.errors) {
+            val testName = test.name
+            htmlWriter.startElement("div")
+                .attribute("class", "test")
+                .startElement("a")
+                .attribute("name", test.id.toString())
+                .characters("")
+                .endElement() //browsers don't understand <a name="..."/>
+                .startElement("h3")
+                .attribute("class", test.statusClass)
+                .characters(testName)
+                .endElement()
+            if (test.screenshotImages != null) {
+                imagePanelRenderer.render(test.screenshotImages!!, htmlWriter)
+            }
+            htmlWriter.endElement()
+        }
+    }
+
     fun renderTests(htmlWriter: SimpleHtmlWriter?) {
         // show test images even for a successful test so that users can view what images were saved or see diff if it was below threshold
         for (test in results.results) {
@@ -81,6 +101,7 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
     }
 
     override fun registerTabs() {
+        addErrorTab()
         addFailuresTab()
         addTab("Tests", object : ErroringAction<SimpleHtmlWriter>() {
             @Throws(IOException::class)

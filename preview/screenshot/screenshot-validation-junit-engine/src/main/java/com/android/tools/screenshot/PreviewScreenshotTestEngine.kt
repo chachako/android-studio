@@ -21,7 +21,6 @@ import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.ComposeScreenshotResult
 import com.android.tools.render.compose.ImagePathOrMessage
-import com.android.tools.render.compose.ScreenshotError
 import java.io.File
 import javax.imageio.ImageIO
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
@@ -167,7 +166,7 @@ class PreviewScreenshotTestEngine : TestEngine {
         //renderer failed to generate images
         if (!actualPath.toFile().exists()) {
             val errorMessage = getFirstError(composeScreenshot.error)
-            return PreviewResult(1,
+            return PreviewResult(2,
                 composeScreenshot.previewId,
                 getDurationInSeconds(startTime),
                 errorMessage,

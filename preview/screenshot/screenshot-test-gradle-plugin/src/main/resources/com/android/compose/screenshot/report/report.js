@@ -7,6 +7,17 @@ function initTabs() {
     tabs.headers = findHeaders(container);
     tabs.select = select;
     tabs.deselectAll = deselectAll;
+    // select tab if title param is provided in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const titleParam = urlParams.get('title');
+    if (titleParam) {
+        const index = tabs.titles.indexOf(titleParam);
+        if (index > -1) {
+        tabs.select(index);
+        return true;
+        }
+    }
+    // If no title or invalid title, select the first tab (default)
     tabs.select(0);
     return true;
 }

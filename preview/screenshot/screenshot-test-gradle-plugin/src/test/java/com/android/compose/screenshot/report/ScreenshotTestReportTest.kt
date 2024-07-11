@@ -217,7 +217,7 @@ class ScreenshotTestReportTest {
                 <property name="device" value="Previews" />
               </properties>
               <testcase name="useAppContext2" classname="com.example.myapplication.ExampleInstrumentedTest" time="1.551">
-              <failure>Render failure: ClassNotFoundException: com.xxx.example.Class</failure>
+              <error>Render failure: ClassNotFoundException: com.xxx.example.Class</error>
               <properties>
               <property name="reference" value="${reference.absolutePath}"/>
               <property name="actual" value="Render failure: ClassNotFoundException: com.xxx.example.Class"/>
@@ -225,7 +225,7 @@ class ScreenshotTestReportTest {
               </properties>
               </testcase>
               <testcase name="useAppContext3" classname="com.example.myapplication.ExampleInstrumentedTest" time="2.112">
-              <failure>Timeout</failure>
+              <error>Timeout</error>
               <properties>
               <property name="reference" value="Reference image missing"/>
               <property name="actual" value="Timeout"/>

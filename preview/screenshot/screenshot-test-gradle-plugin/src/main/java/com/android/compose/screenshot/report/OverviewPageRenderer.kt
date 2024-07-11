@@ -23,6 +23,7 @@ import java.io.IOException
  */
 class OverviewPageRenderer : PageRenderer<AllTestResults>() {
     override fun registerTabs() {
+        addErrorTab()
         addFailuresTab()
         if (!results.getPackages().isEmpty()) {
             addTab("Packages", object : ErroringAction<SimpleHtmlWriter>() {
@@ -48,6 +49,7 @@ class OverviewPageRenderer : PageRenderer<AllTestResults>() {
         htmlWriter.startElement("tr")
         htmlWriter.startElement("th").characters("Package").endElement()
         htmlWriter.startElement("th").characters("Tests").endElement()
+        htmlWriter.startElement("th").characters("Errors").endElement()
         htmlWriter.startElement("th").characters("Failures").endElement()
         htmlWriter.startElement("th").characters("Skipped").endElement()
         htmlWriter.startElement("th").characters("Duration").endElement()
@@ -64,6 +66,9 @@ class OverviewPageRenderer : PageRenderer<AllTestResults>() {
                 .endElement()
             htmlWriter.endElement()
             htmlWriter.startElement("td").characters(testPackage.testCount.toString()).endElement()
+            htmlWriter.startElement("td")
+                .characters(testPackage.errorCount.toString())
+                .endElement()
             htmlWriter.startElement("td")
                 .characters(testPackage.failureCount.toString())
                 .endElement()
@@ -91,6 +96,7 @@ class OverviewPageRenderer : PageRenderer<AllTestResults>() {
         htmlWriter.startElement("tr")
         htmlWriter.startElement("th").characters("Class").endElement()
         htmlWriter.startElement("th").characters("Tests").endElement()
+        htmlWriter.startElement("th").characters("Errors").endElement()
         htmlWriter.startElement("th").characters("Failures").endElement()
         htmlWriter.startElement("th").characters("Skipped").endElement()
         htmlWriter.startElement("th").characters("Duration").endElement()
@@ -113,6 +119,9 @@ class OverviewPageRenderer : PageRenderer<AllTestResults>() {
                     .endElement()
                 htmlWriter.startElement("td")
                     .characters(testClass.testCount.toString())
+                    .endElement()
+                htmlWriter.startElement("td")
+                    .characters(testClass.errorCount.toString())
                     .endElement()
                 htmlWriter.startElement("td")
                     .characters(testClass.failureCount.toString())

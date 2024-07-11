@@ -27,6 +27,12 @@
 </div>
 </td>
 <td>
+<div class="infoBox" id="errors">
+<div class="counter">0</div>
+<p>errors</p>
+</div>
+</td>
+<td>
 <div class="infoBox" id="failures">
 <div class="counter">3</div>
 <p>failures</p>

@@ -38,6 +38,7 @@ class PackagePageRenderer : PageRenderer<PackageTestResults>() {
         htmlWriter.startElement("tr")
         htmlWriter.startElement("th").characters("Class").endElement()
         htmlWriter.startElement("th").characters("Tests").endElement()
+        htmlWriter.startElement("th").characters("Errors").endElement()
         htmlWriter.startElement("th").characters("Failures").endElement()
         htmlWriter.startElement("th").characters("Skipped").endElement()
         htmlWriter.startElement("th").characters("Duration").endElement()
@@ -55,6 +56,7 @@ class PackagePageRenderer : PageRenderer<PackageTestResults>() {
                 .endElement()
             htmlWriter.endElement()
             htmlWriter.startElement("td").characters(testClass.testCount.toString()).endElement()
+            htmlWriter.startElement("td").characters(testClass.errorCount.toString()).endElement()
             htmlWriter.startElement("td").characters(testClass.failureCount.toString()).endElement()
             htmlWriter
                 .startElement("td")
@@ -70,6 +72,7 @@ class PackagePageRenderer : PageRenderer<PackageTestResults>() {
     }
 
     override fun registerTabs() {
+        addErrorTab()
         addFailuresTab()
         addTab("Classes", object : ErroringAction<SimpleHtmlWriter>() {
             @Throws(IOException::class)

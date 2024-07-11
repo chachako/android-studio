@@ -26,6 +26,7 @@ abstract class TestResultModel {
         get() = when (getResultType()) {
             ResultType.SUCCESS -> "success"
             ResultType.FAILURE -> "failures"
+            ResultType.ERROR -> "errors"
             ResultType.SKIPPED -> "skipped"
             else -> throw IllegalStateException()
         }
@@ -40,6 +41,7 @@ abstract class TestResultModel {
         return when (getResultType()) {
             ResultType.SUCCESS -> "passed"
             ResultType.FAILURE -> "failed"
+            ResultType.ERROR -> "error"
             ResultType.SKIPPED -> "ignored"
             else -> throw IllegalStateException()
         }
@@ -47,5 +49,12 @@ abstract class TestResultModel {
 
     companion object {
         val DURATION_FORMATTER: DurationFormatter = DurationFormatter()
+    }
+
+    enum class ResultType {
+        SUCCESS,
+        FAILURE,
+        ERROR,
+        SKIPPED
     }
 }

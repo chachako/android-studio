@@ -99,6 +99,7 @@ class TestReport(private val resultDir: File, private val reportDir: File) {
                     if (timeString.isNotBlank()) parse(timeString) else BigDecimal.valueOf(0)
                 duration = duration.multiply(BigDecimal.valueOf(1000))
                 val failures = testCase.getElementsByTagName("failure")
+                val errors = testCase.getElementsByTagName("error")
 
                 // block to parse screenshot test images/texts
                 var ssImages: ScreenshotTestImages? = null
@@ -146,6 +147,10 @@ class TestReport(private val resultDir: File, private val reportDir: File) {
                         failure.getAttribute("message"), failure.textContent,
                         projectName, flavorName
                     )
+                }
+                for (j in 0 until errors.length) {
+                    val error = errors.item(j) as Element
+                    testResult.addError(error.textContent, projectName, flavorName)
                 }
                 if (testCase.getElementsByTagName("skipped").length > 0) {
                     testResult.ignored(projectName, flavorName)

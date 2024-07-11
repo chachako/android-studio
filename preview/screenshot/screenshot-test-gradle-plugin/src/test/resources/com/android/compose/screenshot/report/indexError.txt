@@ -24,8 +24,14 @@
 </div>
 </td>
 <td>
-<div class="infoBox" id="failures">
+<div class="infoBox" id="errors">
 <div class="counter">2</div>
+<p>errors</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
 <p>failures</p>
 </div>
 </td>
@@ -57,7 +63,7 @@
 <div id="tabs">
 <ul class="tabLinks">
 <li>
-<a href="#tab0">Failed tests</a>
+<a href="#tab0">Errors</a>
 </li>
 <li>
 <a href="#tab1">Packages</a>
@@ -67,7 +73,7 @@
 </li>
 </ul>
 <div id="tab0" class="tab">
-<h2>Failed tests</h2>
+<h2>Errors</h2>
 <ul class="linkList">
 <table>
 <thead>
@@ -78,18 +84,18 @@
 </thead>
 <tr>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Errors">ExampleInstrumentedTest</a>
 </td>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext2">useAppContext2</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext2?title=Errors">useAppContext2</a>
 </td>
 </tr>
 <tr>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Errors">ExampleInstrumentedTest</a>
 </td>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext3">useAppContext3</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext3?title=Errors">useAppContext3</a>
 </td>
 </tr>
 </table>
@@ -102,6 +108,7 @@
 <tr>
 <th>Package</th>
 <th>Tests</th>
+<th>Errors</th>
 <th>Failures</th>
 <th>Skipped</th>
 <th>Duration</th>
@@ -116,6 +123,7 @@
 <td>2</td>
 <td>2</td>
 <td>0</td>
+<td>0</td>
 <td>3.663s</td>
 <td class="failures">0%</td>
 </tr>
@@ -129,6 +137,7 @@
 <tr>
 <th>Class</th>
 <th>Tests</th>
+<th>Errors</th>
 <th>Failures</th>
 <th>Skipped</th>
 <th>Duration</th>
@@ -141,6 +150,7 @@
 <a href="com.example.myapplication.ExampleInstrumentedTest.html">com.example.myapplication.ExampleInstrumentedTest</a>
 <td>2</td>
 <td>2</td>
+<td>0</td>
 <td>0</td>
 <td>3.663s</td>
 <td class="failures">0%</td>

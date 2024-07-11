@@ -62,8 +62,64 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
         }
     }
 
+    protected fun addErrorTab() {
+        if (results.errors.isNotEmpty()) {
+            addTab(
+                "Errors",
+                object : ErroringAction<SimpleHtmlWriter>() {
+                    @Throws(IOException::class)
+                    override fun doExecute(objectToExecute: SimpleHtmlWriter) {
+                        renderErrors(objectToExecute)
+                    }
+                }
+            )
+        }
+    }
+
+    protected open fun renderErrors(htmlWriter: SimpleHtmlWriter) {
+        htmlWriter.startElement("ul").attribute("class", "linkList")
+        htmlWriter.startElement("table")
+        htmlWriter.startElement("thead")
+        htmlWriter.startElement("tr")
+        htmlWriter.startElement("th").characters("Class").endElement()
+        htmlWriter.startElement("th").characters("Test").endElement()
+        htmlWriter.endElement() //tr
+        htmlWriter.endElement() //thead
+        for (test: TestResult in results.errors) {
+            htmlWriter.startElement("tr")
+            htmlWriter.startElement("td")
+                .attribute("class", test.statusClass)
+                .startElement("a")
+                .attribute(
+                    "href",
+                    String.format("%s.html?title=Errors", test.classResults.getFilename())
+                )
+                .characters(test.classResults.simpleName)
+                .endElement()
+                .endElement()
+            htmlWriter.startElement("td")
+                .attribute("class", test.statusClass)
+                .startElement("a")
+                .attribute(
+                    "href",
+                    String.format(
+                        "%s.html#%s?title=Errors",
+                        test.classResults.getFilename(),
+                        test.name
+                    )
+                )
+                .characters(test.name)
+                .endElement()
+                .endElement()
+            htmlWriter.endElement() //tr
+        }
+        htmlWriter.endElement() //table
+        htmlWriter.endElement() // ul
+    }
+
     @Throws(IOException::class)
     protected open fun renderFailures(htmlWriter: SimpleHtmlWriter) {
+        val selectFailureTab = "?title=Failed%20tests"
         htmlWriter.startElement("ul").attribute("class", "linkList")
         htmlWriter.startElement("table")
         htmlWriter.startElement("thead")
@@ -79,7 +135,7 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
                 .startElement("a")
                 .attribute(
                     "href",
-                    String.format("%s.html", test.classResults.getFilename())
+                    String.format("%s.html%s", test.classResults.getFilename(), selectFailureTab)
                 )
                 .characters(test.classResults.simpleName)
                 .endElement()
@@ -90,8 +146,9 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
                 .attribute(
                     "href",
                     String.format(
-                        "%s.html#%s",
+                        "%s.html%s#%s",
                         test.classResults.getFilename(),
+                        selectFailureTab,
                         test.name
                     )
                 )
@@ -115,6 +172,7 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
         htmlWriter.startElement("tr")
         htmlWriter.startElement("th").characters(name.toCharArray()).endElement()
         htmlWriter.startElement("th").characters("Tests").endElement()
+        htmlWriter.startElement("th").characters("Errors").endElement()
         htmlWriter.startElement("th").characters("Failures").endElement()
         htmlWriter.startElement("th").characters("Skipped").endElement()
         htmlWriter.startElement("th").characters("Duration").endElement()
@@ -130,6 +188,7 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
                     .endElement()
             }
             htmlWriter.startElement("td").characters(results.testCount.toString()).endElement()
+            htmlWriter.startElement("td").characters(results.errorCount.toString()).endElement()
             htmlWriter.startElement("td")
                 .characters(results.failureCount.toString())
                 .endElement()
@@ -179,6 +238,19 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
                     .characters(results.testCount.toString())
                     .endElement()
                 htmlWriter.startElement("p").characters("tests").endElement()
+                htmlWriter.endElement()
+                htmlWriter.endElement()
+                htmlWriter.startElement("td")
+                htmlWriter
+                    .startElement("div")
+                    .attribute("class", "infoBox")
+                    .attribute("id", "errors")
+                htmlWriter
+                    .startElement("div")
+                    .attribute("class", "counter")
+                    .characters(results.errorCount.toString())
+                    .endElement()
+                htmlWriter.startElement("p").characters("errors").endElement()
                 htmlWriter.endElement()
                 htmlWriter.endElement()
                 htmlWriter.startElement("td")

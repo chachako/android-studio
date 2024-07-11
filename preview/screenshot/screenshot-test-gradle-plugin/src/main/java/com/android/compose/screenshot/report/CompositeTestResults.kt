@@ -16,7 +16,6 @@
 
 package com.android.compose.screenshot.report
 
-import org.gradle.api.tasks.testing.TestResult.ResultType
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.TreeMap
@@ -30,6 +29,8 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
         private set
     val failures: MutableSet<TestResult> =
         TreeSet<TestResult>()
+    val errors: MutableSet<TestResult> =
+        TreeSet<TestResult>()
     var skipCount = 0
     override var duration: Long = 0
     private val variants: MutableMap<String, VariantTestResults?> = TreeMap<String, VariantTestResults?>()
@@ -41,12 +42,14 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
     abstract val name: String?
     val failureCount: Int
         get() = failures.size
+    val errorCount: Int
+        get() = errors.size
     override fun getFormattedDuration(): String {
         return if (testCount == 0) "-" else super.getFormattedDuration()
     }
 
     override fun getResultType(): ResultType {
-        return if (failures.isEmpty()) ResultType.SUCCESS else ResultType.FAILURE
+        return if (failures.isEmpty() && errorCount == 0) ResultType.SUCCESS else ResultType.FAILURE
     }
 
     val formattedSuccessRate: String
@@ -60,7 +63,7 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
                 return null
             }
             val tests = BigDecimal.valueOf((testCount - skipCount).toLong())
-            val successful = BigDecimal.valueOf((testCount - failureCount - skipCount).toLong())
+            val successful = BigDecimal.valueOf((testCount - failureCount - skipCount - errorCount).toLong())
             return successful.divide(
                 tests, 2,
                 RoundingMode.DOWN
@@ -80,6 +83,21 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
                 flavorName
             )
         variants[key]?.failed(failedTest, projectName, flavorName)
+    }
+
+    fun error(
+        testError: TestResult,
+        projectName: String,
+        flavorName: String
+    ) {
+        errors.add(testError)
+        parent?.error(testError, projectName, flavorName)
+        val key: String =
+            getVariantKey(
+                projectName,
+                flavorName
+            )
+        variants[key]?.error(testError, projectName, flavorName)
     }
 
     fun skipped(projectName: String, flavorName: String) {

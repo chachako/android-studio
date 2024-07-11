@@ -26,6 +26,12 @@
 </div>
 </td>
 <td>
+<div class="infoBox" id="errors">
+<div class="counter">0</div>
+<p>errors</p>
+</div>
+</td>
+<td>
 <div class="infoBox" id="failures">
 <div class="counter">3</div>
 <p>failures</p>
@@ -77,26 +83,26 @@
 </thead>
 <tr>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests">ExampleInstrumentedTest</a>
 </td>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext2">useAppContext2</a>
-</td>
-</tr>
-<tr>
-<td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
-</td>
-<td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext3">useAppContext3</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests#useAppContext2">useAppContext2</a>
 </td>
 </tr>
 <tr>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests">ExampleInstrumentedTest</a>
 </td>
 <td class="failures">
-<a href="com.example.myapplication.ExampleInstrumentedTest.html#useAppContext4">useAppContext4</a>
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests#useAppContext3">useAppContext3</a>
+</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests">ExampleInstrumentedTest</a>
+</td>
+<td class="failures">
+<a href="com.example.myapplication.ExampleInstrumentedTest.html?title=Failed%20tests#useAppContext4">useAppContext4</a>
 </td>
 </tr>
 </table>
@@ -109,6 +115,7 @@
 <tr>
 <th>Class</th>
 <th>Tests</th>
+<th>Errors</th>
 <th>Failures</th>
 <th>Skipped</th>
 <th>Duration</th>
@@ -120,6 +127,7 @@
 <a href="com.example.myapplication.ExampleInstrumentedTest.html">ExampleInstrumentedTest</a>
 </td>
 <td>4</td>
+<td>0</td>
 <td>3</td>
 <td>0</td>
 <td>7.169s</td>
