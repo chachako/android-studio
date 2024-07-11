@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<testsuite name="package" tests="4" failures="2" errors="zero" skipped="zero">
+<testsuite name="package" tests="4" failures="1" errors="1" skipped="zero">
   <properties />
   <testcase name="previewTest1" classname="package" time="2.0">
     <success>Reference image saved</success>
@@ -14,7 +14,7 @@
     </properties>
   </testcase>
   <testcase name="previewTest3" classname="package" time="0.0">
-    <failure>Render error</failure>
+    <error>Render error</error>
     <properties>
       <property name="reference" value="referencePath" />
       <property name="actual" value="Render error: Class XYZ not found" />

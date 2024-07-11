@@ -28,6 +28,7 @@ const val CLASSNAME = "classname"
 const val COLON = ":"
 const val DIFF = "diff"
 const val TIME = "time"
+const val ERROR = "error"
 const val ERRORS = "errors"
 const val FAILURE = "failure"
 const val FAILURES = "failures"
@@ -80,9 +81,9 @@ private fun printTestResults(
     )
     serializer.attribute(
         NAMESPACE, FAILURES,
-        previewResults.filter { it.responseCode == 1 || it.responseCode == 2 }.size.toString()
+        previewResults.filter { it.responseCode == 1 }.size.toString()
     )
-    serializer.attribute(NAMESPACE, ERRORS, ZERO) //errors are not read by html report generator
+    serializer.attribute(NAMESPACE, ERRORS, previewResults.filter { it.responseCode == 2 }.size.toString())
     serializer.attribute(NAMESPACE, SKIPPED, ZERO)
     serializer.startTag(NAMESPACE, PROPERTIES)
     for ((key, value) in getPropertiesAttributes(xmlProperties).entries) {
@@ -113,7 +114,7 @@ private fun printTest(serializer: KXmlSerializer, result: PreviewResult) {
     when (result.responseCode) {
         0 -> printImages(serializer, SUCCESS, result.message!!, result)
         1 -> printImages(serializer, FAILURE, result.message!!, result)
-        2 -> printImages(serializer, FAILURE, result.message!!, result) //errors are not read by html report generator
+        2 -> printImages(serializer, ERROR, result.message!!, result)
     }
 
     serializer.endTag(NAMESPACE, TESTCASE)
