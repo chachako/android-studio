@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.privacysandbox
 
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
@@ -28,6 +29,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
+import com.android.sdklib.SdkVersionInfo
 import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
 import com.android.utils.StdLogger
@@ -37,7 +39,6 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import java.nio.file.Path
-import org.junit.Ignore
 
 /** Integration tests for the privacy sandbox SDK for consumption */
 class PrivacySandboxSdkConsumptionTest {
@@ -99,7 +100,7 @@ class PrivacySandboxSdkConsumptionTest {
         // Check building the bundle to deploy to UpsideDownCake
         val apkSelectConfig = project.file("apkSelectConfig.json")
         apkSelectConfig.writeText(
-                """{"sdk_version":34,"sdk_runtime":{"supported":"true"},"screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
+            """{"sdk_version":$COMPILE_SDK_VERSION,"sdk_runtime":{"supported":"true"},"screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
 
         executor()
                 .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
@@ -296,11 +297,11 @@ class PrivacySandboxSdkConsumptionTest {
                     "  E: manifest (line=2)",
                     "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
                     "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
-                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=34",
-                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"14\" (Raw: \"14\")",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=$COMPILE_SDK_VERSION",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"$COMPILE_SDK_VERSION_CODENAME\" (Raw: \"$COMPILE_SDK_VERSION_CODENAME\")",
                     "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
-                    "    A: platformBuildVersionCode=34",
-                    "    A: platformBuildVersionName=14",
+                    "    A: platformBuildVersionCode=$COMPILE_SDK_VERSION",
+                    "    A: platformBuildVersionName=$COMPILE_SDK_VERSION_CODENAME",
                     "    A: split=\"comexampleprivacysandboxsdk\" (Raw: \"comexampleprivacysandboxsdk\")",
                     "      E: uses-permission (line=10)",
                     "        A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")",
@@ -344,11 +345,11 @@ class PrivacySandboxSdkConsumptionTest {
                 "  E: manifest (line=2)",
                 "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
                 "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
-                "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=34",
-                "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"14\" (Raw: \"14\")",
+                "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=$COMPILE_SDK_VERSION",
+                "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"$COMPILE_SDK_VERSION_CODENAME\" (Raw: \"$COMPILE_SDK_VERSION_CODENAME\")",
                 "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
-                "    A: platformBuildVersionCode=34",
-                "    A: platformBuildVersionName=14",
+                "    A: platformBuildVersionCode=$COMPILE_SDK_VERSION",
+                "    A: platformBuildVersionName=$COMPILE_SDK_VERSION_CODENAME",
                 "    A: split=\"exampleappdebuginjectedprivacysandboxcompat\" (Raw: \"exampleappdebuginjectedprivacysandboxcompat\")",
                 "      E: application (line=9)",
                 "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
@@ -445,7 +446,6 @@ class PrivacySandboxSdkConsumptionTest {
     }
 
     companion object {
-
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")
         private const val SDK_IMPL_A_CLASS = "Lcom/example/sdkImplA/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
@@ -458,5 +458,23 @@ class PrivacySandboxSdkConsumptionTest {
             "-injected-privacy-sandbox-compat.apk"
         private const val RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT =
             "/assets/RuntimeEnabledSdkTable.xml"
+        private const val COMPILE_SDK_VERSION = DEFAULT_COMPILE_SDK_VERSION
+        private val COMPILE_SDK_VERSION_CODENAME: String =
+            COMPILE_SDK_VERSION.toPlatformBuildVersionName()
+
+        /**
+         * For any given SDK integer, prepare expected 'platformBuildVersionName' value.
+         * Drop trailing zero, but do not change anything should the version name include
+         * digits or multiple periods.
+         */
+        private fun Int.toPlatformBuildVersionName(): String {
+            val versionName = SdkVersionInfo.getReleaseVersionString(this)
+            return when {
+                versionName.any { it.isLetter() } || versionName.count { it == '.' } > 1 -> versionName
+                versionName.endsWith(".0") -> versionName.substringBefore(".")
+                else -> versionName
+            }
+        }
     }
 }
+
