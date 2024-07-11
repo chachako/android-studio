@@ -20,6 +20,7 @@ import com.android.tools.render.compose.readComposeScreenshotsJson
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.ComposeScreenshotResult
+import com.android.tools.render.compose.ScreenshotError
 import java.io.File
 import javax.imageio.ImageIO
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
@@ -34,7 +35,6 @@ import org.junit.platform.engine.support.discovery.EngineDiscoveryRequestResolve
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.Path
-import kotlin.io.path.exists
 
 class PreviewScreenshotTestEngine : TestEngine {
 
@@ -175,13 +175,13 @@ class PreviewScreenshotTestEngine : TestEngine {
                 referencePath = null
                 referenceMessage = "Reference image missing"
             }
-
+            val errorMessage = getFirstError(composeScreenshot.error)
             return PreviewResult(1,
                 composeScreenshot.previewId,
                 getDurationInSeconds(startTime),
-                "Image render failed",
+                errorMessage,
                 referenceImage = ImageDetails(referencePath, referenceMessage),
-                actualImage = ImageDetails(null, "Image render failed")
+                actualImage = ImageDetails(null, errorMessage)
             )
 
         }

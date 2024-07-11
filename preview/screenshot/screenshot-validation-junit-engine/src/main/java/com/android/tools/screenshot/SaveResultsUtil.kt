@@ -16,6 +16,7 @@
 
 package com.android.tools.screenshot
 
+import com.android.tools.render.compose.ScreenshotError
 import org.kxml2.io.KXmlSerializer
 import java.io.BufferedOutputStream
 import java.io.File
@@ -47,6 +48,24 @@ const val VALUE = "value"
 const val ZERO = "zero"
 
 val NAMESPACE = null
+
+/*
+  ScreenshotError object may contain multiple errors, this method returns one of them to show to the user.
+*/
+fun getFirstError(screenshotError: ScreenshotError?): String {
+    if (screenshotError != null) {
+        if (screenshotError.message.isNotEmpty()) return screenshotError.message
+        if (screenshotError.stackTrace.isNotEmpty()) return screenshotError.stackTrace
+        for (problem in screenshotError.problems) {
+            if (!problem.stackTrace.isNullOrEmpty()) return problem.stackTrace!!
+        }
+        for (brokenClass in screenshotError.brokenClasses) {
+            if (brokenClass.stackTrace.isNotEmpty()) return "Rendering failed with issue. Broken class ${brokenClass.className}: ${brokenClass.stackTrace}"
+        }
+        if (screenshotError.missingClasses.isNotEmpty()) return "Rendering failed with issue: Missing class(es): ${screenshotError.missingClasses.joinToString(", ")}"
+    }
+    return "Rendering failed"
+}
 
 fun saveResults(
     previewResults: List<PreviewResult>,

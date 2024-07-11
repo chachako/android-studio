@@ -16,6 +16,9 @@
 
 package com.android.tools.screenshot
 
+import com.android.tools.render.compose.BrokenClass
+import com.android.tools.render.compose.RenderProblem
+import com.android.tools.render.compose.ScreenshotError
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import java.nio.file.Path
@@ -23,6 +26,7 @@ import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import kotlin.test.assertEquals
 
 class SaveResultsUtilTest {
     @get:Rule
@@ -64,6 +68,19 @@ class SaveResultsUtilTest {
             .replace("diffPath", diffPath.toString()).trimEnd()
         assertThat(file.readText()).isEqualTo(expectedContent)
     }
+
+    @Test
+    fun testGetFirstError() {
+        assertEquals("errorMessage", getFirstError(ScreenshotError("STATUS", "errorMessage", "", emptyList(), emptyList(), emptyList())))
+        assertEquals("stackTrace", getFirstError(ScreenshotError("STATUS", "", "stackTrace", emptyList(), emptyList(), emptyList())))
+        assertEquals("stackTrace", getFirstError(ScreenshotError("STATUS", "", "", listOf(RenderProblem("html", "stackTrace"), RenderProblem("html2", "stacktrace2")), emptyList(), emptyList())))
+        assertEquals("stackTrace", getFirstError(ScreenshotError("STATUS", "", "", listOf(RenderProblem("html", "stackTrace"), RenderProblem("html2", "stacktrace2")), emptyList(), emptyList())))
+        assertEquals("Rendering failed with issue. Broken class name: stackTrace", getFirstError(ScreenshotError("STATUS", "", "", emptyList(), listOf(BrokenClass("name", "stackTrace"), BrokenClass("name2", "stackTrace2")), emptyList())))
+        assertEquals("Rendering failed with issue: Missing class(es): name1, name2", getFirstError(ScreenshotError("STATUS", "", "", emptyList(), emptyList(), listOf("name1", "name2"))))
+        assertEquals("Rendering failed", getFirstError(ScreenshotError("STATUS", "", "", emptyList(), emptyList(), emptyList())))
+    }
+
+
 }
 
 
