@@ -15,6 +15,7 @@
  */
 package com.android.compose.screenshot.report
 
+import com.android.tools.render.compose.ImagePathOrMessage
 import com.google.common.io.Closeables
 import org.gradle.api.GradleException
 import org.w3c.dom.Document
