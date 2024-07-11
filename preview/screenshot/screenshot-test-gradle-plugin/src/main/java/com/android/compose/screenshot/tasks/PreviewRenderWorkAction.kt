@@ -73,7 +73,8 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
             composeRenderingResult.screenshotResults.count {
                 !Paths.get(outputFolder, it.imagePath).exists() || (it.error != null && it.error!!.status != "SUCCESS")
             }
-        if (composeRenderingResult.globalError != null || renderingErrors > 0) {
+        //fail task if there are globalErrors causing rendering failures. If not individual rendering errors will be included in html report
+        if (composeRenderingResult.globalError != null && renderingErrors > 0) {
             throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
         }
         val renderWarnings = composeRenderingResult.screenshotResults.count { it.error != null }

@@ -633,7 +633,7 @@ class ScreenshotTest {
         val result =
             getExecutor().expectFailure().run(":app:updateDebugScreenshotTest")
 
-        result.assertErrorContains("Rendering failed for one or more previews. For more details, check") //Exception thrown in Render task
+        result.assertErrorContains("Cannot update reference images. Rendering failed for") //Exception thrown in Update task
     }
 
     @Test
