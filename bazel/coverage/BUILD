@@ -826,7 +826,7 @@ coverage_report(
         "tools/studio/google/cloud/testing/test-recorder/src/com/google/gct/testrecorder",
     ],
     tests = [
-        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+        "//tools/studio/google/cloud/testing/test-recorder:test-recorder.tests_tests",
     ],
 )
 
@@ -1231,7 +1231,7 @@ coverage_report(
         "//tools/data-binding:studio.compiler_tests",
         "//tools/data-binding:tools.compilerCommon_tests.test",
         "//tools/studio/google/cloud/testing/directaccess:directaccess_tests",
-        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+        "//tools/studio/google/cloud/testing/test-recorder:test-recorder.tests_tests",
         "//tools/studio/google/cloud/tools/google-login-plugin:google-login-as_tests",
         "//tools/vendor/google/android-apk:android-apk.tests_tests",
         "//tools/vendor/google/android-ndk:android-ndk.tests_tests",
