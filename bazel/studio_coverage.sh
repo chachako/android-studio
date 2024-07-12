@@ -71,7 +71,7 @@ fi
 # Run Bazel with coverage instrumentation
 "${script_dir}/bazel" \
   test \
-  --config=ci --config=ants \
+  --config=ci --config=remote-exec --config=ants \
   --invocation_id=${invocation_id} \
   --tool_tag="studio_coverage.sh" \
   --build_event_binary_file="${dist_dir:-/tmp}/bazel-${build_number}.bes" \
