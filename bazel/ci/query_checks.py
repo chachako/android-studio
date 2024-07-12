@@ -74,7 +74,6 @@ def gradle_requires_cpu4_or_more(build_env: bazel.BuildEnv):
   # --output=minrank will prefix each target with a number, where 0 represents
   # root targets.
   query_targets = [s.removeprefix('0') for s in query_targets if s.startswith('0')]
-  msg = 'ERROR: The following targets depend on //tools/base/build-system:gradle-distrib and must have the tag cpu:4 or greater.'
   raise BuildGraphException(
         title='Gradle tests need cpu:4 or greater',
         go_link='go/studio-ci#macos',
