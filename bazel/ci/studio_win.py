@@ -1,8 +1,6 @@
 """Implements studio-win CI script."""
 
-import os
 import pathlib
-import subprocess
 import tempfile
 
 from tools.base.bazel.ci import bazel
@@ -46,7 +44,6 @@ def studio_win(build_env: bazel.BuildEnv):
           ('tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon.exe', ''),
       ],
   )
-  build_launcher(build_env)
   studio.collect_logs(build_env, test_result.bes_path)
 
   bazel.BazelCmd(build_env).shutdown()
@@ -58,19 +55,3 @@ def studio_win(build_env: bazel.BuildEnv):
     return
 
   raise studio.BazelTestError(exit_code=test_result.exit_code)
-
-
-def build_launcher(build_env: bazel.BuildEnv):
-  """Builds the Windows launcher."""
-  cmd = [
-      pathlib.Path(build_env.workspace_dir) / 'tools/base/intellij-native/build-win-launcher.cmd',
-      'out',
-      build_env.dist_dir,
-      build_env.build_number,
-  ]
-  subprocess.run(
-      cmd,
-      capture_output=False,
-      check=True,
-      cwd=build_env.workspace_dir,
-  )
