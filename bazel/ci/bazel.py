@@ -37,10 +37,13 @@ class BazelCmd:
   """Represents a Bazel command and arguments."""
 
   build_env: BuildEnv
-  startup_options: List[str] = []
+  startup_options: List[str]
 
   def __init__(self, build_env: BuildEnv):
     self.build_env = build_env
+    self.startup_options = ["--max_idle_secs=60"]
+    if self.build_env.is_ci():
+      self.startup_options.append(f"--output_base={build_env.tmp_dir}")
 
   def build(self, *build_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel build' command."""

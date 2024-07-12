@@ -17,6 +17,9 @@ def studio_win(build_env: bazel.BuildEnv):
   profile_path = dist_path / f'winprof{build_env.build_number}.json.gz'
 
   flags = [
+      # TODO(b/173153395) Switch back to dynamic after Bazel issue is resolved.
+      # See https://github.com/bazelbuild/bazel/issues/22482
+      '--config=remote-exec',
       f'--profile={profile_path}',
 
       '--test_tag_filters=-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release',

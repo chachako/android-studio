@@ -214,9 +214,6 @@ build:remote --config=sponge
 
 ## Config used for continous integration testing scripts.
 build:ci --config=_remote_base
-# TODO(b/173153395) Switch back to dynamic after Bazel issue is resolved.
-# See https://github.com/bazelbuild/bazel/issues/22482
-build:ci --config=remote-exec
 build:ci --config=sponge
 build:ci --config=release
 # Increase worker visibility in case there are issues.

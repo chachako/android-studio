@@ -99,7 +99,7 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   )
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
   copy_agp_supported_versions(build_env)
-  if is_build_successful(result):
+  if studio.is_build_successful(result):
     copy_artifacts(build_env)
     if result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
       return
@@ -132,7 +132,7 @@ def studio_linux_very_flaky(build_env: bazel.BuildEnv) -> None:
   flags.append('--build_tests_only')
 
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
-  if is_build_successful(result):
+  if studio.is_build_successful(result):
     return
 
   raise studio.BazelTestError(exit_code=result.exit_code)
@@ -151,7 +151,7 @@ def studio_linux_k2(build_env: bazel.BuildEnv) -> None:
   ])
   result = run_tests(build_env, flags, _BASE_TARGETS)
   copy_agp_supported_versions(build_env)
-  if is_build_successful(result) and result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
+  if studio.is_build_successful(result) and result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
     return
 
   raise studio.BazelTestError(exit_code=result.exit_code)
@@ -175,6 +175,10 @@ def build_flags(
   profile_path = dist_path / f'profile-{build_env.build_number}.json.gz'
 
   return [
+      # TODO(b/173153395) Switch back to dynamic after Bazel issue is resolved.
+      # See https://github.com/bazelbuild/bazel/issues/22482
+      '--config=remote-exec',
+
       '--build_manual_tests',
 
       f'--define=meta_android_build_number={build_env.build_number}',
@@ -250,13 +254,3 @@ def copy_artifacts(build_env: bazel.BuildEnv) -> None:
   (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
   studio.copy_artifacts(build_env, _ARTIFACTS)
   write_owners_zip(build_env)
-
-
-def is_build_successful(result: studio.BazelTestResult) -> bool:
-  """Returns True if the build portion of the bazel test was successful."""
-  return result.exit_code in {
-      bazel.EXITCODE_SUCCESS,
-      # Test failures are handled elsewhere, so build is considered successful.
-      bazel.EXITCODE_TEST_FAILURES,
-      bazel.EXITCODE_NO_TESTS_FOUND,
-  }

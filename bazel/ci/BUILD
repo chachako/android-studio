@@ -1,5 +1,6 @@
 """Continuous Integration scripts."""
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag", "bool_flag")
+
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 
 string_flag(
     name = "ab_target",
@@ -59,6 +60,15 @@ py_library(
 )
 
 py_library(
+    name = "studio_mac",
+    srcs = ["studio_mac.py"],
+    deps = [
+        ":bazel",
+        ":studio",
+    ],
+)
+
+py_library(
     name = "ci_lib",
     srcs = ["ci.py"],
     deps = [
@@ -66,6 +76,7 @@ py_library(
         ":errors",
         ":query_checks",
         ":studio_linux",
+        ":studio_mac",
         ":studio_win",
     ],
 )

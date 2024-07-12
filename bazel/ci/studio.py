@@ -151,3 +151,13 @@ def copy_artifacts(build_env: bazel.BuildEnv, files: Iterable[Tuple[str,str]]) -
       binary_sizes[f'{src}[bytes]'] = os.stat(src).st_size
   with open(dist_path / 'bloatbuster_report.binary_sizes.json', 'w') as f:
     json.dump(binary_sizes, f)
+
+
+def is_build_successful(result: BazelTestResult) -> bool:
+  """Returns True if the build portion of the bazel test was successful."""
+  return result.exit_code in {
+      bazel.EXITCODE_SUCCESS,
+      # Test failures are handled elsewhere, so build is considered successful.
+      bazel.EXITCODE_TEST_FAILURES,
+      bazel.EXITCODE_NO_TESTS_FOUND,
+  }

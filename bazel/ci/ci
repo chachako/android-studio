@@ -2,7 +2,7 @@
 
 if [[ "$OSTYPE" = "linux"* ]]; then
   PLATFORM="linux-x86_64"
-elif [[ "$OSTYPE" = "darwin"* && "$(arch)" == "x86_64" ]]; then
+elif [[ "$OSTYPE" = "darwin"* && ("$(arch)" == "x86_64" || "$(arch)" == "i386") ]]; then
   PLATFORM="darwin-x86_64"
 elif [[ "$OSTYPE" = "darwin"* && "$(arch)" == "arm64" ]]; then
   PLATFORM="darwin-arm64"
