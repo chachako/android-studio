@@ -28,8 +28,8 @@ class BuildEnv:
     self.tmp_dir = os.environ.get("TMPDIR", "")
     self.bazel_path = bazel_path
 
-  def is_ci(self) -> bool:
-    """Returns true if in a continuous integration environment."""
+  def is_ab_environment(self) -> bool:
+    """Returns true if on an Android Build machine."""
     return self.build_target_name and getpass.getuser() == "android-build"
 
 
@@ -42,7 +42,7 @@ class BazelCmd:
   def __init__(self, build_env: BuildEnv):
     self.build_env = build_env
     self.startup_options = ["--max_idle_secs=60"]
-    if self.build_env.is_ci():
+    if self.build_env.is_ab_environment():
       self.startup_options.append(f"--output_base={build_env.tmp_dir}")
 
   def build(self, *build_args) -> subprocess.CompletedProcess:

@@ -33,7 +33,7 @@ def xsd_to_java(name, package, xsd, src_location, episode = None, binding_deps =
         # and not modify the workspace/source tree. b/310040456
         tags = ["manual"],
         target_compatible_with = select({
-            "//tools/base/bazel/ci/conditions:studio-linux": ["@platforms//:incompatible"],
+            "//tools/base/bazel/ci/conditions:ci": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
     )

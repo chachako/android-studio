@@ -216,6 +216,7 @@ build:remote --config=sponge
 build:ci --config=_remote_base
 build:ci --config=sponge
 build:ci --config=release
+build:ci --//tools/base/bazel/ci:is_ci
 # Increase worker visibility in case there are issues.
 build:ci --worker_verbose
 # Prevents b/156952249. Android Build (buildbot) kills bazel between builds,
