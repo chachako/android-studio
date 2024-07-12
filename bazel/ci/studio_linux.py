@@ -171,7 +171,9 @@ def build_flags(
   ) -> List[str]:
   """Returns the flags to use for testing."""
   dist_path = pathlib.Path(build_env.dist_dir)
-  as_build_number = build_env.build_number.replace('P', '0')
+  as_build_number = build_env.build_number
+  if as_build_number.startswith('P'):
+    as_build_number = '0' + as_build_number[1:]
   profile_path = dist_path / f'profile-{build_env.build_number}.json.gz'
 
   return [
