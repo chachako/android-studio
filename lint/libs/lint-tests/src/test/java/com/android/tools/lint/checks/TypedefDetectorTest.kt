@@ -2510,4 +2510,48 @@ class TypedefDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun testToLong() {
+    lint()
+      .files(
+        kotlin(
+          """
+            import androidx.annotation.LongDef
+
+            const val CONST_1 = 1
+            const val CONST_2 = 4096
+            const val UNRELATED = -1
+
+            @LongDef(CONST_1, CONST_2)
+            @Retention(AnnotationRetention.SOURCE)
+            annotation class DetailInfoTab
+
+            fun test(@DetailInfoTab tab: Long) {
+            }
+
+            fun test() {
+                test(CONST_1.toLong()) // OK
+                test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
+
+                with(CONST_2) {
+                  test(toLong()) // OK
+                }
+                with(UNRELATED) {
+                  test(toLong()) // TODO?
+                }
+            }
+          """
+        ),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+src/DetailInfoTab.kt:17: Error: Must be one of: DetailInfoTabKt.CONST_1, DetailInfoTabKt.CONST_2 [WrongConstant]
+                test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
+                     ~~~~~~~~~~~~~~~~~~
+1 errors, 0 warnings
+        """
+      )
+  }
 }
