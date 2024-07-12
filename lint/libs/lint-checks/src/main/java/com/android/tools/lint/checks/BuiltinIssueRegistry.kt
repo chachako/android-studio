@@ -476,6 +476,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           UnsafeNativeCodeDetector.UNSAFE_NATIVE_CODE_LOCATION,
           UnusedResourceDetector.ISSUE,
           UnusedResourceDetector.ISSUE_IDS,
+          UnsafeFilenameDetector.ISSUE,
           UseCompoundDrawableDetector.ISSUE,
           UselessViewDetector.USELESS_LEAF,
           UselessViewDetector.USELESS_PARENT,
