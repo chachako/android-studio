@@ -11,6 +11,7 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.parseFirst
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.useFirUast
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Segment
 import com.intellij.psi.PsiMethod
@@ -3143,6 +3144,10 @@ class ControlFlowGraphTest {
 
   @Test
   fun checkLocalCallableReferenceInvocation() {
+    // TODO(b/346504586)
+    if (useFirUast()) {
+      return
+    }
     checkAstGraph(
       kotlin(
           """

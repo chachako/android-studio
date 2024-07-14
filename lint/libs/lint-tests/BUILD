@@ -1,8 +1,8 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
+load("//tools/base/lint/libs/lint-tests:lint_tests.bzl", "lint_test")
 
 maven_library(
     name = "lint-tests",
@@ -38,71 +38,14 @@ maven_library(
     ],
 )
 
-kotlin_test(
+lint_test(
     name = "tests",
-    timeout = "long",
-    # buildifier: disable=bad-recursive-glob
-    srcs = glob([
-        "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
-    ]),
-    data = [
-        "//prebuilts/studio/sdk:platform-tools",
-        "//prebuilts/studio/sdk:platforms/latest",
-        "//tools/adt/idea/android/annotations",
-    ],
-    jvm_flags = [
-        "-Dtest.suite.jar=tests.jar",
-        "-Djdk.attach.allowAttachSelf=true",
-        # TODO: Inject the cache directory into tests.
-        "-Duser.home=/tmp",
-    ],
-    lint_baseline = "lint_baseline.xml",
-    resources = glob(["src/test/resources/**"]),
-    shard_count = 6,
-    tags = [
-        "slow",
-    ],
-    test_class = "com.android.testutils.JarTestSuite",
-    deps = [
-        ":lint-tests",
-        "//prebuilts/tools/common/lint-psi/intellij-core",
-        "//prebuilts/tools/common/lint-psi/kotlin-compiler",
-        "//prebuilts/tools/common/lint-psi/uast",
-        "//tools/analytics-library/protos/src/main/proto",
-        "//tools/analytics-library/shared:tools.analytics-shared",
-        "//tools/analytics-library/testing:tools.analytics-testing",
-        "//tools/analytics-library/tracker:tools.analytics-tracker",
-        "//tools/base/annotations",
-        "//tools/base/apkparser:tools.binary-resources",
-        "//tools/base/apkparser/analyzer:tools.analyzer",
-        "//tools/base/bazel:langtools",
-        "//tools/base/build-system:tools.manifest-merger",
-        "//tools/base/build-system/builder-model",
-        "//tools/base/common:tools.common",
-        "//tools/base/common:tools.fixtures",
-        "//tools/base/layoutlib-api:tools.layoutlib-api",
-        "//tools/base/lint:tools.lint-api",
-        "//tools/base/lint:tools.lint-checks",
-        "//tools/base/lint:tools.lint-model",
-        "//tools/base/lint/cli",
-        "//tools/base/repository:tools.repository",
-        "//tools/base/repository:tools.testlib",
-        "//tools/base/sdk-common:tools.sdk-common",
-        "//tools/base/sdklib:tools.sdklib",
-        "//tools/base/testutils:tools.testutils",
-        "@maven//:com.google.code.gson.gson",
-        "@maven//:com.google.truth.truth",
-        "@maven//:junit.junit",
-        "@maven//:net.sf.kxml.kxml2",
-        "@maven//:org.codehaus.groovy.groovy",
-        "@maven//:org.jetbrains.annotations",
-        "@maven//:org.jetbrains.intellij.deps.trove4j",
-        "@maven//:org.jetbrains.kotlin.kotlin-reflect",
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
-        "@maven//:org.mockito.mockito-core",
-        "@maven//:org.ow2.asm.asm-tree",
-    ],
+    useK2 = False,
+)
+
+lint_test(
+    name = "tests_k2",
+    useK2 = True,
 )
 
 # managed by go/iml_to_build

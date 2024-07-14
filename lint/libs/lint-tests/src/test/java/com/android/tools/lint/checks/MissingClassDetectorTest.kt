@@ -19,6 +19,7 @@ import com.android.tools.lint.checks.MissingClassDetector.Companion.INNERCLASS
 import com.android.tools.lint.checks.MissingClassDetector.Companion.INSTANTIATABLE
 import com.android.tools.lint.checks.MissingClassDetector.Companion.MISSING
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.useFirUast
 
 class MissingClassDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -174,6 +175,10 @@ class MissingClassDetectorTest : AbstractCheckTest() {
   }
 
   fun testCustomView() {
+    // TODO(b/339484583)
+    if (useFirUast()) {
+      return
+    }
     lint()
       .issues(MISSING, INSTANTIATABLE, INNERCLASS)
       .files(

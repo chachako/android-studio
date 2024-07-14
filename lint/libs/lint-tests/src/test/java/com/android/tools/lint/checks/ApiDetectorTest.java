@@ -29,6 +29,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.SdkVersionInfo;
+import com.android.tools.lint.UastEnvironmentKt;
 import com.android.tools.lint.checks.infrastructure.ProjectDescription;
 import com.android.tools.lint.checks.infrastructure.TestFile;
 import com.android.tools.lint.checks.infrastructure.TestLintResult;
@@ -41,7 +42,6 @@ import com.android.tools.lint.detector.api.LintFix;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.Severity;
-import java.io.File;
 import org.intellij.lang.annotations.Language;
 
 @SuppressWarnings("TextBlockMigration")
@@ -9381,7 +9381,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testRemoveTest() {
-
+        // TODO(b/271372135)
+        if (UastEnvironmentKt.useFirUast()) {
+          return;
+        }
         TestLintResult result =
                 lint().files(
                                 kotlin(
