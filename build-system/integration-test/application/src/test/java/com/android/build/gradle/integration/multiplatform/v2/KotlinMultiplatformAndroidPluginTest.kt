@@ -287,6 +287,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                         "/com/example/kmpfirstlib/KmpAndroidFirstLibClass.class",
                         "/com/example/kmpfirstlib/KmpAndroidFirstLibJavaClass.class",
                         "/com/example/kmpfirstlib/KmpAndroidActivity.class",
+                        "/META-INF/kmpFirstLib.kotlin_module"
                     )
                 )
 

@@ -16,8 +16,11 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.DOT_JAR
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
@@ -85,15 +88,13 @@ abstract class ProcessJavaResTask @Inject constructor(
         ) {
             super.configure(task)
 
-            task.from(
-                getProjectJavaRes(creationConfig).asFileTree.matching(MergeJavaResourceTask.patternSet)
-            )
-            task.fromProjectJavaResJars(creationConfig)
+            task.from(getProjectJavaRes(creationConfig, task))
             task.duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
 
         private fun getProjectJavaRes(
-            creationConfig: ComponentCreationConfig
+            creationConfig: ComponentCreationConfig,
+            task: ProcessJavaResTask
         ): FileCollection {
             val javaRes = creationConfig.services.fileCollection()
             creationConfig.sources.resources {
@@ -110,44 +111,42 @@ abstract class ProcessJavaResTask @Inject constructor(
                     }
                 }
             )
+            val kmpProjectClasses = if (creationConfig is KmpComponentCreationConfig) {
+                creationConfig
+                    .artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+            } else null
+
             listOfNotNull(
                 creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode,
-                creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode
+                creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode,
+                kmpProjectClasses
             ).forEach {
                 javaRes.from(
                     it.filter { file ->
                         !file.name.endsWith(DOT_JAR)
                     }
                 )
+
+                javaRes.from(
+                    it.filter { file ->
+                        file.name.endsWith(DOT_JAR)
+                    }.elements.map { jars ->
+                        jars.map { jar ->
+                            task.zipTree(jar.asFile)
+                        }
+                    }
+                )
             }
+
             if (creationConfig.global.namespacedAndroidResources) {
                 javaRes.from(creationConfig.artifacts.get(InternalArtifactType.RUNTIME_R_CLASS_CLASSES))
             }
             if ((creationConfig as? ApkCreationConfig)?.packageJacocoRuntime == true) {
                 javaRes.from(creationConfig.artifacts.get(InternalArtifactType.JACOCO_CONFIG_RESOURCES))
             }
-            return javaRes
-        }
-
-        private fun ProcessJavaResTask.fromProjectJavaResJars(
-            creationConfig: ComponentCreationConfig
-        ) {
-            listOfNotNull(
-                creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode,
-                creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode
-            ).forEach {
-                from(
-                    it.filter { file ->
-                        file.name.endsWith(DOT_JAR)
-                    }.elements.map { jars ->
-                        jars.map { jar ->
-                            zipTree(jar.asFile).matching(
-                                MergeJavaResourceTask.patternSet
-                            )
-                        }
-                    }
-                )
-            }
+            return javaRes.asFileTree.matching(MergeJavaResourceTask.patternSet)
         }
     }
 }

@@ -154,7 +154,8 @@ class KotlinMultiplatformAndroidPluginNativeTest {
                         "/com/example/kmpfirstlib/KmpAndroidFirstLibJavaClass.class",
                         "/com/example/kmpfirstlib/KmpAndroidActivity.class",
                         "/com/example/nativelib/Jni.class",
-                        "/com/example/nativelib/Incrementer.class"
+                        "/com/example/nativelib/Incrementer.class",
+                        "/META-INF/kmpFirstLib.kotlin_module"
                     )
                 )
             }
