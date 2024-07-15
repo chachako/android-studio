@@ -60,6 +60,7 @@ setlocal
   --test_strategy=exclusive ^
   --strategy=TestRunner=local ^
   --config=ci ^
+  --config=remote-exec ^
   --config=sponge ^
   --config=ants ^
   --tool_tag=qa_studio_win.cmd ^
