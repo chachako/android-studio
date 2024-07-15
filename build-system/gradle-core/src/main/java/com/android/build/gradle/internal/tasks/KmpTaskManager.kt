@@ -135,7 +135,7 @@ class KmpTaskManager(
             )
         )
 
-        project.tasks.registerTask(ProcessJavaResTask.CreationAction(variant))
+        project.tasks.registerTask(ProcessJavaResTask.KotlinMultiplatformCreationAction(variant))
         project.tasks.registerTask(
             MergeJavaResourceTask.CreationAction(
                 javaResMergingScopes,
