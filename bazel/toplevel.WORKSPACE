@@ -1,4 +1,4 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 load("//tools/base/bazel:emulator.bzl", "setup_external_sdk")
 load("//tools/base/bazel:repositories.bzl", "setup_external_repositories", "vendor_repository")
 
@@ -272,3 +272,11 @@ vendor_repository(
 load("@aswb_test_deps//:vendor.bzl", "aswb_test_deps_dependencies")
 
 aswb_test_deps_dependencies()
+
+http_jar(
+    name = "bazel_diff",
+    urls = [
+        "https://github.com/Tinder/bazel-diff/releases/download/7.1.1/bazel-diff_deploy.jar"
+    ],
+    sha256 = "ed5410288bd7ec5b49b556103f561fb15e4c82f13f12cb41be128d447ecc2d46",
+)

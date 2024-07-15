@@ -558,3 +558,9 @@ coverage_java_test(
         "@maven//:org.eclipse.aether.aether-transport-file",
     ],
 )
+
+java_binary(
+    name = "bazel-diff",
+    main_class = "com.bazel_diff.Main",
+    runtime_deps = ["@bazel_diff//jar"],
+)
