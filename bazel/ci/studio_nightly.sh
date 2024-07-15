@@ -15,7 +15,7 @@ readonly SCRIPT_DIR="$(dirname "$0")"
 readonly BAZEL="${SCRIPT_DIR}/../bazel"
 readonly SCRIPT_NAME="$(basename "$0")"
 
-readonly CONFIG_OPTIONS="--config=ci"
+readonly CONFIG_OPTIONS="--config=ci --config=remote-exec"
 
 ####################################
 # Copies bazel artifacts to an output directory named 'artifacts'.

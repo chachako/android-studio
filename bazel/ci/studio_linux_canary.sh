@@ -21,7 +21,7 @@ readonly BUILD_TARGETS="//tools/... -//tools/adt/idea/studio/..."
 "${SCRIPT_DIR}/bazel" \
   --max_idle_secs=60 \
   test \
-  --config=ci \
+  --config=ci --config=remote-exec \
   --config=ants \
   --invocation_id=${INVOCATION_ID} \
   --build_event_binary_file="${DIST_DIR:-/tmp}/bazel-${BUILD_NUMBER}.bes" \

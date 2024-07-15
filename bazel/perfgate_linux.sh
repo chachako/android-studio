@@ -19,7 +19,7 @@ fi
 build_tag_filters=-no_linux
 test_tag_filters=$test_tag,-no_linux,
 
-config_options="--config=ci"
+config_options="--config=ci --config=remote-exec"
 
 # Generate a UUID for use as the bazel invocation id
 readonly invocation_id="$(uuidgen)"

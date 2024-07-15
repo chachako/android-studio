@@ -31,7 +31,7 @@ CALL %SCRIPTDIR%bazel.cmd ^
  --max_idle_secs=60 ^
  test ^
  --keep_going ^
- --config=ci --config=ants ^
+ --config=ci --config=remote-exec --config=ants ^
  --build_metadata=ab_build_id=%BUILDNUMBER% ^
  --build_metadata=ab_target=perfgate-win ^
  --build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/%INVOCATIONID%" ^
@@ -57,7 +57,7 @@ echo "<head><meta http-equiv="refresh" content="0; URL='https://fusion2.corp.goo
 CALL %SCRIPTDIR%bazel.cmd ^
   --max_idle_secs=60 ^
   run //tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector ^
-  --config=ci ^
+  --config=ci --config=remote-exec ^
   -- ^
  -bes %DISTDIR%\bazel-%BUILDNUMBER%.bes ^
  -perfzip %DISTDIR%\perfgate_data.zip

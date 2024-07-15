@@ -9,7 +9,7 @@ readonly script_dir="$(dirname "$0")"
 readonly bazel_dir="${script_dir}/.."
 readonly script_name="$(basename "$0")"
 readonly invocation_id="$(uuidgen)"
-readonly config_options="--config=ci --config=ants"
+readonly config_options="--config=ci --config=remote-exec --config=ants"
 readonly bin_dir="$("${bazel_dir}"/bazel info ${config_options} bazel-bin)"
 
 "${bazel_dir}/bazel" \
