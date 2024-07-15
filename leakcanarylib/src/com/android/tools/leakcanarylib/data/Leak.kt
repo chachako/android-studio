@@ -15,10 +15,27 @@
  */
 package com.android.tools.leakcanarylib.data
 
+import com.android.tools.leakcanarylib.parser.LeakParser
+
 data class Leak(
     var type: LeakType,
     var retainedByteSize: Int,
     var signature: String,
     var leakTraceCount: Int,
     var displayedLeakTrace: List<LeakTrace>
-)
+) {
+
+    override fun toString(): String {
+        return (if (retainedByteSize >= 0) "$retainedByteSize bytes retained by leaking objects\n" else "") +
+                (if (leakTraceCount > 1) "Displaying only 1 leak trace out of $leakTraceCount with the same signature\n" else "") +
+                "Signature: $signature\n" +
+                displayedLeakTrace.first() // Guaranteed to have at least one element when there is a valid leak. Also, leakTraceCount and
+                                           // displayedLeakTrace are inter-related as specified in LeakParser.
+    }
+
+    companion object {
+        fun fromString(lines: String, type: LeakType): List<Leak> {
+            return LeakParser.fromString(lines, type)
+        }
+    }
+}
