@@ -870,6 +870,7 @@ DATA = [
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:1.9.0",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:1.9.22",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:1.9.23",
+    "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:1.9.24",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.0.20-Beta1",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.0.20-Beta2-1",
@@ -1007,9 +1008,11 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-script-runtime:1.8.10",
     "org.jetbrains.kotlin:kotlin-script-runtime:1.8.21",
     "org.jetbrains.kotlin:kotlin-script-runtime:1.9.0",
+    "org.jetbrains.kotlin:kotlin-script-runtime:1.9.24",
     "org.jetbrains.kotlin:kotlin-script-runtime:2.0.20-Beta1",
     "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.22",
     "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.23",
+    "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.24",
     "org.jetbrains.kotlin:kotlin-stdlib-common:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin:kotlin-stdlib-common:2.0.20-Beta1",
     "org.jetbrains.kotlin:kotlin-stdlib-common:2.0.20-Beta2-1",
@@ -1027,6 +1030,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.20-Beta1",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.20-Beta2-1",
