@@ -20,6 +20,7 @@ import com.android.tools.render.compose.readComposeScreenshotsJson
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.ComposeScreenshotResult
+import com.android.tools.render.compose.ImagePathOrMessage
 import com.android.tools.render.compose.ScreenshotError
 import java.io.File
 import javax.imageio.ImageIO
@@ -153,77 +154,71 @@ class PreviewScreenshotTestEngine : TestEngine {
         startTime: Long
     ): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        var referencePath = Path(parameters.referenceImageDirPath).resolve(composeScreenshot.imagePath)
-        var referenceMessage: String? = null
+        val referencePath = Path(parameters.referenceImageDirPath).resolve(composeScreenshot.imagePath)
         val actualPath = Path("${parameters.renderTaskOutputDir}").resolve(composeScreenshot.imagePath)
-        var diffPath = Paths.get(parameters.diffImageDirPath, composeScreenshot.imagePath)
-        Files.createDirectories(diffPath.parent)
-        var diffMessage: String? = null
-        var code = 0
-        val threshold = parameters.threshold?.toFloat()
-        val imageDiffer = if (threshold != null) {
-            ImageDiffer.MSSIMMatcher(threshold)
-        } else {
-            ImageDiffer.MSSIMMatcher()
-        }
-        val verifier = Verify(imageDiffer, diffPath)
+        val diffPath = Paths.get(parameters.diffImageDirPath, composeScreenshot.imagePath)
 
-        //If the CLI tool could not render the preview, return the preview result with the
-        //code and message along with reference path if it exists
+        val referenceImage = ImagePathOrMessage.ImagePath(referencePath.toString())
+        val actualImage = ImagePathOrMessage.ImagePath(actualPath.toString())
+        val diffImage = ImagePathOrMessage.ImagePath(diffPath.toString())
+
+        Files.createDirectories(diffPath.parent)
+
+        //renderer failed to generate images
         if (!actualPath.toFile().exists()) {
-            if (!referencePath.toFile().exists()) {
-                referencePath = null
-                referenceMessage = "Reference image missing"
-            }
             val errorMessage = getFirstError(composeScreenshot.error)
             return PreviewResult(1,
                 composeScreenshot.previewId,
                 getDurationInSeconds(startTime),
                 errorMessage,
-                referenceImage = ImageDetails(referencePath, referenceMessage),
-                actualImage = ImageDetails(null, errorMessage)
-            )
-
+                referenceImage = if (referencePath.toFile().exists()) referenceImage else ImagePathOrMessage.ErrorMessage("Reference image missing"),
+                actualImage = ImagePathOrMessage.ErrorMessage(errorMessage),
+                diffImage = ImagePathOrMessage.ErrorMessage("No diff available"))
         }
 
-        val result =
-            verifier.assertMatchReference(
-                referencePath,
-                ImageIO.read(actualPath.toFile())
-            )
-        when (result) {
+        //Image comparison
+        val threshold = parameters.threshold?.toFloat()
+        val imageDiffer = if (threshold != null) ImageDiffer.MSSIMMatcher(threshold) else ImageDiffer.MSSIMMatcher()
+        val verifier = Verify(imageDiffer, diffPath)
+
+        return when (val result = verifier.assertMatchReference(referencePath, ImageIO.read(actualPath.toFile()))) {
             is Verify.AnalysisResult.Failed -> {
-                code = 1
+                result.toPreviewResponse(1,
+                    testDisplayName,
+                    getDurationInSeconds(startTime),
+                    referenceImage,
+                    actualImage,
+                    diffImage)
             }
 
             is Verify.AnalysisResult.Passed -> {
-                if (result.imageDiff.highlights == null) {
-                    diffPath = null
-                    diffMessage = "Images match!"
-                }
+                val diff = if (result.imageDiff.highlights == null) ImagePathOrMessage.ErrorMessage("Images match!") else diffImage
+                result.toPreviewResponse(0,
+                    testDisplayName,
+                    getDurationInSeconds(startTime),
+                    referenceImage,
+                    actualImage,
+                    diff)
             }
 
             is Verify.AnalysisResult.MissingReference -> {
-                referencePath = null
-                diffPath = null
-                referenceMessage = "Reference image missing"
-                diffMessage = "No diff available"
-                code = 1
+                result.toPreviewResponse(1,
+                    testDisplayName,
+                    getDurationInSeconds(startTime),
+                    ImagePathOrMessage.ErrorMessage("Reference image missing"),
+                    actualImage,
+                    ImagePathOrMessage.ErrorMessage("No diff available"))
             }
 
             is Verify.AnalysisResult.SizeMismatch -> {
-                diffMessage = result.message
-                diffPath = null
-                code = 1
+                result.toPreviewResponse(1,
+                    testDisplayName,
+                    getDurationInSeconds(startTime),
+                    referenceImage,
+                    actualImage,
+                    ImagePathOrMessage.ErrorMessage(result.message))
             }
         }
-        return result.toPreviewResponse(
-            code, testDisplayName,
-            getDurationInSeconds(startTime),
-            ImageDetails(referencePath, referenceMessage),
-            ImageDetails(actualPath, null),
-            ImageDetails(diffPath, diffMessage)
-        )
     }
 
     private fun getParam(key: String): String? {

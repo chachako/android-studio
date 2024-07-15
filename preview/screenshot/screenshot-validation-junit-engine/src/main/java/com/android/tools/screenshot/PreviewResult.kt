@@ -16,6 +16,7 @@
 
 package com.android.tools.screenshot
 
+import com.android.tools.render.compose.ImagePathOrMessage
 import java.nio.file.Path
 
 /*
@@ -26,21 +27,15 @@ data class PreviewResult(
     val previewName: String,
     val durationInSeconds: Float,
     val message: String? = null,
-    val referenceImage: ImageDetails? = null,
-    val actualImage: ImageDetails? = null,
-    val diffImage: ImageDetails? = null
+    val referenceImage: ImagePathOrMessage,
+    val actualImage: ImagePathOrMessage,
+    val diffImage: ImagePathOrMessage
 
 ) {
 }
 
-fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, durationInSeconds: Float, reference: ImageDetails,
-                                            actual: ImageDetails? = null,
-                                            diff: ImageDetails? = null): PreviewResult {
+fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, durationInSeconds: Float, reference: ImagePathOrMessage,
+                                            actual: ImagePathOrMessage,
+                                            diff: ImagePathOrMessage): PreviewResult {
     return PreviewResult(code, name, durationInSeconds, message, reference, actual, diff)
 }
-
-/**
- * class to encapsulate comparison images to be consumed by report generator
- * In case of missing image, the message will contain the text to be displayed instead
- */
-data class ImageDetails(val path: Path?, val message: String?)

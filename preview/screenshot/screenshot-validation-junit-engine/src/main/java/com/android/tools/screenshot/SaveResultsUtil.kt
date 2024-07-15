@@ -16,6 +16,7 @@
 
 package com.android.tools.screenshot
 
+import com.android.tools.render.compose.ImagePathOrMessage
 import com.android.tools.render.compose.ScreenshotError
 import org.kxml2.io.KXmlSerializer
 import java.io.BufferedOutputStream
@@ -152,23 +153,41 @@ private fun printImages(
     serializer.startTag(NAMESPACE, PROPERTIES)
     serializer.startTag(NAMESPACE, PROPERTY)
     serializer.attribute(NAMESPACE, NAME, REFERENCE)
-    result.referenceImage!!.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
-    result.referenceImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
+    when (val ref = result.referenceImage) {
+        is ImagePathOrMessage.ImagePath -> {
+            serializer.attribute(NAMESPACE, VALUE, ref.path)
+        }
+
+        is ImagePathOrMessage.ErrorMessage -> {
+            serializer.attribute(NAMESPACE, VALUE, ref.message)
+        }
+    }
     serializer.endTag(NAMESPACE, PROPERTY)
-    if (result.actualImage != null) {
-        serializer.startTag(NAMESPACE, PROPERTY)
-        serializer.attribute(NAMESPACE, NAME, ACTUAL)
-        result.actualImage.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
-        result.actualImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
-        serializer.endTag(NAMESPACE, PROPERTY)
+    serializer.startTag(NAMESPACE, PROPERTY)
+    serializer.attribute(NAMESPACE, NAME, ACTUAL)
+    when (val actual = result.actualImage) {
+        is ImagePathOrMessage.ImagePath -> {
+            serializer.attribute(NAMESPACE, VALUE, actual.path)
+        }
+
+        is ImagePathOrMessage.ErrorMessage -> {
+            serializer.attribute(NAMESPACE, VALUE, actual.message)
+        }
     }
-    if (result.diffImage != null) {
-        serializer.startTag(NAMESPACE, PROPERTY)
-        serializer.attribute(NAMESPACE, NAME, DIFF)
-        result.diffImage.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
-        result.diffImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
-        serializer.endTag(NAMESPACE, PROPERTY)
+    serializer.endTag(NAMESPACE, PROPERTY)
+
+    serializer.startTag(NAMESPACE, PROPERTY)
+    serializer.attribute(NAMESPACE, NAME, DIFF)
+    when (val diff = result.diffImage) {
+        is ImagePathOrMessage.ImagePath -> {
+            serializer.attribute(NAMESPACE, VALUE, diff.path)
+        }
+
+        is ImagePathOrMessage.ErrorMessage -> {
+            serializer.attribute(NAMESPACE, VALUE, diff.message)
+        }
     }
+    serializer.endTag(NAMESPACE, PROPERTY)
 
     serializer.endTag(NAMESPACE, PROPERTIES)
 }

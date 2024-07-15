@@ -2,22 +2,27 @@
 <testsuite name="package" tests="4" failures="1" errors="1" skipped="zero">
   <properties />
   <testcase name="previewTest1" classname="package" time="2.0">
-    <success>Reference image saved</success>
+    <success>Images match!</success>
     <properties>
       <property name="reference" value="referencePath" />
+      <property name="actual" value="actualPath" />
+      <property name="diff" value="Images match!" />
     </properties>
   </testcase>
   <testcase name="previewTest1" classname="package" time="2.0">
-    <success>Reference image saved</success>
+    <success>Images match!</success>
     <properties>
       <property name="reference" value="referencePath" />
+      <property name="actual" value="actualPath" />
+      <property name="diff" value="Images match!" />
     </properties>
   </testcase>
   <testcase name="previewTest3" classname="package" time="0.0">
-    <error>Render error</error>
+    <error>Missing class XYZ</error>
     <properties>
       <property name="reference" value="referencePath" />
       <property name="actual" value="Render error: Class XYZ not found" />
+      <property name="diff" value="No diff available" />
     </properties>
   </testcase>
   <testcase name="previewTest2" classname="package" time="2.0">

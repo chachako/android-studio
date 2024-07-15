@@ -17,6 +17,7 @@
 package com.android.tools.screenshot
 
 import com.android.tools.render.compose.BrokenClass
+import com.android.tools.render.compose.ImagePathOrMessage
 import com.android.tools.render.compose.RenderProblem
 import com.android.tools.render.compose.ScreenshotError
 import com.google.common.truth.Truth.assertThat
@@ -31,25 +32,30 @@ import kotlin.test.assertEquals
 class SaveResultsUtilTest {
     @get:Rule
     val tempDirRule = TemporaryFolder()
-    private val referenceImagePath: Path = Path.of("referencePath")
-    private val actualPath: Path = Path.of("actualPath")
-    private val diffPath: Path = Path.of("diffPath")
+    private val referenceImagePath = "referencePath"
+    private val actualPath = "actualPath"
+    private val diffPath = "diffPath"
 
     private lateinit var previewResults: List<PreviewResult>
 
     private fun createPreviewResultSuccess(): PreviewResult {
-        return PreviewResult(0, "package.previewTest1", 2F,"Reference image saved", ImageDetails(referenceImagePath, null))
+        return PreviewResult(0, "package.previewTest1", 2F,"Images match!", ImagePathOrMessage.ImagePath(referenceImagePath), ImagePathOrMessage.ImagePath(actualPath), ImagePathOrMessage.ErrorMessage("Images match!"))
     }
 
     private fun createPreviewResultFailed(): PreviewResult {
-        return PreviewResult(1, "package.previewTest2", 2F, "Images don't match", ImageDetails(referenceImagePath, null),
-            ImageDetails(actualPath, null), ImageDetails(diffPath, null)
-        )
+        return PreviewResult(1, "package.previewTest2", 2F, "Images don't match", ImagePathOrMessage.ImagePath(referenceImagePath),
+            ImagePathOrMessage.ImagePath(actualPath), ImagePathOrMessage.ImagePath(diffPath))
     }
 
     private fun createPreviewResultError(): PreviewResult {
-        return PreviewResult(2, "package.previewTest3", 0F, "Render error",
-            ImageDetails(referenceImagePath, null), ImageDetails(null, "Render error: Class XYZ not found")
+        return PreviewResult(
+            2,
+            "package.previewTest3",
+            0F,
+            "Missing class XYZ",
+            ImagePathOrMessage.ImagePath(referenceImagePath),
+            ImagePathOrMessage.ErrorMessage("Render error: Class XYZ not found"),
+            ImagePathOrMessage.ErrorMessage("No diff available")
         )
     }
 
@@ -62,11 +68,8 @@ class SaveResultsUtilTest {
         val file = File(outputFilePath)
         assertTrue(file.exists())
         val fileContent =
-            javaClass.getResourceAsStream("results.xml")?.readBytes()?.toString(Charsets.UTF_8)
-        val expectedContent = fileContent!!.replace("referencePath", referenceImagePath.toString())
-            .replace("actualPath", actualPath.toString())
-            .replace("diffPath", diffPath.toString()).trimEnd()
-        assertThat(file.readText()).isEqualTo(expectedContent)
+            javaClass.getResourceAsStream("results.xml")?.readBytes()?.toString(Charsets.UTF_8)!!.trimEnd()
+        assertThat(file.readText()).isEqualTo(fileContent)
     }
 
     @Test
