@@ -24,6 +24,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.psi.PsiVariable;
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -129,8 +130,8 @@ public class ConstantEvaluatorTest extends TestCase {
                     @Override
                     public void visitElement(@NotNull PsiElement element) {
                         super.visitElement(element);
-                        if (element instanceof PsiLocalVariable) {
-                            PsiLocalVariable variable = (PsiLocalVariable) element;
+                        if (element instanceof PsiVariable) {
+                            PsiVariable variable = (PsiVariable) element;
                             if (variable.getName().equals(targetVariable)) {
                                 reference.set(variable.getInitializer());
                             }
@@ -143,6 +144,7 @@ public class ConstantEvaluatorTest extends TestCase {
                     }
                 });
         PsiElement expression = reference.get();
+        assertNotNull(expression);
         Object actual = ConstantEvaluator.evaluate(context, expression);
         if (expected == null) {
             assertNull(actual);
@@ -261,44 +263,57 @@ public class ConstantEvaluatorTest extends TestCase {
     }
 
     private static void checkExpression(Object expected, String expressionSource) {
+      checkExpression(expected, expressionSource, true);
+    }
+
+    private static void checkExpression(Object expected, String expressionSource, boolean includePsi) {
         @Language("JAVA")
         String source =
                 ""
                         + "package test.pkg;\n"
                         + "public class Test {\n"
-                        + "    public void test() {\n"
-                        + "        Object expression = "
+                        + "    static final Object expression = "
                         + expressionSource
                         + ";\n"
-                        + "    }\n"
+                        + "    static final Object reference = expression;\n"
                         + "    public static final int MY_INT_FIELD = 5;\n"
                         + "    public static final boolean MY_BOOLEAN_FIELD = true;\n"
                         + "    public static final String MY_STRING_FIELD = \"test\";\n"
                         + "}\n";
 
         check(expected, source, "expression");
+        if (includePsi) {
+          check(expected, source, "reference");
+        }
     }
 
-    private static void checkKotlinExpression(Object expected, String expressionSource) {
+    private static void checkKotlinExpression(Object expected, String expressionSource, boolean handlePsiRef) {
         @Language("Kt")
         String source =
                 ""
                         + "package test.pkg\n"
                         + "class Test {\n"
-                        + "    fun test() {\n"
-                        + "        val expression = "
-                        + expressionSource
-                        + "\n"
-                        + "    }\n"
-                        + "    const val MY_INT_FIELD = 5;\n"
-                        + "    const val MY_BOOLEAN_FIELD = true;\n"
-                        + "    const val MY_STRING_FIELD = \"test\";\n"
                         + "    companion object {\n"
+                        + "        val expression = " + expressionSource + "\n"
+                        + "        private val expressionField = " + expressionSource + "\n"
+                        + "        val methodRef = expression\n"
+                        + "        val fieldRef = expressionField\n"
+                        + "        const val MY_INT_FIELD = 5;\n"
+                        + "        const val MY_BOOLEAN_FIELD = true;\n"
+                        + "        const val MY_STRING_FIELD = \"test\";\n"
                         + "        val someField = \"something\";\n"
                         + "    }\n"
                         + "}\n";
 
         checkKotlinUast(expected, source, "expression");
+        if (handlePsiRef) {
+            // Also reference this via variables; this causes different constant evaluator
+            // machinery to run (when we resolve, we end up in PSI, and evaluate
+            // from there). And there are different paths for method properties
+            // and field properties, so try both.
+            checkKotlinUast(expected, source, "methodRef");
+            checkKotlinUast(expected, source, "fieldRef");
+        }
         UastEnvironment.disposeApplicationEnvironment();
     }
 
@@ -309,7 +324,7 @@ public class ConstantEvaluatorTest extends TestCase {
     }
 
     public void testArrays() {
-        checkExpression(new int[] {1, 2, 3}, "new int[] { 1,2,3] }");
+        checkExpression(new int[] {1, 2, 3}, "new int[] { 1,2,3] }", false);
         checkExpression(new int[0], "new int[0]");
         checkExpression(new byte[0], "new byte[0]");
     }
@@ -323,19 +338,35 @@ public class ConstantEvaluatorTest extends TestCase {
     }
 
     public void testKotlin() {
-        checkKotlinExpression(ArrayReference.of(Integer.TYPE, 100, 1), "IntArray(100)");
-        checkKotlinExpression(100, "IntArray(100).size");
-        checkKotlinExpression(1000, "kotlin.Array<String>(1000).size");
-        checkKotlinExpression(ArrayReference.of(String.class, 1000, 1), "Array<String>(1000)");
-        checkKotlinExpression(
-                ArrayReference.of(String.class, 1000, 1), "kotlin.Array<String>(1000)");
-        checkKotlinExpression(new Integer[] {1, 2, 3, 4}, "arrayOf(1,2,3,4)");
-        checkKotlinExpression(3, "arrayOf(1,2,3,4)[2]");
-        checkKotlinExpression(4, "arrayOf(1,2,3,4).size");
-        checkKotlinExpression(
-                ArrayReference.of(String.class, 1000, 1), "arrayOfNulls<String>(1000)");
-        checkKotlinExpression(1000, "arrayOfNulls<String>(1000).size");
-        checkKotlinExpression("hello", "   \"\"\"    hello\"\"\".trimIndent()");
+        Object expected3 = ArrayReference.of(Integer.TYPE, 100, 1);
+        checkKotlinExpression(expected3, "IntArray(100)", false);
+        checkKotlinExpression(100, "IntArray(100).size", false);
+        checkKotlinExpression(1000, "kotlin.Array<String>(1000).size", false);
+        Object expected2 = ArrayReference.of(String.class, 1000, 1);
+        checkKotlinExpression(expected2, "Array<String>(1000)", false);
+        Object expected1 = ArrayReference.of(String.class, 1000, 1);
+        checkKotlinExpression(expected1, "kotlin.Array<String>(1000)", false);
+        checkKotlinExpression(new Integer[] {1, 2, 3, 4}, "arrayOf(1,2,3,4)", false);
+        checkKotlinExpression(3, "arrayOf(1,2,3,4)[2]", false);
+        checkKotlinExpression(4, "arrayOf(1,2,3,4).size", false);
+        Object expected = ArrayReference.of(String.class, 1000, 1);
+        checkKotlinExpression(expected, "arrayOfNulls<String>(1000)", false);
+
+        checkKotlinExpression(null, "null", true);
+        checkKotlinExpression("hello", "\"hello\"", true);
+        checkKotlinExpression("abcd", "\"ab\" + \"cd\"", true);
+        checkKotlinExpression(1000, "arrayOfNulls<String>(1000).size", false);
+        checkKotlinExpression("hello", "   \"\"\"    hello\"\"\".trimIndent()", false);
+        checkKotlinExpression("<resources>\n</resources>", "\"<resources>\\n</resources>\"", true);
+        checkKotlinExpression(true, "true", true);
+        checkKotlinExpression(false, "false", true);
+        checkKotlinExpression(-1, "-1", true);
+        checkKotlinExpression(false, "false && true", true);
+        checkKotlinExpression(true, "false || true", true);
+        checkKotlinExpression(true, "!false", true);
+        checkKotlinExpression(false, "false && true && true", true);
+        checkKotlinExpression(true, "false || false || true", true);
+        checkKotlinExpression(-2, "1 - 3", true);
     }
 
     public void testUltraLightPropertyInitializer() {

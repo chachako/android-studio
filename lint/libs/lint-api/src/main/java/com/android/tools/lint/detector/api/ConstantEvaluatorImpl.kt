@@ -33,6 +33,7 @@ import com.intellij.psi.PsiField
 import com.intellij.psi.PsiIfStatement
 import com.intellij.psi.PsiLiteral
 import com.intellij.psi.PsiLocalVariable
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiParameter
@@ -54,6 +55,8 @@ import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 import org.jetbrains.kotlin.asJava.elements.KtLightField
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtEscapeStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
@@ -85,6 +88,7 @@ import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.isUastChildOf
 import org.jetbrains.uast.resolveToUElement
+import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.util.isConstructorCall
 import org.jetbrains.uast.util.isNewArrayWithDimensions
 import org.jetbrains.uast.util.isNewArrayWithInitializer
@@ -279,6 +283,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                 else -> null
               }
             }
+            resolved is PsiMethod -> node.evaluate() ?: evaluate(resolved)
             else -> node.evaluate()
           }
         }
@@ -458,17 +463,20 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
           .map { entry ->
             when (entry) {
               is KtLiteralStringTemplateEntry -> entry.text
+              is KtEscapeStringTemplateEntry -> entry.unescapedValue
               else -> (evaluate(entry.expression) as? String)
             }
           }
           .takeIf { it.isNotEmpty() }
           ?.joinToString(separator = "")
+      is KtEscapeStringTemplateEntry -> node.unescapedValue
       // If we resolve to a "val" in Kotlin, if it's not a const val but in reality is a val
       // (because it has a constant expression and no getters and setters
       // and is not a var), then compute its value anyway.
       is KtLightMethod -> valueFromProperty(node.kotlinOrigin)
       is KtLightField -> valueFromProperty(node.kotlinOrigin)
       is KtProperty -> valueFromProperty(node)
+      is KtExpression -> node.toUElement()?.let(::evaluate)
       else -> null
     // TODO: Check for MethodInvocation and perform some common operations -
     // Math.* methods, String utility methods like notNullize, etc
