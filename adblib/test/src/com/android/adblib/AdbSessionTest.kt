@@ -20,6 +20,7 @@ import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler.Companion.DEFAULT_SPEED
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -163,9 +164,9 @@ class AdbSessionTest {
         Assert.assertEquals("test2", device.model)
         Assert.assertEquals("model", device.device)
         Assert.assertEquals(fakeDevice.transportId.toString(), device.transportId)
-        Assert.assertNull(device.maxSpeed)
-        Assert.assertNull(device.negotiatedSpeed)
-        Assert.assertNull(device.connectionType)
+        Assert.assertEquals(DEFAULT_SPEED, device.maxSpeed)
+        Assert.assertEquals(DEFAULT_SPEED, device.negotiatedSpeed)
+        Assert.assertEquals(DeviceConnectionType.USB, device.connectionType)
     }
 
     @Test
@@ -174,13 +175,18 @@ class AdbSessionTest {
             it.add(AdbFeatures.DEVICE_LIST_BINARY_PROTO)
         }
 
+        val maxSpeed = 12345L
+        val negotiatedSpeed = 54321L
+
         val fakeDevice = fakeAdb.connectDevice(
             "deviceID",
             "manufacturer",
             "deviceModel",
             "FakePixel device",
             "sdk",
-            DeviceState.HostConnectionType.USB
+            DeviceState.HostConnectionType.USB,
+            maxSpeedMbps = maxSpeed,
+            negotiatedSpeedMbps = negotiatedSpeed,
         )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
 
@@ -194,8 +200,8 @@ class AdbSessionTest {
         Assert.assertEquals("manufacturer", device.product)
         Assert.assertEquals("deviceModel", device.model)
         Assert.assertEquals(fakeDevice.transportId.toString(), device.transportId)
-        Assert.assertEquals(ListDevicesCommandHandler.DEFAULT_SPEED, device.maxSpeed)
-        Assert.assertEquals(ListDevicesCommandHandler.DEFAULT_SPEED, device.negotiatedSpeed)
+        Assert.assertEquals(maxSpeed, device.maxSpeed)
+        Assert.assertEquals(negotiatedSpeed, device.negotiatedSpeed)
         Assert.assertEquals(DeviceConnectionType.USB, device.connectionType)
         Assert.assertEquals("FakePixel device", device.device)
     }

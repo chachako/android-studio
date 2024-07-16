@@ -25,6 +25,7 @@ import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.MdnsService
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler.Companion.DEFAULT_SPEED
 import kotlinx.coroutines.runInterruptible
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -115,7 +116,9 @@ class FakeAdbServerProvider: AutoCloseable {
         deviceModel: String,
         release: String,
         sdk: String,
-        hostConnectionType: HostConnectionType
+        hostConnectionType: HostConnectionType,
+        maxSpeedMbps: Long = DEFAULT_SPEED,
+        negotiatedSpeedMbps: Long = DEFAULT_SPEED,
     ): DeviceState {
         return server?.connectDevice(
             deviceId,
@@ -123,7 +126,9 @@ class FakeAdbServerProvider: AutoCloseable {
             deviceModel,
             release,
             sdk,
-            hostConnectionType
+            hostConnectionType,
+            maxSpeedMbps = maxSpeedMbps,
+            negotiatedSpeedMbps = negotiatedSpeedMbps,
         )?.get(FAKE_ADB_SERVER_EXECUTOR_TIMEOUT_MS, TimeUnit.MILLISECONDS) ?: throw IllegalArgumentException()
     }
 
@@ -142,7 +147,9 @@ class FakeAdbServerProvider: AutoCloseable {
             deviceModel,
             release,
             sdk,
-            HostConnectionType.NETWORK
+            HostConnectionType.NETWORK,
+            maxSpeedMbps = DEFAULT_SPEED,
+            negotiatedSpeedMbps = DEFAULT_SPEED,
         )
     }
 

@@ -24,6 +24,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler.Companion.DEFAULT_SPEED
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Uninterruptibles
 import kotlinx.coroutines.CoroutineScope
@@ -122,7 +123,9 @@ class FakeAdbRule : ExternalResource() {
       properties: Map<String, String> = emptyMap(),
       hostConnectionType: DeviceState.HostConnectionType = DeviceState.HostConnectionType.USB,
       avdName: String? = null,
-      avdPath: String? = null
+      avdPath: String? = null,
+      maxSpeedMbps : Long = DEFAULT_SPEED,
+      negotiatedSpeedMbps: Long = DEFAULT_SPEED,
   ): DeviceState {
     val startLatch = CountDownLatch(1)
     startingDevices[deviceId] = startLatch
@@ -137,7 +140,9 @@ class FakeAdbRule : ExternalResource() {
             sdk,
             abi,
             properties,
-            hostConnectionType)
+            hostConnectionType,
+            maxSpeedMbps = maxSpeedMbps,
+            negotiatedSpeedMbps = negotiatedSpeedMbps)
     val device = deviceFuture.get()
     device.deviceStatus = DeviceState.DeviceStatus.ONLINE
     assertThat(startLatch.await(30, TimeUnit.SECONDS)).isTrue()

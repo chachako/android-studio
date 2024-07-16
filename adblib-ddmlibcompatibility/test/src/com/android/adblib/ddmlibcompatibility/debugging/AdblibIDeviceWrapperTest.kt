@@ -89,19 +89,19 @@ class AdblibIDeviceWrapperTest {
     fun getState() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, _) = createConnectedDevice(
-            "device1", DeviceState.DeviceStatus.FASTBOOTD
+            "device1", DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper = createAdblibIDeviceWrapper(connectedDevice, bridge)
 
         // Act / Assert
-        assertEquals(IDevice.DeviceState.FASTBOOTD, adblibIDeviceWrapper.state)
+        assertEquals(IDevice.DeviceState.ONLINE, adblibIDeviceWrapper.state)
     }
 
     @Test
     fun getStateReturnsNull_whenNotExplicitlySet() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, _) = createConnectedDevice(
-            "device1", DeviceState.DeviceStatus.FASTBOOTD
+            "device1", DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper =
             AdblibIDeviceWrapper(

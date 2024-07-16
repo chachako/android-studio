@@ -58,6 +58,8 @@ class ListDevicesCommandHandler: HostCommandHandler() {
 
         const val COMMAND = "devices"
         const val LONG_COMMAND = "devices-l"
+        const val DEFAULT_SPEED = 5000L
+
 
         fun commandToDeviceListFormat(command: String) : DeviceListFormat {
             return when(command) {
@@ -128,8 +130,6 @@ class ListDevicesCommandHandler: HostCommandHandler() {
            }
         }
 
-        val DEFAULT_SPEED = 5000L
-
         fun genProtobufOutput(deviceList: List<DeviceState>, textFormat: Boolean) : ByteBuffer {
             val listBuilder = DevicesProto.Devices.newBuilder()
             for (deviceState in deviceList) {
@@ -146,8 +146,8 @@ class ListDevicesCommandHandler: HostCommandHandler() {
                         DeviceState.HostConnectionType.USB -> DevicesProto.ConnectionType.USB
                         else -> DevicesProto.ConnectionType.SOCKET
                     })
-                deviceBuilder.setMaxSpeed(DEFAULT_SPEED)
-                deviceBuilder.setNegotiatedSpeed(DEFAULT_SPEED)
+                deviceBuilder.setMaxSpeed(deviceState.maxSpeedMbps)
+                deviceBuilder.setNegotiatedSpeed(deviceState.negotiatedSpeedMbps)
                 listBuilder.addDevice(deviceBuilder.build())
             }
 

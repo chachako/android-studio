@@ -41,7 +41,9 @@ class DeviceState internal constructor(
     properties: Map<String, String>,
     val hostConnectionType: HostConnectionType,
     val transportId: Int,
-    val isRoot: Boolean
+    val isRoot: Boolean,
+    val maxSpeedMbps: Long,
+    val negotiatedSpeedMbps: Long,
 ) {
 
     val clientChangeHub = ClientStateChangeHub()
@@ -96,6 +98,8 @@ class DeviceState internal constructor(
         config.hostConnectionType,
         transportId,
         config.isRoot,
+        config.maxSpeedMbps,
+        config.negotiatedSpeedMbps,
     ) {
         config.files.forEach(Consumer { fileState: DeviceFileState ->
             mFiles[fileState.path] =
@@ -324,6 +328,8 @@ class DeviceState internal constructor(
             properties,
             mDeviceStatus,
             isRoot,
+            maxSpeedMbps,
+            negotiatedSpeedMbps,
         )
 
     fun setActivityManager(newActivityManager: Service?) {

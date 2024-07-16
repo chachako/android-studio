@@ -52,4 +52,6 @@ data class DeviceStateConfig(
     val properties: Map<String, String>,
     val deviceStatus: DeviceState.DeviceStatus,
     val isRoot: Boolean,
+    val maxSpeedMbps: Long,
+    val negotiatedSpeedMbps: Long,
 )
