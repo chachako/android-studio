@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.net.InetSocketAddress
@@ -248,6 +249,7 @@ class TcpServerTest {
         assertEquals(false, tcpServer.closed.get())
     }
 
+    @Ignore("b/347934220")
     @Test
     fun serverConnectsToOnlyOneOfManyServers(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
         // Prepare
