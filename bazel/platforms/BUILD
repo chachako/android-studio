@@ -65,11 +65,16 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
     ],
-    exec_properties = create_rbe_exec_properties_dict(
-        container_image = "docker://gcr.io/google.com/android-studio-alphasource/rbe-windows2019-as@sha256:1ad1aa4e016b0b9ee41e5c0d587c3fc51033485b0242fb7ee9fdd242c7598879",
-        docker_network = "off",
-        labels = {"machine-size": "default"},
-        os_family = "Windows",
+    exec_properties = dicts.add(
+        create_rbe_exec_properties_dict(
+            container_image = "docker://gcr.io/google.com/android-studio-alphasource/rbe-windows2019-as@sha256:1ad1aa4e016b0b9ee41e5c0d587c3fc51033485b0242fb7ee9fdd242c7598879",
+            docker_network = "off",
+            labels = {"machine-size": "default"},
+            os_family = "Windows",
+        ),
+        # cache-silo-key: this is essentially a "salt" added to the remote cache key.
+        # Change it to a new value when we want to create a new cache from scratch.
+        {"cache-silo-key": "20240716"},
     ),
 )
 

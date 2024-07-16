@@ -94,7 +94,6 @@ def run_bazel_test(
   ])
 
   bazel_cmd = bazel.BazelCmd(build_env)
-  bazel_cmd.startup_options = ['--max_idle_secs=60']
   result = bazel_cmd.test(*flags, '--', *targets)
 
   return BazelTestResult(
