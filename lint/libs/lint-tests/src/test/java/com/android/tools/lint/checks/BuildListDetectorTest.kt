@@ -33,15 +33,7 @@ class BuildListDetectorTest : AbstractCheckTest() {
             fun asCubics_broken(progress: Float): List<Cubic> {
                 return buildList { // ERROR
                     for (i in _morphMatch.indices) {
-                        Cubic(i)
-                    }
-                }
-            }
-
-            fun asCubics_correct(progress: Float): List<Cubic> {
-                return buildList { // OK
-                    for (i in _morphMatch.indices) {
-                        add(Cubic(i))
+                        Cubic(i) // ERROR: Should have been wrapped in an add call.
                     }
                 }
             }

@@ -146,7 +146,8 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testIntentFilterDataDeclarationCustomAndroidNamespace() {
+  fun testDocumentationExampleIntentFilterUniqueDataAttributes() {
+    // Tests custom android namespace
     lint()
       .files(
         manifest(

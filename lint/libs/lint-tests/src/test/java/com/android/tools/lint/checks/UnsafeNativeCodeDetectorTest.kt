@@ -22,7 +22,7 @@ class UnsafeNativeCodeDetectorTest : AbstractCheckTest() {
     return UnsafeNativeCodeDetector()
   }
 
-  fun testLoad() {
+  fun testDocumentationExampleUnsafeDynamicallyLoadedCode() {
     lint()
       .files(
         java(

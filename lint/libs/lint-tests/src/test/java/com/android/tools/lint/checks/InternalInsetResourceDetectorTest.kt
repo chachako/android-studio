@@ -18,7 +18,7 @@ package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.Detector
 
-class InternalInsetResourceDetectorTests : AbstractCheckTest() {
+class InternalInsetResourceDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector = InternalInsetResourceDetector()
 
   fun testDocumentationExample() {

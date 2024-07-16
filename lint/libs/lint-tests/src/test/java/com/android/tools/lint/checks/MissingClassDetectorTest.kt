@@ -373,6 +373,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
           .indented(),
         java(
             """
+            /* HIDE-FROM-DOCUMENTATION */
             package javax.inject;
 
             import java.lang.annotation.Target;

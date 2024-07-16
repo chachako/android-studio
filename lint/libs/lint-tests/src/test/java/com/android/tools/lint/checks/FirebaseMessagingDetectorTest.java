@@ -36,6 +36,7 @@ public class FirebaseMessagingDetectorTest {
     final TestFile mFirebaseMessageService =
             java(
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package com.google.firebase.messaging;\n"
                             + "public class FirebaseMessagingService {\n"
                             + "  public void onNewToken(String token) {\n"

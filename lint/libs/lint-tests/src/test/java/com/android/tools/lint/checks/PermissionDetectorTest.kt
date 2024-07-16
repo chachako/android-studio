@@ -31,6 +31,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
     java(
         "src/android/location/LocationManager.java",
         """
+                /* HIDE-FROM-DOCUMENTATION */
                 package android.location;
 
                 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;

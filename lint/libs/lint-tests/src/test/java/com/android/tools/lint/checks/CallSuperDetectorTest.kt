@@ -231,6 +231,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
           .indented(),
         java(
             """
+                /* HIDE-FROM-DOCUMENTATION */
                 package edu.umd.cs.findbugs.annotations;
 
                 import java.lang.annotation.Retention;
@@ -250,6 +251,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
           .indented(),
         java(
             """
+                /* HIDE-FROM-DOCUMENTATION */
                 package javax.annotation;
 
                 import java.lang.annotation.Retention;

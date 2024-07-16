@@ -29,6 +29,7 @@ class MediaBrowserServiceCompatVersionDetectorTest : AbstractCheckTest() {
   private val mediaBrowserCompat: TestFile =
     java(
       "" +
+        "/* HIDE-FROM-DOCUMENTATION */\n" +
         "package android.support.v4.media;\n" +
         "\n" +
         "public class MediaBrowserCompat {\n" +
@@ -39,6 +40,7 @@ class MediaBrowserServiceCompatVersionDetectorTest : AbstractCheckTest() {
   private val mediaBrowserServiceCompat: TestFile =
     java(
       "" +
+        "/* HIDE-FROM-DOCUMENTATION */\n" +
         "package android.support.v4.media;\n" +
         "\n" +
         "import android.os.Bundle;\n" +

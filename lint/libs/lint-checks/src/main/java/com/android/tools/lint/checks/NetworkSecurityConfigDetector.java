@@ -108,7 +108,7 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                             "Insecure Base Configuration",
                             "Permitting cleartext traffic could allow eavesdroppers to intercept data sent "
                                     + "by your app, which impacts the privacy of your users. Consider only allowing "
-                                    + "encrypted traffic by setting the `cleartextTrafficPermitted` tag to `\"false\"`.",
+                                    + "encrypted traffic by setting the `cleartextTrafficPermitted` tag to `false`.",
                             Category.SECURITY,
                             5,
                             Severity.WARNING,
@@ -122,10 +122,10 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
             Issue.create(
                             "AcceptsUserCertificates",
                             "Allowing User Certificates",
-                            "Allowing user certificates could allow eavesdroppers to intercept data sent by your app, '"
+                            "Allowing user certificates could allow eavesdroppers to intercept data sent by your app, "
                                     + "which could impact the privacy of your users. Consider nesting your app's "
                                     + "`trust-anchors` inside a `<debug-overrides>` element to make sure they are only "
-                                    + "available when `android:debuggable` is set to `\"true\"`.",
+                                    + "available when `android:debuggable` is set to `true`.",
                             Category.SECURITY,
                             5,
                             Severity.WARNING,

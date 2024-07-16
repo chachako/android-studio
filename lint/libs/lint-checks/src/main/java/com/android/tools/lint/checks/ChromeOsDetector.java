@@ -128,7 +128,7 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
                                     + "that users can take advantage of the multi-window environments and "
                                     + "larger screens available on Android. To fix the issue, consider declaring the "
                                     + "corresponding activity element with `screenOrientation=\"unspecified\"`"
-                                    + "or `\"fullSensor\"` attribute.",
+                                    + "or `fullSensor` attribute.",
                             Category.CORRECTNESS,
                             4,
                             Severity.WARNING,

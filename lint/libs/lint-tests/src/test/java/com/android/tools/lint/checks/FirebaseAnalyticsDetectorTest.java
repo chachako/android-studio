@@ -26,6 +26,7 @@ public class FirebaseAnalyticsDetectorTest extends AbstractCheckTest {
             java(
                     "src/com/google/firebase/analytics/FirebaseAnalytics.java",
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package com.google.firebase.analytics;\n"
                             + "import android.os.Bundle;\n"
                             + "public class FirebaseAnalytics {\n"

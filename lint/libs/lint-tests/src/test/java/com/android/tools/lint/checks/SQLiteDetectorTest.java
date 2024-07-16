@@ -116,6 +116,7 @@ public class SQLiteDetectorTest extends AbstractCheckTest {
                         java(
                                 "src/android/database/sqlite/SQLiteDatabase.java",
                                 ""
+                                        + "/* HIDE-FROM-DOCUMENTATION */\n"
                                         + "package android.database.sqlite;\n"
                                         + "\n"
                                         + "import android.database.SQLException;\n"

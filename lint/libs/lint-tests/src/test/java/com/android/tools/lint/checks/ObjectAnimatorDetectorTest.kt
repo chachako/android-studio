@@ -24,6 +24,80 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
     return ObjectAnimatorDetector()
   }
 
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        java(
+          """
+          import android.animation.ObjectAnimator;
+
+          public class AnimationExample {
+              public void startAnimations() {
+                  Object myObject = new MyObject();
+                  ObjectAnimator animator1 = ObjectAnimator.ofInt(myObject, "prop1", 0, 1, 2, 5);
+                  animator1.start();
+
+                  ObjectAnimator animator2 = ObjectAnimator.ofInt(myObject, "prop2", 0, 1, 2, 5);
+                  animator2.start();
+              }
+
+              private static class MyObject {
+                  public void setProp1(int x) {
+                      // Implementation here
+                  }
+
+                  private void setProp2(float x) {
+                      // Implementation here
+                  }
+              }
+          }
+                """
+        )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        gradle(
+          """
+            /* HIDE-FROM-DOCUMENTATION */
+            android {
+                buildTypes {
+                    release {
+                        minifyEnabled true
+                    }
+                }
+            }
+            """
+        )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
+        src/main/java/AnimationExample.java:9: Error: The setter for this property does not match the expected signature (public void setProp2(int arg) [ObjectAnimatorBinding]
+                ObjectAnimator animator2 = ObjectAnimator.ofInt(myObject, "prop2", 0, 1, 2, 5);
+                                                                          ~~~~~~~
+            src/main/java/AnimationExample.java:18: Property setter here
+                private void setProp2(float x) {
+                             ~~~~~~~~~~~~~~~~~
+        src/main/java/AnimationExample.java:14: Warning: This method is accessed from an ObjectAnimator so it should be annotated with @Keep to ensure that it is not discarded or renamed in release builds [AnimatorKeep]
+                public void setProp1(int x) {
+                            ~~~~~~~~~~~~~~~
+            src/main/java/AnimationExample.java:6: ObjectAnimator usage here
+                ObjectAnimator animator1 = ObjectAnimator.ofInt(myObject, "prop1", 0, 1, 2, 5);
+                                                                          ~~~~~~~
+        1 errors, 1 warnings
+              """
+      )
+      .expectFixDiffs(
+        """
+        Fix for src/main/java/AnimationExample.java line 14: Annotate with @Keep:
+        @@ -2 +2
+        + import androidx.annotation.Keep;
+        @@ -14 +15
+        +         @Keep
+        """
+      )
+  }
+
   fun testBasic() {
     val expected =
       """

@@ -204,6 +204,7 @@ public class AppCompatCallDetectorTest extends AbstractCheckTest {
     private TestFile mActionBarActivity =
             java(
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package android.support.v7.app;\n"
                             + "\n"
                             + "import android.app.ActionBar;\n"
@@ -239,6 +240,7 @@ public class AppCompatCallDetectorTest extends AbstractCheckTest {
     private TestFile mAppCompatActivity =
             java(
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package android.support.v7.app;\n"
                             + "\n"
                             + "import android.app.Activity;\n"
@@ -260,6 +262,7 @@ public class AppCompatCallDetectorTest extends AbstractCheckTest {
     private TestFile mActionMode =
             java(
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package android.support.v7.view;\n"
                             + "\n"
                             + "/**\n"
@@ -303,6 +306,7 @@ public class AppCompatCallDetectorTest extends AbstractCheckTest {
     private TestFile mIntermediateActivity =
             java(
                     ""
+                            + "/* HIDE-FROM-DOCUMENTATION */\n"
                             + "package test.pkg;\n"
                             + "\n"
                             + "import android.app.ActionBar;\n"

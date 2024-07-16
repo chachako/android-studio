@@ -91,7 +91,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
       .files(
         xml("res/values/strings.xml", stringsXml),
         xml("res/values-ldtrl-mnc123/strings.xml", stringsXml),
-        xml("res/values-kok-rIN//strings.xml", stringsXml),
+        xml("res/values-kok-rIN/strings.xml", stringsXml),
         xml("res/values-no-rNOR/strings.xml", stringsXml),
       )
       .run()

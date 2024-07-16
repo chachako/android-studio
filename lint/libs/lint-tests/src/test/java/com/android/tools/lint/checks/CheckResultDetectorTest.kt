@@ -1491,6 +1491,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
   private val javaxCheckReturnValueSource =
     java(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         package javax.annotation;
         import static java.lang.annotation.RetentionPolicy.CLASS;
         import java.lang.annotation.Retention;

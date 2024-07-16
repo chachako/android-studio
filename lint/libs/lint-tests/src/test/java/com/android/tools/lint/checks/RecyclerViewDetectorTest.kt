@@ -24,6 +24,7 @@ class RecyclerViewDetectorTest : AbstractCheckTest() {
     java(
         "src/android/support/v7/widget/RecyclerView.java",
         """
+            /* HIDE-FROM-DOCUMENTATION */
             package android.support.v7.widget;
 
             import android.content.Context;

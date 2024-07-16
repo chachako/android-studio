@@ -27,6 +27,34 @@ public class SystemPermissionsDetectorTest extends AbstractCheckTest {
         return new SystemPermissionsDetector();
     }
 
+  public void testDocumentationExample() {
+    lint().files(
+            xml(
+                "AndroidManifest.xml",
+                ""
+                    + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                    + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                    + "    package=\"foo.bar2\"\n"
+                    + "    android:versionCode=\"1\"\n"
+                    + "    android:versionName=\"1.0\" >\n"
+                    + "\n"
+                    + "    <uses-sdk android:minSdkVersion=\"14\" />\n"
+                    + "\n"
+                    + "    <!-- Ok: -->\n"
+                    + "    <uses-permission android:name=\"android.permission.INTERNET\" />\n"
+                    + "\n"
+                    + "    <!-- Error -->\n"
+                    + "    <uses-permission android:name=\"android.permission.BACKUP\" />\n"
+                    + "\n"
+                    + "</manifest>\n"))
+        .run()
+        .expect(""
+            + "AndroidManifest.xml:13: Error: Permission is only granted to system apps [ProtectedPermissions]\n"
+            + "    <uses-permission android:name=\"android.permission.BACKUP\" />\n"
+            + "                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+            + "1 errors, 0 warnings");
+  }
+
     public void testBrokenOrder() {
         //noinspection all // Sample code
         String expected =

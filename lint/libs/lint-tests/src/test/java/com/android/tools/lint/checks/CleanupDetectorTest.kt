@@ -3051,6 +3051,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
   private val dialogFragment =
     java(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         package android.support.v4.app;
 
         /** Stub to make unit tests able to resolve types without having a real dependency
@@ -3068,6 +3069,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
   private val fragment =
     java(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         package android.support.v4.app;
 
         /** Stub to make unit tests able to resolve types without having a real dependency
@@ -3082,6 +3084,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
   private val fragmentManager =
     java(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         package android.support.v4.app;
 
         /** Stub to make unit tests able to resolve types without having a real dependency
@@ -3097,6 +3100,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
   private val fragmentTransaction =
     java(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         package android.support.v4.app;
 
         /** Stub to make unit tests able to resolve types without having a real dependency

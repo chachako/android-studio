@@ -25,6 +25,42 @@ import com.android.tools.lint.detector.api.Detector;
 @SuppressWarnings({"javadoc", "ClassNameDiffersFromFileName", "MethodMayBeStatic"})
 public class RegistrationDetectorTest extends AbstractCheckTest {
 
+    public void testDocumentationExample() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.app.Activity;\n"
+                                        + "\n"
+                                        + "public class MyActivity1 extends Activity {\n"
+                                        + "}\n"),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.app.Activity;\n"
+                                        + "\n"
+                                        + "public class MyActivity2 extends Activity {\n"
+                                        + "}\n"),
+                        manifest(
+                                "<manifest"
+                                    + " xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                    + "    package=\"test.pkg\">\n"
+                                    + "    <application>\n"
+                                    + "        <activity android:name=\".MyActivity1\" />\n"
+                                    + "    </application>\n"
+                                    + "</manifest>\n"))
+                .run()
+                .expect(
+                        "src/test/pkg/MyActivity2.java:5: Warning: The <activity>"
+                            + " test.pkg.MyActivity2 is not registered in the manifest"
+                            + " [Registered]\n"
+                            + "public class MyActivity2 extends Activity {\n"
+                            + "             ~~~~~~~~~~~\n"
+                            + "0 errors, 1 warnings");
+    }
+
     public void testRegistered() {
         lint().files(
                         xml(

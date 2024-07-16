@@ -30,7 +30,45 @@ public class ResourcePrefixDetectorTest extends AbstractCheckTest {
         return new ResourcePrefixDetector();
     }
 
-    public void testResourceFiles() {
+  public void testDocumentationExample() {
+      lint()
+          .files(
+              gradle(
+                  ""
+                      + "apply plugin: 'com.android.library'\n"
+                      + "\n"
+                      + "android {\n"
+                      + "    resourcePrefix 'unit_test_prefix_'\n"
+                      + "}"),
+              xml(
+                  "src/main/res/layout/activity_main.xml",
+                  ""
+                      + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                      + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                      + "    android:layout_width=\"match_parent\"\n"
+                      + "    android:layout_height=\"match_parent\"\n"
+                      + "    android:orientation=\"vertical\" >\n"
+                      + "</LinearLayout>\n"),
+              xml(
+                  "src/main/res/layout/unit_test_prefix_ok.xml",
+                  ""
+                      + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                      + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                      + "    android:layout_width=\"match_parent\"\n"
+                      + "    android:layout_height=\"match_parent\"\n"
+                      + "    android:orientation=\"vertical\" >\n"
+                      + "</LinearLayout>\n")
+
+          ).run().expect(
+              ""
+                  + "src/main/res/layout/activity_main.xml:2: Error: Resource named 'activity_main' does not start with the project's resource prefix 'unit_test_prefix_'; rename to 'unit_test_prefix_activity_main' ? [ResourceName]\n"
+                  + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                  + " ~~~~~~~~~~~~\n"
+                  + "1 errors, 0 warnings"
+          );
+  }
+
+  public void testResourceFiles() {
         String expected =
                 ""
                         + "src/main/res/drawable-mdpi/frame.png: Error: Resource named 'frame' does not start with the project's resource prefix 'unit_test_prefix_'; rename to 'unit_test_prefix_frame' ? [ResourceName]\n"

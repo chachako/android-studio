@@ -5812,6 +5812,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         java(
                                 "src/java/util/concurrent/ConcurrentHashMap.java",
                                 ""
+                                        + "/* HIDE-FROM-DOCUMENTATION */\n"
                                         + "package java.util.concurrent;\n"
                                         + "\n"
                                         + "import java.io.Serializable;\n"

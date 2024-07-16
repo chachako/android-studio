@@ -35,11 +35,60 @@ class IndentationDetectorTest : AbstractCheckTest() {
   }
 
   fun testDocumentationExample() {
+    @Suppress("SuspiciousIndentAfterControlStatement")
+    lint()
+      .files(
+        kotlin(
+            "src/Kotlin.kt",
+            """
+                fun String.getLineAndColumn(offset: Int): Pair<Int,Int> {
+                    var line = 1
+                    var column = 1
+                    for (i in 0 until offset) {
+                        column++
+                        if (this[i] == '\n')
+                            column = 0
+                            line++ // WARN1
+                    }
+                    return Pair(line, column)
+                }
+
+                fun getPriceString(price: Int) {
+                    var s = "The price is: "
+                        price.toString() + // WARN 2
+                        "."
+                }
+                """,
+          )
+          .indented(),
+      )
+      .skipTestModes(TestMode.PARENTHESIZED, TestMode.WHITESPACE)
+      .run()
+      .expect(
+        """
+        src/Kotlin.kt:8: Error: Suspicious indentation: This is indented but is not nested under the previous expression (if (this[i] == '\n')...) [SuspiciousIndentation]
+                    line++ // WARN1
+                    ~~~~~~
+            src/Kotlin.kt:6: Previous statement here
+                if (this[i] == '\n')
+                ~~~~~~~~~~~~~~~~~~~~
+        src/Kotlin.kt:15: Error: Suspicious indentation: This is indented but is not continuing the previous expression (var s = "The price i...) [SuspiciousIndentation]
+                price.toString() + // WARN 2
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/Kotlin.kt:14: Previous statement here
+            var s = "The price is: "
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+            """
+      )
+  }
+
+  fun testBasics() {
     @Suppress("UseWithIndex", "ControlFlowWithEmptyBody", "SuspiciousIndentAfterControlStatement")
     lint()
       .files(
         java(
-            """
+          """
                 class Java {
                   public void test(Object context) {
                     if (context == null)
@@ -50,11 +99,11 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-          )
+        )
           .indented(),
         kotlin(
-            "src/Kotlin.kt",
-            """
+          "src/Kotlin.kt",
+          """
                 fun String.getLineAndColumn(offset: Int): Pair<Int,Int> {
                     var line = 1
                     var column = 1
@@ -132,7 +181,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     return Pair(line, column)
                 }
                 """,
-          )
+        )
           .indented(),
       )
       .skipTestModes(TestMode.PARENTHESIZED, TestMode.WHITESPACE)

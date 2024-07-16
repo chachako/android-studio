@@ -293,12 +293,13 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
 private val audioManagerStub: TestFile =
   java(
       """
-    package android.media;
+      /* HIDE-FROM-DOCUMENTATION */
+      package android.media;
 
-    public class AudioManager {
-      public boolean setCommunicationDevice(@NonNull AudioDeviceInfo device) {}
-      public void clearCommunicationDevice() {}
-    }
+      public class AudioManager {
+        public boolean setCommunicationDevice(@NonNull AudioDeviceInfo device) {}
+        public void clearCommunicationDevice() {}
+      }
     """
     )
     .indented()
@@ -306,9 +307,10 @@ private val audioManagerStub: TestFile =
 private val audioDeviceInfoStub: TestFile =
   java(
       """
-    package android.media;
-    public class AudioDeviceInfo {}
-    """
+      /* HIDE-FROM-DOCUMENTATION */
+      package android.media;
+      public class AudioDeviceInfo {}
+      """
     )
     .indented()
 

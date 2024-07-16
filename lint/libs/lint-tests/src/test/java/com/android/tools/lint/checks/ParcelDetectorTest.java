@@ -417,12 +417,14 @@ public class ParcelDetectorTest extends AbstractCheckTest {
                                         + "\n"),
                         kotlin(
                                 ""
+                                        + "/* HIDE-FROM-DOCUMENTATION */\n"
                                         + "package kotlinx.android.parcel\n"
                                         + "@Target(AnnotationTarget.CLASS)\n"
                                         + "@Retention(AnnotationRetention.BINARY)\n"
                                         + "annotation class Parcelize"),
                         kotlin(
                                 ""
+                                        + "/* HIDE-FROM-DOCUMENTATION */\n"
                                         + "package kotlinx.parcelize\n"
                                         + "@Target(AnnotationTarget.CLASS)\n"
                                         + "@Retention(AnnotationRetention.BINARY)\n"
@@ -507,6 +509,7 @@ public class ParcelDetectorTest extends AbstractCheckTest {
         lint().files(
                         kotlin(
                                 ""
+                                        + "/* HIDE-FROM-DOCUMENTATION */\n"
                                         + "package kotlinx.parcelize\n"
                                         + "@Target(AnnotationTarget.CLASS)\n"
                                         + "@Retention(AnnotationRetention.BINARY)\n"

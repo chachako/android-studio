@@ -60,8 +60,10 @@ class ItemDecoratorDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
+        // Stub
         java(
             """
+                /* HIDE-FROM-DOCUMENTATION */
                 package android.support.v7.widget;
                 public class RecyclerView {
                     public abstract static class ItemDecoration {

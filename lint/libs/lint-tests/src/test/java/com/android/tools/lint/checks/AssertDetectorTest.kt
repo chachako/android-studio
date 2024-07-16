@@ -388,6 +388,7 @@ class AssertDetectorTest : AbstractCheckTest() {
   private val kotlinAssertionRuntime =
     kotlin(
         """
+        /* HIDE-FROM-DOCUMENTATION */
         @file:kotlin.jvm.JvmName("PreconditionsKt")
         package kotlin
 

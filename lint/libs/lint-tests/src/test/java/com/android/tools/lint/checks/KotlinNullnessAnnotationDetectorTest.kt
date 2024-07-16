@@ -368,6 +368,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
         // Stubs
         java(
             """
+                /* HIDE-FROM-DOCUMENTATION */
                 package javax.annotation;
                 public @interface Nullable { }
                 """
@@ -375,6 +376,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
           .indented(),
         java(
             """
+                /* HIDE-FROM-DOCUMENTATION */
                 package javax.annotation;
                 public @interface Nonnull { }
                 """

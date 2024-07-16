@@ -35,7 +35,64 @@ public class JavaPerformanceDetectorTest extends AbstractCheckTest {
         return true;
     }
 
-    @SuppressWarnings("all")
+    public void testDocumentationExampleDrawAllocation() {
+      lint().files(
+          java(
+              ""
+                  + "package test.pkg;\n"
+                  + "\n"
+                  + "import android.content.Context;\n"
+                  + "import android.graphics.Bitmap;\n"
+                  + "import android.graphics.Canvas;\n"
+                  + "import android.util.AttributeSet;\n"
+                  + "import android.view.View;\n"
+                  + "\n"
+                  + "public abstract class MyView extends View {\n"
+                  + "    public MyView(Context context, AttributeSet attrs, int defStyle) {\n"
+                  + "        super(context, attrs, defStyle);\n"
+                  + "    }\n"
+                  + "\n"
+                  + "    @Override\n"
+                  + "    protected void onDraw(Canvas canvas) {\n"
+                  + "        super.onDraw(canvas);\n"
+                  + "\n"
+                  + "        bitmap = Bitmap.createBitmap(100, 100, null);\n"
+                  + "    }\n"
+                  + "\n"
+                  + "    private Bitmap bitmap;\n"
+                  + "}\n"
+          )
+      )      .run()
+          .expect(
+              ""
+                  + "src/test/pkg/MyView.java:18: Warning: Avoid object allocations during draw/layout operations (preallocate and reuse instead) [DrawAllocation]\n"
+                  + "        bitmap = Bitmap.createBitmap(100, 100, null);\n"
+                  + "                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                  + "0 errors, 1 warnings"
+          );
+    }
+
+  public void testDocumentationExampleUseValueOf() {
+    lint().files(
+            java(
+                ""
+                    + "package test.pkg;\n"
+                    + "\n"
+                    + "public class MyClass {\n"
+                    + "    Double accuracy = new Double(1.0);\n"
+                    + "}\n"
+            )
+        )      .run()
+        .expect(
+            ""
+                + "src/test/pkg/MyClass.java:4: Warning: Use Double.valueOf(1.0) instead [UseValueOf]\n"
+                + "    Double accuracy = new Double(1.0);\n"
+                + "                      ~~~~~~~~~~~~~~~\n"
+                + "0 errors, 1 warnings"
+        );
+  }
+
+  @SuppressWarnings("all")
     public void test() {
         String expected =
                 ""

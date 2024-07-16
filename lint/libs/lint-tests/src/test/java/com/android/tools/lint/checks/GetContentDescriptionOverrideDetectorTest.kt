@@ -17,7 +17,7 @@ package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.Detector
 
-class GetContentDescriptionOverrideTest : AbstractCheckTest() {
+class GetContentDescriptionOverrideDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
     return GetContentDescriptionOverrideDetector()
   }

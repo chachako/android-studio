@@ -25,6 +25,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
     java(
         "src/androidx/annotation/Discouraged.java",
         """
+            /* HIDE-FROM-DOCUMENTATION */
             package androidx.annotation;
             import static java.lang.annotation.ElementType.METHOD;
             import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -46,6 +47,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
     java(
         "src/android/content/res/Resources.java",
         """
+            /* HIDE-FROM-DOCUMENTATION */
             package android.content.res;
 
             import android.util.TypedValue;

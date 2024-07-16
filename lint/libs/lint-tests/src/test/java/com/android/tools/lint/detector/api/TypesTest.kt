@@ -430,6 +430,7 @@ class TypesTest : TestCase() {
     val pair =
       LintUtilsTest.parseKotlin(
         """
+                /* HIDE-FROM-DOCUMENTATION */
                 @file:CheckReturnValue
                 package javax.annotation
                 @Retention(AnnotationRetention.BINARY)

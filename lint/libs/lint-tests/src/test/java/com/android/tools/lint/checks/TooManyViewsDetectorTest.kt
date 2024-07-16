@@ -17,7 +17,7 @@ package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.Detector
 
-class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
+class TooManyViewsDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
     return TooManyViewsDetector()
   }

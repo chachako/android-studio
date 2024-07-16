@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.detector.api.Detector
 
 class WearSplashScreenDetectorTest : AbstractCheckTest() {
@@ -23,7 +24,7 @@ class WearSplashScreenDetectorTest : AbstractCheckTest() {
 
   fun testDocumentationExample() {
     lint()
-      .files(manifestWithActivityTheme(30))
+      .files(activityThemeManifestApi30)
       .run()
       .expect(
         """
@@ -45,13 +46,17 @@ class WearSplashScreenDetectorTest : AbstractCheckTest() {
   }
 
   private fun manifestWithActivityTheme(minSdk: Int) =
+    manifest(activityThemeManifestApi30.getContents()!!.replace("minSdkVersion=\"30\"", "minSdkVersion=\"$minSdk\""))
+
+
+  private val activityThemeManifestApi30: TestFile =
     manifest(
       // language=xml
       """
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package="test.pkg">
-               <uses-sdk android:minSdkVersion="$minSdk" />
+               <uses-sdk android:minSdkVersion="30" />
                <uses-feature android:name="android.hardware.type.watch" />
               <application
                   android:icon="@mipmap/ic_launcher"
