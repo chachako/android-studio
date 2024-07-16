@@ -23,9 +23,9 @@ import com.android.ide.common.repository.AgpVersion
 import com.android.resources.ResourceFolderType
 import com.android.testutils.MockitoKt.whenever
 import com.android.testutils.TestUtils
+import com.android.tools.lint.ClassName
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.UastEnvironment
-import com.android.tools.lint.checks.infrastructure.ClassName
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles
 import com.android.tools.lint.checks.infrastructure.TestFiles.java

@@ -25,6 +25,7 @@ import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.currentPlatform
 import com.android.resources.ResourceFolderType
 import com.android.sdklib.IAndroidTarget
+import com.android.tools.lint.ClassName
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin

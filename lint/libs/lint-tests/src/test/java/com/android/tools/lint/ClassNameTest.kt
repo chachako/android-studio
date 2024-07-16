@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.tools.lint.checks.infrastructure
+package com.android.tools.lint
 
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
@@ -95,11 +94,11 @@ class ClassNameTest {
       "foo",
       getPackage(
         """
-                package foo;
-                import foo.interfaces.ThisIsNotClassName;
-                public class NavigationView extends View {
-                }
-                """
+        package foo;
+        import foo.interfaces.ThisIsNotClassName;
+        public class NavigationView extends View {
+        }
+        """
           .trimIndent()
       ),
     )
@@ -107,11 +106,11 @@ class ClassNameTest {
       "NavigationView",
       getClassName(
         """
-                package foo;
-                import foo.interfaces.ThisIsNotClassName;
-                public class NavigationView extends View {
-                }
-                """
+        package foo;
+        import foo.interfaces.ThisIsNotClassName;
+        public class NavigationView extends View {
+        }
+        """
           .trimIndent()
       ),
     )
@@ -168,15 +167,16 @@ class ClassNameTest {
   fun testStripComments() {
     assertEquals(
       """
-            public class MyClass { String s = "/* This comment is \"in\" a string */" }
-            """
+      public class MyClass { String s = "/* This comment is \"in\" a string */" }
+      """
         .trimIndent()
         .trim(),
-      stripComments(
+      com.android.tools.lint
+        .stripComments(
           """
-                /** Comment */
-                // Line comment
-                public class MyClass { String s = "/* This comment is \"in\" a string */" }""",
+          /** Comment */
+          // Line comment
+          public class MyClass { String s = "/* This comment is \"in\" a string */" }""",
           DOT_JAVA,
         )
         .trimIndent()
@@ -188,19 +188,20 @@ class ClassNameTest {
   fun testStripCommentsNesting() {
     assertEquals(
       """
-            fun test1() { }
+      fun test1() { }
 
-            fun test2() { }
-            """
+      fun test2() { }
+      """
         .trimIndent()
         .trim(),
-      stripComments(
+      com.android.tools.lint
+        .stripComments(
           """
-                // Line comment /*
-                /**/ /***/ fun test1() { }
-                /* /* */ fun wrong() { } */
-                fun test2() { }
-                """,
+          // Line comment /*
+          /**/ /***/ fun test1() { }
+          /* /* */ fun wrong() { } */
+          fun test2() { }
+          """,
           DOT_KT,
         )
         .trimIndent()
@@ -213,12 +214,14 @@ class ClassNameTest {
     @Language("kotlin")
     val source =
       """
-            package com.android.tools.lint.detector.api
-            enum class Severity { FATAL, ERROR, WARNING, INFORMATIONAL, IGNORE }
-            """
+      package com.android.tools.lint.detector.api
+      enum class Severity { FATAL, ERROR, WARNING, INFORMATIONAL, IGNORE }
+      """
         .trimIndent()
-    assertEquals("com.android.tools.lint.detector.api", ClassName(source).packageName)
-    assertEquals("Severity", ClassName(source).className)
+    val className = ClassName(source, DOT_KT)
+    assertEquals("com.android.tools.lint.detector.api", className.packageName)
+    assertEquals("Severity", className.className)
+    assertEquals("com/android/tools/lint/detector/api/Severity.kt", className.relativePath())
   }
 
   @Test
@@ -226,18 +229,41 @@ class ClassNameTest {
     @Language("java")
     val source =
       """
-            // Copyright 2007, Google Inc.
-            /** The classes in this is package provide a variety of utility services. */
-            @CheckReturnValue
-            @ParametersAreNonnullByDefault
-            @NullMarked
-            package com.google.common.util;
+      // Copyright 2007, Google Inc.
+      /** The classes in this is package provide a variety of utility services. */
+      @CheckReturnValue
+      @ParametersAreNonnullByDefault
+      @NullMarked
+      package com.google.common.util;
 
-            import javax.annotation.ParametersAreNonnullByDefault;
-            import org.jspecify.nullness.NullMarked;
-            """
+      import javax.annotation.ParametersAreNonnullByDefault;
+      import org.jspecify.nullness.NullMarked;
+      """
         .trimIndent()
     assertEquals("com.google.common.util", ClassName(source).packageName)
     assertNull(ClassName(source).className)
+  }
+
+  @Test
+  fun testJvmName() {
+    val source =
+      """
+      @file:kotlin.jvm.JvmName("PreconditionsKt")
+      package kotlin
+
+      fun assert(value: Boolean) {
+          @Suppress("Assert", "KotlinAssert")
+          assert(value) { "Assertion failed" }
+      }
+
+      fun assert(value: Boolean, lazyMessage: () -> Any) {
+      }
+      """
+        .trimIndent()
+    val cls = ClassName(source, DOT_KT)
+    assertEquals("PreconditionsKt", cls.jvmName)
+    assertEquals("kotlin", cls.packageName)
+    assertEquals(null, cls.className)
+    assertEquals("kotlin/PreconditionsKt.kt", cls.relativePath())
   }
 }

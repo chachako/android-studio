@@ -20,6 +20,7 @@ import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_KT
+import com.android.tools.lint.ClassName
 import com.android.tools.lint.checks.infrastructure.TestFile.GradleTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.JavaTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile

@@ -63,6 +63,7 @@ import com.android.sdklib.SdkVersionInfo.camelCaseToUnderlines
 import com.android.sdklib.SdkVersionInfo.underlinesToCamelCase
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.skipCommentsAndWhitespace
 import com.android.tools.lint.client.api.ResourceRepositoryScope.ALL_DEPENDENCIES
 import com.android.tools.lint.client.api.TYPE_BOOLEAN
 import com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER
@@ -1551,21 +1552,9 @@ fun guessGradleLocationForFile(client: LintClient, gradle: File, string: String?
       while (offset < end - 1) {
         val c = contents[offset]
         if (c == '/') {
-          val next = contents[offset + 1] // safe because we loop to end-1
-          if (next == '/') {
-            // Line comment: jump to end of line
-            offset = contents.indexOf('\n', offset)
-            if (offset == -1) {
-              break
-            }
-            offset++
-            continue
-          } else if (next == '*') {
-            // Comment: jump to end of comment
-            offset = contents.indexOf("*/", offset)
-            if (offset == -1) {
-              break
-            }
+          val skipped = skipCommentsAndWhitespace(contents, offset, allowCommentNesting = false)
+          if (skipped > offset) {
+            offset = skipped
             continue
           }
         }

@@ -2075,11 +2075,11 @@ class LintIssueDocGenerator(
             when (fileType) {
               "kotlin" -> {
                 val className = ClassName(source, DOT_KT)
-                relative = className.relativePath(DOT_KT)
+                relative = className.relativePath()
               }
               "java" -> {
                 val className = ClassName(source, DOT_JAVA)
-                relative = className.relativePath(DOT_JAVA)
+                relative = className.relativePath()
               }
               "manifest" -> {
                 relative = "AndroidManifest.xml"
@@ -2453,14 +2453,6 @@ class LintIssueDocGenerator(
     @Suppress("SpellCheckingInspection")
     private const val AOSP_CS =
       "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main"
-
-    private val PACKAGE_PATTERN = Pattern.compile("""package\s+(\S&&[^;]*)""")
-
-    private val CLASS_PATTERN =
-      Pattern.compile(
-        """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b)+?\s*([^\s:(]+)""",
-        Pattern.MULTILINE,
-      )
 
     private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
 
@@ -4091,153 +4083,6 @@ class LintIssueDocGenerator(
         ),
         false,
       )
-    }
-
-    /**
-     * Copied from com.android.tools.lint.checks.infrastructure.ClassName in lint's testing library,
-     * but with the extra logic to insert "test.kt" as the default name for Kotlin tests without a
-     * top level class
-     */
-    class ClassName(source: String, extension: String = DOT_JAVA) {
-      val packageName: String?
-      val className: String?
-
-      init {
-        val withoutComments = stripComments(source, extension)
-        packageName = getPackage(withoutComments)
-        className = getClassName(withoutComments)
-      }
-
-      fun relativePath(extension: String): String? {
-        return when {
-          className == null ->
-            if (DOT_KT == extension)
-              if (packageName != null) packageName.replace('.', '/') + "/test.kt" else "test.kt"
-            else null
-          packageName != null -> packageName.replace('.', '/') + '/' + className + extension
-          else -> className + extension
-        }
-      }
-
-      @Suppress("LocalVariableName")
-      private fun stripComments(source: String, stripLineComments: Boolean = true): String {
-        val sb = StringBuilder(source.length)
-        var state = 0
-        val INIT = 0
-        val INIT_SLASH = 1
-        val LINE_COMMENT = 2
-        val BLOCK_COMMENT = 3
-        val BLOCK_COMMENT_ASTERISK = 4
-        val IN_STRING = 5
-        val IN_STRING_ESCAPE = 6
-        val IN_CHAR = 7
-        val AFTER_CHAR = 8
-        for (c in source) {
-          when (state) {
-            INIT -> {
-              when (c) {
-                '/' -> state = INIT_SLASH
-                '"' -> {
-                  state = IN_STRING
-                  sb.append(c)
-                }
-                '\'' -> {
-                  state = IN_CHAR
-                  sb.append(c)
-                }
-                else -> sb.append(c)
-              }
-            }
-            INIT_SLASH -> {
-              when {
-                c == '*' -> state = BLOCK_COMMENT
-                c == '/' && stripLineComments -> state = LINE_COMMENT
-                else -> {
-                  state = INIT
-                  sb.append('/') // because we skipped it in init
-                  sb.append(c)
-                }
-              }
-            }
-            LINE_COMMENT -> {
-              when (c) {
-                '\n' -> state = INIT
-              }
-            }
-            BLOCK_COMMENT -> {
-              when (c) {
-                '*' -> state = BLOCK_COMMENT_ASTERISK
-              }
-            }
-            BLOCK_COMMENT_ASTERISK -> {
-              state =
-                when (c) {
-                  '/' -> INIT
-                  '*' -> BLOCK_COMMENT_ASTERISK
-                  else -> BLOCK_COMMENT
-                }
-            }
-            IN_STRING -> {
-              when (c) {
-                '\\' -> state = IN_STRING_ESCAPE
-                '"' -> state = INIT
-              }
-              sb.append(c)
-            }
-            IN_STRING_ESCAPE -> {
-              sb.append(c)
-              state = IN_STRING
-            }
-            IN_CHAR -> {
-              if (c != '\\') {
-                state = AFTER_CHAR
-              }
-              sb.append(c)
-            }
-            AFTER_CHAR -> {
-              sb.append(c)
-              if (c == '\\') {
-                state = INIT
-              }
-            }
-          }
-        }
-
-        return sb.toString()
-      }
-    }
-
-    fun getPackage(source: String): String? {
-      val matcher = PACKAGE_PATTERN.matcher(source)
-      return if (matcher.find()) {
-        matcher.group(1).trim { it <= ' ' }
-      } else {
-        null
-      }
-    }
-
-    fun getClassName(source: String): String? {
-      val matcher = CLASS_PATTERN.matcher(source.replace('\n', ' '))
-      var start = 0
-      while (matcher.find(start)) {
-        val cls = matcher.group(2)
-        val groupStart = matcher.start(1)
-
-        // Make sure this "class" reference isn't part of an annotation on the class
-        // referencing a class literal -- Foo.class, or in Kotlin, Foo::class.java)
-        if (groupStart == 0 || source[groupStart - 1] != '.' && source[groupStart - 1] != ':') {
-          val trimmed = cls.trim { it <= ' ' }
-          val typeParameter = trimmed.indexOf('<')
-          return if (typeParameter != -1) {
-            trimmed.substring(0, typeParameter)
-          } else {
-            trimmed
-          }
-        }
-        start = matcher.end(2)
-      }
-
-      return null
     }
 
     private fun getCacheDir(): File {
