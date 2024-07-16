@@ -46802,13 +46802,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.apis.google-api-services-cloudresourcemanager_v1beta1-rev577-1.25.0",
-    pom = "repository/com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev577-1.25.0/google-api-services-cloudresourcemanager-v1beta1-rev577-1.25.0.pom",
+    name = "com.google.apis.google-api-services-cloudresourcemanager_v1beta1-rev20240128-2.0.0",
+    pom = "repository/com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev20240128-2.0.0/google-api-services-cloudresourcemanager-v1beta1-rev20240128-2.0.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev577-1.25.0",
+    repo_path = "com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev20240128-2.0.0",
     parent = "org.sonatype.oss.oss-parent_7",
     deps = [
-        "com.google.api-client.google-api-client_1.25.0",
+        "com.google.api-client.google-api-client_2.2.0",
     ],
     visibility = ["//visibility:public"],
 )
