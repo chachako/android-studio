@@ -125,9 +125,9 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         // Make sure there is only one JDWP session for this process
         while (!client.startJdwpSession(socket)) {
             // There is one active JDWP session.
-            // On API < 28, we return EOF right away.
-            // On API >= 28, we wait until the previous session is released
-            if (device.apiLevel < 28) {
+            // On API < 28 and API >= 35, we return EOF right away.
+            // On API >= 28 and API < 35, we wait until the previous session is released
+            if (device.apiLevel < 28 || device.apiLevel >= 35) {
                 writeFailResponse(oStream, "JDWP Session already opened for pid: $pid")
                 return
             } else {

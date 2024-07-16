@@ -114,9 +114,10 @@ internal class JdwpProcessPropertiesCollector(
                 }
 
                 // We reached EOF, which can happen for at least 2 common cases:
-                // 1. On Android 27 and earlier, Android VM terminates a JDWP connection
-                //    right away if there is already an active JDWP connection. On API 28 and later,
-                //    Android VM queues JDWP connections if there is already an active one.
+                // 1. For API levels below 28 or starting again with 35 Android VM terminates a JDWP
+                //    connection right away if there is already an active JDWP connection (note that
+                //    this is not the case for APIs 28 to 34, where Android VM queues JDWP
+                //    connections if there is already an active one).
                 // 2. If the process terminates before the timeout expires. This is sort of a race
                 //    condition between us trying to retrieve data about a process, and the process
                 //    terminating.

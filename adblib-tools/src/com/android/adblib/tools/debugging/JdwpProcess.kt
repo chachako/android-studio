@@ -93,8 +93,6 @@ val JdwpProcess.properties: JdwpProcessProperties
 /**
  * Sends a DDMS command to the AndroidVM to run the garbage collector in this [JdwpProcess]
  * and waits for the confirmation from the AndroidVM the GC was successfully performed.
- *
- * TODO(b/266699981): Add unit test
  */
 suspend fun JdwpProcess.executeGarbageCollector(progress: JdwpCommandProgress? = null) {
     withJdwpSession {
