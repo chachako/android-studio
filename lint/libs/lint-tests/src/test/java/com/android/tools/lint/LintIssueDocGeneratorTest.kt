@@ -20,6 +20,7 @@ import com.android.testutils.TestUtils
 import com.android.tools.lint.LintIssueDocGenerator.Companion.computeResultMap
 import com.android.tools.lint.LintIssueDocGenerator.Companion.getOutputIncidents
 import com.android.tools.lint.LintIssueDocGenerator.Companion.getOutputLines
+import com.android.tools.lint.LintIssueDocGenerator.Companion.isStubSource
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.client.api.LintClient
 import java.io.File
@@ -27,6 +28,8 @@ import java.io.File.pathSeparator
 import java.io.PrintWriter
 import java.io.StringWriter
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -646,6 +649,7 @@ class LintIssueDocGeneratorTest {
             --no-severity                     Do not include the red, orange or green
                                               informational boxes showing the severity of
                                               each issue
+            --verbose                         Verbose output
             """
         .trimIndent()
         .trim(),
@@ -655,7 +659,6 @@ class LintIssueDocGeneratorTest {
 
   @Test
   fun testCodeSample() {
-    // TODO: Point it to source and test classes
     val sources = temporaryFolder.newFolder("sources")
     val testSources = temporaryFolder.newFolder("test-sources")
     val outputFolder = temporaryFolder.newFolder("report")
@@ -686,7 +689,9 @@ class LintIssueDocGeneratorTest {
                                                     + "package test.pkg\n"
                                                     + "import android.support.v7.widget.RecyclerView // should be rewritten to AndroidX in docs\n"
                                                     + "class MyTest {\n"
+                                                    + "    /* Don't reference an /sdcard path here: */\n"
                                                     + "    val s: String = \"/sdcard/mydir\"\n"
+                                                    + "    val other: String = \"/other/string\"\n"
                                                     + "}\n"),
                                     gradle(""))
                             .run()
@@ -782,7 +787,9 @@ class LintIssueDocGeneratorTest {
             package test.pkg
             import androidx.recyclerview.widget.RecyclerView // should be rewritten to AndroidX in docs
             class MyTest {
+                /* Don't reference an /sdcard path here: */
                 val s: String = "/sdcard/mydir"
+                val other: String = "/other/string"
             }
             ```
 
@@ -1379,6 +1386,17 @@ class LintIssueDocGeneratorTest {
         " sourceLine2=    ^)]",
       incidents.toString(),
     )
+  }
+
+  @Test
+  fun testIsStub() {
+    assertTrue(isStubSource(""))
+    assertTrue(isStubSource(" "))
+    assertTrue(isStubSource("package android.app;\nclass Activity {}"))
+    assertTrue(isStubSource("class Test { // This is a stub source\n}"))
+    assertFalse(isStubSource("class Test { // This stubbornly refuses to work\n}"))
+    assertTrue(isStubSource("class Test { /* HIDE-FROM-DOCUMENTATION */ }"))
+    assertTrue(isStubSource("class R { };"))
   }
 
   companion object {

@@ -209,7 +209,11 @@ private constructor(
    * @return a brief summary of the issue, never null, never empty
    */
   fun getBriefDescription(format: TextFormat): String {
-    return RAW.convertTo(briefDescription.trim { it <= ' ' }, format)
+    val trimmed = briefDescription.trimIndent()
+    // For convenience allow line wrapping in explanation raw strings
+    // by "escaping" the newline, e.g. ending the line with \
+    val message = trimmed.replace("\\\n", "")
+    return RAW.convertTo(message, format)
   }
 
   /**
