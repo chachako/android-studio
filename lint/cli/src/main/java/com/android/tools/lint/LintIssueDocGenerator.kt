@@ -138,6 +138,7 @@ class LintIssueDocGenerator(
   private val includeSourceLinks: Boolean,
   private val includeSeverityColor: Boolean,
   private val verbose: Boolean,
+  private val examplesFile: File?,
 ) {
   private val allIssues: List<Issue> = registryMap.keys.flatMap { it.issues }
 
@@ -1802,6 +1803,9 @@ class LintIssueDocGenerator(
       val inferred = method.rank() >= 3
       issueData.example = findExampleInMethod(fileName, method, issueData, inferred, false)
       if (issueData.example != null) {
+        if (examplesFile != null) {
+          appendExample(examplesFile, issueData)
+        }
         break
       }
     }
@@ -2833,6 +2837,7 @@ class LintIssueDocGenerator(
       var searchMavenCentral = false
       var includeUnpublished = false
       var verbose = false
+      var examples: File? = null
 
       var index = 0
       while (index < args.size) {
@@ -2901,6 +2906,16 @@ class LintIssueDocGenerator(
                 if (file.isAbsolute) file else file.absoluteFile
               }
             )
+          }
+          ARG_EXAMPLES -> {
+            if (index == args.size - 1 || args[index + 1].startsWith("-")) {
+              System.err.println("Missing eval path")
+              return ERRNO_ERRORS
+            }
+            examples = File(args[++index])
+            if (examples.isFile) {
+              examples.delete()
+            }
           }
           ARG_TEST_SOURCE_URL -> {
             if (index == args.size - 1) {
@@ -3021,6 +3036,7 @@ class LintIssueDocGenerator(
           includeSourceLinks,
           includeSeverityColor,
           verbose,
+          examples,
         )
       generator.generate()
 
@@ -3987,6 +4003,8 @@ class LintIssueDocGenerator(
     private const val ARG_MAVEN_CENTRAL = "--maven-central"
     /** Whether to include well-known unpublished libraries */
     private const val ARG_UNPUBLISHED = "--unpublished"
+    /** Path to write out examples of each issue along with metadata as jsonl */
+    private const val ARG_EXAMPLES = "--examples"
 
     private fun markdownTable(vararg rows: Pair<String, String?>): String {
       val sb = StringBuilder()

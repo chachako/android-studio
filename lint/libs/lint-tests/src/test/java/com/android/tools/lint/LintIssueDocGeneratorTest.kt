@@ -721,6 +721,8 @@ class LintIssueDocGeneratorTest {
             """
     )
 
+    val examples = temporaryFolder.newFile("examples.jsonl")
+
     LintIssueDocGenerator.run(
       arrayOf(
         "--md",
@@ -736,6 +738,8 @@ class LintIssueDocGeneratorTest {
         "--no-suppress-info",
         "--output",
         outputFolder.path,
+        "--examples",
+        examples.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -775,7 +779,6 @@ class LintIssueDocGeneratorTest {
             src/main/kotlin/test/pkg/MyTest.kt:4:Warning: Do not hardcode
             "/sdcard/"; use Environment.getExternalStorageDirectory().getPath()
             instead [SdCardPath]
-
                 val s: String = "/sdcard/mydir"
                                  ~~~~~~~~~~~~~
             ```
@@ -804,6 +807,55 @@ class LintIssueDocGeneratorTest {
             """
         .trimIndent(),
       text,
+    )
+
+    val evals =
+      examples
+        .readText()
+        .
+        // Trim trailing spaces and remove the added timestamp which varies by run
+        lines()
+        .filterNot { it.startsWith("  added: ") }
+        .joinToString("\n") { it.trimEnd() }
+    assertEquals(
+      """
+      {
+          "id": "SdCardPath",
+          "summary": "Hardcoded reference to `/sdcard`",
+          "explanation": "Your code should not reference the `/sdcard` path directly; instead use `Environment.getExternalStorageDirectory().getPath()`.\n\nSimilarly, do not reference the `/data/data/` path directly; it can vary in multi-user scenarios. Instead, use `Context.getFilesDir().getPath()`.",
+          "main-files": [
+              {
+                  "path": "src/main/kotlin/test/pkg/MyTest.kt",
+                  "type": "kotlin",
+                  "contents": "package test.pkg\nimport androidx.recyclerview.widget.RecyclerView\nclass MyTest {\n    \n    val s: String = \"/sdcard/mydir\"\n    val other: String = \"/other/string\"\n}"
+              }
+          ],
+          "target-issues": [
+            {
+              "file": "src/main/kotlin/test/pkg/MyTest.kt",
+              "lineNumber": "5",
+              "lineContents": "val s: String = \"/sdcard/mydir\"",
+              "message": "Do not hardcode \"/sdcard/\"; use Environment.getExternalStorageDirectory().getPath() instead."
+            }
+          ],
+          "year": "2020",
+          "severity": "warning",
+          "category": "Correctness",
+          "documentation": "https://googlesamples.github.io/android-custom-lint-rules/checks/SdCardPath.md.html",
+          "priority": "6",
+          "enabled-by-default": "true",
+          "library": "built-in",
+          "languages": "kotlin",
+          "more-info-urls": [
+              "https://developer.android.com/training/data-storage#filesExternal"
+          ],
+          "android-specific": "true",
+          "source": "SdCardDetector.testKotlin"
+      }
+      """
+        .trimIndent()
+        .trim(),
+      evals,
     )
   }
 
@@ -923,7 +975,6 @@ class LintIssueDocGeneratorTest {
             src/Test.java:6:Error: Wrong argument type for formatting argument '#1'
             in score: conversion is 'd', received boolean (argument #2 in method
             call) (Did you mean formatting character b?) [StringFormatMatches]
-
                 String output4 = String.format(score, true);  // wrong
                                                       ~~~~
             ```
