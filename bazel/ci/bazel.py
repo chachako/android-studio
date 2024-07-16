@@ -1,9 +1,9 @@
 """A module providing a BazelCmd object."""
 
-from typing import List
-import subprocess
-import os
 import getpass
+import os
+import subprocess
+from typing import List
 
 
 EXITCODE_SUCCESS = 0
@@ -13,6 +13,7 @@ EXITCODE_NO_TESTS_FOUND = 4
 
 class BuildEnv:
   """Represents the build environment."""
+
   build_number: str
   build_target_name: str
   workspace_dir: str
@@ -43,7 +44,10 @@ class BazelCmd:
     self.build_env = build_env
     self._startup_options = ["--max_idle_secs=60"]
     if self.build_env.is_ab_environment():
-      self._startup_options.append(f"--output_base={build_env.tmp_dir}")
+      self._startup_options.extend([
+          f"--output_base={build_env.tmp_dir}/bazel_out",
+          f"--install_base={build_env.tmp_dir}/bazel_install",
+      ])
 
   def build(self, *build_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel build' command."""
@@ -81,7 +85,9 @@ class BazelCmd:
     """Runs a 'bazel shutdown' command."""
     return self._run(False, False, "shutdown")
 
-  def _run(self, capture_output: bool, check: bool, *args: List[str]) -> subprocess.CompletedProcess:
+  def _run(
+      self, capture_output: bool, check: bool, *args: List[str]
+  ) -> subprocess.CompletedProcess:
     """Runs a Bazel command with the given args."""
     cmd = [self.build_env.bazel_path]
     cmd.extend(self._startup_options)
@@ -90,5 +96,5 @@ class BazelCmd:
         cmd,
         capture_output=capture_output,
         check=check,
-        cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'),
+        cwd=os.environ.get("BUILD_WORKSPACE_DIRECTORY"),
     )
