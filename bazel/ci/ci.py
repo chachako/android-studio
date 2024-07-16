@@ -101,7 +101,7 @@ def main():
       studio_build_checks(ci)
     case 'studio-linux':
       ci.run(studio_linux.studio_linux)
-    case 'studio-linux_large':
+    case 'studio-linux-large':
       ci.run(studio_linux.studio_linux_large)
     case 'studio-linux_very_flaky':
       ci.run(studio_linux.studio_linux_very_flaky)
