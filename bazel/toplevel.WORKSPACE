@@ -214,26 +214,14 @@ local_repository(
     path = "external/python/absl-py",
 )
 
-# In Android Studio, we cannot bundle the standard Compose compiler because it might not be
-# compatible with the particular Kotlin compiler bundled inside the Kotlin IDE plugin
-# (often it is a dev/snapshot build). So instead we download the Compose sources here,
-# add a few patches on top, and compile directly against the Kotlin IDE plugin.
-# The following 'http_archive' is consumed in //tools/adt/idea/compose-ide-plugin/compose-compiler.
-# See b/265493659 for more background and discussion.
-http_archive(
+# Very soon, the Compose compiler plugin will be bundled inside the Kotlin IDE plugin.
+# Until then we have to build the Compose compiler ourselves. The following repository
+# is consumed in //tools/adt/idea/compose-ide-plugin/compose-compiler. See b/265493659
+# for more background and discussion.
+new_local_repository(
     name = "compose-compiler-sources",
     build_file = "@//tools/adt/idea/compose-ide-plugin/compose-compiler:compose-compiler-sources.BUILD",
-    # To create a new patch file: download the linked sources zip; unpack into
-    # an empty git project; commit the baseline; make your changes; then run
-    # `git diff --no-prefix --output=/path/to/file.patch`.
-    patches = [
-        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:suppress-kotlinc-version-check.patch",
-        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:support-k2-registrar.patch",
-        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:strong-skipping-for-1.9.patch",
-    ],
-    sha256 = "5b04a71825eff8fbcf6a02807167681837d7af8ca4f1ec6408ba1509ffa5c518",
-    # The following URL comes from https://androidx.dev/storage/compose-compiler/repository.
-    url = "https://androidx.dev/storage/compose-compiler/repository/androidx/compose/compiler/compiler-hosted/1.5.11-dev-k2.0.0-Beta4-21f5e479a96/compiler-hosted-1.5.11-dev-k2.0.0-Beta4-21f5e479a96-sources.jar",
+    path = "external/jetbrains/kotlin/plugins/compose/compiler-hosted/src/main",
 )
 
 http_archive(
