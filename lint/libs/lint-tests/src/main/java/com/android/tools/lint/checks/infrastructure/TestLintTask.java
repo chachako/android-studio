@@ -159,6 +159,67 @@ public class TestLintTask {
     boolean allowKotlinClassStubs = false;
     @Nullable LanguageLevel javaLanguageLevel = null;
     @Nullable LanguageVersionSettings kotlinLanguageLevel = null;
+    // **NOTE**: Make sure newly added configuration state is also added to copy() below
+
+    TestLintTask copy() {
+      ensurePreRun();
+      TestLintTask copy = new TestLintTask();
+      copy.projects = new ProjectDescriptionList(projects.getProjects(), projects.getReportFrom());
+      copy.requestedResourceRepository = requestedResourceRepository;
+      copy.forceAgpResourceRepository = forceAgpResourceRepository;
+      copy.allowCompilationErrors = allowCompilationErrors;
+      copy.allowObsoleteLintChecks = allowObsoleteLintChecks;
+      copy.allowSystemErrors = allowSystemErrors;
+      copy.incrementalFileName = incrementalFileName;
+      copy.issues = issues;
+      copy.issueIds = issueIds;
+      copy.allowDelayedIssueRegistration = allowDelayedIssueRegistration;
+      copy.sdkHome = sdkHome;
+      copy.listeners.addAll(listeners);
+      copy.driverConfigurator = driverConfigurator;
+      copy.optionSetter = optionSetter;
+      copy.messageChecker = messageChecker;
+      copy.projectInspector = projectInspector;
+      copy.variantName = variantName;
+      copy.customScope = customScope;
+      copy.forceSymbolResolutionErrors = forceSymbolResolutionErrors;
+      copy.clientFactory = clientFactory;
+      copy.detector = detector;
+      copy.customRules = customRules;
+      copy.ignoreUnknownGradleConstructs = ignoreUnknownGradleConstructs;
+      copy.allowMissingSdk = allowMissingSdk;
+      copy.requireCompileSdk = requireCompileSdk;
+      copy.vital = vital;
+      copy.textFormat = textFormat;
+      copy.mockNetworkData = mockNetworkData;
+      copy.mockNetworkErrorCodes = mockNetworkErrorCodes;
+      copy.mockNetworkHeaderFields = mockNetworkHeaderFields;
+      copy.allowNetworkAccess = allowNetworkAccess;
+      copy.allowDuplicates = allowDuplicates;
+      copy.showSecondaryLintContent = showSecondaryLintContent;
+      copy.baseline = baseline;
+      copy.baselineFile = baselineFile;
+      copy.configuredOptions = configuredOptions;
+      copy.overrideConfig = overrideConfig;
+      copy.overrideConfigFile = overrideConfigFile;
+      copy.desugaring = desugaring;
+      copy.platforms = platforms;
+      copy.testModes.addAll(testModes);
+      copy.ignoredTestModes.addAll(ignoredTestModes);
+      copy.testModesIdenticalOutput = testModesIdenticalOutput;
+      copy.useTestProject = useTestProject;
+      copy.allowExceptions = allowExceptions;
+      copy.useTestConfiguration = useTestConfiguration;
+      copy.reportFrom = reportFrom;
+      copy.stripRoot = stripRoot;
+      copy.includeSelectionMarkers = includeSelectionMarkers;
+      copy.allowAbsolutePathsInMessages = allowAbsolutePathsInMessages;
+      copy.allowNonAlphabeticalFixOrder = allowNonAlphabeticalFixOrder;
+      copy.allowKotlinClassStubs = allowKotlinClassStubs;
+      copy.javaLanguageLevel = javaLanguageLevel;
+      copy.kotlinLanguageLevel = kotlinLanguageLevel;
+      return copy;
+    }
 
     /** Creates a new lint test task */
     public TestLintTask() {
@@ -1108,6 +1169,13 @@ public class TestLintTask {
     @NonNull
     public TestLintResult run() {
         return runner.run();
+    }
+
+    /** Configure the test to run the entire pipeline multiple times. The state configured so far
+     * will be applied to each individual run, but you can also apply per-configuration additional
+     * settings. */
+    public MultiRun multi() {
+      return new MultiRun(this);
     }
 
     /**

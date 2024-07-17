@@ -16,9 +16,12 @@
 
 package com.android.tools.lint.checks.infrastructure
 
+import com.android.testutils.TestUtils
+import com.android.tools.lint.checks.infrastructure.MultiRun.Step
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
@@ -26,10 +29,12 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.google.common.truth.Truth.assertThat
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
 import org.junit.Test
 
+@Suppress("LintDocExample")
 class LintTestTaskTest {
 
   @Test
@@ -46,13 +51,13 @@ class LintTestTaskTest {
       .files(
         kotlin(
             """
-                    fun foo() {
-                        hello()
-                    }
+            fun foo() {
+                hello()
+            }
 
-                    fun hello() {
-                    }
-"""
+            fun hello() {
+            }
+            """
           )
           .indented()
       )
@@ -68,12 +73,106 @@ class LintTestTaskTest {
       )
   }
 
+  @Test
+  fun testMultiRunWithK1andK2() {
+    // Replica of [LintTestTaskTest.checkFlagsAcrossTestModes]
+    // but with initial configurations for K1 / K2
+    lint()
+      .files(
+        kotlin(
+            """
+            fun foo() {
+                hello()
+            }
+            fun hello() {
+            }
+            """
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(MyCheckFlagsDetector.ISSUE)
+      .multi()
+      // Perform multiple setups but a single verify task; this is used
+      // when the output is supposed to be the same
+      .run(
+        { configureOptions { flags -> flags.setUseK2Uast(false) } },
+        { configureOptions { flags -> flags.setUseK2Uast(true) } },
+      ) {
+        expect(
+          // Can also use index-> here
+          """
+          src/test.kt:2: Warning: false [_MyCheckFlagsDetectorIssue]
+              hello()
+              ~~~~~~~
+          0 errors, 1 warnings
+          """
+        )
+      }
+
+    lint()
+      .files(
+        kotlin(
+            """
+            fun foo() {
+                hello()
+            }
+            fun hello() {
+            }
+            """
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(MyCheckFlagsDetector.ISSUE)
+      .multi()
+      // Perform different setups with individual verify steps for each setup;
+      // this is done when you expect different results under different configurations
+      .run(
+        Step(
+          setup = { configureOptions { flags -> flags.isCheckTestSources = false } },
+          verify = {
+            expect(
+              """
+              src/test.kt:2: Warning: false [_MyCheckFlagsDetectorIssue]
+                  hello()
+                  ~~~~~~~
+              0 errors, 1 warnings
+              """
+            )
+          },
+        ),
+        Step(
+          setup = { configureOptions { flags -> flags.isCheckTestSources = true } },
+          verify = {
+            expect(
+              """
+              src/test.kt:2: Warning: true [_MyCheckFlagsDetectorIssue]
+                  hello()
+                  ~~~~~~~
+              0 errors, 1 warnings
+              """
+            )
+          },
+        ),
+      )
+  }
+
   class MyCheckFlagsDetector : Detector(), SourceCodeScanner {
+    private val methodImplNames = mutableListOf<String>()
+
     override fun getApplicableMethodNames(): List<String> {
       return listOf("hello")
     }
 
+    override fun afterCheckFile(context: Context) {
+      assertThat(methodImplNames)
+        .containsAnyIn(listOf("KtUltraLightMethodForSourceDeclaration", "SymbolLightSimpleMethod"))
+      super.afterCheckFile(context)
+    }
+
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      methodImplNames.add(method::class.simpleName!!)
       context.report(ISSUE, node, context.getLocation(node), "${context.driver.checkTestSources}")
     }
 
