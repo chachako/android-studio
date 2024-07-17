@@ -92,7 +92,7 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky',
+      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release',
   )
   result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
   copy_agp_supported_versions(build_env)
@@ -124,7 +124,7 @@ def studio_linux_very_flaky(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      test_tag_filters='very_flaky',
+      test_tag_filters='ci:studio-linux_very_flaky',
   )
   flags.append('--build_tests_only')
 
@@ -140,7 +140,7 @@ def studio_linux_k2(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky,-no_k2,-kotlin-plugin-k2',
+      test_tag_filters='-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-no_k2,-kotlin-plugin-k2',
   )
   flags.extend([
       '--bes_keywords=k2',

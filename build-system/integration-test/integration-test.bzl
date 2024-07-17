@@ -136,6 +136,9 @@ def single_gradle_integration_test_per_source(
         timeout = kwargs.pop("timeout", "long")
         if target_name in eternal_target_names:
             timeout = "eternal"
+        flaky_tags = []
+        if test_name in flaky_targets:
+            flaky_tags = ["noci:studio-linux", "ci:studio-linux_flaky"]
         gradle_integration_test(
             name = target_name,
             srcs = [src],
@@ -146,7 +149,7 @@ def single_gradle_integration_test_per_source(
             maven_repos = maven_repos,
             runtime_deps = runtime_deps,
             lint_enabled = False,
-            tags = tags + (["very_flaky"] if test_name in very_flaky_targets else []),
+            tags = tags + flaky_tags,
             timeout = timeout,
             **kwargs
         )
