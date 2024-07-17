@@ -76,6 +76,8 @@ import com.android.utils.SdkUtils.endsWith
 import com.intellij.psi.CommonClassNames
 import com.intellij.psi.PsiClass
 import java.util.Locale
+import org.jetbrains.uast.UClass
+import org.jetbrains.uast.getUastParentOfType
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -353,8 +355,23 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
       // can have false positives. This can happen when you extend Kotlin classes in
       // a different module with a source dependency (e.g. in Gradle with checkDependencies
       // true) since those source files aren't fed to the top down analyzer. See b/158128960.
+      // TODO: This code is not really reliable; we should probably come up with a util function
+      //  that checks inheritance and returns "unsure" if there are resolution errors along the
+      //  way.
       val superClass = cls.superClass ?: return
       val superTypes = cls.superTypes ?: return
+
+      if (superTypes.firstOrNull()?.equalsToText(CommonClassNames.JAVA_LANG_OBJECT) == true) {
+        // We still might see this when the super class can't be resolved (at least for K1 with a
+        // wrapped KtClass). The UAST implementation still seems to work (i.e. it does not eagerly
+        // try to resolve the class and revert to Object if resolution fails), although the first
+        // element of uastSuperTypes is not necessarily the super class (vs. an interface). We
+        // return early if any of the uastSuperTypes are invalid.
+        if (cls.getUastParentOfType<UClass>()?.uastSuperTypes?.any { !it.type.isValid } == true) {
+          return
+        }
+      }
+
       if (superTypes.isNotEmpty()) {
         val name = superTypes[0].className
         if (name != null && name != superClass.name) {

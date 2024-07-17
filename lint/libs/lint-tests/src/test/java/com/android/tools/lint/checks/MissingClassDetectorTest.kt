@@ -19,7 +19,6 @@ import com.android.tools.lint.checks.MissingClassDetector.Companion.INNERCLASS
 import com.android.tools.lint.checks.MissingClassDetector.Companion.INSTANTIATABLE
 import com.android.tools.lint.checks.MissingClassDetector.Companion.MISSING
 import com.android.tools.lint.detector.api.Detector
-import com.android.tools.lint.useFirUast
 
 class MissingClassDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -175,10 +174,6 @@ class MissingClassDetectorTest : AbstractCheckTest() {
   }
 
   fun testCustomView() {
-    // TODO(b/339484583)
-    if (useFirUast()) {
-      return
-    }
     lint()
       .issues(MISSING, INSTANTIATABLE, INNERCLASS)
       .files(
@@ -199,7 +194,10 @@ class MissingClassDetectorTest : AbstractCheckTest() {
         kotlin(
             """
                     package test.pkg
-                    abstract class MyView : androic.view.View(null)
+
+                    abstract class MyView : I, androic.view.View(null)
+
+                    interface I
                     """
           )
           .indented(),
@@ -217,13 +215,10 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                 res/layout/customview.xml:5: Error: Class referenced in the layout file, foo.bar.Baz, was not found in the project or the libraries [MissingClass]
                     <foo.bar.Baz />
                     ~~~~~~~~~~~~~~~
-                res/layout/customview.xml:6: Error: MyView must extend android.view.View [Instantiatable]
-                    <test.pkg.MyView />
-                    ~~~~~~~~~~~~~~~~~~~
                 res/layout/customview.xml:7: Error: NotView must extend android.view.View [Instantiatable]
                     <test.pkg.NotView />
                     ~~~~~~~~~~~~~~~~~~~~
-                3 errors, 0 warnings
+                2 errors, 0 warnings
                 """
       )
   }
