@@ -172,9 +172,10 @@ class AlarmDetectorTest : AbstractCheckTest() {
           .indented(),
         kotlin(
             """
-                package test.pkg;
+                package test.pkg
 
-                import android.app.AlarmManager;
+                import android.app.AlarmManager
+
                 @SuppressWarnings("ClassNameDiffersFromFileName")
                 class AlarmTest {
                     fun test(alarmManager: AlarmManager) {
@@ -184,6 +185,52 @@ class AlarmDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
+          )
+          .indented(),
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testScheduleExactAlarmPermissionCheckCompat() {
+    lint()
+      .files(
+        manifest(
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.app">
+                    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="33" />
+                </manifest>
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.pkg
+
+                import android.app.AlarmManager
+                import androidx.core.app.AlarmManagerCompat
+
+                class AlarmTest {
+                    fun test(alarmManager: AlarmManager) {
+                      if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+                        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                      }
+                    }
+                }
+                """
+          )
+          .indented(),
+        java(
+            """
+            package androidx.core.app;
+
+            import android.app.AlarmManager;
+
+            public final class AlarmManagerCompat {
+              public static boolean canScheduleExactAlarms(AlarmManager alarmManager) {}
+            }
+            """
           )
           .indented(),
       )

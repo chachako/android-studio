@@ -164,19 +164,23 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     if (context.isEnabled(SHORT_ALARM) || context.isEnabled(SCHEDULE_EXACT_ALARM)) {
+      // We intentionally skip checking the containing class, and instead assume that any method
+      // called "canScheduleExactAlarms" is checking for the permission (not just
+      // android.app.AlarmManager#canScheduleExactAlarms). This covers
+      // androidx.core.app.AlarmManagerCompat#canScheduleExactAlarms, as well as any other custom
+      // methods implemented in other codebases.
+      if (context.isEnabled(SCHEDULE_EXACT_ALARM) && method.name == exactAlarmPermissionMethod) {
+        context
+          .getPartialResults(SCHEDULE_EXACT_ALARM)
+          .map()
+          .put(CHECKS_EXACT_ALARM_PERMISSION, true)
+      }
       val evaluator = context.evaluator
       if (evaluator.isMemberInClass(method, "android.app.AlarmManager")) {
 
         if (context.isEnabled(SHORT_ALARM) && evaluator.getParameterCount(method) == 4) {
           ensureAtLeast(context, node, 1, 5000L)
           ensureAtLeast(context, node, 2, 60000L)
-        }
-
-        if (context.isEnabled(SCHEDULE_EXACT_ALARM) && method.name == exactAlarmPermissionMethod) {
-          context
-            .getPartialResults(SCHEDULE_EXACT_ALARM)
-            .map()
-            .put(CHECKS_EXACT_ALARM_PERMISSION, true)
         }
       }
     }
