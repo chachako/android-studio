@@ -147,6 +147,8 @@ import com.android.build.gradle.tasks.GenerateManifestJarTask
 import com.android.build.gradle.tasks.GenerateResValues
 import com.android.build.gradle.tasks.JavaCompileCreationAction
 import com.android.build.gradle.tasks.JavaPreCompileTask
+import com.android.build.gradle.tasks.KaptCreationAction
+import com.android.build.gradle.tasks.KaptStubGenerationCreationAction
 import com.android.build.gradle.tasks.KotlinCompileCreationAction
 import com.android.build.gradle.tasks.ManifestProcessorTask
 import com.android.build.gradle.tasks.MapSourceSetPathsTask
@@ -172,6 +174,7 @@ import com.android.builder.core.BuilderConstants
 import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.dexing.DexingType
+import com.android.builder.errors.IssueReporter
 import com.android.utils.appendCapitalized
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
@@ -868,7 +871,18 @@ abstract class TaskManager(
                 .setInitialContent(
                     ScopedArtifact.CLASSES,
                     creationConfig.artifacts,
-                    InternalArtifactType.KOTLINC
+                    InternalArtifactType.BUILT_IN_KOTLINC
+                )
+        }
+
+        if (creationConfig.useBuiltInKaptSupport) {
+            creationConfig
+                .artifacts
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    creationConfig.artifacts,
+                    InternalArtifactType.BUILT_IN_KAPT_CLASSES_DIR
                 )
         }
 
@@ -911,8 +925,24 @@ abstract class TaskManager(
         if (!creationConfig.useBuiltInKotlinSupport) {
             return
         }
-        checkKotlinStdLibIsInDependencies(project, creationConfig)
-        KotlinCompileCreationAction(creationConfig).registerTask()
+        val kotlinServices = creationConfig.services.kotlinServices
+        if (kotlinServices == null) {
+            creationConfig.services
+                .issueReporter
+                .reportError(
+                    IssueReporter.Type.GENERIC,
+                    RuntimeException(
+                        "Unable to access KotlinServices for AGP Built-in Kotlin support."
+                    )
+                )
+        } else {
+            checkKotlinStdLibIsInDependencies(project, creationConfig)
+            if (creationConfig.useBuiltInKaptSupport) {
+                KaptStubGenerationCreationAction(creationConfig, kotlinServices).registerTask()
+                KaptCreationAction(creationConfig, project, kotlinServices).registerTask()
+            }
+            KotlinCompileCreationAction(creationConfig, kotlinServices).registerTask()
+        }
     }
 
     /**

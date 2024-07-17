@@ -118,7 +118,7 @@ class BuiltInKotlinForScreenshotTestTest {
         val screenshotTestClassFile =
             project.getSubproject("lib")
                 .getIntermediateFile(
-                    "kotlinc",
+                    "built_in_kotlinc",
                     "debugScreenshotTest",
                     "compileDebugScreenshotTestKotlin",
                     "classes",

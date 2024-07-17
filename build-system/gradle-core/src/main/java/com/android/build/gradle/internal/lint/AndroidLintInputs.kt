@@ -1806,6 +1806,8 @@ abstract class AndroidArtifactInput : ArtifactInput() {
             } else {
                 classesOutputDirectories.from(creationConfig.artifacts.get(InternalArtifactType.JAVAC))
                 creationConfig.getBuiltInKotlincOutput()?.let { classesOutputDirectories.from(it) }
+                creationConfig.getBuiltInKaptArtifact(InternalArtifactType.BUILT_IN_KAPT_CLASSES_DIR)
+                    ?.let { classesOutputDirectories.from(it) }
             }
             creationConfig.oldVariantApiLegacySupport?.variantData?.let {
                 classesOutputDirectories.from(

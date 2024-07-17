@@ -12,6 +12,10 @@ gradlePlugin {
             id = "com.android.experimental.built-in-kotlin"
             implementationClass = "com.android.build.gradle.AndroidKotlinPlugin"
         }
+        comAndroidKaptSupport {
+            id = "com.android.legacy-kapt"
+            implementationClass = "com.android.build.gradle.AndroidKaptPlugin"
+        }
     }
 }
 

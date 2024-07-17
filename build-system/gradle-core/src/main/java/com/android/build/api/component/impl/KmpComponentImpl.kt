@@ -140,6 +140,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         get() = dslInfo.minSdkVersion
 
     final override val useBuiltInKotlinSupport = false
+    final override val useBuiltInKaptSupport = false
 
     override val sources = KmpSourcesImpl(
         dslInfo,

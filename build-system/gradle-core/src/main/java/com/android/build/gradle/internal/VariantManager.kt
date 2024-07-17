@@ -426,21 +426,26 @@ class VariantManager<
             dslInfoBuilder: DslInfoBuilder<CommonExtensionT, DslInfoT>) {
         val componentType = dslInfoBuilder.componentType
         if (productFlavorList.isNotEmpty() /* && !variantConfig.getType().isSingleBuildType()*/) {
-            val variantSourceSet = variantInputModel
+            val variantSourceSet =
+                variantInputModel
                     .sourceSetManager
                     .setUpSourceSet(
-                            computeSourceSetName(dslInfoBuilder.name, componentType),
-                            componentType.isTestComponent).get()
+                        computeSourceSetName(dslInfoBuilder.name, componentType),
+                        componentType
+                    )
+                    .get()
             addExtraSourceSets(variantSourceSet)
             dslInfoBuilder.variantSourceProvider = variantSourceSet
         }
         if (productFlavorList.size > 1) {
-            val multiFlavorSourceSet = variantInputModel
+            val multiFlavorSourceSet =
+                variantInputModel
                     .sourceSetManager
                     .setUpSourceSet(
-                            computeSourceSetName(dslInfoBuilder.flavorName,
-                                                    componentType),
-                            componentType.isTestComponent).get()
+                        computeSourceSetName(dslInfoBuilder.flavorName, componentType),
+                        componentType
+                    )
+                    .get()
             addExtraSourceSets(multiFlavorSourceSet)
             dslInfoBuilder.multiFlavorSourceProvider = multiFlavorSourceSet
         }

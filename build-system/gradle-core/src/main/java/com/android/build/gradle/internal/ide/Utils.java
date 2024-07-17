@@ -16,6 +16,9 @@
 
 package com.android.build.gradle.internal.ide;
 
+import static com.android.build.gradle.internal.scope.InternalArtifactType.BUILT_IN_KAPT_GENERATED_JAVA_SOURCES;
+import static com.android.build.gradle.internal.scope.InternalArtifactType.BUILT_IN_KAPT_GENERATED_KOTLIN_SOURCES;
+
 import com.android.annotations.NonNull;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
@@ -32,6 +35,7 @@ import kotlin.Unit;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.provider.Provider;
 
 import java.io.File;
 import java.util.List;
@@ -70,6 +74,16 @@ public class Utils {
                                                                     .getShouldBeAddedToIdeModel()));
                             return Unit.INSTANCE;
                         });
+        Provider<Directory> kaptGeneratedJavaSources =
+                component.getBuiltInKaptArtifact(BUILT_IN_KAPT_GENERATED_JAVA_SOURCES.INSTANCE);
+        if (kaptGeneratedJavaSources != null) {
+            fileCollection.from(kaptGeneratedJavaSources);
+        }
+        Provider<Directory> kaptGeneratedKotlinSources =
+                component.getBuiltInKaptArtifact(BUILT_IN_KAPT_GENERATED_KOTLIN_SOURCES.INSTANCE);
+        if (kaptGeneratedKotlinSources != null) {
+            fileCollection.from(kaptGeneratedKotlinSources);
+        }
         if (component.getOldVariantApiLegacySupport() != null) {
             fileCollection.from(
                     component

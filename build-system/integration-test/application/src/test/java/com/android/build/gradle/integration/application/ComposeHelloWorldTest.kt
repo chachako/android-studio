@@ -119,7 +119,7 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
         val testFixturesClassFile =
             project.getSubproject("app")
                 .getIntermediateFile(
-                    "kotlinc",
+                    "built_in_kotlinc",
                     "debugTestFixtures",
                     "compileDebugTestFixturesKotlin",
                     "classes",
@@ -134,7 +134,7 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
         val screenshotTestClassFile =
             project.getSubproject("app")
                 .getIntermediateFile(
-                    "kotlinc",
+                    "built_in_kotlinc",
                     "debugScreenshotTest",
                     "compileDebugScreenshotTestKotlin",
                     "classes",

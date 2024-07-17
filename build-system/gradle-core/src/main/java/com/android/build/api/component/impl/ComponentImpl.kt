@@ -58,6 +58,7 @@ import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
+import com.android.build.gradle.internal.utils.ANDROID_BUILT_IN_KAPT_PLUGIN_ID
 import com.android.build.gradle.internal.utils.ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
@@ -182,32 +183,58 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
         ProductFlavor(it.first, it.second)
     }
 
-    override val useBuiltInKotlinSupport: Boolean
-        get() {
-            if (internalServices.projectInfo.hasPlugin(ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID)) {
-                // TODO(b/341765853) - no need to have this try/catch once KotlinBaseApiPlugin has
-                //  been added as a runtime dependency.
-                try {
-                    KotlinBaseApiPlugin::class.java
-                    return true
-                } catch (e: Throwable) {
-                    if (e is ClassNotFoundException || e is NoClassDefFoundError) {
-                        val message =
-                            """
-                                The KotlinBaseApiPlugin class is not loaded in the same classloader
-                                as AGP, so the "$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID" Gradle plugin
-                                cannot be used in this module.
-                                """.trimIndent()
-                        internalServices.issueReporter
-                            .reportError(IssueReporter.Type.GENERIC, message)
-                        return false
-                    } else {
-                        throw e
-                    }
-                }
+    override val useBuiltInKotlinSupport: Boolean by lazy {
+        if (internalServices.projectInfo.hasPlugin(ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID)) {
+            if (isKotlinBaseApiPluginInTheSameClassloader()) {
+                true
+            } else {
+                val message =
+                    """
+                        The KotlinBaseApiPlugin class is not loaded in the same classloader
+                        as AGP, so the "$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID" Gradle plugin
+                        cannot be used in this module.
+                        """.trimIndent()
+                internalServices.issueReporter.reportError(IssueReporter.Type.GENERIC, message)
+                false
             }
-            return false
+        } else {
+            false
         }
+    }
+
+    override val useBuiltInKaptSupport: Boolean by lazy {
+        if (internalServices.projectInfo.hasPlugin(ANDROID_BUILT_IN_KAPT_PLUGIN_ID)) {
+            if (isKotlinBaseApiPluginInTheSameClassloader()) {
+                true
+            } else {
+                val message =
+                    """
+                        The KotlinBaseApiPlugin class is not loaded in the same classloader
+                        as AGP, so the "$ANDROID_BUILT_IN_KAPT_PLUGIN_ID" Gradle plugin
+                        cannot be used in this module.
+                        """.trimIndent()
+                internalServices.issueReporter.reportError(IssueReporter.Type.GENERIC, message)
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    // TODO(b/341765853) - no need to have this function once KotlinBaseApiPlugin has been added as
+    //  a runtime dependency.
+    private fun isKotlinBaseApiPluginInTheSameClassloader(): Boolean {
+        try {
+            KotlinBaseApiPlugin::class.java
+            return true
+        } catch (e: Throwable) {
+            if (e is ClassNotFoundException || e is NoClassDefFoundError) {
+                return false
+            } else {
+                throw e
+            }
+        }
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Private stuff

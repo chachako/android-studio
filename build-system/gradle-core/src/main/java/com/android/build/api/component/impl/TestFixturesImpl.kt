@@ -43,6 +43,7 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT
 import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT_MIN_COMPILE_SDK_EXTENSION
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.testFixtures.testFixturesFeatureName
+import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT
 import com.android.builder.core.BuilderConstants
@@ -172,10 +173,19 @@ open class TestFixturesImpl @Inject constructor(
     override val useBuiltInKotlinSupport: Boolean
         get() =
             if (internalServices.projectOptions.get(ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT)) {
-                // No need to check isKotlinBaseApiPluginApplied in this case because it's checked
-                // in AndroidPluginBaseServices#basePluginApply
                 true
             } else {
                 super.useBuiltInKotlinSupport
+            }
+
+    override val useBuiltInKaptSupport: Boolean
+        get() =
+            if (internalServices.projectOptions.get(ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT)) {
+                // For testFixtures components, the application of the Jetbrains KAPT plugin should
+                // also enable built-in KAPT support.
+                super.useBuiltInKaptSupport ||
+                        internalServices.projectInfo.hasPlugin(KOTLIN_KAPT_PLUGIN_ID)
+            } else {
+                super.useBuiltInKaptSupport
             }
 }

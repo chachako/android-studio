@@ -21,22 +21,33 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.plugin.KotlinBaseApiPlugin
 
-class AndroidKotlinPlugin : Plugin<Project> {
+class AndroidKaptPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        val incompatiblePlugin = "org.jetbrains.kotlin.android"
+        val incompatiblePlugin = "org.jetbrains.kotlin.kapt"
         project.plugins.withId(incompatiblePlugin) {
             throw GradleException(
                 """
                     The "$incompatiblePlugin" plugin has been applied, but it is not compatible with
-                    the "$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID" plugin.
+                    the "$ANDROID_BUILT_IN_KAPT_PLUGIN_ID" plugin.
                     Remove the "$incompatiblePlugin" plugin from ${project.buildFile.toURI()}.
-                   """.trimMargin()
+                    """.trimMargin()
             )
+        }
+        project.afterEvaluate {
+            if (!project.plugins.hasPlugin(ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID)) {
+                throw GradleException(
+                    """
+                        The "$ANDROID_BUILT_IN_KAPT_PLUGIN_ID" plugin requires the
+                        "$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID" to be applied.
+                        Apply the "$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID" plugin to
+                        ${project.buildFile.toURI()}.
+                        """.trimMargin()
+                )
+            }
         }
         project.plugins.apply(KotlinBaseApiPlugin::class.java)
     }
 }
 
-internal const val ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID = "com.android.experimental.built-in-kotlin"
-
+private const val ANDROID_BUILT_IN_KAPT_PLUGIN_ID = "com.android.legacy-kapt"

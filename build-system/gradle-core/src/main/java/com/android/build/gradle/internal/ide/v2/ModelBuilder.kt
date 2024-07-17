@@ -1214,6 +1214,12 @@ class ModelBuilder<
             generatedClassPaths["buildConfigGeneratedClasses"] = buildConfigJar.get().asFile
         }
 
+        val kaptClasses = component.getBuiltInKaptArtifact(InternalArtifactType.BUILT_IN_KAPT_CLASSES_DIR)
+        if (kaptClasses != null) {
+            classesFolders.add(kaptClasses.get().asFile)
+            generatedClassPaths["kaptGeneratedClasses"] = kaptClasses.get().asFile
+        }
+
         return generatedClassPaths
     }
 

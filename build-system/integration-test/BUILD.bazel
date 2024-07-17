@@ -167,6 +167,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.23",
         "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_1.9.23",
         "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.23",
+        "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.23",
         "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.23",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_1.9.23",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.23",

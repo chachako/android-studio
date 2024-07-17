@@ -910,6 +910,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.9.22",
     "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.9.23",
     "org.jetbrains.kotlin:kotlin-android-extensions-runtime:2.0.20-Beta2",
+    "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.9.20",
     "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.9.22",
     "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:1.9.23",
     "org.jetbrains.kotlin:kotlin-annotation-processing-gradle:2.0.20-Beta2",

@@ -158,6 +158,12 @@ com.android.kotlin.multiplatform.library:com.android.kotlin.multiplatform.librar
   dependencies:
     com.android.tools.build:gradle ()
 
+com.android.legacy-kapt:com.android.legacy-kapt.gradle.plugin
+  pomName=com.android.tools.build.gradle-kotlin
+  description=Gradle plugin to register and configure Kotlin tasks for Android projects.
+  dependencies:
+    com.android.tools.build:gradle-kotlin ()
+
 com.android.library:com.android.library.gradle.plugin
   pomName=com.android.tools.build.gradle
   description=Gradle plug-in to build Android applications.

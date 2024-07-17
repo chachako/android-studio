@@ -54490,6 +54490,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20",
+    pom = "repository/org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20/kotlin-annotation-processing-gradle-1.9.20.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.22",
     pom = "repository/org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.22/kotlin-annotation-processing-gradle-1.9.22.pom",
     repo_root_path = "repository",
