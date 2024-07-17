@@ -144,7 +144,8 @@ def studio_linux_k2(build_env: bazel.BuildEnv) -> None:
   )
   flags.extend([
       '--bes_keywords=k2',
-      '--jvmopt="-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true"',
+      '--jvmopt=-Didea.kotlin.plugin.use.k2=true',
+      '--jvmopt=-Dlint.use.fir.uast=true',
   ])
   result = run_tests(build_env, flags, _BASE_TARGETS)
   copy_agp_supported_versions(build_env)
