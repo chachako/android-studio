@@ -1,19 +1,19 @@
 """Module for running CI targets."""
 
 import argparse
+import logging
 import os
 import platform
 import subprocess
 import sys
-from typing import Callable, List
-import uuid
-
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import errors
 from tools.base.bazel.ci import query_checks
 from tools.base.bazel.ci import studio_linux
-from tools.base.bazel.ci import studio_win
 from tools.base.bazel.ci import studio_mac
+from tools.base.bazel.ci import studio_win
+from typing import Callable, List
+import uuid
 
 
 class CI:
@@ -70,14 +70,19 @@ def studio_build_checks(ci: CI):
   def validate_coverage_graph(env: bazel.BuildEnv):
     inv_id = uuid.uuid4()
     result = bazel.BazelCmd(env).build(
-      '--config=ci', '--nobuild', f'--invocation_id={inv_id}',
-      '--', '@cov//:all.suite')
+        '--config=ci',
+        '--nobuild',
+        f'--invocation_id={inv_id}',
+        '--',
+        '@cov//:all.suite',
+    )
     if result.returncode:
       raise RuntimeError((
-        'Coverage build configuration is broken; you may need to update'
-        ' tools/base/bazel/coverage/BUILD\n'
-        f'\n See https://fusion2.corp.google.com/invocations/{inv_id}'
+          'Coverage build configuration is broken; you may need to update'
+          ' tools/base/bazel/coverage/BUILD\n'
+          f'\n See https://fusion2.corp.google.com/invocations/{inv_id}'
       ))
+
   ci.run(validate_coverage_graph)
 
 
@@ -90,6 +95,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('target', help='The name of the CI target')
   args = parser.parse_args()
+
+  logging.basicConfig(level=logging.INFO)
 
   bazel_name = 'bazel.cmd' if platform.system() == 'Windows' else 'bazel'
   bazel_path = os.path.join(find_workspace(), f'tools/base/bazel/{bazel_name}')

@@ -1,6 +1,7 @@
 """A module providing a BazelCmd object."""
 
 import getpass
+import logging
 import os
 import subprocess
 from typing import List
@@ -27,7 +28,7 @@ class BuildEnv:
     self.workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", "")
     self.dist_dir = os.environ.get("DIST_DIR", "")
     self.tmp_dir = os.environ.get("TMPDIR", "")
-    self.bazel_path = bazel_path
+    self.bazel_path = os.path.normpath(bazel_path)
 
   def is_ab_environment(self) -> bool:
     """Returns true if on an Android Build machine."""
@@ -45,8 +46,8 @@ class BazelCmd:
     self._startup_options = ["--max_idle_secs=60"]
     if self.build_env.is_ab_environment():
       self._startup_options.extend([
-          f"--output_base={build_env.tmp_dir}/bazel_out",
-          f"--install_base={build_env.tmp_dir}/bazel_install",
+          f"--output_base={os.path.join(build_env.tmp_dir, 'bazel_out')}",
+          f"--install_base={os.path.join(build_env.tmp_dir, 'bazel_install')}",
       ])
 
   def build(self, *build_args) -> subprocess.CompletedProcess:
@@ -92,6 +93,7 @@ class BazelCmd:
     cmd = [self.build_env.bazel_path]
     cmd.extend(self._startup_options)
     cmd.extend(args)
+    logging.info("Running command: %s", cmd)
     return subprocess.run(
         cmd,
         capture_output=capture_output,
