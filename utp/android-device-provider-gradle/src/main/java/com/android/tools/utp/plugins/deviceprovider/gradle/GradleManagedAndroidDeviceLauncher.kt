@@ -121,7 +121,8 @@ class GradleManagedAndroidDeviceLauncher(
                 customConfig.managedDevice.emulatorGpu,
                 customConfig.managedDevice.showEmulatorKernelLogging)
         profileManager = DeviceProviderProfileManager.forOutputDirectory(
-            environment.outputDirectory
+            environment.outputDirectory,
+            dslName
         )
     }
 

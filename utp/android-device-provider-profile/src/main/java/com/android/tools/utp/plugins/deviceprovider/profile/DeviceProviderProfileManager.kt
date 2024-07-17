@@ -93,16 +93,19 @@ class DeviceProviderProfileManager(val targetFile: File) {
         var clock: Clock = Clock.systemDefaultZone()
 
         private val DEFAULT_PROFILE_DIR: String = "profiling"
-        private val DEFAULT_TARGET_FILE: String = "device_provider_profile.pb"
+
+        fun targetFileForDevice(deviceName: String) = "${deviceName}_profile.pb"
 
         /**
          * Creates a DeviceProviderProfileManager for the default location in the given output
          * directory.
          */
-        fun forOutputDirectory(outputDirectory: String): DeviceProviderProfileManager =
+        fun forOutputDirectory(
+            outputDirectory: String, deviceName: String
+        ): DeviceProviderProfileManager =
             File(outputDirectory).resolve(DEFAULT_PROFILE_DIR).let { file ->
                 file.mkdirs()
-                DeviceProviderProfileManager(file.resolve(DEFAULT_TARGET_FILE))
+                DeviceProviderProfileManager(file.resolve(targetFileForDevice(deviceName)))
             }
     }
 }

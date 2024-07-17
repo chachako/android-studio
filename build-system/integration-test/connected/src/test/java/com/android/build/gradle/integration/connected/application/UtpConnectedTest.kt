@@ -45,6 +45,7 @@ class UtpConnectedTest : UtpTestBase() {
         @JvmField
         val EMULATOR = getEmulator()
         private const val DEVICE_NAME = "emulator-5554 - 13"
+        private const val EMULATOR_SERIAL = "emulator-5554"
 
         private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/debug/TEST-$DEVICE_NAME-_"
         private const val LOGCAT = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
@@ -52,7 +53,7 @@ class UtpConnectedTest : UtpTestBase() {
         private const val TEST_REPORT = "build/reports/androidTests/connected/debug/com.example.android.kotlin.html"
         private const val TEST_REPORT_FOR_DYNAMIC_FEATURE = "build/reports/androidTests/connected/debug/com.example.android.kotlin.feature.html"
         private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/test-result.pb"
-        private const val UTP_PROFILE = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/profiling/device_provider_profile.pb"
+        private const val UTP_PROFILE = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/profiling/${EMULATOR_SERIAL}_profile.pb"
         private const val UTP_LOG = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/utp.0.log"
         private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/test-result.pb"
         private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/connected/report.xml"

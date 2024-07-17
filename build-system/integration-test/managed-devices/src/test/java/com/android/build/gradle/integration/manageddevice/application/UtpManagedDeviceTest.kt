@@ -40,7 +40,7 @@ class UtpManagedDeviceTest : UtpTestBase() {
         private const val LOGCAT = "$TEST_RESULTS/$DSL_DEVICE_NAME/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
         private const val LOGCAT_FOR_DYNAMIC_FEATURE = "$TEST_RESULTS/$DSL_DEVICE_NAME/logcat-com.example.android.kotlin.feature.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_RESULT_PB = "$TEST_RESULTS/$DSL_DEVICE_NAME/test-result.pb"
-        private const val UTP_PROFILE = "$TEST_RESULTS/$DSL_DEVICE_NAME/profiling/device_provider_profile.pb"
+        private const val UTP_PROFILE = "$TEST_RESULTS/$DSL_DEVICE_NAME/profiling/${DSL_DEVICE_NAME}_profile.pb"
         private const val AGGREGATED_TEST_RESULT_PB = "$TEST_RESULTS/test-result.pb"
 
         private const val REPORTS = "build/reports"

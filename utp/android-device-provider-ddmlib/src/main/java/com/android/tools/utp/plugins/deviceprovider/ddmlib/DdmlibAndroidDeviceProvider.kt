@@ -97,9 +97,9 @@ class DdmlibAndroidDeviceProvider() : AndroidDeviceProvider {
             }
             deviceFinder = DdmlibAndroidDeviceFinder(adb)
         }
-
         profileManager = DeviceProviderProfileManager.forOutputDirectory(
-            environment.outputDirectory
+            environment.outputDirectory,
+            deviceProviderConfig.serial
         )
     }
 

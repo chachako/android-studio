@@ -48,13 +48,14 @@ class DeviceProviderProfileManagerTest {
     fun setup() {
         outputFolder = temporaryFolder.newFolder()
         profileManager = DeviceProviderProfileManager.forOutputDirectory(
-            outputFolder.toString()
+            outputFolder.toString(),
+            "device123"
         )
         DeviceProviderProfileManager.clock = mockClock
     }
 
     private fun getProfilingFile(): File =
-        outputFolder.resolve("profiling/device_provider_profile.pb")
+        outputFolder.resolve("profiling/device123_profile.pb")
 
     @Test
     fun testRecordProvision() {
