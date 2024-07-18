@@ -624,6 +624,7 @@ gradle_integration_test(
     maven_repos = PRIVACY_SANDBOX_MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
     shard_count = 3,
+    tags = ["noci:studio-win"],
     deps = TEST_DEPS,
 )
 
