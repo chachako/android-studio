@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,19 @@ package com.android.build.api.variant.impl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.SourceDirectories
 import com.android.build.gradle.internal.services.VariantServices
+import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.util.PatternFilterable
 
 /**
- * Implementation of [SourceDirectories.Flat] that is read-only.
+ * Implementation of [SourceDirectories.Layered] that is read-only for kmp.
  */
-class KotlinMultiplatformFlatSourceDirectoriesImpl(
+class KotlinMultiplatformResSourceDirectoriesImpl(
     name: String,
     val variantServices: VariantServices,
     variantDslFilters: PatternFilterable?,
     private val compilation: KotlinMultiplatformAndroidCompilation
-): FlatSourceDirectoriesImpl(name, variantServices, variantDslFilters) {
+) : LayeredSourceDirectoriesImpl(name, variantServices, variantDslFilters) {
 
     /**
      * Note: This doesn't preserve task dependencies of internal `directoryEntry` objects as the
@@ -39,17 +40,18 @@ class KotlinMultiplatformFlatSourceDirectoriesImpl(
      * https://youtrack.jetbrains.com/issue/KT-59503
      */
     @Deprecated("This is only to support kotlin multiplatform")
-    internal fun addStaticSources(sources: Provider<out Collection<DirectoryEntry>>) {
-        variantSources.addAll(sources)
-        directories.addAll(sources.map { directoryEntries ->
-            directoryEntries.flatMap { directoryEntry ->
-                directoryEntry.asFiles(
-                    variantServices.provider {
-                        variantServices.projectInfo.projectDirectory
-                    }
-                ).get()
+    internal fun addStaticSources(sources: Provider<DirectoryEntries>) {
+        variantSources.add(sources)
+
+        variantServices.newListPropertyForInternalUse(Directory::class.java).also {
+            sources.map { directoryEntries ->
+                directoryEntries.directoryEntries.forEach { entry ->
+                    it.addAll(entry)
+                }
             }
-        })
+            directories.add(it)
+            staticDirectories.add(it)
+        }
     }
 
     override fun addSource(directoryEntry: DirectoryEntry) {

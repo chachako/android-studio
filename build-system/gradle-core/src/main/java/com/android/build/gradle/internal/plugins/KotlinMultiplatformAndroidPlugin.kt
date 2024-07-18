@@ -54,6 +54,7 @@ import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.SdkComponentsImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
@@ -496,7 +497,11 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         return KmpVariantImpl(
             dslInfo = dslInfo,
             internalServices = variantServices,
-            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(),
+            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(
+                ModulePropertyKey.BooleanWithDefault.KMP_ANDROID_RESOURCES_ENABLED.getValue(
+                    dslInfo.experimentalProperties
+                )
+            ),
             variantDependencies = createVariantDependencies(project, dslInfo, kotlinCompilation, androidTarget),
             paths = paths,
             artifacts = artifacts,
