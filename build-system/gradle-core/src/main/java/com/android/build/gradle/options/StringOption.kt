@@ -155,6 +155,9 @@ enum class StringOption(
     // An override for the Jacoco version to be set per module
     JACOCO_TOOL_VERSION("com.android.test.jacocoVersion", ApiStage.Experimental),
 
+    // An override for the screenshot validation test engine version to be used for preview screenshot testing
+    VALIDATION_ENGINE_VERSION("android.experimental.validationEngineVersion", ApiStage.Experimental),
+
     /* ---------------
      * DEPRECATED APIs
      */
