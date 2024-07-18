@@ -109,7 +109,7 @@ def studio_linux_large(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   flags = build_flags(
       build_env,
-      test_tag_filters='ci:studio-linux_large',
+      test_tag_filters='ci:studio-linux-large',
   )
   result = run_tests(build_env, flags, _BASE_TARGETS)
   if studio.is_build_successful(result):

@@ -1,9 +1,10 @@
 # Conditions related to Continuous Integration builds.
 
 config_setting(
-    name = "studio-linux_large",
+    name = "studio-linux-large",
     flag_values = {
-        "//tools/base/bazel/ci:ab_target": "studio-linux_large",
+        "//tools/base/bazel/ci:ab_target": "studio-linux-large",
+        "//tools/base/bazel/ci:is_ci": "True",
     },
     visibility = ["//visibility:public"],
 )
