@@ -17,14 +17,18 @@ package com.android.adblib.ddmlibcompatibility.testutils
 
 import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
+import com.android.adblib.ddmlibcompatibility.AdbLibIDeviceManagerFactory
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.TestingAdbSessionHost
-import com.android.ddmlib.internal.FakeAdbTestRule
+import com.android.ddmlib.idevicemanager.IDeviceManagerFactory
 
-fun FakeAdbTestRule.createAdbSession(closeables: CloseablesRule): AdbSession {
+fun createIDeviceManagerFactoryFactory(getAdbServerPort: () -> Int, closeables: CloseablesRule):
+            () -> IDeviceManagerFactory = {
+    AdbLibIDeviceManagerFactory(createAdbSession(getAdbServerPort(), closeables))
+}
+
+private fun createAdbSession(adbServerPort: Int, closeables: CloseablesRule): AdbSession {
     val host = TestingAdbSessionHost().also { closeables.register(it) }
-    val port = this.server.port
-    val channelProvider =
-        AdbServerChannelProvider.createOpenLocalHost(host) { port }
+    val channelProvider = AdbServerChannelProvider.createOpenLocalHost(host) { adbServerPort }
     return closeables.register(AdbSession.create(host, channelProvider))
 }
