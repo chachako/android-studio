@@ -68,7 +68,7 @@ abstract class PreviewScreenshotValidationTask : Test() {
 
     @get:Input
     @get:Optional
-    abstract val threshold: Property<String>
+    abstract val threshold: Property<Float>
 
     @TaskAction
     override fun executeTests() {
@@ -90,15 +90,14 @@ abstract class PreviewScreenshotValidationTask : Test() {
             setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
             threshold.orNull?.let {
                 validateFloat(it)
-                setTestEngineParam("threshold", it)
+                setTestEngineParam("threshold", it.toString())
             }
             super.executeTests()
         }
     }
 
-    private fun validateFloat(value: String) {
-        val floatValue = value.toFloatOrNull()
-        if (floatValue == null || floatValue < 0 || floatValue > 1) {
+    private fun validateFloat(value: Float) {
+        if (value < 0 || value > 1 || value == Float.NaN) {
             throw GradleException("Invalid threshold provided. Please provide a float value between 0.0 and 1.0")
         }
     }
