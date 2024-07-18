@@ -16,16 +16,18 @@
 
 package com.android.build.gradle.integration.library
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_MIN_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.generateAarWithContent
+import com.android.tools.build.libraries.metadata.Library
 import com.google.common.truth.Truth
+import org.gradle.internal.impldep.org.apache.maven.model.io.xpp3.MavenXpp3Reader
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,19 +36,7 @@ import java.io.File
 import java.nio.charset.Charset
 import java.util.zip.ZipFile
 
-@RunWith(Parameterized::class)
-class FusedLibraryTest(
-        private val includePublishing: Boolean,
-) {
-
-    companion object {
-        @Parameterized.Parameters(name = "include_publishing = {0}")
-        @JvmStatic
-        fun data() = listOf(
-                true,
-                false,
-        )
-    }
+class FusedLibraryTest {
 
     private val androidLib1 = MinimalSubProject.lib("com.example.androidLib1").also {
         it.appendToBuild("""
@@ -63,36 +53,57 @@ class FusedLibraryTest(
     }
     private val androidLib2 = MinimalSubProject.lib("com.example.androidLib2")
 
-    private val testAar = generateAarWithContent("com.remotedep.remoteaar",
+    private val mavenRepo = mavenRepo()
+
+    fun mavenRepo() : MavenRepoGenerator {
+        val remoteDepA = generateAarWithContent("com.remotedep.remoteaar.a",
             resources = mapOf("values/strings.xml" to
                     // language=XML
                     """<?xml version="1.0" encoding="utf-8"?>
                     <resources>
-                    <string name="remote_string">Remote String</string>
+                    <string name="remote_b_string">Remote String from remoteaar a</string>
                     </resources>""".trimIndent().toByteArray(Charset.defaultCharset())
             ),
-            )
-
-    private val mavenRepo = MavenRepoGenerator(
+        )
+        val remoteDepB = generateAarWithContent(
+            "com.remotedep.remoteaar.b",
+            resources = mapOf(
+                "values/strings.xml" to
+                        // language=XML
+                        """<?xml version="1.0" encoding="utf-8"?>
+                    <resources>
+                    <string name="remote_b_string">Remote String from remoteaar b</string>
+                    </resources>""".trimIndent().toByteArray(Charset.defaultCharset())
+            ),
+        )
+        return MavenRepoGenerator(
             listOf(
-                    MavenRepoGenerator.Library("com.remotedep:remoteaar:1", "aar", testAar)
+                MavenRepoGenerator.Library(
+                    "com.remotedep:remoteaar-a:1",
+                    "aar",
+                    remoteDepA,
+                    "com.remotedep:remoteaar-b:1"
+                ),
+                MavenRepoGenerator.Library(
+                    "com.remotedep:remoteaar-b:1",
+                    "aar",
+                    remoteDepB
+                )
             )
-    )
+        )
+    }
 
     private val fusedLibrary = MinimalSubProject.fusedLibrary("com.example.fusedLib1").also {
-        if (includePublishing) {
-            it.appendToBuild("""
+        it.appendToBuild(
+                """
                 apply plugin: 'maven-publish'
 
                 dependencies {
                     include project(":androidLib1")
                     include project(":androidLib2")
-                    include 'com.remotedep:remoteaar:1'
+                    include 'com.remotedep:remoteaar-a:1'
                 }
-                """.trimIndent())
-        }
-        it.appendToBuild(
-                """
+
                 androidFusedLibrary {
                     minSdk = $DEFAULT_MIN_SDK_VERSION
                 }
@@ -114,35 +125,40 @@ class FusedLibraryTest(
             .addGradleProperties("${BooleanOption.FUSED_LIBRARY_SUPPORT.propertyName}=true")
             .create()
 
+
     @Test
-    fun test() {
-        if (includePublishing) {
-            executor().run("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
-        } else {
-            executor().run(":fusedLib1:assemble")
-        }
+    fun checkAarNoPublishing() {
+        executor().run(":fusedLib1:assemble")
         val fusedLib1BuildDir = project.getSubproject(":fusedLib1").buildDir
         File(fusedLib1BuildDir, "bundle/bundle.aar").also { aarFile ->
-            println("Testing ${aarFile.absolutePath}")
             Truth.assertThat(aarFile.exists()).isTrue()
-            if (includePublishing) {
-                ZipFile(aarFile).use { aarZip ->
-                    val valuesXml = aarZip.getEntry("res/values/values.xml")
-                    Truth.assertThat(valuesXml).isNotNull()
-                    Truth.assertThat(valuesXml.size).isGreaterThan(0)
-                }
-            }
         }
-        if (includePublishing) {
-            File(fusedLib1BuildDir, "publications/maven").also { publicationDir ->
-                Truth.assertThat(File(publicationDir, "pom-default.xml").exists()).isTrue()
-                Truth.assertThat(File(publicationDir, "module.json").exists()).isTrue()
+    }
+
+    @Test
+    fun checkAarPublishing() {
+        executor().run("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
+        project.getSubproject(":fusedLib1").buildDir.resolve("publications/maven")
+            .also { publicationDir ->
+            val pom = File(publicationDir, "pom-default.xml")
+            Truth.assertThat(pom.exists()).isTrue()
+            val xmlMavenPomReader = MavenXpp3Reader()
+            pom.inputStream().use { inStream ->
+                val parsedPom = xmlMavenPomReader.read(inStream)
+                assertThat(parsedPom.dependencies.map {
+                    "${it.groupId}:${it.artifactId}:${it.version} scope:${it.scope}"
+                })
+                    .containsExactly(
+                        "junit:junit:4.12 scope:runtime",
+                        "org.hamcrest:hamcrest-core:1.3 scope:runtime",
+                        "com.remotedep:remoteaar-b:1 scope:runtime"
+                    )
             }
+            Truth.assertThat(File(publicationDir, "module.json").exists()).isTrue()
         }
     }
 
     private fun executor(): GradleTaskExecutor {
         return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

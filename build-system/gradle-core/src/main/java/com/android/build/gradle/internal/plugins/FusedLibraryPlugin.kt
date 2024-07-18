@@ -24,7 +24,7 @@ import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScopeImpl
-import com.android.build.gradle.internal.fusedlibrary.SegregatingConstraintHandler
+import com.android.build.gradle.internal.fusedlibrary.getFusedAarDependencies
 import com.android.build.gradle.internal.fusedlibrary.configureElements
 import com.android.build.gradle.internal.fusedlibrary.configureTransformsForFusedLibrary
 import com.android.build.gradle.internal.fusedlibrary.createTasks
@@ -53,6 +53,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.component.LibraryBinaryIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -62,6 +63,7 @@ import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
 import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.configuration.BuildFeatures
+import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
@@ -131,10 +133,10 @@ class FusedLibraryPlugin @Inject constructor(
     }
 
     private fun maybePublishToMaven(
-            project: Project,
-            includeApiElements: Configuration,
-            includeRuntimeElements: Configuration,
-            includeRuntimeUnmerged: Configuration
+        project: Project,
+        fusedAarApiDependenciesProvider: Provider<List<ExternalModuleDependency>>,
+        fusedAarRuntimeDependenciesProvider: Provider<List<ExternalModuleDependency>>,
+        includeRuntimeUnmerged: Configuration
     ) {
         val bundleTaskProvider = variantScope
                 .artifacts
@@ -169,7 +171,7 @@ class FusedLibraryPlugin @Inject constructor(
                     BuildTypeAttr.ATTRIBUTE,
                     project.objects.named(BuildTypeAttr::class.java, "debug")
             )
-            it.extendsFrom(includeApiElements)
+            it.dependencies.addAllLater(fusedAarApiDependenciesProvider)
             variantScope.outgoingConfigurations.addConfiguration(it)
             it.outgoing.artifact(bundleTaskProvider) { artifact ->
                 artifact.type = AndroidArtifacts.ArtifactType.AAR.type
@@ -203,7 +205,7 @@ class FusedLibraryPlugin @Inject constructor(
                     BuildTypeAttr.ATTRIBUTE,
                     project.objects.named(BuildTypeAttr::class.java, "debug")
             )
-            it.extendsFrom(includeRuntimeElements)
+            it.dependencies.addAllLater(fusedAarRuntimeDependenciesProvider)
             variantScope.outgoingConfigurations.addConfiguration(it)
             it.outgoing.artifact(bundleTaskProvider) { artifact ->
                 artifact.type = AndroidArtifacts.ArtifactType.AAR.type
@@ -238,9 +240,10 @@ class FusedLibraryPlugin @Inject constructor(
         publication.pom { pom: MavenPom ->
             pom.withXml { xml ->
                 val dependenciesNode = xml.asNode().let {
-                    it.children().firstOrNull { node ->
+                    it.children().removeIf { node ->
                         ((node as Node).name() as QName).qualifiedName == "dependencies"
-                    } ?: it.appendNode("dependencies")
+                    }
+                    it.appendNode("dependencies")
                 } as Node
 
                 unmergedArtifacts.forEach { artifact ->
@@ -300,126 +303,120 @@ class FusedLibraryPlugin @Inject constructor(
 
         // 'include' is the configuration that users will use to indicate which dependencies should
         // be fused.
-        val includeConfigurations = project.configurations.create("include").also {
+        val include = project.configurations.create("include").also {
             it.isCanBeConsumed = false
             val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
             it.attributes.attribute(
-                    BuildTypeAttr.ATTRIBUTE,
-                    buildType,
+                BuildTypeAttr.ATTRIBUTE,
+                buildType,
             )
+        }
+        val includeNonTransitive = project.configurations.create("includeNonTransitive").also {
+            it.isTransitive = false
+            it.extendsFrom(include)
         }
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_API usage which mean all transitive
         // dependencies that are implementation() scoped will not be included.
-        val includeApiClasspath = project.configurations.create("includeApiClasspath").also {
-            apiClasspath ->
-            apiClasspath.isCanBeConsumed = false
-            apiClasspath.attributes.attribute(
+        val includeApiClasspath =
+            project.configurations.create("includeApiClasspath").also { apiClasspath ->
+                apiClasspath.isCanBeConsumed = false
+
+                apiClasspath.attributes.attribute(
                     Usage.USAGE_ATTRIBUTE,
                     project.objects.named(Usage::class.java, Usage.JAVA_API)
-            )
-            val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
-            apiClasspath.attributes.attribute(
+                )
+                val buildType: BuildTypeAttr =
+                    project.objects.named(BuildTypeAttr::class.java, "debug")
+                apiClasspath.attributes.attribute(
                     BuildTypeAttr.ATTRIBUTE,
                     buildType,
-            )
+                )
 
-            apiClasspath.failForDatabindingDependencies()
+                apiClasspath.failForDatabindingDependencies()
 
-            apiClasspath.extendsFrom(includeConfigurations)
-        }
-        // This is the configuration that will contain all the JAVA_API dependencies that are not
-        // fused in the resulting aar library.
-        val includedApiUnmerged =
-            project.configurations.create("includeApiUnmerged").also { targetConfiguration ->
-                targetConfiguration.isCanBeConsumed = false
-                targetConfiguration.isCanBeResolved = true
-
-                targetConfiguration.withDependencies {
-                    SegregatingConstraintHandler(
-                        includeApiClasspath,
-                        variantScope.mergeSpec,
-                        project
-                    )
-                }
-        }
+                apiClasspath.extendsFrom(include)
+            }
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_RUNTIME usage which mean all transitive
         // dependencies that are implementation() scoped will  be included.
         val includeRuntimeClasspath =
-                project.configurations.create("includeRuntimeClasspath").also {
-                    runtimeClasspath ->
-                    runtimeClasspath.isCanBeConsumed = false
-                    runtimeClasspath.isCanBeResolved = true
+            project.configurations.create("includeRuntimeClasspath").also { runtimeClasspath ->
+                runtimeClasspath.isCanBeConsumed = false
+                runtimeClasspath.isCanBeResolved = true
 
-                    runtimeClasspath.attributes.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
-                    )
-                    val buildType: BuildTypeAttr =
-                            project.objects.named(BuildTypeAttr::class.java, "debug")
-                    runtimeClasspath.attributes.attribute(
-                            BuildTypeAttr.ATTRIBUTE,
-                            buildType,
-                    )
+                runtimeClasspath.attributes.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
+                )
+                val buildType: BuildTypeAttr =
+                    project.objects.named(BuildTypeAttr::class.java, "debug")
+                runtimeClasspath.attributes.attribute(
+                    BuildTypeAttr.ATTRIBUTE,
+                    buildType,
+                )
 
-                    runtimeClasspath.failForDatabindingDependencies()
+                runtimeClasspath.failForDatabindingDependencies()
 
-                    runtimeClasspath.extendsFrom(includeConfigurations)
-                }
+                runtimeClasspath.extendsFrom(include)
+            }
         // This is the configuration that will contain all the JAVA_RUNTIME dependencies that are
         // not fused in the resulting aar library.
-        val includeRuntimeUnmerged =
-            project.configurations.create("includeRuntimeUnmerged").also { targetConfiguration ->
-                targetConfiguration.isCanBeConsumed = false
-                targetConfiguration.isCanBeResolved = true
-                targetConfiguration.withDependencies {
-                    SegregatingConstraintHandler(
-                        includeConfigurations,
-                        variantScope.mergeSpec,
-                        project,
-                    )
-                }
-        }
-        // this is the outgoing configuration for JAVA_API scoped declarations, it will contain
-        // this module and all transitive non merged dependencies
-        val includeApiElements =
-                project.configurations.create("apiElements") { apiElements ->
-                    configureElements(
-                            project,
-                            apiElements,
-                            Usage.JAVA_API,
-                            variantScope.artifacts,
-                            mapOf(
-                                    FusedLibraryInternalArtifactType.BUNDLED_LIBRARY to
-                                            AndroidArtifacts.ArtifactType.AAR))
 
-                    apiElements.extendsFrom(includedApiUnmerged)
-                }
-        // this is the outgoing configuration for JAVA_RUNTIME scoped declarations, it will contain
-        // this module and all transitive non merged dependencies
-        val includeRuntimeElements =
-                project.configurations.create("runtimeElements") { runtimeElements ->
-                    configureElements(
-                            project,
-                            runtimeElements,
-                            Usage.JAVA_RUNTIME,
-                            variantScope.artifacts,
-                            mapOf(
-                            FusedLibraryInternalArtifactType.BUNDLED_LIBRARY to
-                            AndroidArtifacts.ArtifactType.AAR))
-                    runtimeElements.extendsFrom(includeRuntimeUnmerged)
-                }
+        // List the transitive (unmerged) dependencies of the fusedConfiguration
+
+        val fusedLibApiDependenciesProvider =
+            getFusedAarDependencies(includeApiClasspath, project)
+        val fusedLibRuntimeDependenciesProvider =
+            getFusedAarDependencies(include, project)
+
+        // Create the unmerged configuration
+        // Extending configuration may result in configuration time resolution.
+        // Execution use only.
+        val includeRuntimeUnmerged = project.configurations.create("includeRuntimeUnmerged")
+            .also { includeRuntimeUnmerged ->
+            includeRuntimeUnmerged.isCanBeConsumed = false
+            includeRuntimeUnmerged.isCanBeResolved = true
+            includeRuntimeUnmerged.dependencies.addAllLater(fusedLibRuntimeDependenciesProvider)
+        }
+
+        project.configurations.create("apiElements") { apiElements ->
+            configureElements(
+                project,
+                apiElements,
+                Usage.JAVA_API,
+                variantScope.artifacts,
+                mapOf(
+                    FusedLibraryInternalArtifactType.BUNDLED_LIBRARY to
+                            AndroidArtifacts.ArtifactType.AAR
+                )
+            )
+            apiElements.extendsFrom(includeNonTransitive)
+        }
+
+        project.configurations.create("runtimeElements") { runtimeElements ->
+            configureElements(
+                project,
+                runtimeElements,
+                Usage.JAVA_RUNTIME,
+                variantScope.artifacts,
+                mapOf(
+                    FusedLibraryInternalArtifactType.BUNDLED_LIBRARY to
+                            AndroidArtifacts.ArtifactType.AAR
+                )
+            )
+            runtimeElements.extendsFrom(includeNonTransitive)
+        }
 
         val configurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
         configurationsToAdd.forEach { configuration ->
-                variantScope.incomingConfigurations.addConfiguration(configuration)
+            variantScope.incomingConfigurations.addConfiguration(configuration)
         }
         maybePublishToMaven(
-                project,
-                includeApiElements,
-                includeRuntimeElements,
-                includeRuntimeUnmerged
+            project,
+            fusedLibApiDependenciesProvider,
+            fusedLibRuntimeDependenciesProvider,
+            includeRuntimeUnmerged
         )
 
         variantScope.artifacts.forScope(

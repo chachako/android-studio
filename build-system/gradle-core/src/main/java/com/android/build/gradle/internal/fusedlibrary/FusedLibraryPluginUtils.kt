@@ -34,6 +34,15 @@ import com.android.builder.model.v2.ide.ProjectType
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ProjectComponentSelector
+import org.gradle.api.artifacts.result.DependencyResult
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Usage
@@ -140,6 +149,40 @@ fun configureElements(
     }
 }
 
+/**
+ * For determining dependencies that are not included in the Fused Library AAR.
+ *
+ * As transitive dependencies are used for fused library publication and consumption, they must be
+ * added these dependencies to each directly to each configuration that requires them.
+ *
+ * @param sourceConfiguration
+ *        configuration containing all dependencies (included in artifacts and dependencies).
+ *        Direct/first level dependencies will be assumed to be packaged in the aar artifact.
+ */
+internal fun getFusedAarDependencies(
+    sourceConfiguration: Configuration,
+    project: Project
+): Provider<List<ExternalModuleDependency>> {
+    return sourceConfiguration.incoming.resolutionResult.rootComponent.map {
+        sourceRootComponent ->
+        val dependenciesIncludedInFusedAar: Set<ComponentIdentifier> =
+            sourceRootComponent.dependencies
+                .map { (it as ResolvedDependencyResult).selected }
+                .map(ResolvedComponentResult::getId)
+                .toSet()
+
+        sourceConfiguration.incoming.resolutionResult.allComponents
+            // ResolvedComponentResult's subclasses don't define `equals()` methods so we need to
+            // compare `ResolvedComponentResult`s through `ComponentIdentifier`s (which has `equals()`
+            // defined in their subclasses).
+            .asSequence()
+            .map(ResolvedComponentResult::getId)
+            .minus(dependenciesIncludedInFusedAar)
+            .filterIsInstance<ModuleComponentIdentifier>()
+            .map { project.dependencies.create(it.displayName) as ExternalModuleDependency }
+            .toList()
+    }
+}
 
 internal fun Configuration.failForDatabindingDependencies() {
     resolutionStrategy { resolutionStrategy ->
