@@ -35,11 +35,13 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see Mockito.any
    */
+  @Deprecated("Use org.mockito.kotlin.any<T>()", ReplaceWith("org.mockito.kotlin.any<T>()"))
   fun <T> any(type: Class<T>): T = Mockito.any(type)
 
   /**
    * Wrapper around [Mockito.any] for generic types.
    */
+  @Deprecated("Use org.mockito.kotlin.any()", ReplaceWith("org.mockito.kotlin.any()"))
   inline fun <reified T> any() = any(T::class.java)
 
   /**
@@ -49,11 +51,13 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see Mockito.argThat
    */
+  @Deprecated("Use org.mockito.kotlin.argThat(arg)", ReplaceWith("org.mockito.kotlin.argThat(arg)"))
   fun <T> argThat(arg: (T) -> Boolean): T = Mockito.argThat(arg)
 
   /**
    * Convenience wrapper around [Mockito.mock] that allows the type to be inferred.
    */
+  @Deprecated("Use org.mockito.kotlin.mock()")
   inline fun <reified T> mock(mockSettings: MockSettings = withSettings()): T = Mockito.mock(T::class.java, mockSettings)
 
   /**
@@ -72,6 +76,7 @@ object MockitoKt {
   /**
    * Convenience wrapper around [ArgumentCaptor] that allows the type to be inferred.
    */
+  @Deprecated("Use org.mockito.kotlin.argumentCaptor<T>()", ReplaceWith("org.mockito.kotlin.argumentCaptor<T>()"))
   inline fun <reified T> argumentCaptor(): ArgumentCaptor<T> = ArgumentCaptor.forClass(T::class.java)
 
   /**
@@ -81,6 +86,7 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see Mockito.eq
    */
+  @Deprecated("Use org.mockito.kotlin.eq(arg)", ReplaceWith("org.mockito.kotlin.eq(arg)"))
   fun <T> eq(arg: T): T {
       Mockito.eq(arg)
       return arg
@@ -93,6 +99,7 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see Mockito.refEq
    */
+  @Deprecated("Use org.mockito.kotlin.refEq(arg)", ReplaceWith("org.mockito.kotlin.refEq(arg)"))
   fun <T> refEq(arg: T): T = ArgumentMatchers.refEq(arg)
 
   /**
@@ -102,6 +109,7 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see ArgumentCaptor.capture
    */
+  @Deprecated("Use org.mockito.kotlin.capture(argumentCaptor)", ReplaceWith("org.mockito.kotlin.capture(argumentCaptor)"))
    fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   /**
@@ -111,6 +119,7 @@ object MockitoKt {
    * Using the not-null assertion operator (!!) doesn't work because the result of the method call is recorded internally by Mockito.
    * @see Mockito.same
    */
+  @Deprecated("Use org.mockito.kotlin.same(value)", ReplaceWith("org.mockito.kotlin.same(value)"))
    fun <T> same(value: T): T = Mockito.same(value)
 
    /**
@@ -118,6 +127,7 @@ object MockitoKt {
     *
     * @see Mockito.when
     */
+   @Deprecated("Use org.mockito.kotlin.whenever(methodCall)", ReplaceWith("org.mockito.kotlin.whenever(methodCall)"))
    fun <T> whenever(methodCall: T): OngoingStubbing<T> = Mockito.`when`(methodCall)!!
 
    /**
@@ -125,6 +135,7 @@ object MockitoKt {
     *
     * @See Stubber.when
     */
+   @Deprecated("Use org.mockito.kotlin.whenever(mock)")
     fun <T> Stubber.whenever(mock: T): T = `when`(mock)
 
    /**
@@ -135,6 +146,7 @@ object MockitoKt {
     fun <T> MockedStatic<*>.whenever(verification: Verification): OngoingStubbing<T> = `when`(verification)
 
     /** Wrapper around [Mockito.inOrder] that can take a block. */
+    @Deprecated("Use org.mockito.kotlin.inOrder(mocks, block)")
     inline fun inOrder(vararg mocks: Any, block: InOrder.() -> Unit) {
         with(Mockito.inOrder(*mocks), block)
     }
