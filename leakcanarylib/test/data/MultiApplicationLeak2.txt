@@ -1,0 +1,169 @@
+====================================
+HEAP ANALYSIS RESULT
+====================================
+2 APPLICATION LEAKS
+
+References underlined with "~~~" are likely causes.
+Learn more at https://squ.re/leaks.
+
+720 bytes retained by leaking objects
+Signature: 77ab114c08222331f2620edbce6260bc746e9789
+┬───
+│ GC Root: Global variable in native code
+│
+├─ android.view.RenderNodeAnimator instance
+│    Leaking: NO (AppCompatButton↓ is not leaking)
+│    mListeners = null
+│    ↓ RenderNodeAnimator.mTarget
+├─ android.view.RenderNode instance
+│    Leaking: NO (AppCompatButton↓ is not leaking)
+│    ↓ RenderNode.mOwningView
+├─ androidx.appcompat.widget.AppCompatButton instance
+│    Leaking: NO (View attached)
+│    View is part of a window view hierarchy
+│    View.mAttachInfo is not null (view attached)
+│    View.mID = R.id.button_nav_to_a
+│    View.mWindowAttachCount = 1
+│    mContext instance of android.com.java.profilertester.fragment.FragmentHostActivity with mDestroyed = false
+│    ↓ View.mListenerInfo
+│           ~~~~~~~~~~~~~
+├─ android.view.View$ListenerInfo instance
+│    Leaking: UNKNOWN
+│    Retaining 76 B in 1 objects
+│    ↓ View$ListenerInfo.mOnClickListener
+│                        ~~~~~~~~~~~~~~~~
+╰→ android.com.java.profilertester.fragment.FragmentB instance
+​     Leaking: YES (ObjectWatcher was watching this because android.com.java.profilertester.fragment.FragmentB received Fragment#onDestroy() callback. Conflicts with Fragment#mFragmentManager is not null)
+​     Retaining 720 B in 18 objects
+​     key = 2f054568-85d0-411f-92f9-48c75588dc13
+​     watchDurationMillis = 728
+​     retainedDurationMillis = -1
+​     key = 74087a9e-e5d3-4556-aa96-d78011ab7427
+​     watchDurationMillis = 1510
+​     key = e903836a-012c-46f0-9925-456fc827f253
+​     watchDurationMillis = 2258
+​     key = 70d16fc7-219d-4f27-97d2-1e3d614b2f6c
+​     watchDurationMillis = 3012
+​     key = 37c77411-dfd5-44d2-828c-e4cd11bd412a
+​     watchDurationMillis = 3653
+​     key = 9a9318bb-066d-406e-8524-bd1269d6b997
+​     watchDurationMillis = 4305
+​     key = 069098a5-69c9-4fe5-8052-b435dfc34f0a
+​     watchDurationMillis = 4964
+​     key = e0bc240a-458d-4568-9b4a-fa4175c5df00
+​     watchDurationMillis = 5583
+​     retainedDurationMillis = 582
+​     key = 08ad2230-2ac5-488a-8996-5a990021b1e6
+​     watchDurationMillis = 6165
+​     retainedDurationMillis = 1164
+​     key = 930464b3-bbdd-4e07-b2bc-44ed8f90e165
+​     watchDurationMillis = 6817
+​     retainedDurationMillis = 1816
+​     key = 26f0f02e-59c9-482f-9872-4b667651a535
+​     watchDurationMillis = 7425
+​     retainedDurationMillis = 2424
+​     navigateListener instance of android.com.java.profilertester.fragment.FragmentHostActivity with mDestroyed = false
+
+2008 bytes retained by leaking objects
+Signature: 442f3a7295abb8db4c32672ff17a43941effe5d0
+┬───
+│ GC Root: Input or output parameters in native code
+│
+├─ android.os.MessageQueue instance
+│    Leaking: NO (FragmentHostActivity↓ is not leaking and MessageQueue#mQuitting is false)
+│    HandlerThread: "main"
+│    ↓ MessageQueue[4]
+├─ android.os.Message instance
+│    Leaking: NO (FragmentHostActivity↓ is not leaking)
+│    Message.what = 0
+│    Message.when = 27530725 (47 ms after heap dump)
+│    Message.obj = null
+│    Message.callback = instance @321683496 of android.com.java.profilertester.fragment.FragmentHostActivity$1
+│    Message.target = instance @321683584 of android.os.Handler
+│    ↓ Message.callback
+├─ android.com.java.profilertester.fragment.FragmentHostActivity$1 instance
+│    Leaking: NO (FragmentHostActivity↓ is not leaking)
+│    Anonymous class implementing java.lang.Runnable
+│    this$0 instance of android.com.java.profilertester.fragment.FragmentHostActivity with mDestroyed = false
+│    ↓ FragmentHostActivity$1.this$0
+├─ android.com.java.profilertester.fragment.FragmentHostActivity instance
+│    Leaking: NO (Activity#mDestroyed is false)
+│    mApplication instance of android.app.Application
+│    mBase instance of androidx.appcompat.view.ContextThemeWrapper
+│    ↓ FragmentHostActivity.fragments
+│                           ~~~~~~~~~
+├─ androidx.fragment.app.Fragment[] array
+│    Leaking: UNKNOWN
+│    Retaining 2.0 kB in 66 objects
+│    ↓ Fragment[0]
+│              ~~~
+╰→ android.com.java.profilertester.fragment.FragmentA instance
+​     Leaking: YES (ObjectWatcher was watching this because android.com.java.profilertester.fragment.FragmentA received Fragment#onDestroy callback and Fragment#mFragmentManager is null)
+​     Retaining 2.0 kB in 65 objects
+​     key = 29ca38b8-47d4-4ac6-86ef-b0aa5eba46c8
+​     watchDurationMillis = 267
+​     retainedDurationMillis = -1
+​     key = 81084326-4375-4818-9b12-da25ac85503b
+​     watchDurationMillis = 1103
+​     key = 55db897a-4183-4c4e-a2c9-75a5496cb4ed
+​     watchDurationMillis = 1875
+​     key = d7f89b51-981c-4da7-b98b-94810fcc9de3
+​     watchDurationMillis = 2631
+​     key = e3bc6e32-fef6-4fd6-a2bf-8c9a84cae624
+​     watchDurationMillis = 3337
+​     key = 7cce9497-c2b1-4dd8-b714-7927ef47122e
+​     watchDurationMillis = 4005
+​     key = bb1b9e1f-ac59-4cb3-8f55-1b6827731716
+​     watchDurationMillis = 4649
+​     key = 36ff12e9-6d63-4059-a88c-12e2d928464a
+​     watchDurationMillis = 5235
+​     retainedDurationMillis = 235
+​     key = 5f621d81-08d4-47a4-a351-9661083a4dbd
+​     watchDurationMillis = 5872
+​     retainedDurationMillis = 870
+​     key = 26ba2c62-17f7-49a7-b745-823f02fb9789
+​     watchDurationMillis = 6483
+​     retainedDurationMillis = 1467
+​     key = 16d542f4-d2a6-4782-913c-0eabb7702880
+​     watchDurationMillis = 7142
+​     retainedDurationMillis = 2142
+​     key = 8beaa334-fbfe-49fb-a27d-4d3acc8e6740
+​     watchDurationMillis = 7732
+​     retainedDurationMillis = 2732
+​     navigateListener instance of android.com.java.profilertester.fragment.FragmentHostActivity with mDestroyed = false
+====================================
+0 LIBRARY LEAKS
+
+A Library Leak is a leak caused by a known bug in 3rd party code that you do not have control over.
+See https://square.github.io/leakcanary/fundamentals-how-leakcanary-works/#4-categorizing-leaks
+====================================
+0 UNREACHABLE OBJECTS
+
+An unreachable object is still in memory but LeakCanary could not find a strong reference path
+from GC roots.
+====================================
+METADATA
+
+Please include this in bug reports and Stack Overflow questions.
+
+Build.VERSION.SDK_INT: 28
+Build.MANUFACTURER: unknown
+LeakCanary version: 2.11
+App process name: android.com.java.profilertester
+Class count: 13123
+Instance count: 150141
+Primitive array count: 115650
+Object array count: 16119
+Thread count: 23
+Heap total bytes: 32972385
+Bitmap count: 10
+Bitmap total bytes: 266400
+Large bitmap count: 0
+Large bitmap total bytes: 0
+Stats: LruCache[maxSize=3000,hits=32667,misses=79058,hitRate=29%]
+Heap dump reason: 8 retained objects, app is visible
+Analysis duration: 2271 ms
+Heap dump file path: /data/user/0/android.com.java.profilertester/cache/leakcanary/2024-05-18_13-44-38_924.hprof
+Heap dump timestamp: 1716065082724
+Heap dump duration: 670 ms
+====================================

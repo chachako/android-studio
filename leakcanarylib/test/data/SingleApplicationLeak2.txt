@@ -1,0 +1,114 @@
+====================================
+HEAP ANALYSIS RESULT
+====================================
+1 APPLICATION LEAKS
+
+References underlined with "~~~" are likely causes.
+Learn more at https://squ.re/leaks.
+
+2236 bytes retained by leaking objects
+Signature: 9c8b3995d0eb8bc12403f9641ca2c453a86b5ab6
+┬───
+│ GC Root: System class
+│
+├─ android.app.ActivityThread class
+│    Leaking: NO (ActivityThread↓ is not leaking and a class is never leaking)
+│    ↓ static ActivityThread.sCurrentActivityThread
+├─ android.app.ActivityThread instance
+│    Leaking: NO (MainActivity↓ is not leaking and ActivityThread is a singleton)
+│    mInitialApplication instance of com.amaze.filemanager.application.AppConfig
+│    mSystemContext instance of android.app.ContextImpl
+│    ↓ ActivityThread.mActivities
+├─ android.util.ArrayMap instance
+│    Leaking: NO (MainActivity↓ is not leaking)
+│    ↓ ArrayMap.mArray
+├─ java.lang.Object[] array
+│    Leaking: NO (MainActivity↓ is not leaking)
+│    ↓ Object[1]
+├─ android.app.ActivityThread$ActivityClientRecord instance
+│    Leaking: NO (MainActivity↓ is not leaking)
+│    activity instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+│    ↓ ActivityThread$ActivityClientRecord.activity
+├─ com.amaze.filemanager.ui.activities.MainActivity instance
+│    Leaking: NO (LinearLayout↓ is not leaking and Activity#mDestroyed is false)
+│    mainActivity instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+│    mApplication instance of com.amaze.filemanager.application.AppConfig
+│    mBase instance of androidx.appcompat.view.ContextThemeWrapper
+│    ↓ MainActivity.indicator_layout
+├─ android.widget.LinearLayout instance
+│    Leaking: NO (Indicator↓ is not leaking and View attached)
+│    View is part of a window view hierarchy
+│    View.mAttachInfo is not null (view attached)
+│    View.mID = R.id.indicator_layout
+│    View.mWindowAttachCount = 1
+│    mContext instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+│    ↓ ViewGroup.mChildren
+├─ android.view.View[] array
+│    Leaking: NO (Indicator↓ is not leaking)
+│    ↓ View[0]
+├─ com.amaze.filemanager.ui.views.Indicator instance
+│    Leaking: NO (View attached)
+│    View is part of a window view hierarchy
+│    View.mAttachInfo is not null (view attached)
+│    View.mID = R.id.indicator
+│    View.mWindowAttachCount = 1
+│    mContext instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+│    ↓ Indicator.viewPager
+│                ~~~~~~~~~
+├─ androidx.viewpager2.widget.ViewPager2 instance
+│    Leaking: UNKNOWN
+│    Retaining 2.5 kB in 58 objects
+│    View not part of a window view hierarchy
+│    View.mAttachInfo is null (view detached)
+│    View.mID = R.id.pager
+│    View.mWindowAttachCount = 1
+│    mContext instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+│    ↓ View.mParent
+│           ~~~~~~~
+╰→ androidx.constraintlayout.widget.ConstraintLayout instance
+​     Leaking: YES (ObjectWatcher was watching this because com.amaze.filemanager.ui.fragments.TabFragment received Fragment#onDestroyView() callback (references to its views should be cleared to prevent leaks))
+​     Retaining 2.2 kB in 44 objects
+​     key = 7de76a14-a732-4f74-b3c2-e797b57bdb88
+​     watchDurationMillis = 61578
+​     retainedDurationMillis = 56574
+​     View not part of a window view hierarchy
+​     View.mAttachInfo is null (view detached)
+​     View.mWindowAttachCount = 1
+​     mContext instance of com.amaze.filemanager.ui.activities.MainActivity with mDestroyed = false
+====================================
+0 LIBRARY LEAKS
+
+A Library Leak is a leak caused by a known bug in 3rd party code that you do not have control over.
+See https://square.github.io/leakcanary/fundamentals-how-leakcanary-works/#4-categorizing-leaks
+====================================
+0 UNREACHABLE OBJECTS
+
+An unreachable object is still in memory but LeakCanary could not find a strong reference path
+from GC roots.
+====================================
+METADATA
+
+Please include this in bug reports and Stack Overflow questions.
+
+Build.VERSION.SDK_INT: 34
+Build.MANUFACTURER: Google
+LeakCanary version: 2.11
+App process name: com.amaze.filemanager.debug
+Class count: 31775
+Instance count: 239661
+Primitive array count: 167805
+Object array count: 31810
+Thread count: 48
+Heap total bytes: 32968315
+Bitmap count: 44
+Bitmap total bytes: 5714603
+Large bitmap count: 0
+Large bitmap total bytes: 0
+Db 1: open /data/user/0/com.amaze.filemanager.debug/databases/utilities.db
+Db 2: open /data/user/0/com.amaze.filemanager.debug/databases/explorer.db
+Stats: LruCache[maxSize=3000,hits=133858,misses=226711,hitRate=37%] RandomAccess[bytes=12186540,reads=226711,travel=94838107911,range=39720771,size=48933795]
+Analysis duration: 2145 ms
+Heap dump file path: /Users/addivya/bin/leakcanary/shark/shark-cli/src/main/java/shark/data/4.hprof
+Heap dump timestamp: 1710721564994
+Heap dump duration: Unknown
+====================================
