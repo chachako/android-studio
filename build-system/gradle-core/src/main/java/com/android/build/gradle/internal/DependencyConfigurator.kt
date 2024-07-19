@@ -89,8 +89,8 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.options.SyncOptions
 import com.android.builder.core.BuilderConstants
+import com.android.builder.dexing.R8Version
 import com.android.repository.Revision
-import com.android.tools.r8.Version
 import com.google.common.collect.Maps
 import org.gradle.api.ActionConfiguration
 import org.gradle.api.Project
@@ -910,7 +910,7 @@ class DependencyConfigurator(
                 )
             )
 
-            val d8Version = Version.getVersionString()
+            val d8Version = R8Version.getVersionString()
 
             allComponents
                 .mapTo(linkedSetOf()) { it.minSdk.apiLevel }
