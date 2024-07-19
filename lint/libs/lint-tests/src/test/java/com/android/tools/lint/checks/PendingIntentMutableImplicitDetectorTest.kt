@@ -1270,14 +1270,12 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
                   intentArray[0] = with(Intent()) { setClassName(mContext, "TEST") }
                   intentArray[1] = Intent().run { setPackage("test.pkg") }
                   PendingIntent.getActivities(null, 0, intentArray, PendingIntent.FLAG_MUTABLE)
-                  // TODO: b/311405051 uncomment when DFA is improved
-                  // PendingIntent.getService(null, 0, with(block =  { setClassName(mContext, "TEST") }, receiver = Intent()), PendingIntent.FLAG_MUTABLE)
-                  // val intentSeven = Intent()
-                  // with(intentSeven) { setClassName(mContext, "TEST") }
-                  // PendingIntent.getActivity(null, 0, intentSeven, PendingIntent.FLAG_MUTABLE)
-                  // val intentList = listOf(Intent().also { it.setClassName(mContext, "TEST") }, intentSix)
-                  // PendingIntent.getActivities(null, 0, intentList, PendingIntent.FLAG_MUTABLE)
-
+                  PendingIntent.getService(null, 0, with(block =  { setClassName(mContext, "TEST") }, receiver = Intent()), PendingIntent.FLAG_MUTABLE)
+                  val intentSeven = Intent()
+                  with(intentSeven) { setClassName(mContext, "TEST") }
+                  PendingIntent.getActivity(null, 0, intentSeven, PendingIntent.FLAG_MUTABLE)
+                  val intentList = listOf(Intent().also { it.setClassName(mContext, "TEST") }, intentSix)
+                  PendingIntent.getActivities(null, 0, intentList, PendingIntent.FLAG_MUTABLE)
                 }
               }
               """
@@ -1796,9 +1794,8 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
                   PendingIntent.getService(null, 0, Intent().also { it.foo() }, PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getActivities(null, 0, listOf(intentFour, intentFive), PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getActivities(null, 0, arrayOf(Intent().let { it.xyz() } , Intent().apply { abc(this) }), PendingIntent.FLAG_MUTABLE)
-                  // TODO: b/311405051 uncomment when DFA is improved
-                  // val intentList = listOf(Intent().also { it.foo() }, intentSix)
-                  // PendingIntent.getActivities(null, 0, intentList, PendingIntent.FLAG_MUTABLE)
+                  val intentList = listOf(Intent().also { it.foo() }, intentSix)
+                  PendingIntent.getActivities(null, 0, intentList, PendingIntent.FLAG_MUTABLE)
                   val intentArray = arrayOfNulls<Intent>(2)
                   intentArray[0] = with(Intent()) { xyz() }
                   intentArray[1] = Intent().run { setPackage("test.pkg") }.apply { bar(this) }
