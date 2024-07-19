@@ -662,7 +662,9 @@ class LintDriver(
           val issue = incident.issue
           val detector =
             detectorMap[issue]
-              ?: issue.implementation.detectorClass.newInstance().also { detectorMap[issue] = it }
+              ?: issue.implementation.detectorClass.getDeclaredConstructor().newInstance().also {
+                detectorMap[issue] = it
+              }
           // TODO: Block calling context.report() from this method in case
           // detectors are not written correctly!
           if (!detector.filterIncident(projectContext, incident, map)) {
@@ -1215,7 +1217,7 @@ class LintDriver(
         client.runReadAction {
           val detectors = scopeDetectors[Scope.MANIFEST]
           if (detectors != null) {
-            val v = ResourceVisitor(client, detectors.filterIsInstance<XmlScanner>(), null)
+            val v = ResourceVisitor(this, detectors.filterIsInstance<XmlScanner>(), null)
             fireEvent(EventType.SCANNING_FILE, context)
             v.visitFile(context)
             fileCount++
@@ -2181,7 +2183,7 @@ class LintDriver(
         return null
       }
 
-      currentVisitor = ResourceVisitor(client, applicableXmlChecks, applicableBinaryChecks)
+      currentVisitor = ResourceVisitor(this, applicableXmlChecks, applicableBinaryChecks)
     }
 
     return currentVisitor
@@ -2223,7 +2225,7 @@ class LintDriver(
 
     // Process the resource folder
 
-    if (dirChecks != null && dirChecks.isNotEmpty()) {
+    if (!dirChecks.isNullOrEmpty()) {
       val context = ResourceContext(this, project, main, dir, type, "")
       val folderName = dir.name
       fireEvent(EventType.SCANNING_FILE, context)
@@ -2697,7 +2699,7 @@ class LintDriver(
           // based on the minSdkVersion; we can't assume they're all valid.
           // Instead, just turn around and process them immediately.
           val issue = incident.issue
-          val detector = issue.implementation.detectorClass.newInstance()
+          val detector = issue.implementation.detectorClass.getDeclaredConstructor().newInstance()
           if (detector.filterIncident(context, incident, map)) {
             context.report(incident)
           }
@@ -3574,7 +3576,6 @@ class LintDriver(
 
     private const val SUPPRESS_WARNINGS_FQCN = "java.lang.SuppressWarnings"
     private const val SUPPRESS = "Suppress"
-    private const val SUPPRESS_WARNINGS = "SuppressWarnings"
 
     const val KEY_THROWABLE = "throwable"
 

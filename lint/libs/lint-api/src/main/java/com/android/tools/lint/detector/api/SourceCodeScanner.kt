@@ -30,6 +30,7 @@ import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UReferenceExpression
+import org.w3c.dom.Node
 
 /**
  * Interface to be implemented by lint detectors that want to analyze Java source files (or other
@@ -304,6 +305,24 @@ interface SourceCodeScanner : FileScanner {
   fun visitAnnotationUsage(
     context: JavaContext,
     element: UElement,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo,
+  )
+
+  /**
+   * Called whenever the given XML element or attribute [reference] of a class, method or field
+   * element that has been annotated with one of the annotations returned from
+   * [applicableAnnotations], pointed to by [annotationInfo].
+   *
+   * The element itself may not be annotated; it can also be a member in a class which has been
+   * annotated, or within an outer class which has been annotated, or in a file that has been
+   * annotated with an annotation, or in a package, and so on.
+   *
+   * For more information, see the annotations chapter of the lint api guide.
+   */
+  fun visitAnnotationUsage(
+    context: XmlContext,
+    reference: Node,
     annotationInfo: AnnotationInfo,
     usageInfo: AnnotationUsageInfo,
   )

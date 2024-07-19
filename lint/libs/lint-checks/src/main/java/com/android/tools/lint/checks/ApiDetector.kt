@@ -626,6 +626,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     api: ApiConstraint,
     gradleVersion: String?,
     issue: Issue,
+    useName: Boolean = false,
   ) {
     var realTag = tag
     if (realTag == element.tagName) {
@@ -650,7 +651,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           message = "`<$realTag>` requires API level ${api.minString()} (current min is %1\$s)"
           if (gradleVersion != null) {
             message += " or building with Android Gradle plugin $gradleVersion or higher"
-          } else if (realTag.contains(".")) {
+          } else if (realTag.contains(".") && !useName) {
             message =
               "Custom drawables requires API level ${api.minString()} (current min is %1\$s)"
           }
@@ -695,7 +696,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       AnnotationUsageType.CLASS_REFERENCE,
       AnnotationUsageType.ANNOTATION_REFERENCE,
       AnnotationUsageType.EXTENDS,
-      AnnotationUsageType.DEFINITION -> true
+      AnnotationUsageType.DEFINITION,
+      AnnotationUsageType.XML_REFERENCE -> true
       else -> false
     }
   }
@@ -799,7 +801,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     // account, yet still isn't high enough.
     minSdk = max(minSdk, localMinSdk)
 
-    val (targetAnnotation, target) = getTargetApiAnnotation(evaluator, element)
+    val (targetAnnotation, _) = getTargetApiAnnotation(evaluator, element)
     if (
       targetAnnotation != null &&
         isSurroundedByHigherTargetAnnotation(evaluator, targetAnnotation, api)
@@ -908,6 +910,34 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       }
 
     ApiVisitor(context).report(issue, element, location, type, fqcn, api, minSdk)
+  }
+
+  override fun visitAnnotationUsage(
+    context: XmlContext,
+    reference: Node,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo,
+  ) {
+    val annotation = annotationInfo.annotation
+    val qualifiedName = annotationInfo.qualifiedName
+    if (isRequiresApiAnnotation(qualifiedName)) {
+      val api = getApiLevel(context, annotation, qualifiedName) ?: return
+      val className = (usageInfo.referenced as? PsiClass)?.qualifiedName ?: return
+      val minSdk = getMinSdk(context) ?: return
+      val element =
+        reference as? Element
+          ?: (reference as? Attr)?.ownerElement
+          ?: reference.parentNode as? Element
+          ?: reference.ownerDocument.documentElement
+      if (
+        !(minSdk.isAtLeast(api) ||
+          context.folderVersion.isAtLeast(api) ||
+          getLocalMinSdk(element).isAtLeast(api))
+      ) {
+        val message = "`<$className>` requires API level ${api.minString()} (current min is %1\$s)"
+        report(context, UNSUPPORTED, element, context.getLocation(element), message, api, minSdk)
+      }
+    }
   }
 
   /**
@@ -3535,7 +3565,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
     @JvmStatic
     fun getApiLevel(
-      context: JavaContext,
+      context: Context,
       annotation: UAnnotation,
       qualifiedName: String,
     ): ApiConstraint.SdkApiConstraint? {
@@ -3543,30 +3573,29 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         when (qualifiedName) {
           REQUIRES_API_ANNOTATION.oldName(),
           REQUIRES_API_ANNOTATION.newName() -> {
-            val api = getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
+            val api = getLongAttribute(annotation, ATTR_VALUE, -1).toInt()
             if (api == -1) {
               // @RequiresApi has two aliasing attributes: api and value
-              getLongAttribute(context, annotation, "api", -1).toInt()
+              getLongAttribute(annotation, "api", -1).toInt()
             } else {
               api
             }
           }
-          FQCN_TARGET_API -> getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
+          FQCN_TARGET_API -> getLongAttribute(annotation, ATTR_VALUE, -1).toInt()
           REQUIRES_EXTENSION_ANNOTATION -> {
-            val sdkId = getLongAttribute(context, annotation, "extension", -1).toInt()
-            val version = getLongAttribute(context, annotation, "version", -1).toInt()
+            val sdkId = getLongAttribute(annotation, "extension", -1).toInt()
+            val version = getLongAttribute(annotation, "version", -1).toInt()
             if (sdkId != -1 && version != -1) {
               return ApiConstraint.get(version, sdkId)
             } else {
               return null
             }
           }
-          ROBO_ELECTRIC_CONFIG_ANNOTATION ->
-            getLongAttribute(context, annotation, "minSdk", -1).toInt()
+          ROBO_ELECTRIC_CONFIG_ANNOTATION -> getLongAttribute(annotation, "minSdk", -1).toInt()
           SDK_SUPPRESS_ANNOTATION,
           ANDROIDX_SDK_SUPPRESS_ANNOTATION -> {
-            val fromCodeName = getLongAttribute(context, annotation, "codeName", -1)
-            getLongAttribute(context, annotation, ATTR_MIN_SDK_VERSION, fromCodeName).toInt()
+            val fromCodeName = getLongAttribute(annotation, "codeName", -1)
+            getLongAttribute(annotation, ATTR_MIN_SDK_VERSION, fromCodeName).toInt()
           }
           else -> return null
         }

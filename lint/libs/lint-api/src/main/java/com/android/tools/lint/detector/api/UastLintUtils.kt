@@ -439,6 +439,11 @@ class UastLintUtils {
       name: String,
       defaultValue: Long,
     ): Long {
+      return getLongAttribute(annotation, name, defaultValue)
+    }
+
+    @JvmStatic
+    fun getLongAttribute(annotation: UAnnotation, name: String, defaultValue: Long): Long {
       return getAnnotationLongValue(annotation, name, defaultValue)
     }
 

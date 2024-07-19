@@ -30,6 +30,7 @@ import com.android.tools.lint.detector.api.AnnotationUsageType.FIELD_REFERENCE
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_CALL
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_OVERRIDE
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_REFERENCE
+import com.android.tools.lint.detector.api.AnnotationUsageType.XML_REFERENCE
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
@@ -53,6 +54,7 @@ import java.util.EnumSet
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.w3c.dom.Attr
+import org.w3c.dom.Node
 
 class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCodeScanner {
 
@@ -64,7 +66,25 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
       type == CLASS_REFERENCE ||
       type == METHOD_OVERRIDE ||
       type == EXTENDS ||
-      type == FIELD_REFERENCE
+      type == FIELD_REFERENCE ||
+      type == XML_REFERENCE
+  }
+
+  override fun visitAnnotationUsage(
+    context: XmlContext,
+    reference: Node,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo,
+  ) {
+    usageInfo.referenced ?: return
+    val location =
+      if (reference is Attr) {
+        context.getValueLocation(reference)
+      } else {
+        context.getNameLocation(reference)
+      }
+    val message = getMessage(annotationInfo)
+    context.report(ISSUE, reference, location, message)
   }
 
   override fun visitAnnotationUsage(
@@ -75,17 +95,20 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
   ) {
     usageInfo.referenced ?: return
     val location = context.getNameLocation(element)
+    val message = getMessage(annotationInfo)
+    report(context, ISSUE, element, location, message)
+  }
 
-    // androidx.annotation.Discouraged defines the message as an empty string; it is non-null.
+  private fun getMessage(annotationInfo: AnnotationInfo): String {
+    // @androidx.annotation.Discouraged defines the message as an empty string; it is non-null.
     val message = getAnnotationStringValue(annotationInfo.annotation, "message")
-
-    // If an explanation is not provided, a generic message will be shown instead.
-    if (!message.isNullOrBlank()) {
-      report(context, ISSUE, element, location, message)
-    } else {
-      val defaultMessage = "Use of this API is discouraged"
-      report(context, ISSUE, element, location, defaultMessage)
+    if (message.isNullOrBlank()) {
+      // If an explanation is not provided, a generic message will be shown instead.
+      // Note that initial the message was optional (blank was the default) but at some
+      // point the message attribute became mandatory, so most usages will provide one.
+      return "Use of this API is discouraged"
     }
+    return message
   }
 
   override fun getApplicableMethodNames() = listOf(SCHEDULE_AT_FIXED_RATE)

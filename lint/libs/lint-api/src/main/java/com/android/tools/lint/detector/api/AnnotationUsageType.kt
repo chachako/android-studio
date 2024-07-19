@@ -122,4 +122,7 @@ enum class AnnotationUsageType {
 
   /** An annotated field is referenced. */
   FIELD_REFERENCE,
+
+  /** An annotated class, method or field is referenced from XML */
+  XML_REFERENCE,
 }

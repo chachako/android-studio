@@ -15,12 +15,17 @@
  */
 package com.android.tools.lint.client.api
 
+import com.android.SdkConstants.ANDROID_MANIFEST_XML
+import com.android.SdkConstants.ANDROID_URI
+import com.android.SdkConstants.ATTR_NAME
 import com.android.tools.lint.client.api.LintDriver.Companion.handleDetectorError
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.ResourceContext
+import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.XmlScannerConstants
+import com.android.tools.lint.detector.api.resolveManifestName
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -41,7 +46,7 @@ import org.w3c.dom.Node
  * do pre- and post-processing.
  */
 internal class ResourceVisitor(
-  private val client: LintClient,
+  driver: LintDriver,
   private val allDetectors: List<XmlScanner>,
   private val binaryDetectors: List<Detector>?,
 ) {
@@ -49,6 +54,7 @@ internal class ResourceVisitor(
   private val attributeToCheck: Map<String?, List<XmlScanner>>
   private val allElementDetectors: List<XmlScanner>
   private val allAttributeDetectors: List<XmlScanner>
+  private val annotationHandler: AnnotationHandler?
 
   init {
     val elementToCheck = HashMap<String, MutableList<XmlScanner>>()
@@ -56,6 +62,7 @@ internal class ResourceVisitor(
     val allElementDetectors = ArrayList<XmlScanner>()
     val allAttributeDetectors = ArrayList<XmlScanner>()
 
+    var annotationsMap: MutableMap<String, MutableList<SourceCodeScanner>>? = null
     for (detector in allDetectors) {
       val attributes = detector.getApplicableAttributes()
       if (attributes === XmlScannerConstants.ALL) {
@@ -73,12 +80,25 @@ internal class ResourceVisitor(
           elementToCheck.getOrPut(element) { ArrayList() }.add(detector)
         }
       }
+
+      if (detector is SourceCodeScanner) {
+        val annotations = detector.applicableAnnotations()
+        if (annotations != null) {
+          if (annotationsMap == null) {
+            annotationsMap = HashMap()
+          }
+          for (annotation in annotations) {
+            annotationsMap.getOrPut(annotation) { ArrayList() }.add(detector)
+          }
+        }
+      }
     }
 
     this.elementToCheck = elementToCheck
     this.attributeToCheck = attributeToCheck
     this.allElementDetectors = allElementDetectors
     this.allAttributeDetectors = allAttributeDetectors
+    this.annotationHandler = annotationsMap?.let { AnnotationHandler(driver, it) }
   }
 
   fun visitFile(context: XmlContext) {
@@ -105,7 +125,28 @@ internal class ResourceVisitor(
     }
   }
 
+  private fun String.isLikelyClassName(): Boolean {
+    if (indexOf('.') != -1 && length >= 2) {
+      var prev = '.'
+      for (c in this) {
+        if (c == '.' && prev != '.') {
+          // ok
+        } else if (prev == '.' && c.isJavaIdentifierStart()) {
+          // ok
+        } else if (c.isJavaIdentifierPart()) {
+          // ok
+        } else {
+          return false
+        }
+        prev = c
+      }
+      return true
+    }
+    return false
+  }
+
   private fun visitElement(context: XmlContext, element: Element) {
+    val annotationHandler = annotationHandler
     val elementChecks = elementToCheck[element.localName]
     elementChecks?.forEach { check -> check.visitElement(context, element) }
     allElementDetectors.forEach { check -> check.visitElement(context, element) }
@@ -117,6 +158,24 @@ internal class ResourceVisitor(
         val name = attribute.localName ?: attribute.name
         attributeToCheck[name]?.forEach { check -> check.visitAttribute(context, attribute) }
         allAttributeDetectors.forEach { check -> check.visitAttribute(context, attribute) }
+
+        // Class attribute?
+        if (annotationHandler != null) {
+          var className = attribute.value
+          if (
+            className.startsWith(".") &&
+              context.file.path.endsWith(ANDROID_MANIFEST_XML) &&
+              attribute.localName == ATTR_NAME &&
+              attribute.namespaceURI == ANDROID_URI
+          ) {
+            // Manifest? Resolve package names:
+            className = resolveManifestName(element, context.project)
+          }
+
+          if (className.isLikelyClassName()) {
+            visitClassReference(className, context, attribute)
+          }
+        }
       }
     }
 
@@ -129,9 +188,23 @@ internal class ResourceVisitor(
       }
     }
 
+    // Annotations?
+    val tagName = element.tagName
+    if (annotationHandler != null && tagName.isLikelyClassName()) {
+      visitClassReference(tagName, context, element)
+    }
+
     // Post hooks
     elementChecks?.forEach { check -> check.visitElementAfter(context, element) }
     allElementDetectors.forEach { check -> check.visitElementAfter(context, element) }
+  }
+
+  private fun visitClassReference(fqn: String, context: XmlContext, reference: Node) {
+    val parser = context.client.getUastParser(context.project)
+    val psiClass = parser.evaluator.findClass(fqn.replace('$', '.'))
+    if (psiClass != null) {
+      annotationHandler?.visitXmlClassReference(context, reference, psiClass)
+    }
   }
 
   fun visitBinaryResource(context: ResourceContext) {

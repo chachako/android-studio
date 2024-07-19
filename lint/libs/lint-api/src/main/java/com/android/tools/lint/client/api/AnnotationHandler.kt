@@ -56,6 +56,7 @@ import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_RETURN
 import com.android.tools.lint.detector.api.AnnotationUsageType.VARIABLE_REFERENCE
 import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.asCall
 import com.android.tools.lint.detector.api.hasImplicitDefaultConstructor
 import com.android.tools.lint.detector.api.isKotlin
@@ -121,6 +122,7 @@ import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UastBinaryOperator
+import org.jetbrains.uast.UastEmptyExpression
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.getContainingUMethod
@@ -132,6 +134,7 @@ import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
+import org.w3c.dom.Node
 
 /** Looks up annotations on method calls and enforces the various things they express. */
 internal class AnnotationHandler(
@@ -470,12 +473,17 @@ internal class AnnotationHandler(
     context: JavaContext,
     annotated: PsiModifierListOwner,
   ): MutableList<AnnotationInfo> {
+    return getMemberAnnotations(context.evaluator, annotated)
+  }
 
+  private fun getMemberAnnotations(
+    evaluator: JavaEvaluator,
+    annotated: PsiModifierListOwner,
+  ): MutableList<AnnotationInfo> {
     // Using an ArrayDeque such that we can cheaply add/remove from the front of the
     // list (for example, after computing a list of annotations surrounding a call,
     // we prepend each parameter in turn to pass a full context list)
     val list = ArrayDeque<AnnotationInfo>()
-    val evaluator = context.evaluator
     val containingClass: PsiClass =
       when (annotated) {
         is PsiMethod -> {
@@ -623,6 +631,60 @@ internal class AnnotationHandler(
     }
   }
 
+  private fun checkAnnotations(
+    context: XmlContext,
+    element: Node,
+    argument: UElement,
+    type: AnnotationUsageType,
+    referenced: PsiElement?,
+    annotations: List<AnnotationInfo>,
+  ) {
+    val usageInfo = AnnotationUsageInfo(0, annotations, argument, referenced, type)
+
+    for (index in annotations.indices) {
+      val info = annotations[index]
+      usageInfo.index = index
+      val signature = info.qualifiedName
+      val uastScanners = scanners.get(signature)
+      if (!uastScanners.isNullOrEmpty()) {
+        checkAnnotations(context, uastScanners, signature, element, type, info, usageInfo)
+      }
+
+      // Also check just the name; we allow annotation checkers to just match by basename
+      val name = signature.substringAfterLast('.')
+      val simpleNameScanners = scanners.get(name)
+      if (!simpleNameScanners.isNullOrEmpty()) {
+        checkAnnotations(context, simpleNameScanners, signature, element, type, info, usageInfo)
+      }
+    }
+  }
+
+  private fun checkAnnotations(
+    context: XmlContext,
+    uastScanners: Collection<SourceCodeScanner>,
+    signature: String,
+    argument: Node,
+    type: AnnotationUsageType,
+    info: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo,
+  ) {
+    // Don't flag annotations that have already appeared in a closer scope
+    if (usageInfo.anyCloser { it.qualifiedName == signature }) {
+      return
+    }
+    for (scanner in uastScanners) {
+      if (scanner.isApplicableAnnotationUsage(type)) {
+        // Some annotations should not be treated as inherited though
+        // the hierarchy: if that's the case for this annotation in
+        // this scanner, check whether it's inherited and if so, skip it
+        if (type != DEFINITION && !scanner.inheritAnnotation(signature) && info.isInherited()) {
+          continue
+        }
+        scanner.visitAnnotationUsage(context, argument, info, usageInfo)
+      }
+    }
+  }
+
   // Visit the type of a declaration or parameter
   private fun visitDeclarationTypeReference(
     context: JavaContext,
@@ -688,6 +750,22 @@ internal class AnnotationHandler(
           )
         }
       }
+    )
+  }
+
+  fun visitXmlClassReference(context: XmlContext, reference: Node, referenced: PsiClass) {
+    val parser = context.client.getUastParser(context.project)
+    val annotations =
+      getMemberAnnotations(parser.evaluator, referenced).ifEmpty {
+        return
+      }
+    checkAnnotations(
+      context,
+      reference,
+      UastEmptyExpression(null),
+      AnnotationUsageType.XML_REFERENCE,
+      referenced,
+      annotations,
     )
   }
 

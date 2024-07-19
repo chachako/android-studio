@@ -16,29 +16,32 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class DiscouragedDetectorTest : AbstractCheckTest() {
 
   private val discouragedAnnotationStub =
-    java(
-        "src/androidx/annotation/Discouraged.java",
+    kotlin(
+        "src/androidx/annotation/Discouraged.kt",
         """
-            /* HIDE-FROM-DOCUMENTATION */
-            package androidx.annotation;
-            import static java.lang.annotation.ElementType.METHOD;
-            import static java.lang.annotation.RetentionPolicy.SOURCE;
-
-            import java.lang.annotation.Retention;
-            import java.lang.annotation.Target;
-
-            // Stub annotation for unit test.
-            @Retention(SOURCE)
-            @Target({METHOD})
-            public @interface Discouraged {
-                String message() default "";
-            }
+        /* HIDE-FROM-DOCUMENTATION */
+        package androidx.annotation
+        @Retention(AnnotationRetention.SOURCE)
+        @Target(
+            AnnotationTarget.CONSTRUCTOR,
+            AnnotationTarget.FIELD,
+            AnnotationTarget.FUNCTION,
+            AnnotationTarget.PROPERTY_GETTER,
+            AnnotationTarget.PROPERTY_SETTER,
+            AnnotationTarget.VALUE_PARAMETER,
+            AnnotationTarget.ANNOTATION_CLASS,
+            AnnotationTarget.CLASS
+        )
+        annotation class Discouraged(
+            val message: String
+        )
         """,
       )
       .indented()
@@ -221,30 +224,202 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-src/com/pkg/Main.kt:16: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using scheduleWithFixedDelay [DiscouragedApi]
-    executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/com/pkg/Main.kt:17: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
-    timer.scheduleAtFixedRate(bar(), 10, 30)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/com/pkg/Main.kt:18: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
-    timer.scheduleAtFixedRate(bar(), Date.from(Instant.EPOCH), 30)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-0 errors, 3 warnings
-"""
+        src/com/pkg/Main.kt:16: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using scheduleWithFixedDelay [DiscouragedApi]
+            executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/com/pkg/Main.kt:17: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
+            timer.scheduleAtFixedRate(bar(), 10, 30)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/com/pkg/Main.kt:18: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
+            timer.scheduleAtFixedRate(bar(), Date.from(Instant.EPOCH), 30)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
       )
       .expectFixDiffs(
         """
-Fix for src/com/pkg/Main.kt line 16: Replace with scheduleWithFixedDelay:
-@@ -16 +16
--     executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
-+     executor.scheduleWithFixedDelay({}, 10, 30, TimeUnit.SECONDS)
-Fix for src/com/pkg/Main.kt line 17: Replace with schedule:
-@@ -17 +17
--     timer.scheduleAtFixedRate(bar(), 10, 30)
-+     timer.schedule(bar(), 10, 30)
-"""
+        Fix for src/com/pkg/Main.kt line 16: Replace with scheduleWithFixedDelay:
+        @@ -16 +16
+        -     executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
+        +     executor.scheduleWithFixedDelay({}, 10, 30, TimeUnit.SECONDS)
+        Fix for src/com/pkg/Main.kt line 17: Replace with schedule:
+        @@ -17 +17
+        -     timer.scheduleAtFixedRate(bar(), 10, 30)
+        +     timer.schedule(bar(), 10, 30)
+        """
       )
+  }
+
+  fun testDiscouragedClassXmlReference() {
+    lint()
+      .files(
+        kotlin(
+            "src/com/pkg/Button.kt",
+            """
+            package com.pkg
+            import androidx.annotation.Discouraged
+            @Discouraged(message="Don't use this class")
+            open class Button
+            open class ToggleButton : Button // WARN 1: Referencing discouraged super class
+            """,
+          )
+          .indented(),
+        xml(
+            "res/layout/activity_main.xml",
+            """
+            <merge>
+                <com.pkg.Button/> <!-- WARN 2: Directly annotated -->
+                <com.pkg.ToggleButton/> <!-- WARN 3: Superclass annotated -->
+            </merge>
+            """,
+          )
+          .indented(),
+        discouragedAnnotationStub,
+      )
+      .run()
+      .expect(
+        """
+        src/com/pkg/Button.kt:5: Warning: Don't use this class [DiscouragedApi]
+        open class ToggleButton : Button // WARN 1: Referencing discouraged super class
+                                  ~~~~~~
+        res/layout/activity_main.xml:2: Warning: Don't use this class [DiscouragedApi]
+            <com.pkg.Button/> <!-- WARN 2: Directly annotated -->
+             ~~~~~~~~~~~~~~
+        res/layout/activity_main.xml:3: Warning: Don't use this class [DiscouragedApi]
+            <com.pkg.ToggleButton/> <!-- WARN 3: Superclass annotated -->
+             ~~~~~~~~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
+      )
+  }
+
+  fun testNested() {
+    // Referencing a class that has an outer class that is discouraged
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.app.Activity
+            import androidx.annotation.Discouraged
+
+            @Discouraged(message="Don't use this")
+            open class Private {
+                class MyActivity : Activity()
+            }
+            open class OkActivity : Activity()
+            """
+          )
+          .indented(),
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                package="test.pkg" >
+                <application>
+                    <activity android:name="test.pkg.OkActivity"/>              <!-- OK -->
+                    <activity android:name="test.pkg.Private＄MyActivity"/>     <!-- WARN -->
+                </application>
+            </manifest>
+            """
+          )
+          .indented(),
+        discouragedAnnotationStub,
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:5: Warning: Don't use this [DiscouragedApi]
+                <activity android:name="test.pkg.Private＄MyActivity"/>     <!-- WARN -->
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testDiscouragedManifestClassReference() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.app.Activity;
+
+            import androidx.annotation.Discouraged;
+
+            public class Private {
+                @Discouraged(message="Don't use this")
+                public static class MyActivity extends Activity {
+                }
+            }
+            """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+
+            public class MyInheritedActivity extends Private.MyActivity { // WARN 5
+            }
+            """
+          )
+          .indented(),
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                <!-- package="test.pkg" -->
+                <application>
+                    <activity android:name="test.pkg.OkActivity"/>              <!-- OK -->
+                    <activity android:name="test.pkg.Private＄MyActivity"/>     <!-- WARN 1 -->
+                    <activity android:name="test.pkg.MyInheritedActivity"/>     <!-- WARN 2 -->
+                    <activity android:name=".Private＄MyActivity"/>             <!-- WARN 3 -->
+                    <activity android:name=".MyInheritedActivity"/>             <!-- WARN 4 -->
+                </application>
+            </manifest>
+            """
+          )
+          .indented(),
+        kts(
+            """
+              android {
+                  namespace = "test.pkg"
+              }
+              """
+          )
+          .indented(),
+        // Using Gradle, so we need to move stub to the right source set, src/main/java rather than
+        // src/
+        gradleSourceSet(discouragedAnnotationStub),
+      )
+      .run()
+      .expect(
+        """
+        src/main/AndroidManifest.xml:5: Warning: Don't use this [DiscouragedApi]
+                <activity android:name="test.pkg.Private＄MyActivity"/>     <!-- WARN 1 -->
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/main/AndroidManifest.xml:6: Warning: Don't use this [DiscouragedApi]
+                <activity android:name="test.pkg.MyInheritedActivity"/>     <!-- WARN 2 -->
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/main/AndroidManifest.xml:7: Warning: Don't use this [DiscouragedApi]
+                <activity android:name=".Private＄MyActivity"/>             <!-- WARN 3 -->
+                                        ~~~~~~~~~~~~~~~~~~~
+        src/main/AndroidManifest.xml:8: Warning: Don't use this [DiscouragedApi]
+                <activity android:name=".MyInheritedActivity"/>             <!-- WARN 4 -->
+                                        ~~~~~~~~~~~~~~~~~~~~
+        src/main/java/test/pkg/MyInheritedActivity.java:3: Warning: Don't use this [DiscouragedApi]
+        public class MyInheritedActivity extends Private.MyActivity { // WARN 5
+                                                 ~~~~~~~~~~~~~~~~~~
+        0 errors, 5 warnings
+        """
+      )
+  }
+
+  private fun gradleSourceSet(kotlinFile: TestFile): TestFile {
+    return kotlin(
+      "src/main/java/" + kotlinFile.targetRelativePath.removePrefix("src/"),
+      kotlinFile.contents.trimIndent(),
+    )
   }
 
   override fun getDetector(): Detector {

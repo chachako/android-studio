@@ -1044,6 +1044,45 @@ public class ApiDetectorTest extends AbstractCheckTest {
         lint().files(manifest().minSdk(1), mLayout2, mThemes3, mThemes4).run().expect(expected);
     }
 
+    public void testXmlApiWithRequiresAnnotation() {
+        @Language("XML")
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                    + "<test.pkg.MyView"
+                    + " xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                    + "    android:layout_width=\"fill_parent\"\n"
+                    + "    android:layout_height=\"match_parent\" />\n";
+        lint().files(
+                        manifest().minSdk(1),
+                        kotlin(
+                                "package test.pkg\n"
+                                    + "\n"
+                                    + "import android.content.Context\n"
+                                    + "import androidx.annotation.RequiresApi\n"
+                                    + "\n"
+                                    + "@RequiresApi(21)\n"
+                                    + "class MyView(context: Context) :"
+                                    + " android.view.View(context)"),
+                        xml("res/layout-v11/error.xml", xml),
+                        xml(
+                                "res/layout-v11/ok1.xml",
+                                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                    + "<test.pkg.MyView"
+                                    + " xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                                    + "    tools:targetApi='21' />"),
+                        xml("res/layout-v21/ok2.xml", xml),
+                        xml("res/layout-v33/ok3.xml", xml),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expect(
+                        "res/layout-v11/error.xml:2: Error: <test.pkg.MyView> requires API level 21"
+                            + " (current min is 1) [NewApi]\n"
+                            + "<test.pkg.MyView"
+                            + " xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                            + "^\n"
+                            + "1 errors, 0 warnings");
+    }
+
     public void testXmlApiFolderVersion14() {
         //noinspection all // Sample code
         lint().files(manifest().minSdk(1), mLayout3, mThemes5, mThemes6).run().expectClean();

@@ -45,6 +45,7 @@ import org.objectweb.asm.tree.MethodNode
 import org.w3c.dom.Attr
 import org.w3c.dom.Document
 import org.w3c.dom.Element
+import org.w3c.dom.Node
 
 /**
  * A detector is able to find a particular problem (or a set of related problems). Each problem type
@@ -537,6 +538,13 @@ abstract class Detector {
       allPackageAnnotations,
     )
   }
+
+  open fun visitAnnotationUsage(
+    context: XmlContext,
+    reference: Node,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo,
+  ) {}
 
   open fun visitAnnotationUsage(
     context: JavaContext,
