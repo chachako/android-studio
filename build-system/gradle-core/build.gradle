@@ -262,7 +262,6 @@ dependencies {
     provided(project(':base:build-system:shrinker')) {
         transitive = false
     }
-    provided(files('../../../../prebuilts/r8/r8.jar'))
 }
 
 protobuf {
