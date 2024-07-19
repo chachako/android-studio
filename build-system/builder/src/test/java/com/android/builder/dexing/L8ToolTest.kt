@@ -19,7 +19,6 @@ package com.android.builder.dexing
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.DexSubject
 import com.android.testutils.truth.PathSubject.assertThat
-import com.android.tools.r8.OutputMode
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -45,7 +44,7 @@ class L8ToolTest {
             20,
             KeepRulesConfig(emptyList(), emptyList()),
             true,
-            OutputMode.DexIndexed
+            L8OutputMode.DexIndexed
         )
         assertThat(getDexFileCount(output)).isEqualTo(1)
         assertThat(output.resolve("classes1000.dex")).exists()
@@ -78,7 +77,7 @@ class L8ToolTest {
                 emptyList()
             ),
             true,
-            OutputMode.DexIndexed
+            L8OutputMode.DexIndexed
         )
         val dexFile = output.resolve("classes1000.dex")
         DexSubject.assertThatDex(dexFile).containsClass("Lj$/util/stream/Stream;")

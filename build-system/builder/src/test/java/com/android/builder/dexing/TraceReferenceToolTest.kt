@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.android.builder.dexing
 import com.android.builder.dexing.testdata.ClassWithDesugarLibraryApi
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.TestUtils
-import com.android.tools.r8.OutputMode
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -87,7 +86,7 @@ class TraceReferenceToolTest {
             21,
             KeepRulesConfig(emptyList(), emptyList()),
             true,
-            OutputMode.ClassFile
+            L8OutputMode.ClassFile
         )
 
         // run trace reference tool to generate keep rules
