@@ -3734,6 +3734,10 @@ class VersionChecksTest : AbstractCheckTest() {
   }
 
   fun testExceptionsAndErrorsAsExitPoints() {
+    // TODO(b/350536808)
+    if (useFirUast()) {
+      return
+    }
     // Regression lifted from issue 117793069
     lint()
       .files(
