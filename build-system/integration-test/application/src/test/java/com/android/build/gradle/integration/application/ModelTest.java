@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application;
 import static com.android.SdkConstants.FN_R_CLASS_JAR;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR;
+
 import static org.junit.Assert.fail;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -35,13 +36,16 @@ import com.android.builder.model.v2.ide.JavaArtifact;
 import com.android.builder.model.v2.ide.UnresolvedDependency;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.builder.model.v2.models.AndroidProject;
+
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth;
-import java.io.File;
-import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.List;
 
 /** General Model tests */
 public class ModelTest {
@@ -137,6 +141,7 @@ public class ModelTest {
                 .containsExactly(project.file("build/generated/ap_generated_sources/debug/out"));
         assertThat(debugArtifact.getGeneratedResourceFolders())
                 .containsExactly(project.file("build/generated/res/resValues/debug"));
+        assertThat(debugArtifact.getGeneratedAssetsFolders()).isEmpty();
 
         AndroidArtifact androidTestArtifact = debugVariant.getAndroidTestArtifact();
         assertThat(androidTestArtifact.getGeneratedSourceFolders())
@@ -144,6 +149,7 @@ public class ModelTest {
                         project.file("build/generated/ap_generated_sources/debugAndroidTest/out"));
         assertThat(androidTestArtifact.getGeneratedResourceFolders())
                 .containsExactly(project.file("build/generated/res/resValues/androidTest/debug"));
+        assertThat(androidTestArtifact.getGeneratedAssetsFolders()).isEmpty();
 
         JavaArtifact unitTestArtifact = debugVariant.getUnitTestArtifact();
         assertThat(unitTestArtifact.getGeneratedSourceFolders())

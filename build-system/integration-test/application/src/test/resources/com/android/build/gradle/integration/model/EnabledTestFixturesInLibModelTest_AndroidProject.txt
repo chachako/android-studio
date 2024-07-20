@@ -21,6 +21,7 @@
             - sourceGenTaskName             = "generateDebugTestFixturesSources"
             - resGenTaskName                = (null)
             - generatedResourceFolders      = []
+            - generatedAssetsFolders        = []
             - abiFilters                    = []
             - assembleTaskOutputListingFile = (null)
             - testInfo                      = (null)
@@ -49,6 +50,7 @@
             - sourceGenTaskName             = "generateReleaseTestFixturesSources"
             - resGenTaskName                = (null)
             - generatedResourceFolders      = []
+            - generatedAssetsFolders        = []
             - abiFilters                    = []
             - assembleTaskOutputListingFile = (null)
             - testInfo                      = (null)

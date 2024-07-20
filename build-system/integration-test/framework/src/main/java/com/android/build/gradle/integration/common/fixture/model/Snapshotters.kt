@@ -471,6 +471,7 @@ private fun ModelSnapshotter<AndroidArtifact>.snapshotAndroidArtifact() {
     item("sourceGenTaskName", AndroidArtifact::sourceGenTaskName)
     item("resGenTaskName", AndroidArtifact::resGenTaskName)
     valueList("generatedResourceFolders", AndroidArtifact::generatedResourceFolders) { it?.sorted() }
+    valueList("generatedAssetsFolders", AndroidArtifact::generatedAssetsFolders) { it?.sorted() }
     list("abiFilters", AndroidArtifact::abiFilters)
     item("assembleTaskOutputListingFile", AndroidArtifact::assembleTaskOutputListingFile)
     dataObject("testInfo", AndroidArtifact::testInfo) {

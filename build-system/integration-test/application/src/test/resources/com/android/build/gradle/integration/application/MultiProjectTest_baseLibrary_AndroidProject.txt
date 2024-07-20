@@ -30,6 +30,7 @@
             - resGenTaskName                = "generateDebugResources"
             - generatedResourceFolders:
                * {PROJECT}/baseLibrary/build/generated/res/resValues/debug{!}
+            - generatedAssetsFolders        = []
             - abiFilters                    = []
             - assembleTaskOutputListingFile = (null)
             - testInfo                      = (null)
@@ -58,6 +59,7 @@
             - resGenTaskName                = "generateDebugAndroidTestResources"
             - generatedResourceFolders:
                * {PROJECT}/baseLibrary/build/generated/res/resValues/androidTest/debug{!}
+            - generatedAssetsFolders        = []
             - abiFilters                    = []
             - assembleTaskOutputListingFile = {PROJECT}/baseLibrary/build/intermediates/apk_ide_redirect_file/debugAndroidTest/createDebugAndroidTestApkListingFileRedirect/redirect.txt{!}
             - testInfo:
@@ -110,6 +112,7 @@
             - resGenTaskName                = "generateReleaseResources"
             - generatedResourceFolders:
                * {PROJECT}/baseLibrary/build/generated/res/resValues/release{!}
+            - generatedAssetsFolders        = []
             - abiFilters                    = []
             - assembleTaskOutputListingFile = (null)
             - testInfo                      = (null)

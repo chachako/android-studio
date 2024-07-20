@@ -18,8 +18,6 @@ package com.android.build.gradle.integration.sources
 
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
-import com.android.build.gradle.integration.common.fixture.app.HelloWorldAppWithJavaLibs
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp
 import com.android.testutils.truth.ZipFileSubject
 import com.google.common.truth.Truth
@@ -248,6 +246,50 @@ class SourcesJarTest {
                     }
                 }
                 Truth.assertThat(foundRes && foundJava).isTrue()
+            }
+        }
+    }
+
+    @Test
+    fun testAddingAssetsToModel() {
+        project.getSubproject(":lib").also { libProject ->
+            libProject.buildFile.appendText(
+                """
+            abstract class AssetGenerator extends DefaultTask {
+                @OutputDirectory
+                abstract DirectoryProperty getOutputDirectory();
+
+                @TaskAction
+                void run() {
+                    def outputFile = new File(getOutputDirectory().get().getAsFile(), "foo.txt")
+                    new FileWriter(outputFile).with {
+                        write("some text")
+                        flush()
+                    }
+                }
+            }
+
+            def writeAssetTask = tasks.register("createAssets", AssetGenerator.class)
+            androidComponents {
+                onVariants(selector().all(),  { variant ->
+                    // register it under java source code.
+                    variant.sources.assets.addGeneratedSourceDirectory(writeAssetTask, AssetGenerator::getOutputDirectory)
+
+                })
+            }
+        """.trimIndent()
+            )
+
+            val modelContainer = libProject.modelV2().fetchModels().container
+
+            modelContainer.getProject(":lib").androidProject?.variants?.forEach { variant ->
+                var foundRes = false
+                variant.mainArtifact.generatedAssetsFolders.forEach { file ->
+                    if (file.absolutePath.contains("createAssets")) {
+                        foundRes = true
+                    }
+                }
+                Truth.assertThat(foundRes).isTrue()
             }
         }
     }

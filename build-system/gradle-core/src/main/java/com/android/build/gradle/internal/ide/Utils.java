@@ -166,4 +166,23 @@ public class Utils {
         }
         return Streams.stream(fileCollection).collect(Collectors.toList());
     }
+
+    @NonNull
+    public static List<File> getGeneratedAssetsFolders(@NonNull ComponentCreationConfig component) {
+        ConfigurableFileCollection fileCollection = component.getServices().fileCollection();
+        component
+                .getSources()
+                .assets(
+                        resSources -> {
+                            fileCollection.from(
+                                    resSources.variantSourcesForModel$gradle_core(
+                                            directoryEntry ->
+                                                    directoryEntry.isUserAdded()
+                                                            && directoryEntry.isGenerated()
+                                                            && directoryEntry
+                                                                    .getShouldBeAddedToIdeModel()));
+                            return Unit.INSTANCE;
+                        });
+        return Streams.stream(fileCollection).collect(Collectors.toList());
+    }
 }

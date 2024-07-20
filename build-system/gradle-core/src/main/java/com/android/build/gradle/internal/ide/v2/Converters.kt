@@ -208,7 +208,7 @@ internal fun DefaultAndroidSourceSet.convert(
         baselineProfileDirectories = ((baselineProfiles as DefaultAndroidSourceDirectorySet).srcDirs
             + variantSourcesForModel(mixin?.baselineProfiles)).toSet(),
         resDirectories = if (features.androidResources) resDirectories else null,
-        assetsDirectories = (assetsDirectories + allVariantSources(mixin?.assets)).toSet(),
+        assetsDirectories = (assetsDirectories + variantSourcesForModel(mixin?.assets)).toSet(),
         jniLibsDirectories = (jniLibsDirectories + variantSourcesForModel(mixin?.jniLibs)).toSet(),
         shadersDirectories = if (features.shaders) {
             (shadersDirectories + variantSourcesForModel(mixin?.shaders)).toSet()
@@ -243,12 +243,6 @@ internal fun DefaultAndroidSourceSet.convert(
  */
 private fun variantSourcesForModel(sourceDirectories: SourceDirectoriesImpl?) =
     sourceDirectories?.variantSourcesForModel { it.shouldBeAddedToIdeModel && !it.isGenerated } ?: emptyList()
-
-/**
- * Returns source dirs that should be added to the model included generated
- */
-private fun allVariantSources(sourceDirectories: SourceDirectoriesImpl?) =
-    sourceDirectories?.variantSourcesForModel { it.shouldBeAddedToIdeModel } ?: emptyList()
 
 internal fun AndroidResources.convert() = AaptOptionsImpl(
     namespacing = if (namespaced) REQUIRED else DISABLED

@@ -94,7 +94,6 @@
             - resDirectories:
                * {PROJECT}/src/debug/res{!}
             - assetsDirectories:
-               * {PROJECT}/build/generated/assets/createdebugAsset{!}
                * {PROJECT}/src/debug/assets{!}
                * {PROJECT}/src/debug/staticAssets{D}
             - jniLibsDirectories:
@@ -169,7 +168,6 @@
             - resDirectories:
                * {PROJECT}/src/release/res{!}
             - assetsDirectories:
-               * {PROJECT}/build/generated/assets/createreleaseAsset{!}
                * {PROJECT}/src/release/assets{!}
                * {PROJECT}/src/release/staticAssets{D}
             - jniLibsDirectories:
