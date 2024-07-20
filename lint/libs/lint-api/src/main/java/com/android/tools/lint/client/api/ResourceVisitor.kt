@@ -13,187 +13,132 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.lint.client.api
 
-package com.android.tools.lint.client.api;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.tools.lint.detector.api.Detector;
-import com.android.tools.lint.detector.api.ResourceContext;
-import com.android.tools.lint.detector.api.XmlContext;
-import com.android.tools.lint.detector.api.XmlScanner;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import com.android.tools.lint.client.api.LintDriver.Companion.handleDetectorError
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.ResourceContext
+import com.android.tools.lint.detector.api.XmlContext
+import com.android.tools.lint.detector.api.XmlScanner
+import com.android.tools.lint.detector.api.XmlScannerConstants
+import org.w3c.dom.Attr
+import org.w3c.dom.Element
+import org.w3c.dom.Node
 
 /**
  * Specialized visitor for running detectors on resources: typically XML documents, but also binary
  * resources.
  *
- * <p>It operates in two phases:
- *
- * <ol>
- *   <li>First, it computes a set of maps where it generates a map from each significant element
- *       name, and each significant attribute name, to a list of detectors to consult for that
- *       element or attribute name. The set of element names or attribute names (or both) that a
- *       detector is interested in is provided by the detectors themselves.
- *   <li>Second, it iterates over the document a single time. For each element and attribute it
- *       looks up the list of interested detectors, and runs them.
- * </ol>
+ * It operates in two phases:
+ * 1. First, it computes a set of maps where it generates a map from each significant element name,
+ *    and each significant attribute name, to a list of detectors to consult for that element or
+ *    attribute name. The set of element names or attribute names (or both) that a detector is
+ *    interested in is provided by the detectors themselves.
+ * 2. Second, it iterates over the document a single time. For each element and attribute it looks
+ *    up the list of interested detectors, and runs them.
  *
  * It also notifies all the detectors before and after the document is processed such that they can
  * do pre- and post-processing.
  */
-class ResourceVisitor {
-    private final Map<String, List<XmlScanner>> elementToCheck = new HashMap<>();
-    private final Map<String, List<XmlScanner>> attributeToCheck = new HashMap<>();
-    private final List<XmlScanner> allElementDetectors = new ArrayList<>();
-    private final List<XmlScanner> allAttributeDetectors = new ArrayList<>();
-    private final List<XmlScanner> allDetectors;
-    private final List<? extends Detector> binaryDetectors;
-    private final LintClient client;
+internal class ResourceVisitor(
+  private val client: LintClient,
+  private val allDetectors: List<XmlScanner>,
+  private val binaryDetectors: List<Detector>?,
+) {
+  private val elementToCheck: Map<String, List<XmlScanner>>
+  private val attributeToCheck: Map<String?, List<XmlScanner>>
+  private val allElementDetectors: List<XmlScanner>
+  private val allAttributeDetectors: List<XmlScanner>
 
-    // Really want this:
-    // <T extends List<Detector> & XmlScanner> XmlVisitor(IDomParser parser,
-    //    T xmlDetectors) {
-    // but it makes client code tricky and ugly.
-    ResourceVisitor(
-            @NonNull LintClient client,
-            @NonNull List<XmlScanner> allDetectors,
-            @Nullable List<Detector> binaryDetectors) {
-        this.client = client;
-        this.binaryDetectors = binaryDetectors;
-        this.allDetectors = allDetectors;
+  init {
+    val elementToCheck = HashMap<String, MutableList<XmlScanner>>()
+    val attributeToCheck = HashMap<String?, MutableList<XmlScanner>>()
+    val allElementDetectors = ArrayList<XmlScanner>()
+    val allAttributeDetectors = ArrayList<XmlScanner>()
 
-        // TODO: Check appliesTo() for files, and find a quick way to enable/disable
-        // rules when running through a full project!
-        for (XmlScanner detector : allDetectors) {
-            XmlScanner xmlDetector = (XmlScanner) detector;
-            Collection<String> attributes = xmlDetector.getApplicableAttributes();
-            if (attributes == XmlScanner.ALL) {
-                allAttributeDetectors.add(xmlDetector);
-            } else if (attributes != null) {
-                for (String attribute : attributes) {
-                    List<XmlScanner> list = attributeToCheck.get(attribute);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        attributeToCheck.put(attribute, list);
-                    }
-                    list.add(xmlDetector);
-                }
-            }
-            Collection<String> elements = xmlDetector.getApplicableElements();
-            if (elements == XmlScanner.ALL) {
-                allElementDetectors.add(xmlDetector);
-            } else if (elements != null) {
-                for (String element : elements) {
-                    List<XmlScanner> list = elementToCheck.get(element);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        elementToCheck.put(element, list);
-                    }
-                    list.add(xmlDetector);
-                }
-            }
+    for (detector in allDetectors) {
+      val attributes = detector.getApplicableAttributes()
+      if (attributes === XmlScannerConstants.ALL) {
+        allAttributeDetectors.add(detector)
+      } else {
+        attributes?.forEach { attribute ->
+          attributeToCheck.getOrPut(attribute) { ArrayList() }.add(detector)
         }
+      }
+      val elements = detector.getApplicableElements()
+      if (elements === XmlScannerConstants.ALL) {
+        allElementDetectors.add(detector)
+      } else {
+        elements?.forEach { element ->
+          elementToCheck.getOrPut(element) { ArrayList() }.add(detector)
+        }
+      }
     }
 
-    void visitFile(@NonNull XmlContext context) {
-        try {
-            for (XmlScanner check : allDetectors) {
-                check.beforeCheckFile(context);
-                check.visitDocument(context, context.document);
-            }
+    this.elementToCheck = elementToCheck
+    this.attributeToCheck = attributeToCheck
+    this.allElementDetectors = allElementDetectors
+    this.allAttributeDetectors = allAttributeDetectors
+  }
 
-            if (!elementToCheck.isEmpty()
-                    || !attributeToCheck.isEmpty()
-                    || !allAttributeDetectors.isEmpty()
-                    || !allElementDetectors.isEmpty()) {
-                visitElement(context, context.document.getDocumentElement());
-            }
+  fun visitFile(context: XmlContext) {
+    try {
+      for (check in allDetectors) {
+        check.beforeCheckFile(context)
+        check.visitDocument(context, context.document)
+      }
 
-            for (XmlScanner check : allDetectors) {
-                check.afterCheckFile(context);
-            }
-        } catch (Throwable e) {
-            LintDriver.handleDetectorError(context, context.getDriver(), e);
-        }
+      if (
+        elementToCheck.isNotEmpty() ||
+          attributeToCheck.isNotEmpty() ||
+          allAttributeDetectors.isNotEmpty() ||
+          allElementDetectors.isNotEmpty()
+      ) {
+        visitElement(context, context.document.documentElement)
+      }
+
+      for (check in allDetectors) {
+        check.afterCheckFile(context)
+      }
+    } catch (e: Throwable) {
+      handleDetectorError(context, context.driver, e)
+    }
+  }
+
+  private fun visitElement(context: XmlContext, element: Element) {
+    val elementChecks = elementToCheck[element.localName]
+    elementChecks?.forEach { check -> check.visitElement(context, element) }
+    allElementDetectors.forEach { check -> check.visitElement(context, element) }
+
+    if (attributeToCheck.isNotEmpty() || allAttributeDetectors.isNotEmpty()) {
+      val attributes = element.attributes
+      for (i in 0 until attributes.length) {
+        val attribute = attributes.item(i) as Attr
+        val name = attribute.localName ?: attribute.name
+        attributeToCheck[name]?.forEach { check -> check.visitAttribute(context, attribute) }
+        allAttributeDetectors.forEach { check -> check.visitAttribute(context, attribute) }
+      }
     }
 
-    private void visitElement(@NonNull XmlContext context, @NonNull Element element) {
-        List<XmlScanner> elementChecks = elementToCheck.get(element.getLocalName());
-        if (elementChecks != null) {
-            assert elementChecks instanceof RandomAccess;
-            for (XmlScanner check : elementChecks) {
-                check.visitElement(context, element);
-            }
-        }
-        if (!allElementDetectors.isEmpty()) {
-            for (XmlScanner check : allElementDetectors) {
-                check.visitElement(context, element);
-            }
-        }
-
-        if (!attributeToCheck.isEmpty() || !allAttributeDetectors.isEmpty()) {
-            NamedNodeMap attributes = element.getAttributes();
-            for (int i = 0, n = attributes.getLength(); i < n; i++) {
-                Attr attribute = (Attr) attributes.item(i);
-                String name = attribute.getLocalName();
-                if (name == null) {
-                    name = attribute.getName();
-                }
-                List<XmlScanner> list = attributeToCheck.get(name);
-                if (list != null) {
-                    for (XmlScanner check : list) {
-                        check.visitAttribute(context, attribute);
-                    }
-                }
-                if (!allAttributeDetectors.isEmpty()) {
-                    for (XmlScanner check : allAttributeDetectors) {
-                        check.visitAttribute(context, attribute);
-                    }
-                }
-            }
-        }
-
-        // Visit children
-        NodeList childNodes = element.getChildNodes();
-        for (int i = 0, n = childNodes.getLength(); i < n; i++) {
-            Node child = childNodes.item(i);
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-                visitElement(context, (Element) child);
-            }
-        }
-
-        // Post hooks
-        if (elementChecks != null) {
-            for (XmlScanner check : elementChecks) {
-                check.visitElementAfter(context, element);
-            }
-        }
-        if (!allElementDetectors.isEmpty()) {
-            for (XmlScanner check : allElementDetectors) {
-                check.visitElementAfter(context, element);
-            }
-        }
+    // Visit children
+    val childNodes = element.childNodes
+    for (i in 0 until childNodes.length) {
+      val child = childNodes.item(i)
+      if (child.nodeType == Node.ELEMENT_NODE) {
+        visitElement(context, child as Element)
+      }
     }
 
-    public void visitBinaryResource(@NonNull ResourceContext context) {
-        if (binaryDetectors == null) {
-            return;
-        }
-        for (Detector check : binaryDetectors) {
-            check.beforeCheckFile(context);
-            check.checkBinaryResource(context);
-            check.afterCheckFile(context);
-        }
+    // Post hooks
+    elementChecks?.forEach { check -> check.visitElementAfter(context, element) }
+    allElementDetectors.forEach { check -> check.visitElementAfter(context, element) }
+  }
+
+  fun visitBinaryResource(context: ResourceContext) {
+    for (check in binaryDetectors ?: return) {
+      check.beforeCheckFile(context)
+      check.checkBinaryResource(context)
+      check.afterCheckFile(context)
     }
+  }
 }
