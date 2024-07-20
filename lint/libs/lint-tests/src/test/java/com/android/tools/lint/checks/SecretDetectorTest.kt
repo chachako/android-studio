@@ -160,34 +160,34 @@ class SecretDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-          src/com/pkg/keydemo/KeyDemo.java:9: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-              GenerativeModel model1 = new GenerativeModel("name", "AIzaYWJjZGVmZ2hp-MTIzNDU2-YX_ZGQ");
-                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          src/com/pkg/keydemo/KeyDemo.java:11: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-              GenerativeModel model3 = new GenerativeModel("name", KEY);
-                                                                   ~~~
-          src/com/pkg/keydemo/KeyDemo.java:12: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-              GenerativeModel model4 = new GenerativeModel("name", JKeys.KEY);
-                                                                   ~~~~~~~~~
-          src/com/pkg/keydemo/KeyDemo.java:15: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-              GenerativeModel model6 = new GenerativeModel("name", s);
-                                                                   ~
-          src/com/pkg/keydemo/test.kt:8: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-            val model1 = GenerativeModel("name", "AIzadGhpcyBpcyBhbm90aGVy_IHQ-akd==")
-                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          src/com/pkg/keydemo/test.kt:10: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-            val model3 = GenerativeModel("name", KEY)
-                                                 ~~~
-          src/com/pkg/keydemo/test.kt:11: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-            val model4 = GenerativeModel("name", KEY_TOP)
-                                                 ~~~~~~~
-          src/com/pkg/keydemo/test.kt:13: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-            val model6 = GenerativeModel("name", Keys.KEY)
-                                                 ~~~~~~~~
-          src/com/pkg/keydemo/test.kt:16: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
-            val model8 = GenerativeModel("name", s)
-                                                 ~
-          0 errors, 9 warnings
+        src/main/java/com/pkg/keydemo/KeyDemo.java:9: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+            GenerativeModel model1 = new GenerativeModel("name", "AIzaYWJjZGVmZ2hp-MTIzNDU2-YX_ZGQ");
+                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/main/java/com/pkg/keydemo/KeyDemo.java:11: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+            GenerativeModel model3 = new GenerativeModel("name", KEY);
+                                                                 ~~~
+        src/main/java/com/pkg/keydemo/KeyDemo.java:12: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+            GenerativeModel model4 = new GenerativeModel("name", JKeys.KEY);
+                                                                 ~~~~~~~~~
+        src/main/java/com/pkg/keydemo/KeyDemo.java:15: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+            GenerativeModel model6 = new GenerativeModel("name", s);
+                                                                 ~
+        src/main/kotlin/com/pkg/keydemo/test.kt:8: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+          val model1 = GenerativeModel("name", "AIzadGhpcyBpcyBhbm90aGVy_IHQ-akd==")
+                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/main/kotlin/com/pkg/keydemo/test.kt:10: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+          val model3 = GenerativeModel("name", KEY)
+                                               ~~~
+        src/main/kotlin/com/pkg/keydemo/test.kt:11: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+          val model4 = GenerativeModel("name", KEY_TOP)
+                                               ~~~~~~~
+        src/main/kotlin/com/pkg/keydemo/test.kt:13: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+          val model6 = GenerativeModel("name", Keys.KEY)
+                                               ~~~~~~~~
+        src/main/kotlin/com/pkg/keydemo/test.kt:16: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
+          val model8 = GenerativeModel("name", s)
+                                               ~
+        0 errors, 9 warnings
         """
       )
   }

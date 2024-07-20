@@ -102,9 +102,9 @@ public class RegistrationDetector extends LayoutDetector implements SourceCodeSc
                     XmlUtils.getFirstSubTagByName(
                             mergedManifest.getDocumentElement(), TAG_APPLICATION);
             if (application != null) {
-                registerElement(application);
+                registerElement(mainProject, application);
                 for (Element c : XmlUtils.getSubTags(application)) {
-                    registerElement(c);
+                    registerElement(mainProject, c);
                 }
             }
         }
@@ -112,8 +112,8 @@ public class RegistrationDetector extends LayoutDetector implements SourceCodeSc
         return mManifestRegistrations;
     }
 
-    private void registerElement(Element c) {
-        String fqcn = Lint.resolveManifestName(c);
+    private void registerElement(Project project, Element c) {
+        String fqcn = Lint.resolveManifestName(c, project);
         String tag = c.getTagName();
         String frameworkClass = tagToClass(tag);
         if (frameworkClass != null) {

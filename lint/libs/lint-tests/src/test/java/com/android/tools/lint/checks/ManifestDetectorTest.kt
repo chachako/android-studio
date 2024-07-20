@@ -2412,6 +2412,49 @@ class ManifestDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testDuplicateMissingPackage() {
+    lint()
+      .files(
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+                <application>
+                    <activity
+                        android:name=".MainActivity"
+                        android:theme="@style/Theme.MyApplication">
+                    </activity>
+
+                    <activity
+                        android:name=".MainActivity"
+                        android:theme="@style/Theme.MyApplication">
+                    </activity>
+                </application>
+
+            </manifest>
+            """
+          )
+          .indented(),
+        kts(
+          """
+          android {
+              namespace = "test.pkg"
+          }
+          """
+        ),
+      )
+      .issues(ManifestDetector.DUPLICATE_ACTIVITY)
+      .run()
+      .expect(
+        """
+        src/main/AndroidManifest.xml:10: Error: Duplicate registration for activity test.pkg.MainActivity [DuplicateActivity]
+                    android:name=".MainActivity"
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
+
   private val fullBackup =
     xml(
         "res/xml/full_backup_content.xml",
@@ -2492,7 +2535,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
       .indented()
 
   // Sample code
-  private val library = source("build.gradle", "")
+  private val library = gradle("build.gradle", "")
 
   // Sample code
   private val mipmap =

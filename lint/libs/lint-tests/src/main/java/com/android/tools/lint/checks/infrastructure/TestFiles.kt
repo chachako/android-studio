@@ -15,10 +15,13 @@
  */
 package com.android.tools.lint.checks.infrastructure
 
+import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
+import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
+import com.android.SdkConstants.DOT_KTS
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.DOT_ZIP
 import com.android.SdkConstants.FD_GRADLE
@@ -38,6 +41,7 @@ import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
 import com.android.tools.lint.client.api.JavaEvaluator
+import com.android.tools.lint.detector.api.endsWith
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
 import com.google.common.io.ByteStreams
@@ -63,6 +67,14 @@ object TestFiles {
 
   @JvmStatic
   fun source(to: String, source: String): TestFile {
+    when {
+      to == ANDROID_MANIFEST_XML -> {}
+      to.endsWith(DOT_XML) -> xml(to, source)
+      to.endsWith(DOT_KT) -> kotlin(to, source)
+      to.endsWith(DOT_JAVA) -> java(to, source)
+      to.endsWith(DOT_GRADLE) -> gradle(to, source)
+      to.endsWith(DOT_KTS) -> kts(to, source)
+    }
     return file().to(to).withSource(source)
   }
 
@@ -94,6 +106,22 @@ object TestFiles {
   @JvmStatic
   fun kotlin(to: String, @Language("kotlin") source: String): TestFile {
     return KotlinTestFile.create(to, source)
+  }
+
+  @JvmStatic
+  fun kts(@Language("kts") source: String): TestFile {
+    //noinspection LanguageMismatch
+    return GradleTestFile(SdkConstants.FN_BUILD_GRADLE_KTS, source)
+  }
+
+  @JvmStatic
+  fun kts(to: String, @Language("kts") source: String): TestFile {
+    //noinspection LanguageMismatch
+    return if (to.endsWith(".gradle.kts")) {
+      GradleTestFile(to, source)
+    } else {
+      kotlin(to, source)
+    }
   }
 
   @JvmStatic

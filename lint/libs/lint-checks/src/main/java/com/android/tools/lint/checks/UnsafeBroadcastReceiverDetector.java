@@ -154,11 +154,11 @@ public class UnsafeBroadcastReceiverDetector extends Detector
     public void visitElement(@NonNull XmlContext context, @NonNull Element element) {
         String tag = element.getTagName();
         if (TAG_RECEIVER.equals(tag)) {
-            String name = Lint.resolveManifestName(element);
+            String name = Lint.resolveManifestName(element, context.getProject());
             String permission = element.getAttributeNS(ANDROID_URI, ATTR_PERMISSION);
             // If no permission attribute, then if any exists at the application
             // element, it applies
-            if (permission == null || permission.isEmpty()) {
+            if (permission.isEmpty()) {
                 Element parent = (Element) element.getParentNode();
                 permission = parent.getAttributeNS(ANDROID_URI, ATTR_PERMISSION);
             }
@@ -216,7 +216,7 @@ public class UnsafeBroadcastReceiverDetector extends Detector
                                                 action.getAttributeNS(ANDROID_URI, ATTR_NAME);
                                         if (BroadcastReceiverUtils.isProtectedBroadcast(
                                                 actionName)) {
-                                            String name = Lint.resolveManifestName(element);
+                                            String name = Lint.resolveManifestName(element, mainProject);
                                             mReceiversWithProtectedBroadcastIntentFilter.add(name);
                                         }
                                     }

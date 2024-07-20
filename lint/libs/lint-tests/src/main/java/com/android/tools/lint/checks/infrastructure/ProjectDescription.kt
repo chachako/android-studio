@@ -16,7 +16,6 @@
 
 package com.android.tools.lint.checks.infrastructure
 
-import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_KT
@@ -282,7 +281,7 @@ class ProjectDescription : Comparable<ProjectDescription> {
       }
       var haveGradle = false
       for (fp in testFiles) {
-        if (fp is GradleTestFile || fp.targetRelativePath.endsWith(SdkConstants.DOT_GRADLE)) {
+        if (fp is GradleTestFile) {
           haveGradle = true
           break
         }

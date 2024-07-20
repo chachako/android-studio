@@ -191,7 +191,7 @@ public class JobSchedulerDetector extends Detector implements SourceCodeScanner 
         Element service = XmlUtils.getFirstSubTagByName(application, TAG_SERVICE);
 
         while (service != null) {
-            String name = Lint.resolveManifestName(service).replace('$', '.');
+            String name = Lint.resolveManifestName(service, project).replace('$', '.');
             if (fqcn.equals(name)) {
                 // Check that it has the desired permission
                 String permission = service.getAttributeNS(ANDROID_URI, ATTR_PERMISSION);

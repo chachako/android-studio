@@ -23,6 +23,7 @@ import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.LintModelVariant
 import com.android.utils.ILogger
 import com.google.common.truth.Truth
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import org.intellij.lang.annotations.Language
@@ -35,8 +36,19 @@ import org.junit.rules.TemporaryFolder
 class GradleModelMockerTest {
   @get:Rule var tempFolder = TemporaryFolder()
 
-  private fun createMocker(@Language("Groovy") gradle: String): GradleModelMocker {
-    return createMocker(gradle, tempFolder)
+  private fun createMocker(
+    @Language("Groovy") gradle: String,
+    @Language("TOML") versionCatalog: String? = null,
+  ): GradleModelMocker {
+    return createMocker(gradle, tempFolder, versionCatalog)
+  }
+
+  private fun createMockerKts(
+    @Language("kts") gradle: String,
+    @Language("TOML") versionCatalog: String? = null,
+  ): GradleModelMocker {
+    //noinspection LanguageMismatch
+    return createMocker(gradle, tempFolder, versionCatalog)
   }
 
   @Test
@@ -204,6 +216,95 @@ dependencies {
     Truth.assertThat(variant.targetSdkVersion!!.apiLevel).isEqualTo(16)
     //        Truth.assertThat(variant.versionCode).isEqualTo(2)
     //        Truth.assertThat(variant.versionName).isEqualTo("MyName")
+    Truth.assertThat(variant.mainArtifact.applicationId).isEqualTo("com.android.tools.test")
+  }
+
+  @Test
+  fun testKts() {
+    val mocker =
+      createMockerKts(
+        """
+        @file:Suppress("UnstableApiUsage")
+        plugins {
+            java
+            javaLibrary
+            id("java-library")
+            id("java")
+            alias(libs.plugins.android.application)
+            alias(libs.plugins.kotlin.android)
+            alias(libs.plugins.compose.compiler)
+        }
+
+        android {
+            namespace = "com.example.myapplication"
+            compileSdk = 25
+
+            defaultConfig {
+                applicationId =  "com.android.tools.test"
+                minSdk = 5
+                targetSdk = 16
+                versionCode = 1
+                versionName = "MyName"
+
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                vectorDrawables {
+                    useSupportLibrary = true
+                }
+            }
+
+            buildTypes {
+                release {
+                    isMinifyEnabled = false
+                }
+            }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+            buildFeatures {
+                compose = true
+            }
+        }
+
+        dependencies {
+            implementation(libs.androidx.preference.ktx)
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.kotlin.stdlib)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.android)
+        }
+        """,
+        """
+        [versions]
+        androidGradlePlugin = "8.7.0-alpha01"
+        androidx-corektx = "1.13.1"
+        androidx-lifecycle-compose = "2.7.0"
+        coroutines = "1.8.1"
+        kotlin = "2.0.0"
+        preferenceKtx = "1.2.1"
+
+        [libraries]
+        androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-corektx" }
+        kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+        kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+        androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
+
+        [plugins]
+        android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+        kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+        """,
+      )
+    val module = mocker.getLintModule()
+    val variant = mocker.getLintVariant()!!
+
+    Truth.assertThat(module.type).isEqualTo(LintModelModuleType.APP)
+
+    Truth.assertThat(module.namespace).isEqualTo("com.example.myapplication")
+    Truth.assertThat(module.compileTarget).isEqualTo("android-25")
+    Truth.assertThat(variant.minSdkVersion).isNotNull()
+    Truth.assertThat(variant.minSdkVersion!!.apiLevel).isEqualTo(5)
+    Truth.assertThat(variant.targetSdkVersion!!.apiLevel).isEqualTo(16)
     Truth.assertThat(variant.mainArtifact.applicationId).isEqualTo("com.android.tools.test")
   }
 
@@ -1043,11 +1144,18 @@ dependencies {
 
   companion object {
     fun createMocker(
-      @Language("Groovy") gradle: String?,
+      @Language("Groovy") gradle: String,
       tempFolder: TemporaryFolder,
+      @Language("TOML") versionCatalog: String? = null,
     ): GradleModelMocker {
+      val projectDir = tempFolder.newFolder("build")
+      if (versionCatalog != null) {
+        val versionCatalogFile = File(projectDir.parentFile, "gradle/libs.versions.toml")
+        versionCatalogFile.parentFile.mkdirs()
+        versionCatalogFile.writeText(versionCatalog)
+      }
       return try {
-        GradleModelMocker(gradle!!, tempFolder.newFolder("build"))
+        GradleModelMocker(gradle, projectDir)
           .withLogger(
             object : ILogger {
               override fun error(t: Throwable?, msgFormat: String?, vararg args: Any) {

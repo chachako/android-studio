@@ -45,6 +45,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.PartialResult
+import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
@@ -294,7 +295,10 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
    * appropriate suffix added indicating the type of use that would trigger the component; for
    * example, [ACTIVITY_ACTION_SUFFIX].
    */
-  private fun getActionToNonExportedComponents(root: Element): Map<String, Set<String>> {
+  private fun getActionToNonExportedComponents(
+    project: Project,
+    root: Element,
+  ): Map<String, Set<String>> {
     // E.g.
     // <application ...>
     //   <activity android:name=".TestActivity" android:exported="false" ...>
@@ -319,7 +323,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
           else -> ""
         }
       if (suffix.isEmpty()) continue
-      val componentName = resolveManifestName(component)
+      val componentName = resolveManifestName(component, project)
       // The default value for android:exported varies; on recent Android
       // versions, it must be specified explicitly. If we can't see
       // android:exported="true" then we assume the component is not
@@ -379,7 +383,8 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
     // Get actions for non-exported components from the manifest.
     val mergedManifestDocument = context.mainProject.mergedManifest?.documentElement
     val actionToNonExportedComponents =
-      mergedManifestDocument?.let { getActionToNonExportedComponents(it) } ?: emptyMap()
+      mergedManifestDocument?.let { getActionToNonExportedComponents(context.project, it) }
+        ?: emptyMap()
 
     // Report actions that match non-exported components.
     for ((action, locations) in actionSentToLocationsMap) {

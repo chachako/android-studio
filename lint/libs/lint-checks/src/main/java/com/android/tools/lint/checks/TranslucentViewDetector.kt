@@ -123,7 +123,7 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
     if (activity == null || !activity.hasAttributeNS(ANDROID_URI, ATTR_NAME)) {
       return
     }
-    val name = resolveManifestName(activity)
+    val name = resolveManifestName(activity, context.project)
 
     val theme = activity.getAttributeNS(ANDROID_URI, ATTR_THEME)
     if (theme.isBlank()) {

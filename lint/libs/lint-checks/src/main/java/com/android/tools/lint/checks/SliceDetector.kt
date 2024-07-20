@@ -204,7 +204,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
 
     var provider = application.subtag(TAG_PROVIDER)
     while (provider != null) {
-      val manifestName = resolveManifestName(provider)
+      val manifestName = resolveManifestName(provider, mainProject)
       if (sliceProvider == manifestName) {
         break
       }

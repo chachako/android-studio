@@ -19,7 +19,7 @@ package com.android.tools.lint.checks.infrastructure;
 import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_ID;
-import static com.android.SdkConstants.FN_BUILD_GRADLE_KTS;
+import static com.android.SdkConstants.DOT_GRADLE;
 import static com.android.SdkConstants.NEW_ID_PREFIX;
 
 import com.android.annotations.NonNull;
@@ -383,16 +383,13 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
     @SuppressWarnings("UnknownLanguage")
     @NonNull
     public static TestFile kts(@NonNull @Language("kts") String source) {
-        //noinspection LanguageMismatch
-        return TestFiles.kotlin(FN_BUILD_GRADLE_KTS, source);
+        return TestFiles.kts(source);
     }
 
     @SuppressWarnings("UnknownLanguage")
     @NonNull
-    public static TestFile kts(
-            @NonNull String to, @NonNull @Language("kts") String source) {
-        //noinspection LanguageMismatch
-        return TestFiles.kotlin(to, source);
+    public static TestFile kts(@NonNull String to, @NonNull @Language("kts") String source) {
+        return TestFiles.kts(to, source);
     }
 
     @NonNull
@@ -650,8 +647,11 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
 
         boolean haveGradle = false;
         for (TestFile fp : testFiles) {
-            if (fp instanceof GradleTestFile) {
+            if (fp instanceof GradleTestFile
+                    || fp.targetRelativePath.endsWith(DOT_GRADLE)
+                    || fp.targetRelativePath.endsWith(".gradle.kts")) {
                 haveGradle = true;
+                break;
             }
         }
 

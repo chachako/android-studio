@@ -127,6 +127,7 @@ constructor(
   private var buildTypes: List<TestBuildType> = emptyList()
   private var productFlavors: List<TestProductFlavor> = emptyList()
   private var variants: MutableList<TestLintModelVariant> = mutableListOf()
+  private var namespace: String? = null
   private var defaultVariantName: String = ""
 
   private val libraryLintJars: MutableMap<String, String> = HashMap()
@@ -447,7 +448,7 @@ constructor(
             null, // Injected elsewhere by the legacy Android Gradle Plugin lint runner
           manifestMergeReport =
             null, // Injected elsewhere by the legacy Android Gradle Plugin lint runner
-          `package` = null, // Injected elsewhere by the legacy Android Gradle Plugin lint runner
+          `package` = namespace,
           minSdkVersion = mergedFlavorsAndBuildType.minSdkVersion,
           targetSdkVersion = mergedFlavorsAndBuildType.targetSdkVersion,
           resValues = mergedFlavorsAndBuildType.resValues,
@@ -938,14 +939,18 @@ constructor(
     if (
       when (line) {
         "apply plugin: 'com.android.library'",
-        "apply plugin: 'android-library'" ->
+        "apply plugin: 'android-library'",
+        "alias(libs.plugins.androidLibrary)",
+        "alias(libs.plugins.android.library)" ->
           updateProjectType(
             LintModelModuleType.LIBRARY,
             hasJavaOrJavaLibraryPlugin = false,
             isLibrary = true,
           )
         "apply plugin: 'com.android.application'",
-        "apply plugin: 'android'" ->
+        "apply plugin: 'android'",
+        "alias(libs.plugins.androidApplication)",
+        "alias(libs.plugins.android.application)" ->
           updateProjectType(
             LintModelModuleType.APP,
             hasJavaOrJavaLibraryPlugin = false,
@@ -963,12 +968,16 @@ constructor(
             hasJavaOrJavaLibraryPlugin = false,
             isLibrary = false,
           )
+        "java",
+        "id('java')",
         "apply plugin: 'java'" ->
           updateProjectType(
             LintModelModuleType.JAVA_LIBRARY,
             hasJavaOrJavaLibraryPlugin = true,
             isLibrary = false,
           )
+        "javaLibrary",
+        "id('java-library')",
         "apply plugin: 'java-library'" ->
           updateProjectType(
             LintModelModuleType.LIBRARY,
@@ -982,6 +991,10 @@ constructor(
               true
             }
             line.startsWith("apply plugin: ") -> {
+              // Some other plugin not relevant to the builder-model
+              true
+            }
+            line.startsWith("alias(") && context == "plugins" -> {
               // Some other plugin not relevant to the builder-model
               true
             }
@@ -1055,10 +1068,10 @@ constructor(
       line.startsWith("applicationId ") || line.startsWith("packageName ") -> {
         updateFlavorFromContext(context) { it.copy(applicationId = getUnquotedValue(key)) }
       }
-      line.startsWith("minSdkVersion ") -> {
+      line.startsWith("minSdkVersion ") || line.startsWith("minSdk ") -> {
         updateFlavorFromContext(context) { it.copy(minSdkVersion = createAndroidVersion(key)) }
       }
-      line.startsWith("targetSdkVersion ") -> {
+      line.startsWith("targetSdkVersion ") || line.startsWith("targetSdk ") -> {
         updateFlavorFromContext(context) { it.copy(targetSdkVersion = createAndroidVersion(key)) }
       }
       line.startsWith("versionCode ") -> {
@@ -1091,7 +1104,8 @@ constructor(
       key.startsWith("android.buildToolsVersion ") -> {
         // Not used.
       }
-      line.startsWith("minifyEnabled ") && key.startsWith("android.buildTypes.") -> {
+      (line.startsWith("minifyEnabled ") || line.startsWith("isMinifyEnabled")) &&
+        key.startsWith("android.buildTypes.") -> {
         updateBuildTypeFromContext(context) {
           it.copy(isMinifyEnabled = SdkConstants.VALUE_TRUE == getUnquotedValue(line))
         }
@@ -1102,6 +1116,13 @@ constructor(
         val value = getUnquotedValue(key)
         updateModule {
           it.copy(compileTarget = if (Character.isDigit(value[0])) "android-$value" else value)
+        }
+      }
+      key.startsWith("android.namespace ") -> {
+        val value = getUnquotedValue(key)
+        namespace = value
+        updateModule { module ->
+          module.copy(variants = variants.map { variant -> variant.copy(`package` = value) })
         }
       }
       line.startsWith("resConfig") -> { // and resConfigs
@@ -1150,7 +1171,8 @@ constructor(
         } // else ignore other class paths
       }
       key.startsWith("android.defaultConfig.testInstrumentationRunner ") ||
-        key.contains(".proguardFiles ") ||
+        key.contains(".proguardFiles") ||
+        key.contains("getDefaultProguardFile") ||
         key == "dependencies.compile fileTree(dir: 'libs', include: ['*.jar'])" ||
         key.startsWith("dependencies.androidTestCompile('") -> {
         // Ignored for now
@@ -1359,6 +1381,9 @@ constructor(
         } else {
           warn("ignored line: $line, context=$context")
         }
+      }
+      key.startsWith("@file:Suppress") -> {
+        // ignored KTS directive
       }
       else -> {
         warn("ignored line: $line, context=$context")

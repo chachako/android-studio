@@ -66,7 +66,6 @@ import java.io.File
 import java.io.File.separator
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
-import java.util.Arrays
 import java.util.Locale
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
@@ -78,21 +77,21 @@ import org.w3c.dom.Element
 
 class LintUtilsTest : TestCase() {
   fun testPrintList() {
-    assertEquals("bar, baz, foo", formatList(Arrays.asList("foo", "bar", "baz"), 3))
-    assertEquals("foo, bar, baz", formatList(Arrays.asList("foo", "bar", "baz"), 3, false))
-    assertEquals("foo, bar, baz", formatList(Arrays.asList("foo", "bar", "baz"), 5, false))
+    assertEquals("bar, baz, foo", formatList(listOf("foo", "bar", "baz"), 3))
+    assertEquals("foo, bar, baz", formatList(listOf("foo", "bar", "baz"), 3, false))
+    assertEquals("foo, bar, baz", formatList(listOf("foo", "bar", "baz"), 5, false))
 
     assertEquals(
       "foo, bar, baz... (3 more)",
-      formatList(Arrays.asList("foo", "bar", "baz", "4", "5", "6"), 3, false),
+      formatList(listOf("foo", "bar", "baz", "4", "5", "6"), 3, false),
     )
     assertEquals(
       "foo... (5 more)",
-      formatList(Arrays.asList("foo", "bar", "baz", "4", "5", "6"), 1, false),
+      formatList(listOf("foo", "bar", "baz", "4", "5", "6"), 1, false),
     )
-    assertEquals("foo, bar, baz", formatList(Arrays.asList("foo", "bar", "baz"), 0, false))
+    assertEquals("foo, bar, baz", formatList(listOf("foo", "bar", "baz"), 0, false))
 
-    assertEquals("foo, bar and baz", formatList(Arrays.asList("foo", "bar", "baz"), 0, false, true))
+    assertEquals("foo, bar and baz", formatList(listOf("foo", "bar", "baz"), 0, false, true))
   }
 
   fun testIsDataBindingExpression() {
@@ -171,52 +170,42 @@ class LintUtilsTest : TestCase() {
 
   fun testSplitPath() {
     assertTrue(
-      Arrays.equals(
-        arrayOf("/foo", "/bar", "/baz"),
-        Iterables.toArray(splitPath("/foo:/bar:/baz"), String::class.java),
-      )
+      arrayOf("/foo", "/bar", "/baz")
+        .contentEquals(Iterables.toArray(splitPath("/foo:/bar:/baz"), String::class.java))
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("/foo", "/bar"),
-        Iterables.toArray(splitPath("/foo;/bar"), String::class.java),
-      )
+      arrayOf("/foo", "/bar")
+        .contentEquals(Iterables.toArray(splitPath("/foo;/bar"), String::class.java))
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("/foo", "/bar:baz"),
-        Iterables.toArray(splitPath("/foo;/bar:baz"), String::class.java),
-      )
+      arrayOf("/foo", "/bar:baz")
+        .contentEquals(Iterables.toArray(splitPath("/foo;/bar:baz"), String::class.java))
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("\\foo\\bar", "\\bar\\foo"),
-        Iterables.toArray(splitPath("\\foo\\bar;\\bar\\foo"), String::class.java),
-      )
+      arrayOf("\\foo\\bar", "\\bar\\foo")
+        .contentEquals(Iterables.toArray(splitPath("\\foo\\bar;\\bar\\foo"), String::class.java))
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("\${sdk.dir}\\foo\\bar", "\\bar\\foo"),
-        Iterables.toArray(splitPath("\${sdk.dir}\\foo\\bar;\\bar\\foo"), String::class.java),
-      )
+      arrayOf("\${sdk.dir}\\foo\\bar", "\\bar\\foo")
+        .contentEquals(
+          Iterables.toArray(splitPath("\${sdk.dir}\\foo\\bar;\\bar\\foo"), String::class.java)
+        )
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("\${sdk.dir}/foo/bar", "/bar/foo"),
-        Iterables.toArray(splitPath("\${sdk.dir}/foo/bar:/bar/foo"), String::class.java),
-      )
+      arrayOf("\${sdk.dir}/foo/bar", "/bar/foo")
+        .contentEquals(
+          Iterables.toArray(splitPath("\${sdk.dir}/foo/bar:/bar/foo"), String::class.java)
+        )
     )
 
     assertTrue(
-      Arrays.equals(
-        arrayOf("C:\\foo", "/bar"),
-        Iterables.toArray(splitPath("C:\\foo:/bar"), String::class.java),
-      )
+      arrayOf("C:\\foo", "/bar")
+        .contentEquals(Iterables.toArray(splitPath("C:\\foo:/bar"), String::class.java))
     )
   }
 
@@ -238,21 +227,19 @@ class LintUtilsTest : TestCase() {
   }
 
   fun testCommonParent2() {
-    assertEquals(File("/"), getCommonParent(Arrays.asList(File("/foo/bar"), File("/bar/baz"))))
-    assertEquals(File("/"), getCommonParent(Arrays.asList(File("/foo/bar"), File("/"))))
-    assertNull(getCommonParent(Arrays.asList(File("C:\\Program Files"), File("F:\\"))))
-    assertNull(getCommonParent(Arrays.asList(File("C:/Program Files"), File("F:/"))))
+    assertEquals(File("/"), getCommonParent(listOf(File("/foo/bar"), File("/bar/baz"))))
+    assertEquals(File("/"), getCommonParent(listOf(File("/foo/bar"), File("/"))))
+    assertNull(getCommonParent(listOf(File("C:\\Program Files"), File("F:\\"))))
+    assertNull(getCommonParent(listOf(File("C:/Program Files"), File("F:/"))))
 
-    assertEquals(File("/foo"), getCommonParent(Arrays.asList(File("/foo/bar"), File("/foo/baz"))))
+    assertEquals(File("/foo"), getCommonParent(listOf(File("/foo/bar"), File("/foo/baz"))))
     assertEquals(
       File("/foo"),
-      getCommonParent(Arrays.asList(File("/foo/bar"), File("/foo/baz"), File("/foo/baz/f"))),
+      getCommonParent(listOf(File("/foo/bar"), File("/foo/baz"), File("/foo/baz/f"))),
     )
     assertEquals(
       File("/foo/bar"),
-      getCommonParent(
-        Arrays.asList(File("/foo/bar"), File("/foo/bar/baz"), File("/foo/bar/foo2/foo3"))
-      ),
+      getCommonParent(listOf(File("/foo/bar"), File("/foo/bar/baz"), File("/foo/bar/foo2/foo3"))),
     )
   }
 
@@ -447,7 +434,7 @@ class LintUtilsTest : TestCase() {
 
   fun testGetFormattedParameters() {
     assertEquals(
-      Arrays.asList("foo", "bar"),
+      listOf("foo", "bar"),
       getFormattedParameters("Prefix %1\$s Divider %2\$s Suffix", "Prefix foo Divider bar Suffix"),
     )
   }
@@ -513,7 +500,8 @@ class LintUtilsTest : TestCase() {
             "    </application>\n" +
             "</manifest>\n",
           ".TestActivity",
-        )
+        ),
+        null,
       ),
     )
 
@@ -530,7 +518,8 @@ class LintUtilsTest : TestCase() {
             "    </application>\n" +
             "</manifest>\n",
           "TestActivity",
-        )
+        ),
+        null,
       ),
     )
 
@@ -547,7 +536,8 @@ class LintUtilsTest : TestCase() {
             "    </application>\n" +
             "</manifest>\n",
           "test.pkg.TestActivity",
-        )
+        ),
+        null,
       ),
     )
 
@@ -564,7 +554,8 @@ class LintUtilsTest : TestCase() {
             "    </application>\n" +
             "</manifest>\n",
           "test.pkg.TestActivity\$Bar",
-        )
+        ),
+        null,
       ),
     )
   }

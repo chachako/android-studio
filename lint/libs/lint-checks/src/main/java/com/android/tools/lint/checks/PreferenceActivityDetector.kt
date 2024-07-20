@@ -60,7 +60,8 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
     val explicitlyDecided = getExplicitExported(element)
     val implicitlyExportedPreS = explicitlyDecided == null && isImplicitlyExportedPreS(element)
     if (implicitlyExportedPreS || explicitlyDecided == true) {
-      val className = resolveManifestName(element)
+      val project = context.project
+      val className = resolveManifestName(element, project)
       if (className == PREFERENCE_ACTIVITY) {
         val message = "`PreferenceActivity` should not be exported"
         val incident = Incident(ISSUE, element, context.getLocation(element), message)
@@ -70,7 +71,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
           context.report(incident)
         }
       } else {
-        val parser = context.client.getUastParser(context.project)
+        val parser = context.client.getUastParser(project)
         val evaluator = parser.evaluator
         val declaration = evaluator.findClass(className.replace('$', '.'))
         if (declaration != null && evaluator.extendsClass(declaration, PREFERENCE_ACTIVITY, true)) {
@@ -143,7 +144,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
     for (element in application.subtags(TAG_ACTIVITY)) {
       val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
       if (className.endsWith(name)) {
-        val fqn = resolveManifestName(element)
+        val fqn = resolveManifestName(element, project)
         if (fqn == className) {
           return element
         }

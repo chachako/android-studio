@@ -228,7 +228,7 @@ class UastGradleVisitorTest {
                 """
               )
               .indented(),
-            TestFiles.kotlin("build.gradle.kts", gradleSource).indented(),
+            TestFiles.kts("build.gradle.kts", gradleSource).indented(),
           ),
       )
 

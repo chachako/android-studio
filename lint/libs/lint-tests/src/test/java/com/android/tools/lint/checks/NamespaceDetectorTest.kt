@@ -56,8 +56,8 @@ class NamespaceDetectorTest : AbstractCheckTest() {
         "</LinearLayout>\n",
     )
 
-  private val mLibrary = source("build.gradle", "")
-  private val mLibraryKts = source("build.gradle.kts", "")
+  private val mLibrary = gradle("build.gradle", "")
+  private val mLibraryKts = kts("build.gradle.kts", "")
 
   private val mNamespace3 =
     xml(
@@ -158,7 +158,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
   fun testGradle() {
     val expected =
       """
-            res/layout/customview.xml:5: Error: In Gradle projects, always use http://schemas.android.com/apk/res-auto for custom attributes [ResAuto]
+            src/main/res/layout/customview.xml:5: Error: In Gradle projects, always use http://schemas.android.com/apk/res-auto for custom attributes [ResAuto]
                 xmlns:foo="http://schemas.android.com/apk/res/foo"
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
@@ -166,7 +166,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         mLibrary, // placeholder; only name counts
-        mCustomview,
+        xml("src/main/res/layout/customview.xml", mCustomview.contents),
       )
       .run()
       .expect(expected)
@@ -175,7 +175,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
   fun testGradleKts() {
     val expected =
       """
-            res/layout/customview.xml:5: Error: In Gradle projects, always use http://schemas.android.com/apk/res-auto for custom attributes [ResAuto]
+            src/main/res/layout/customview.xml:5: Error: In Gradle projects, always use http://schemas.android.com/apk/res-auto for custom attributes [ResAuto]
                 xmlns:foo="http://schemas.android.com/apk/res/foo"
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
@@ -183,7 +183,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         mLibraryKts, // placeholder; only name counts
-        mCustomview,
+        xml("src/main/res/layout/customview.xml", mCustomview.contents),
       )
       .run()
       .expect(expected)

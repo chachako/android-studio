@@ -129,7 +129,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
     provider.getAttributeNodeNS(ANDROID_URI, ATTR_PERMISSION)?.let {
       return
     }
-    val providerName = resolveManifestName(provider)
+    val providerName = resolveManifestName(provider, context.project)
     val providerMap = providersMap.getMap(providerName) ?: return
     val classLocation = providerMap.getLocation(KEY_LOCATION) ?: return
     val implementedWriteMethods = providerMap.getString(KEY_IMPL_WRITE_METHODS) ?: return

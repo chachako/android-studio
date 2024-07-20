@@ -45,11 +45,11 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
     }
 
     public void testNoAppCompat() {
-        lint().files(mShowAction1, mLibrary) // placeholder; only name counts
+        lint().files(gradleSourceSet(mShowAction1), gradle("")) // placeholder; only name counts
                 .run()
                 .expect(
                         ""
-                                + "res/menu/showAction1.xml:6: Error: Should use android:showAsAction when not using the appcompat library [AppCompatResource]\n"
+                                + "src/main/res/menu/showAction1.xml:6: Error: Should use android:showAsAction when not using the appcompat library [AppCompatResource]\n"
                                 + "        app:showAsAction=\"never\" />\n"
                                 + "        ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                                 + "1 errors, 0 warnings\n");
@@ -60,18 +60,22 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
     }
 
     public void testWrongAppCompat() {
-        lint().files(mShowAction2, mAppCompatJar, mLibrary) // placeholder; only name counts
+        lint().files(
+                        gradleSourceSet(mShowAction2),
+                        gradleWithAppCompat) // placeholder; only name counts
                 .run()
                 .expect(
                         ""
-                                + "res/menu/showAction2.xml:5: Error: Should use app:showAsAction with the appcompat library with xmlns:app=\"http://schemas.android.com/apk/res-auto\" [AppCompatResource]\n"
+                                + "src/main/res/menu/showAction2.xml:5: Error: Should use app:showAsAction with the appcompat library with xmlns:app=\"http://schemas.android.com/apk/res-auto\" [AppCompatResource]\n"
                                 + "        android:showAsAction=\"never\" />\n"
                                 + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                                 + "1 errors, 0 warnings\n");
     }
 
     public void testAppCompatV14() {
-        lint().files(mShowAction2_class, mAppCompatJar, mLibrary) // placeholder; only name counts
+        lint().files(
+                        gradleSourceSet(mShowAction2_class),
+                        gradleWithAppCompat) // placeholder; only name counts
                 .run()
                 .expectClean();
     }
@@ -202,8 +206,17 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
 
     private final JarTestFile mAppCompatJar = jar("libs/appcompat-v7-18.0.0.jar");
 
-    @SuppressWarnings("all") // Sample code
-    private TestFile mLibrary = source("build.gradle", "");
+    private final TestFile gradleWithAppCompat =
+            gradle(
+                    ""
+                            + "dependencies {\n"
+                            + "    implementation \"androidx.appcompat:appcompat:+\"\n"
+                            + "}");
+
+    private static TestFile gradleSourceSet(TestFile xmlFile) {
+        //noinspection LanguageMismatch
+        return xml("src/main/" + xmlFile.targetRelativePath, xmlFile.contents);
+    }
 
     @SuppressWarnings("all") // Sample code
     private TestFile mShowAction1 =

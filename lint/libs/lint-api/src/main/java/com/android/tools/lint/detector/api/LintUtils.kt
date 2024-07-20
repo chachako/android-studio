@@ -1705,22 +1705,45 @@ fun getPrimitiveType(autoBoxedType: String): String? {
  * @param element the element
  * @return the fully qualified class name
  */
+@Deprecated(
+  "Use the overload which also supplies a project, to help resolve relative references",
+  ReplaceWith("resolveManifestName(element, context.project)"),
+)
 fun resolveManifestName(element: Element): String {
+  return resolveManifestName(element, null)
+}
+
+/**
+ * Returns the fully qualified class name for a manifest entry element that specifies a name
+ * attribute. Will also replace $ with dots for inner classes.
+ *
+ * @param element the element
+ * @param project the associated project; used to look up the package namespace if not specified in
+ *   the manifest
+ * @return the fully qualified class name
+ */
+fun resolveManifestName(element: Element, project: Project?): String {
   var className = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
   className = className.replace('$', '.')
   if (className.startsWith(".")) {
     // If the activity class name starts with a '.', it is shorthand for prepending the
     // package name specified in the manifest.
-    val pkg = element.ownerDocument.documentElement.getAttribute(ATTR_PACKAGE) // required to exist
+    val pkg =
+      element.ownerDocument.documentElement.getAttribute(ATTR_PACKAGE).ifEmpty {
+        project?.`package` ?: return className
+      }
     return pkg + className
   } else if (className.indexOf('.') == -1) {
-    val pkg = element.ownerDocument.documentElement.getAttribute(ATTR_PACKAGE) // required to exist
+    val pkg =
+      element.ownerDocument.documentElement.getAttribute(ATTR_PACKAGE).ifEmpty {
+        project?.`package` ?: return className
+      }
 
     // According to the <activity> manifest element documentation, this is not
     // valid ( http://developer.android.com/guide/topics/manifest/activity-element.html )
     // but it appears in manifest files and appears to be supported by the runtime
     // so handle this in code as well:
-    return pkg + '.'.toString() + className
+    return "$pkg.$className"
   } // else: the class name is already a fully qualified class name
 
   return className
@@ -2865,10 +2888,11 @@ object LintUtils {
   @JvmStatic
   @Deprecated(
     "Use package function instead",
-    replaceWith = ReplaceWith("com.android.tools.lint.detector.api.resolveManifestName(element)"),
+    replaceWith =
+      ReplaceWith("com.android.tools.lint.detector.api.resolveManifestName(element, project)"),
   )
   fun resolveManifestName(element: Element): String {
-    return com.android.tools.lint.detector.api.resolveManifestName(element)
+    return resolveManifestName(element, null)
   }
 
   @JvmStatic

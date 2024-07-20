@@ -806,7 +806,9 @@ public class Project {
     }
 
     /**
-     * Returns the application package specified by the manifest
+     * Returns the application package specified by the manifest. In Gradle projects, this
+     * corresponds to the `namespace` declaration. If you want the application ID (or the package
+     * generated in the merged manifest), use {@link #getApplicationId()} instead.
      *
      * @return the application package, or null if unknown
      */

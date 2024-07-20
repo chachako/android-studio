@@ -714,8 +714,9 @@ public class TestFile {
 
         public GradleTestFile(@NonNull String to, @NonNull @Language("Groovy") String source) {
             to(to).withSource(source);
-            if (!to.endsWith(DOT_GRADLE)) {
-                throw new IllegalArgumentException("Expected .gradle suffix for Gradle test file");
+            if (!to.endsWith(DOT_GRADLE) && !to.endsWith(DOT_KTS)) {
+                throw new IllegalArgumentException(
+                        "Expected .gradle or .gradle.kts suffix for Gradle test files");
             }
         }
 

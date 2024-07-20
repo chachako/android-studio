@@ -88,7 +88,7 @@ import org.junit.rules.TemporaryFolder
 class GradleDetectorTest : AbstractCheckTest() {
 
   private val mDependencies =
-    source(
+    gradle(
       "build.gradle",
       "" +
         "apply plugin: 'android'\n" +
@@ -143,30 +143,33 @@ class GradleDetectorTest : AbstractCheckTest() {
 
   fun testBasic() {
     val expected =
-      "" +
-        "build.gradle:1: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]\n" +
-        "apply plugin: 'android'\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:24: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]\n" +
-        "    freeCompile 'com.google.guava:guava:11.0.2'\n" +
-        "                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]\n" +
-        "    compile 'com.android.support:appcompat-v7:13.0.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:26: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]\n" +
-        "    compile 'com.google.android.support:wearable:1.2.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:27: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]\n" +
-        "    compile 'com.android.support:multidex:1.0.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:29: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]\n" +
-        "    androidTestCompile 'com.android.support.test:runner:0.3'\n" +
-        "                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:23: Warning: Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.android.support:appcompat-v7:+) [GradleDynamicVersion]\n" +
-        "    compile 'com.android.support:appcompat-v7:+'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "0 errors, 7 warnings\n"
-
+      """
+      build.gradle:26: Error: Project depends on com.google.android.support:wearable:1.2.0, so it must also depend (as a provided dependency) on com.google.android.wearable:wearable:1.2.0 [GradleCompatible]
+          compile 'com.google.android.support:wearable:1.2.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:1: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
+      apply plugin: 'android'
+      ~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:24: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
+          freeCompile 'com.google.guava:guava:11.0.2'
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]
+          compile 'com.android.support:appcompat-v7:13.0.0'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:26: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
+          compile 'com.google.android.support:wearable:1.2.0'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:27: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+          compile 'com.android.support:multidex:1.0.0'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:29: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]
+          androidTestCompile 'com.android.support.test:runner:0.3'
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      build.gradle:23: Warning: Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.android.support:appcompat-v7:+) [GradleDynamicVersion]
+          compile 'com.android.support:appcompat-v7:+'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      1 errors, 7 warnings
+      """
     lint()
       .files(mDependencies)
       .issues(COMPATIBILITY, DEPRECATED, DEPENDENCY, PLUS)
@@ -3659,7 +3662,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "0 errors, 1 warnings\n"
     lint()
       .files(
-        source(
+        gradle(
           "build.gradle",
           "" +
             "apply plugin: 'com.android.application'\n" +
@@ -7137,7 +7140,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        kotlin("src/some/pkg/Empty.kt", ""),
+        kotlin("src/main/kotlin/some/pkg/Empty.kt", ""),
       )
       .allowMissingSdk()
       .issues(UastImplementationDetector.ISSUE) // Any detector that triggers FILE-level UAST visit
@@ -7155,7 +7158,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        kotlin("src/NonEmpty.kt", "val p = 42"),
+        kotlin("src/main/kotlin/NonEmpty.kt", "val p = 42"),
       )
       .allowMissingSdk()
       .issues(UastImplementationDetector.ISSUE) // Any detector that triggers FILE-level UAST visit
@@ -7200,41 +7203,53 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-                build.gradle.kts:7: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:1.0.0")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:8: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:1.0.0@aar")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:9: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:＄multiDexVersion")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:10: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:" + multiDexVersion)
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:11: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:" + multiDexVersion + "@aar")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:12: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:＄multiDexVersion@aar")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:13: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation("com.android.support:multidex:＄{multiDexVersion}@aar")
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:14: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion""${'"'})
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:15: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion@aar""${'"'})
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:16: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation(androidx + ":" + artifact + ":" + multiDexVersion)
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:17: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
-                   implementation((androidx + ":" + artifact) + ":" + multiDexVersion)
-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                0 errors, 11 warnings
-                """
+        build.gradle.kts:7: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:1.0.0")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:8: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:1.0.0@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:9: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:＄multiDexVersion")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:10: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:" + multiDexVersion)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:11: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:" + multiDexVersion + "@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:12: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:＄multiDexVersion@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:13: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:＄{multiDexVersion}@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:14: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation(""${'"'}com.android.support:multidex:＄multiDexVersion""${'"'})
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:15: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation(""${'"'}com.android.support:multidex:＄multiDexVersion@aar""${'"'})
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:16: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation(androidx + ":" + artifact + ":" + multiDexVersion)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:17: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation((androidx + ":" + artifact) + ":" + multiDexVersion)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:19: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:＄unknownVersion@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:20: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:＄{unknownVersion}@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:21: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation("com.android.support:multidex:" + unknownVersion + "@aar")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:22: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+           implementation((androidx + ":" + artifact) + ":" + unknownVersion)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 15 warnings
+        """
       )
       .expectFixDiffs(
         """
