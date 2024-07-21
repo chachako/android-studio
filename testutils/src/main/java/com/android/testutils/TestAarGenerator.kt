@@ -19,9 +19,6 @@ package com.android.testutils
 
 import com.android.SdkConstants
 import com.android.testutils.TestInputsGenerator.jarWithEmptyEntries
-import java.io.ByteArrayOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 /**
  * Returns the bytes of an AAR with the given content.
@@ -44,29 +41,17 @@ fun generateAarWithContent(
     lintJar: ByteArray? = null,
     manifest: String = """<manifest package="$packageName"></manifest>"""
 ): ByteArray {
-    ByteArrayOutputStream().use { baos ->
-        ZipOutputStream(baos).use { zos ->
-            zos.putNextEntry(ZipEntry(SdkConstants.FN_ANDROID_MANIFEST_XML))
-            zos.write(manifest.toByteArray(Charsets.UTF_8))
-            zos.putNextEntry(ZipEntry("classes.jar"))
-            zos.write(mainJar)
-            secondaryJars.forEach { (name, content) ->
-                zos.putNextEntry(ZipEntry("libs/$name.jar"))
-                zos.write(content)
-            }
-            resources.forEach { (name, content) ->
-                zos.putNextEntry(ZipEntry("res/$name"))
-                zos.write(content)
-            }
-            apiJar?.let {
-                zos.putNextEntry(ZipEntry("api.jar"))
-                zos.write(it)
-            }
-            lintJar?.let {
-                zos.putNextEntry(ZipEntry("lint.jar"))
-                zos.write(it)
-            }
-        }
-        return baos.toByteArray()
+    val entries = mutableMapOf<String, ByteArray>()
+    entries[SdkConstants.FN_ANDROID_MANIFEST_XML] = manifest.toByteArray()
+    entries["classes.jar"] = mainJar
+    secondaryJars.forEach {
+        entries["libs/${it.key}.jar"] = it.value
     }
+    resources.forEach {
+        entries["res/${it.key}"] = it.value
+    }
+    apiJar?.let { entries["api.jar"] = it }
+    lintJar?.let { entries["lint.jar"] = it }
+
+    return ZipContents(entries).toByteArray()
 }
