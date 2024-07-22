@@ -328,6 +328,7 @@ DATA = [
     "androidx.core:core-ktx:1.10.1",
     "androidx.core:core-ktx:1.11.0-alpha04",
     "androidx.core:core-ktx:1.11.0-beta01",  # Necessary for Compose for TV.
+    "androidx.core:core-ktx:1.12.0",
     "androidx.core:core-ktx:1.12.0-alpha05",
     "androidx.core:core-ktx:1.2.0",
     "androidx.core:core-ktx:1.3.0",
@@ -433,6 +434,9 @@ DATA = [
     "androidx.preference:preference:1.0.0",
     "androidx.preference:preference:1.2.0",
     "androidx.preference:preference:1.2.1",
+    "androidx.privacysandbox.activity:activity-client:1.0.0-alpha01",
+    "androidx.privacysandbox.activity:activity-core:1.0.0-alpha01",
+    "androidx.privacysandbox.activity:activity-provider:1.0.0-alpha01",
     "androidx.privacysandbox.plugins:plugins-privacysandbox-library:1.0.0-alpha01",
     "androidx.privacysandbox.plugins:plugins-privacysandbox-library:1.0.0-alpha02",
     "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha13",

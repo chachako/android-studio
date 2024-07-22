@@ -508,6 +508,10 @@ class DependencyConfigurator(
                                     MavenCoordinates.ORG_JETBRAINS_KOTLIN_KOTLIN_STDLIB.toString(),
                                     MavenCoordinates.ORG_JETBRAINS_KOTLINX_KOTLINX_COROUTINES_ANDROID.toString(),
                                     MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_UI_UI_CORE.toString(),
+                                    MavenCoordinates.ANDROIDX_CORE_CORE_KTX.toString(),
+                                    MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_ACTIVITY_ACTIVITY_CORE.toString(),
+                                    MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_ACTIVITY_ACTIVITY_PROVIDER.toString(),
+                                    MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_ACTIVITY_ACTIVITY_CLIENT.toString(),
                                     MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_UI_UI_CLIENT.toString(),
                                 ))
                                 .map {

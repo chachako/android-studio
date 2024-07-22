@@ -108,8 +108,11 @@ gradle_connected_test(
     maven_artifacts = [
         "@maven//:androidx.appcompat.appcompat_1.4.1",
         "@maven//:androidx.annotation.annotation_1.2.0-rc01",
-        "@maven//:androidx.core.core-ktx_1.9.0",
+        "@maven//:androidx.core.core-ktx_1.12.0",
         "@maven//:androidx.annotation.annotation-jvm_1.6.0",
+        "@maven//:androidx.privacysandbox.activity.activity-client_1.0.0-alpha01",
+        "@maven//:androidx.privacysandbox.activity.activity-core_1.0.0-alpha01",
+        "@maven//:androidx.privacysandbox.activity.activity-provider_1.0.0-alpha01",
         "@maven//:androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha13",
         "@maven//:androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha13",
         "@maven//:androidx.privacysandbox.tools.tools_1.0.0-alpha09",
@@ -133,8 +136,8 @@ gradle_connected_test(
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     tags = [
-      "noci:studio-linux",
-      "ci:studio-linux_very_flaky", # b/247003418
+        "ci:studio-linux_very_flaky",  # b/247003418
+        "noci:studio-linux",
     ],
     deps = TEST_DEPS,
 )

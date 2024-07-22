@@ -24782,6 +24782,49 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.privacysandbox.activity.activity-client_1.0.0-alpha01",
+    pom = "repository/androidx/privacysandbox/activity/activity-client/1.0.0-alpha01/activity-client-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/activity/activity-client/1.0.0-alpha01",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.core.core_1.12.0",
+        "androidx.lifecycle.lifecycle-common_2.2.0",
+        "androidx.privacysandbox.activity.activity-core_1.0.0-alpha01",
+        "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha08",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.privacysandbox.activity.activity-core_1.0.0-alpha01",
+    pom = "repository/androidx/privacysandbox/activity/activity-core/1.0.0-alpha01/activity-core-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/activity/activity-core/1.0.0-alpha01",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.privacysandbox.activity.activity-provider_1.0.0-alpha01",
+    pom = "repository/androidx/privacysandbox/activity/activity-provider/1.0.0-alpha01/activity-provider-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/activity/activity-provider/1.0.0-alpha01",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.core.core_1.12.0",
+        "androidx.privacysandbox.activity.activity-core_1.0.0-alpha01",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.privacysandbox.plugins.plugins-privacysandbox-library_1.0.0-alpha01",
     pom = "repository/androidx/privacysandbox/plugins/plugins-privacysandbox-library/1.0.0-alpha01/plugins-privacysandbox-library-1.0.0-alpha01.pom",
     repo_root_path = "repository",
