@@ -19,6 +19,7 @@ package com.android.build.api.component.impl
 import com.android.SdkConstants
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.ArtifactsImpl
+import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
 import com.android.build.api.component.impl.features.PrivacySandboxCreationConfigImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
@@ -42,6 +43,7 @@ import com.android.build.api.variant.impl.ManifestFilesImpl
 import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.SourceType
 import com.android.build.api.variant.impl.SourcesImpl
+import com.android.build.api.variant.impl.initializeAaptOptionsFromDsl
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
@@ -210,10 +212,32 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
     override val lifecycleTasks = LifecycleTasksImpl()
 
-    // Unsupported features
+    override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? by lazy(LazyThreadSafetyMode.NONE) {
+        if (buildFeatures.androidResources) {
+            AndroidResourcesCreationConfigImpl(
+                this,
+                dslInfo,
+                dslInfo.androidResourcesDsl!!,
+                internalServices,
+            )
+        } else {
+            null
+        }
+    }
 
-    override val androidResources: AndroidResourcesImpl? = null
-    override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? = null
+    override val androidResources: AndroidResourcesImpl? by lazy(LazyThreadSafetyMode.NONE) {
+        if (buildFeatures.androidResources) {
+            initializeAaptOptionsFromDsl(
+                dslInfo.androidResourcesDsl!!.androidResources,
+                buildFeatures,
+                internalServices,
+            )
+        } else {
+            null
+        }
+    }
+
+    // Unsupported features
     override val resValuesCreationConfig: ResValuesCreationConfig? = null
     override val buildConfigCreationConfig: BuildConfigCreationConfig? = null
     override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig? = null
@@ -299,7 +323,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         }
 
         override fun res(action: (LayeredSourceDirectoriesImpl) -> Unit) {
-            res?.let { action }
+            res?.let(action)
         }
 
         override val manifestFile: Provider<File> = variantServices.provider {

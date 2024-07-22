@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.aapt.WorkerExecutorResourceCompilationService
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.databinding.MergingFileLookup
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -774,6 +775,72 @@ abstract class MergeResources : NewIncrementalTask() {
     private fun cleanup() {
         fileValidity.clear()
         processedInputs.clear()
+    }
+
+    class KotlinMultiplatformCreationAction(
+        creationConfig: KmpCreationConfig,
+        private val flags: Set<Flag> = emptySet(),
+    ) : VariantTaskCreationAction<MergeResources, KmpCreationConfig>(creationConfig) {
+        override val name: String
+            get() = computeTaskName("package", "Resources")
+        override val type: Class<MergeResources>
+            get() = MergeResources::class.java
+
+        override fun handleProvider(taskProvider: TaskProvider<MergeResources>) {
+            super.handleProvider(taskProvider)
+            creationConfig.taskContainer.mergeResourcesTask = taskProvider
+
+            val artifacts = creationConfig.artifacts
+            artifacts.setInitialProvider(taskProvider) { obj: MergeResources -> obj.outputDir }
+                .on(InternalArtifactType.PACKAGED_RES)
+
+            artifacts
+                .use(taskProvider)
+                .wiredWith { obj: MergeResources -> obj.incrementalFolder }
+                .toCreate(MERGED_RES_INCREMENTAL_FOLDER)
+        }
+
+        override fun configure(task: MergeResources) {
+            super.configure(task)
+            task.namespace.setDisallowChanges(creationConfig.namespace)
+            task.minSdk.setDisallowChanges(
+                task.project.provider { creationConfig.minSdk.apiLevel }
+            )
+            task.useAndroidX.setDisallowChanges(
+                creationConfig.services.projectOptions[BooleanOption.USE_ANDROID_X]
+            )
+            task.flags = flags
+            task.resourcesComputer.initFromVariantScope(
+                creationConfig = creationConfig,
+                microApkResDir = creationConfig.services.fileCollection(),
+                libraryDependencies = null,
+            )
+            task.aapt2ThreadPoolBuildService.setDisallowChanges(
+                getBuildService(
+                    creationConfig.services.buildServiceRegistry,
+                    Aapt2ThreadPoolBuildService::class.java
+                )
+            )
+            creationConfig.services.initializeAapt2Input(task.aapt2, task)
+            task.aaptEnv
+                .set(
+                    creationConfig
+                        .services
+                        .gradleEnvironmentProvider
+                        .getEnvVariable(ANDROID_AAPT_IGNORE)
+                )
+            task.projectRootDir.set(task.project.rootDir)
+            task.errorFormatMode = SyncOptions.getErrorFormatMode(
+                creationConfig.services.projectOptions
+            )
+            task.dataBindingEnabled.setDisallowChanges(false)
+            task.viewBindingEnabled.setDisallowChanges(false)
+            task.resourceDirsOutsideRootProjectDir.setDisallowChanges(
+                task.project.provider { emptySet() }
+            )
+            task.pseudoLocalesEnabled.setDisallowChanges(false)
+            task.enableVectorDrawables = false
+        }
     }
 
     class CreationAction(

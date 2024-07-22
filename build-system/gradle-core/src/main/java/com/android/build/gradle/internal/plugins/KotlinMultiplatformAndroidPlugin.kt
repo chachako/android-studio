@@ -479,7 +479,8 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             androidExtension,
             variantServices,
             project.layout.buildDirectory,
-            (androidTarget as KotlinMultiplatformAndroidTargetImpl).enableJavaSources
+            (androidTarget as KotlinMultiplatformAndroidTargetImpl).enableJavaSources,
+            dslServices
         )
 
         val paths = VariantPathHelper(
