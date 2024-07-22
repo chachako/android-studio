@@ -114,4 +114,92 @@ class ManifestPermissionAttributeDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun testPathPermissionOk() {
+    lint()
+      .files(
+        manifest(
+            """
+
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                          package="foo.bar2"
+                          android:versionCode="1"
+                          android:versionName="1.0">
+
+                    <uses-sdk android:minSdkVersion="11"/>
+
+
+                    <application
+                            android:icon="@drawable/ic_launcher"
+                            android:label="@string/app_name">
+                        <activity
+                                android:label="@string/app_name"
+                                android:name="com.sample.service.serviceClass">
+                            <intent-filter>
+                                <action android:name="android.intent.action.MAIN"/>
+
+                                <category android:name="android.intent.category.LAUNCHER"/>
+                            </intent-filter>
+                        </activity>
+                        <provider android:name="MyContentProvider" android:authorities="a.b.c" android:exported="true">
+                          <path-permission android:pathPrefix="/" android:permission="com.example.app.MY_PERMISSION" />
+                        </provider>
+                    </application>
+
+                </manifest>
+
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testPermissionInPermission() {
+    lint()
+      .files(
+        manifest(
+            """
+
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                          package="foo.bar2"
+                          android:versionCode="1"
+                          android:versionName="1.0">
+
+                    <uses-sdk android:minSdkVersion="11"/>
+
+                    <permission android:name="foo.bar.PERMISSION_NAME_1" android:permission="foo.bar.PERMISSION_NAME_1" />
+
+                    <application
+                            android:icon="@drawable/ic_launcher"
+                            android:label="@string/app_name">
+                        <activity
+                                android:label="@string/app_name"
+                                android:name="com.sample.service.serviceClass">
+                            <intent-filter>
+                                <action android:name="android.intent.action.MAIN"/>
+
+                                <category android:name="android.intent.category.LAUNCHER"/>
+                            </intent-filter>
+                        </activity>
+
+                    </application>
+
+                </manifest>
+
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:9: Error: Protecting an unsupported element with a permission is a no-op and potentially dangerous [InvalidPermission]
+            <permission android:name="foo.bar.PERMISSION_NAME_1" android:permission="foo.bar.PERMISSION_NAME_1" />
+                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
 }

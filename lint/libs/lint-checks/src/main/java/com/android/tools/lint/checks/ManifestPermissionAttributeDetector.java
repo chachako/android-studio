@@ -20,7 +20,7 @@ import static com.android.SdkConstants.ATTR_PERMISSION;
 import static com.android.xml.AndroidManifest.NODE_ACTIVITY;
 import static com.android.xml.AndroidManifest.NODE_ACTIVITY_ALIAS;
 import static com.android.xml.AndroidManifest.NODE_APPLICATION;
-import static com.android.xml.AndroidManifest.NODE_PERMISSION;
+import static com.android.xml.AndroidManifest.NODE_PATH_PERMISSION;
 import static com.android.xml.AndroidManifest.NODE_PROVIDER;
 import static com.android.xml.AndroidManifest.NODE_RECEIVER;
 import static com.android.xml.AndroidManifest.NODE_SERVICE;
@@ -34,9 +34,11 @@ import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.android.tools.lint.detector.api.XmlScanner;
+
+import org.w3c.dom.Attr;
+
 import java.util.Collection;
 import java.util.Collections;
-import org.w3c.dom.Attr;
 
 /**
  * Checks if the 'permission' attribute was set on a valid tag. Valid tags in the Manifest are:
@@ -48,9 +50,10 @@ public class ManifestPermissionAttributeDetector extends Detector implements Xml
             Issue.create(
                     "InvalidPermission",
                     "Invalid Permission Attribute",
-                    "Not all elements support the permission attribute. If a permission is set on an "
-                            + "invalid element, it is a no-op and ignored. Ensure that this permission attribute "
-                            + "was set on the correct element to protect the correct component.",
+                    "Not all elements support the permission attribute. If a permission is set on"
+                            + " an invalid element, it is a no-op and ignored. Ensure that this"
+                            + " permission attribute was set on the correct element to protect the"
+                            + " correct component.",
                     Category.SECURITY,
                     5,
                     Severity.ERROR,
@@ -76,7 +79,7 @@ public class ManifestPermissionAttributeDetector extends Detector implements Xml
             case NODE_SERVICE:
             case NODE_RECEIVER:
             case NODE_ACTIVITY_ALIAS:
-            case NODE_PERMISSION:
+            case NODE_PATH_PERMISSION:
                 return;
         }
         String message =
