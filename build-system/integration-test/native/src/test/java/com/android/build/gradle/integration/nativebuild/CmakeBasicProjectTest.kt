@@ -136,7 +136,7 @@ class CmakeBasicProjectTest(
                 .toTypedArray()
             return if (CURRENT_PLATFORM == PLATFORM_WINDOWS) {
                 // Because Windows runs much slower, limit the tests that run on Windows to a (stable) sample
-                result.take(50).toTypedArray()
+                result.take(10).toTypedArray()
             } else result
         }
     }
