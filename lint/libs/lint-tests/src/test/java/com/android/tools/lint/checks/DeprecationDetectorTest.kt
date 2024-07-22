@@ -223,7 +223,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testFramworkNewProject() {
+  fun testFrameworkNewProject() {
     lint()
       .files(
         xml(
@@ -453,8 +453,8 @@ class DeprecationDetectorTest : AbstractCheckTest() {
         kotlin(
             """
                 package test.pkg
-                import android.content.ComponentName;
-                import android.content.IntentFilter;
+                import android.content.ComponentName
+                import android.content.IntentFilter
                 import android.service.chooser.ChooserTarget
                 import android.service.chooser.ChooserTargetService
 
