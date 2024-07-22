@@ -69,6 +69,14 @@ public class ConnectedDeviceProvider extends DeviceProvider {
     @NonNull
     private final List<ConnectedDevice> localDevices = Lists.newArrayList();
 
+    private final Thread shutdownHook =
+            new Thread() {
+                @Override
+                public void run() {
+                    closeDdmlib();
+                }
+            };
+
     @Nullable private LogAdapter logAdapter;
 
     /** @param timeOutInMs The time out for each adb command, where 0 means wait forever. */
@@ -126,6 +134,8 @@ public class ConnectedDeviceProvider extends DeviceProvider {
 
         logAdapter = new LogAdapter(iLogger);
         Log.addLogger(logAdapter);
+
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
 
         try {
             DdmPreferences.setLogLevel(Log.LogLevel.VERBOSE.getStringValue());
@@ -233,6 +243,9 @@ public class ConnectedDeviceProvider extends DeviceProvider {
             logAdapter = null;
             sessionLock.unlock();
             throw throwable;
+        } finally {
+            closeDdmlib();
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
         }
     }
 
@@ -261,6 +274,10 @@ public class ConnectedDeviceProvider extends DeviceProvider {
             }
         }
 
+    }
+
+    private void closeDdmlib() {
+        AndroidDebugBridge.terminate();
     }
 
     @Override
