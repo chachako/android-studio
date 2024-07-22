@@ -81,6 +81,7 @@ internal class AdbChannelProviderConnectAddresses(
                         return@withContext adbChannel
                     } catch (e: IOException) {
                         suppressedExceptions = SuppressedExceptions.add(suppressedExceptions, e)
+                        adbChannel.close()
                     }
                 }
             }
