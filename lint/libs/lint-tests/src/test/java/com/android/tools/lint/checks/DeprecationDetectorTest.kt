@@ -581,4 +581,101 @@ class DeprecationDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  fun testWatchFaceServiceDeprecation() {
+    val stubs =
+      arrayOf(
+        // Androidx
+        kotlin(
+            """
+        package androidx.wear.watchface
+
+        interface WatchFaceService
+      """
+          )
+          .indented(),
+        // Wear Support Library
+        kotlin(
+            """
+        package android.support.wearable.watchface
+
+        interface WatchFaceService
+      """
+          )
+          .indented(),
+      )
+
+    lint()
+      .files(
+        java(
+            """
+                package test.pkg;
+
+                import androidx.wear.watchface.WatchFaceService;
+
+                class MyWatchFaceServiceAndroidx extends WatchFaceService {
+                }
+                """
+          )
+          .indented(),
+        java(
+            """
+                package test.pkg;
+
+                import android.support.wearable.watchface.WatchFaceService;
+
+                class MyWatchFaceServiceWSL extends WatchFaceService {
+                }
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.pkg
+
+                import androidx.wear.watchface.WatchFaceService
+
+                class MyWatchFaceServiceAndroidx : WatchFaceService()
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.pkg
+
+                import android.support.wearable.watchface.WatchFaceService
+
+                class MyWatchFaceServiceWSL : WatchFaceService()
+                """
+          )
+          .indented(),
+        *stubs,
+      )
+      .run()
+      .expect(
+        """
+          src/test/pkg/MyWatchFaceServiceAndroidx.java:5: Warning: MyWatchFaceServiceAndroidx extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          class MyWatchFaceServiceAndroidx extends WatchFaceService {
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/MyWatchFaceServiceAndroidx.kt:5: Warning: MyWatchFaceServiceAndroidx extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          class MyWatchFaceServiceAndroidx : WatchFaceService()
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/MyWatchFaceServiceWSL.java:5: Warning: MyWatchFaceServiceWSL extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          class MyWatchFaceServiceWSL extends WatchFaceService {
+                ~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/MyWatchFaceServiceWSL.kt:5: Warning: MyWatchFaceServiceWSL extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          class MyWatchFaceServiceWSL : WatchFaceService()
+                ~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 4 warnings
+          """
+      )
+      .expectFixDiffs(
+        """
+          Show URL for src/test/pkg/MyWatchFaceServiceAndroidx.java line 5: https://developer.android.com/training/wearables/wff
+          Show URL for src/test/pkg/MyWatchFaceServiceAndroidx.kt line 5: https://developer.android.com/training/wearables/wff
+          Show URL for src/test/pkg/MyWatchFaceServiceWSL.java line 5: https://developer.android.com/training/wearables/wff
+          Show URL for src/test/pkg/MyWatchFaceServiceWSL.kt line 5: https://developer.android.com/training/wearables/wff
+        """
+      )
+  }
 }

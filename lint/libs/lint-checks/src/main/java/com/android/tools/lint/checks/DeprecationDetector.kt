@@ -27,6 +27,8 @@ import com.android.SdkConstants.ATTR_PASSWORD
 import com.android.SdkConstants.ATTR_PERMISSION
 import com.android.SdkConstants.ATTR_PHONE_NUMBER
 import com.android.SdkConstants.ATTR_SINGLE_LINE
+import com.android.SdkConstants.CLASS_WATCHFACE_ANDROIDX
+import com.android.SdkConstants.CLASS_WATCHFACE_WSL
 import com.android.SdkConstants.EDIT_TEXT
 import com.android.SdkConstants.PreferenceClasses.CLASS_PREFERENCE
 import com.android.SdkConstants.TAG_META_DATA
@@ -38,6 +40,7 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceFolderType.LAYOUT
 import com.android.resources.ResourceFolderType.XML
+import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
@@ -285,19 +288,33 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
   }
 
   override fun applicableSuperClasses(): List<String> {
-    return listOf(CHOOSER_TARGET_SERVICE_CLASS)
+    return listOf(CHOOSER_TARGET_SERVICE_CLASS, CLASS_WATCHFACE_ANDROIDX, CLASS_WATCHFACE_WSL)
   }
 
   override fun visitClass(context: JavaContext, declaration: UClass) {
     val location = context.getNameLocation(declaration)
-    context.report(
-      ISSUE,
-      declaration,
-      location,
-      "`${declaration.name}` extends the deprecated `ChooserTargetService`: Use the Share API instead",
-      fix().url(SHARE_API_URL).build(),
-    )
+    if (context.evaluator.inheritsFrom(declaration.javaPsi, CHOOSER_TARGET_SERVICE_CLASS)) {
+      context.report(
+        ISSUE,
+        declaration,
+        location,
+        "`${declaration.name}` extends the deprecated `ChooserTargetService`: Use the Share API instead",
+        fix().url(SHARE_API_URL).build(),
+      )
+    } else if (context.evaluator.inheritsFromWatchFaceService(declaration)) {
+      context.report(
+        ISSUE,
+        declaration,
+        location,
+        "`${declaration.name}` extends the deprecated `WatchFaceService`: Use Watch Face Format instead",
+        fix().url(WATCH_FACE_FORMAT_URL).build(),
+      )
+    }
   }
+
+  private fun JavaEvaluator.inheritsFromWatchFaceService(declaration: UClass) =
+    inheritsFrom(declaration.javaPsi, CLASS_WATCHFACE_ANDROIDX, true) ||
+      inheritsFrom(declaration.javaPsi, CLASS_WATCHFACE_WSL, true)
 
   companion object {
     @Suppress("SpellCheckingInspection")
@@ -321,6 +338,8 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
     private const val ATTR_USER_SHARED_ID = "sharedUserId"
     private const val ATTR_SHARED_USER_MAX_SDK_VERSION = "sharedUserMaxSdkVersion"
     private const val ATTR_AUTO_REVOKE_PERMISSIONS = "autoRevokePermissions"
+
+    private const val WATCH_FACE_FORMAT_URL = "https://developer.android.com/training/wearables/wff"
 
     /** Usage of deprecated views or attributes. */
     @JvmField
