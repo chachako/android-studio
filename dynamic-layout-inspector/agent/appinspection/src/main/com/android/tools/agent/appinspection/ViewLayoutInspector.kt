@@ -239,7 +239,12 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
 
         updateCapturingCallback(root, captureExecutor, captureOutputStream)
         checkpoint = ProgressCheckpoint.STARTED
-        root.invalidate() // Force a re-render so we send the current screen
+
+        // Force a re-render to immediately send the current screen.
+        // Otherwise, Layout Inspector will have to wait for the next refresh to happen.
+        // Use postInvalidate instead of invalidate because in some apps,
+        // for example sysui, the view is not guaranteed to be created by the main thread.
+        root.postInvalidate();
     }
 
     /**

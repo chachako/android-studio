@@ -25,8 +25,10 @@ import android.graphics.Picture;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -247,6 +249,10 @@ public class View {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(() -> forcePictureCapture(mPictureCapture));
         }
+    }
+
+    public void postInvalidate() {
+        invalidate();
     }
 
     @VisibleForTesting
