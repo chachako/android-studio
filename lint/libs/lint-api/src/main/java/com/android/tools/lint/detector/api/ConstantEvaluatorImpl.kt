@@ -1027,9 +1027,10 @@ private fun List<Any?>.reifiedAsArray(elemType: PsiType): Any? =
     }
   }
 
-private fun List<Any?>.reifiedAsArray(klass: Class<*>): Array<*> = toArray { n ->
-  java.lang.reflect.Array.newInstance(klass, n) as Array<*>
-}
+private fun List<Any?>.reifiedAsArray(klass: Class<*>): Array<*> =
+  (this as java.util.Collection<Any?>).toArray { n ->
+    java.lang.reflect.Array.newInstance(klass, n) as Array<*>
+  }
 
 private inline fun <reified A, X> Any.asArray(
   crossinline indices: (A) -> IntRange,

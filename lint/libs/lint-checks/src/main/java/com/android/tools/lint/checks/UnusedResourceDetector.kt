@@ -644,6 +644,10 @@ class UnusedResourceDetector :
   companion object {
     const val KEY_RESOURCE_FIELD = "field"
     private const val KEY_MODEL = "model"
+    // TODO: Switch to configuration property!
+    private const val EXCLUDE_TESTS_PROPERTY = "lint.unused-resources.exclude-tests"
+    private const val INCLUDE_TESTS_PROPERTY = "lint.unused-resources.include-tests"
+
     private val IMPLEMENTATION =
       EnumSet.of(
           Scope.MANIFEST,
@@ -662,10 +666,6 @@ class UnusedResourceDetector :
           }
           Implementation(UnusedResourceDetector::class.java, scopeSet)
         }
-
-    // TODO: Switch to configuration property!
-    private const val EXCLUDE_TESTS_PROPERTY = "lint.unused-resources.exclude-tests"
-    private const val INCLUDE_TESTS_PROPERTY = "lint.unused-resources.include-tests"
 
     private const val EXCLUDING_TESTS_EXPLANATION =
       """
