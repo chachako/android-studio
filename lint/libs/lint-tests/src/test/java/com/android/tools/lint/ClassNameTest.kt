@@ -46,14 +46,56 @@ class ClassNameTest {
     assertEquals(
       "ApiCallTest3",
       getClassName(
-        "" +
-          "/**\n" +
-          " * Call test where the parent class is some other project class which in turn\n" +
-          " * extends the public API\n" +
-          " */\n" +
-          "public class ApiCallTest3 extends Intermediate {}"
+        // language=JAVA
+        """
+        /**
+         * Call test where the parent class is some other project class which in turn
+         * extends the public API
+         */
+        public class ApiCallTest3 extends Intermediate {}
+        """
       ),
     )
+  }
+
+  @Test
+  fun testAnnotationAttribute() {
+    val source =
+      ClassName(
+        // language=KT
+        """
+        package test.pkg
+        import androidx.annotation.Discouraged
+        @Discouraged(message="Don't use this class")
+        open class Button
+        open class ToggleButton : Button
+        """,
+        DOT_KT,
+      )
+    assertEquals("test.pkg", source.packageName)
+    assertEquals("Button", source.className)
+    assertEquals("test/pkg/Button.kt", source.relativePath())
+  }
+
+  @Test
+  fun testJavaInterface() {
+    val source =
+      ClassName(
+        // language=JAVA
+        """
+        import java.lang.annotation.*;
+        import static java.lang.annotation.ElementType.FIELD;
+        import static java.lang.annotation.RetentionPolicy.CLASS;
+        @Retention(CLASS) @Target(FIELD)
+        public @interface BindColor {
+          int value();
+        }
+        """,
+        DOT_JAVA,
+      )
+    assertEquals(null, source.packageName)
+    assertEquals("BindColor", source.className)
+    assertEquals("BindColor.java", source.relativePath())
   }
 
   @Test
@@ -63,11 +105,13 @@ class ClassNameTest {
     assertNull(
       "Foo",
       ClassName(
-          "" +
-            "package test.pkg\n" +
-            "import android.content.Context\n" +
-            "inline fun <reified T> Context.systemService1() = getSystemService(T::class.java)\n" +
-            "inline fun Context.systemService2() = getSystemService(String::class.java)"
+          // language=KT
+          """
+          package test.pkg
+          import android.content.Context
+          inline fun <reified T> Context.systemService1() = getSystemService(T::class.java)
+          inline fun Context.systemService2() = getSystemService(String::class.java)
+          """
         )
         .className,
     )
@@ -93,6 +137,7 @@ class ClassNameTest {
     assertEquals(
       "foo",
       getPackage(
+        // language=JAVA
         """
         package foo;
         import foo.interfaces.ThisIsNotClassName;
@@ -105,6 +150,7 @@ class ClassNameTest {
     assertEquals(
       "NavigationView",
       getClassName(
+        // language=JAVA
         """
         package foo;
         import foo.interfaces.ThisIsNotClassName;
@@ -126,6 +172,7 @@ class ClassNameTest {
     assertEquals(
       "MyClassName",
       getClassName(
+        // language=JAVA
         """
         @Anno('\u0000')
         /* class Comment */
@@ -143,22 +190,23 @@ class ClassNameTest {
     assertEquals(
       "ClickableViewAccessibilityTest",
       getClassName(
-        "" +
-          "package test.pkg;\n" +
-          "\n" +
-          "import android.content.Context;\n" +
-          "import android.view.MotionEvent;\n" +
-          "import android.view.View;\n" +
-          "\n" +
-          "public class ClickableViewAccessibilityTest {\n" +
-          "    // Fails because onTouch does not call view.performClick().\n" +
-          "    private static class InvalidOnTouchListener implements View.OnTouchListener {\n" +
-          "        public boolean onTouch(View v, MotionEvent event) {\n" +
-          "            return false;\n" +
-          "        }\n" +
-          "    }\n" +
-          "\n" +
-          "}\n"
+        // language=JAVA
+        """
+        package test.pkg;
+
+        import android.content.Context;
+        import android.view.MotionEvent;
+        import android.view.View;
+
+        public class ClickableViewAccessibilityTest {
+            // Fails because onTouch does not call view.performClick().
+            private static class InvalidOnTouchListener implements View.OnTouchListener {
+                public boolean onTouch(View v, MotionEvent event) {
+                    return false;
+                }
+            }
+        }
+        """
       ),
     )
   }
@@ -171,8 +219,8 @@ class ClassNameTest {
       """
         .trimIndent()
         .trim(),
-      com.android.tools.lint
-        .stripComments(
+      stripComments(
+          // language=JAVA
           """
           /** Comment */
           // Line comment
@@ -194,8 +242,8 @@ class ClassNameTest {
       """
         .trimIndent()
         .trim(),
-      com.android.tools.lint
-        .stripComments(
+      stripComments(
+          // language=KT
           """
           // Line comment /*
           /**/ /***/ fun test1() { }
@@ -246,6 +294,7 @@ class ClassNameTest {
 
   @Test
   fun testJvmName() {
+    @Language("KT")
     val source =
       """
       @file:kotlin.jvm.JvmName("PreconditionsKt")

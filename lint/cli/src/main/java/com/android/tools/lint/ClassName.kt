@@ -17,6 +17,10 @@
 package com.android.tools.lint
 
 import com.android.SdkConstants.DOT_JAVA
+import com.android.SdkConstants.DOT_KT
+import com.android.SdkConstants.DOT_KTS
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.skipAnnotation
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.skipCommentsAndWhitespace
 import java.util.regex.Pattern
 
 /**
@@ -30,10 +34,49 @@ open class ClassName(val source: String, val extension: String = DOT_JAVA) {
   val jvmName: String?
 
   init {
-    val withoutComments = stripComments(source, extension)
-    packageName = getPackage(withoutComments)
-    className = getClassName(withoutComments)
-    jvmName = if (extension == DOT_JAVA) className else getJvmName(withoutComments) ?: className
+    // Remove comments and annotations which can occur at the top
+    // of the file (before the class declaration) where words in
+    // the comment or string arguments to annotations can look
+    // like a class definition and confuse the regular expression lookups.
+    val cleaned = cleanup(source, extension)
+    packageName = getPackage(cleaned)
+    className = getClassName(cleaned)
+    jvmName = if (extension == DOT_JAVA) className else getJvmName(cleaned) ?: className
+  }
+
+  private fun cleanup(contents: String, extension: String): String {
+    val length = contents.length
+    val sb = StringBuilder(length)
+    var current = 0
+    val allowCommentNesting = extension == DOT_KT || extension == DOT_KTS
+    while (current < length) {
+      val skipped = skipCommentsAndWhitespace(contents, current, allowCommentNesting)
+      if (skipped > current) {
+        sb.append(' ')
+        current = skipped
+        if (current == length) {
+          break
+        }
+      }
+      val c = contents[current]
+      if (c.isWhitespace()) {
+        sb.append(c)
+      } else if (
+        c == '@' &&
+          !contents.startsWith("@interface", current) &&
+          !contents.startsWith("@file:JvmName", current) &&
+          !contents.startsWith("@file:kotlin.jvm.JvmName", current)
+      ) {
+        val afterAnnotation = skipAnnotation(contents, current)
+        sb.append(' ')
+        current = afterAnnotation
+        continue
+      } else {
+        sb.append(c)
+      }
+      current++
+    }
+    return sb.toString()
   }
 
   fun packageNameWithDefault() = packageName ?: ""
@@ -47,7 +90,7 @@ open class ClassName(val source: String, val extension: String = DOT_JAVA) {
   }
 }
 
-@Suppress("RegExpSimplifiable") // the proposed simplication does not work; tests fail
+@Suppress("RegExpSimplifiable") // the proposed simplification does not work; tests fail
 private val PACKAGE_PATTERN = Pattern.compile("""package\s+([\S&&[^;]]*)""")
 
 private val CLASS_PATTERN =
