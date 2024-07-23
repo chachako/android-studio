@@ -85,6 +85,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         private val perClassLoaderConstant = UUID.randomUUID().toString()
 
         const val ST_SOURCE_SET_ENABLED = "android.experimental.enableScreenshotTest"
+        const val VALIDATION_ENGINE_VERSION_OVERRIDE = "android.experimental.validationEngineVersion"
+        const val MIN_VALIDATION_ENGINE_VERSION = "0.0.1-alpha03"
         private const val LAYOUTLIB_VERSION = "14.0.9"
         private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.9"
         private const val LAYOUTLIB_RESOURCES_VERSION = "14.0.9"
@@ -121,6 +123,20 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     """.trimIndent()
                 )
             }
+            val validationEngineVersionOverride = project.findProperty(VALIDATION_ENGINE_VERSION_OVERRIDE)
+            val validationEngineVersion = if (validationEngineVersionOverride != null && validationEngineVersionOverride.toString().isNotEmpty()) {
+                // Changes to the image naming format make versions 0.0.1-alpha02 and below of the
+                // test engine incompatible with the latest plugin version
+                val validationEngineOverrideString = validationEngineVersionOverride.toString()
+                if (validationEngineOverrideString < MIN_VALIDATION_ENGINE_VERSION && !validationEngineOverrideString.endsWith("-dev")) {
+                    error(
+                        """
+                        Preview screenshot plugin requires the screenshot validation engine version to be at least $MIN_VALIDATION_ENGINE_VERSION, android.experimental.validationEngineVersion cannot be set to $validationEngineOverrideString.
+                        """.trimIndent()
+                    )
+                }
+                validationEngineOverrideString
+            } else SCREENSHOT_TEST_PLUGIN_VERSION
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
                 getBuildServiceName(AnalyticsService::class.java),
@@ -356,7 +372,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
-                        maybeCreateScreenshotTestConfiguration(project)
+                        maybeCreateScreenshotTestConfiguration(project, validationEngineVersion)
                         task.useJUnitPlatform {
                             it.includeEngines("preview-screenshot-test-engine")
                         }
@@ -389,7 +405,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         }
     }
 
-    private fun maybeCreateScreenshotTestConfiguration(project: Project) {
+    private fun maybeCreateScreenshotTestConfiguration(project: Project, validationEngineVersion: String) {
         val container = project.configurations
         val dependencies = project.dependencies
         if (container.findByName(previewScreenshotTestEngineConfigurationName) == null) {
@@ -399,11 +415,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve screenshot test engine dependencies."
             }
-            val engineVersion = SCREENSHOT_TEST_PLUGIN_VERSION
             dependencies.add(previewScreenshotTestEngineConfigurationName, "org.junit.platform:junit-platform-launcher")
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,
-                "com.android.tools.screenshot:screenshot-validation-junit-engine:${engineVersion}")
+                "com.android.tools.screenshot:screenshot-validation-junit-engine:${validationEngineVersion}")
         }
     }
 

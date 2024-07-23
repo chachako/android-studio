@@ -56,8 +56,10 @@ class PreviewScreenshotGradlePluginTest {
         `when`(mockProject.findProperty(PreviewScreenshotGradlePlugin.ST_SOURCE_SET_ENABLED)).thenReturn(true)
     }
     private fun applyScreenshotPlugin(
-            agpVersion: AndroidPluginVersion = AndroidPluginVersion(8, 1)) {
+            agpVersion: AndroidPluginVersion = AndroidPluginVersion(8, 7).dev(),
+            validationEngineVersion: String = PreviewScreenshotGradlePlugin.SCREENSHOT_TEST_PLUGIN_VERSION) {
         `when`(mockAndroidPlugin.pluginVersion).thenReturn(agpVersion)
+        `when`(mockProject.findProperty(PreviewScreenshotGradlePlugin.VALIDATION_ENGINE_VERSION_OVERRIDE)).thenReturn(validationEngineVersion)
         val plugin = PreviewScreenshotGradlePlugin()
 
         plugin.apply(mockProject)
@@ -98,6 +100,30 @@ class PreviewScreenshotGradlePluginTest {
         }
         supportedVersions.forEach {
             applyScreenshotPlugin(it)
+        }
+    }
+
+    @Test
+    fun validationEngineVersionCheck() {
+        val unsupportedVersionsTooOld = listOf(
+            "0.0.1-alpha01",
+            "0.0.1-alpha02",
+        )
+        val supportedVersions = listOf(
+            "0.0.1-dev",
+            "0.0.1-alpha03",
+        )
+
+        unsupportedVersionsTooOld.forEach {
+            val e = assertThrows(IllegalStateException::class.java) {
+                applyScreenshotPlugin(validationEngineVersion = it)
+            }
+            assertThat(e).hasMessageThat()
+                .contains("Preview screenshot plugin requires the screenshot validation engine version to be at least ${PreviewScreenshotGradlePlugin.MIN_VALIDATION_ENGINE_VERSION}, android.experimental.validationEngineVersion cannot be set to $it.")
+        }
+
+        supportedVersions.forEach {
+            applyScreenshotPlugin(validationEngineVersion = it)
         }
     }
 }
