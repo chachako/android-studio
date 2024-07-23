@@ -208,6 +208,11 @@ java_import(
 )
 
 platform_filegroup(
+    name = "platforms/android-35",
+    visibility = ["//visibility:public"],
+)
+
+platform_filegroup(
     name = "platforms/android-34",
     visibility = ["//visibility:public"],
 )
@@ -315,6 +320,7 @@ filegroup(
     name = "emulator-arm64",
     srcs = sdk_glob(include = ["emulator-arm64/**"]),
 )
+
 filegroup(
     name = "add-ons/addon-google_apis-google-latest",
     srcs = ["add-ons/addon-google_apis-google-24"],
