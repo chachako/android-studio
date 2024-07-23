@@ -169,6 +169,7 @@ TEST_DATA = [
     "//tools/base/build-system/integration-test:test-projects/unitTestingFlavors",
     "//tools/base/build-system/integration-test:test-projects/vectorDrawables",
     "//tools/base/build-system/integration-test:test-projects/vulkan",
+    "//tools/data-binding:data_binding_runtime.zip",
 ]
 
 AUTOMATIC_TEST_DATA = TEST_DATA + OLD_SDKS + [

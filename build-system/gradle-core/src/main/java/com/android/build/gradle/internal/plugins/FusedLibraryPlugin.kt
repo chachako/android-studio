@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.fusedlibrary.SegregatingConstraintHandl
 import com.android.build.gradle.internal.fusedlibrary.configureElements
 import com.android.build.gradle.internal.fusedlibrary.configureTransformsForFusedLibrary
 import com.android.build.gradle.internal.fusedlibrary.createTasks
+import com.android.build.gradle.internal.fusedlibrary.failForDatabindingDependencies
 import com.android.build.gradle.internal.fusedlibrary.getDslServices
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
@@ -305,17 +306,21 @@ class FusedLibraryPlugin @Inject constructor(
         // to the resolved 'include' dependency. It is for JAVA_API usage which mean all transitive
         // dependencies that are implementation() scoped will not be included.
         val includeApiClasspath = project.configurations.create("includeApiClasspath").also {
-            it.isCanBeConsumed = false
-            it.attributes.attribute(
+            apiClasspath ->
+            apiClasspath.isCanBeConsumed = false
+            apiClasspath.attributes.attribute(
                     Usage.USAGE_ATTRIBUTE,
                     project.objects.named(Usage::class.java, Usage.JAVA_API)
             )
             val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
-            it.attributes.attribute(
+            apiClasspath.attributes.attribute(
                     BuildTypeAttr.ATTRIBUTE,
                     buildType,
             )
-            it.extendsFrom(includeConfigurations)
+
+            apiClasspath.failForDatabindingDependencies()
+
+            apiClasspath.extendsFrom(includeConfigurations)
         }
         // This is the configuration that will contain all the JAVA_API dependencies that are not
         // fused in the resulting aar library.
@@ -337,21 +342,24 @@ class FusedLibraryPlugin @Inject constructor(
         // dependencies that are implementation() scoped will  be included.
         val includeRuntimeClasspath =
                 project.configurations.create("includeRuntimeClasspath").also {
-                    it.isCanBeConsumed = false
-                    it.isCanBeResolved = true
+                    runtimeClasspath ->
+                    runtimeClasspath.isCanBeConsumed = false
+                    runtimeClasspath.isCanBeResolved = true
 
-                    it.attributes.attribute(
+                    runtimeClasspath.attributes.attribute(
                             Usage.USAGE_ATTRIBUTE,
                             project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
                     )
                     val buildType: BuildTypeAttr =
                             project.objects.named(BuildTypeAttr::class.java, "debug")
-                    it.attributes.attribute(
+                    runtimeClasspath.attributes.attribute(
                             BuildTypeAttr.ATTRIBUTE,
                             buildType,
                     )
 
-                    it.extendsFrom(includeConfigurations)
+                    runtimeClasspath.failForDatabindingDependencies()
+
+                    runtimeClasspath.extendsFrom(includeConfigurations)
                 }
         // This is the configuration that will contain all the JAVA_RUNTIME dependencies that are
         // not fused in the resulting aar library.

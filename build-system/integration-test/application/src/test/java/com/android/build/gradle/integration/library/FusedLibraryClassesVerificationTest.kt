@@ -25,20 +25,17 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
-import com.android.ide.common.util.toPathString
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
-import com.google.common.io.Resources
 import org.gradle.api.JavaVersion
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
-import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlin.io.path.deleteIfExists
@@ -172,6 +169,25 @@ class FusedLibraryClassesVerificationTest {
                 implementation("com.externaldep:externalaar:1")
             }
         }
+        subProject(":$ANDROID_LIB_WITH_DATABINDING") {
+            plugins.add(PluginType.ANDROID_LIB)
+            plugins.add(PluginType.KOTLIN_ANDROID)
+            android {
+                defaultCompileSdk()
+                namespace = "com.example.androidLibWithDatabinding"
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_1_8
+                    targetCompatibility = JavaVersion.VERSION_1_8
+                }
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
+                buildFeatures {
+                    dataBinding = true
+                    viewBinding = true
+                }
+            }
+        }
         subProject(":$FUSED_LIBRARY_PROJECT_NAME") {
             plugins.add(PluginType.FUSED_LIBRARY)
             androidFusedLibrary {
@@ -195,6 +211,7 @@ class FusedLibraryClassesVerificationTest {
         }
         gradleProperties {
             set(BooleanOption.FUSED_LIBRARY_SUPPORT, true)
+            set(BooleanOption.USE_ANDROID_X, true)
         }
         withKotlinPlugin = true
     }
@@ -277,6 +294,27 @@ class FusedLibraryClassesVerificationTest {
             assertThat(it).hasClass("Lcom/android/build/gradle/integration/library/TestClass;") }
     }
 
+    @Test
+    fun checkBuildFailsForLibrariesWithDatabinding() {
+        val dependenciesBlock = """
+
+            include(project(":androidLib1"))
+            include(project(":$ANDROID_LIB_WITH_DATABINDING"))
+        """.trimIndent()
+
+        addDependenciesToFusedLibProject(dependenciesBlock)
+        for (enableAndroidx in listOf(true, false)) {
+            val failure =
+                project.executor()
+                    .with(BooleanOption.USE_ANDROID_X, enableAndroidx)
+                    .expectFailure()
+                    .run(":$FUSED_LIBRARY_PROJECT_NAME:bundle")
+
+            failure.assertErrorContains(
+                "Fused Library plugin does not allow dependencies with databinding.")
+        }
+    }
+
     private fun addDependenciesToFusedLibProject(dependenciesBlock: String) {
         val fusedLib1Project = project.getSubproject(":$FUSED_LIBRARY_PROJECT_NAME")
         TestFileUtils.searchAndReplace(
@@ -313,7 +351,8 @@ class FusedLibraryClassesVerificationTest {
                 it.entries().toList().map { it.toString() }
             ).containsAtLeastElementsIn(listOf(SdkConstants.FN_CLASSES_JAR))
             classesJar.writeBytes(
-                it.getInputStream(ZipEntry(SdkConstants.FN_CLASSES_JAR)).readAllBytes())
+                it.getInputStream(ZipEntry(SdkConstants.FN_CLASSES_JAR)).readAllBytes()
+            )
         }
         return classesJar
     }
@@ -321,6 +360,7 @@ class FusedLibraryClassesVerificationTest {
     companion object {
         const val FUSED_LIBRARY_PROJECT_NAME = "fusedLib1"
         const val ANDROID_LIB_WITH_EXTERNAL_LIB_DEPENDENCY = "androidLib3"
+        const val ANDROID_LIB_WITH_DATABINDING = "androidLibWithDatabinding"
         const val FUSED_LIBRARY_R_CLASS = "com/example/fusedLib1/R.class"
     }
 }
