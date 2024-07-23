@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-72c98a8f671bd21885c6435972db221005aa0f1bae818de72fd1cf18de0655c2
+2265e858238f05eeca94cea06a3399e7fd94a38ff1659f3c3770752f4d386e83
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -860,6 +860,8 @@ com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildScreenshot
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildTestFixtureRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildUnitTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setVariantName: void (java.lang.String)
+com.android.builder.model.v2.models.ProjectGraph implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.models.ProjectGraph.getResolvedVariants: java.util.Map<java.lang.String, java.lang.String> ()
 com.android.builder.model.v2.models.ProjectSyncIssues implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.ProjectSyncIssues.getSyncIssues: java.util.Collection<com.android.builder.model.v2.ide.SyncIssue> ()
 com.android.builder.model.v2.models.VariantDependencies implements com.android.builder.model.v2.AndroidModel

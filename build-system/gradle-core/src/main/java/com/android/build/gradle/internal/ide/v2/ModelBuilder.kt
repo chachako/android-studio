@@ -36,6 +36,7 @@ import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
 import com.android.build.api.variant.impl.ManifestFilesImpl
+import com.android.build.gradle.internal.attributes.VariantAttr
 import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -60,6 +61,7 @@ import com.android.build.gradle.internal.ide.dependencies.getVariantName
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_CONFIG_DIRECTORY
@@ -99,14 +101,18 @@ import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.builder.model.v2.models.BasicAndroidProject
 import com.android.builder.model.v2.models.ModelBuilderParameter
+import com.android.builder.model.v2.models.ProjectGraph
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
 import com.android.builder.model.v2.models.VariantDependenciesAdjacencyList
 import com.android.builder.model.v2.models.Versions
+import com.android.utils.associateNotNull
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.tooling.provider.model.ParameterizedToolingModelBuilder
 import java.io.File
 import java.io.FileInputStream
@@ -145,6 +151,7 @@ class ModelBuilder<
                 || className == BasicAndroidProject::class.java.name
                 || className == AndroidProject::class.java.name
                 || className == AndroidDsl::class.java.name
+                || className == ProjectGraph::class.java.name
                 || className == VariantDependencies::class.java.name
                 || className == VariantDependenciesAdjacencyList::class.java.name
                 || className == ProjectSyncIssues::class.java.name
@@ -160,7 +167,8 @@ class ModelBuilder<
         AndroidDsl::class.java.name -> buildAndroidDslModel(project)
         ProjectSyncIssues::class.java.name -> buildProjectSyncIssueModel(project)
         VariantDependencies::class.java.name,
-        VariantDependenciesAdjacencyList::class.java.name -> throw RuntimeException(
+        VariantDependenciesAdjacencyList::class.java.name,
+        ProjectGraph::class.java.name -> throw RuntimeException(
             "Please use parameterized Tooling API to obtain ${className.split(".").last()} model."
         )
         else -> throw RuntimeException("Does not support model '$className'")
@@ -176,6 +184,7 @@ class ModelBuilder<
     ): Any? = when (className) {
         VariantDependencies::class.java.name -> buildVariantDependenciesModel(project, parameter)
         VariantDependenciesAdjacencyList::class.java.name -> buildVariantDependenciesModel(project, parameter, adjacencyList=true)
+        ProjectGraph::class.java.name -> buildProjectGraphModel(project, parameter)
         Versions::class.java.name,
         AndroidProject::class.java.name,
         AndroidDsl::class.java.name,
@@ -184,6 +193,42 @@ class ModelBuilder<
         )
         else -> throw RuntimeException("Does not support model '$className'")
     }
+
+    /**
+     * Normally, the dependencies of each app is fetched to figure out which variants to request for
+     * each sub-project, however this initial fetch of dependencies might take a long time (in the
+     * order of 10 seconds) for builds with many subprojects. In this case, AGP provides a lighter
+     * weight graph that only contains the sub-project info. This allows the IDE to parallelize
+     * execution much faster.
+     */
+    private fun buildProjectGraphModel(project: Project, parameter: ModelBuilderParameter): ProjectGraph? {
+        val variantName = parameter.variantName
+        val variant = variantModel.variants.singleOrNull { it.name == variantName } ?: return null
+
+        return ProjectGraphImpl(
+            resolvedVariants = (variant.variantDependencies.getArtifactCollectionForToolingModel(
+                RUNTIME_CLASSPATH, AndroidArtifacts.ArtifactScope.PROJECT, AndroidArtifacts.ArtifactType.JAR
+            ) {
+                // Make a copy of the runtime classpath configuration and replace all non-project
+                // dependencies with a self dependency. This makes sure Gradle skips any resolution
+                // for external libraries.
+                it.copyRecursive().apply {
+                    resolutionStrategy.dependencySubstitution.all {
+                        if (it.requested !is ProjectComponentSelector) {
+                            it.useTarget(project)
+                        }
+                    }
+                }
+            }).artifacts.associateNotNull {
+                // Requesting artifacts because asking for the resolution root is more expensive
+                val resolvedVariantResult = it.variant
+                val projectPath =  (resolvedVariantResult.owner as? ProjectComponentIdentifier)?.projectPath ?: return@associateNotNull null
+                val resolvedVariantName = resolvedVariantResult.attributes.getAttribute(VariantAttr.ATTRIBUTE)?.name ?: return@associateNotNull null
+                projectPath to resolvedVariantName
+            }
+        )
+    }
+
 
     private fun buildModelVersions(): Versions {
         /**
@@ -194,20 +239,17 @@ class ModelBuilder<
         /**
          * The version of the model-producing code (i.e. the model builders in AGP)
          *
-         * The minor version is increased every time an addition is made to the model interfaces,
+         * The major version is increased every time an addition is made to the model interfaces,
          * or other semantic change that the code injected by studio should react to, such as
          * instructing studio to stop calling a method that returns a collection that is no longer
-         * populated.
-         *
-         * The major version is increased, and the minor version reset to 0 every time AGP is
-         * branched to allow for changes in that branch to be modelled.
+         * populated which leaves the minor to be able to be incremented for partial backports.
          *
          * Changes made to the model must always be compatible with the MINIMUM_MODEL_CONSUMER
          * version of Android Studio. To make a breaking change, such as removing an older model
          * method not called by current versions of Studio, the MINIMUM_MODEL_CONSUMER version must
          * be increased to exclude all older versions of Studio that called that method.
          */
-        val modelProducer = VersionImpl(9, 0, humanReadable = "Android Gradle Plugin 8.7")
+        val modelProducer = VersionImpl(10, 0, humanReadable = "Android Gradle Plugin 8.7")
         /**
          * The minimum required model consumer version, to allow AGP to control support for older
          * versions of Android Studio.

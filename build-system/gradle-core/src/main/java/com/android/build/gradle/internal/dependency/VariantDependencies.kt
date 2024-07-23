@@ -304,9 +304,10 @@ class VariantDependencies internal constructor(
         configType: ConsumedConfigType,
         scope: ArtifactScope,
         artifactType: AndroidArtifacts.ArtifactType,
-        additionalFilter: ((ComponentIdentifier) -> Boolean)? = null
+        additionalFilter: ((ComponentIdentifier) -> Boolean)? = null,
+        configurationFactory: (Configuration) -> Configuration = { it }
     ): ArtifactCollection {
-        return computeArtifactCollection(configType, scope, artifactType, null, additionalFilter)
+        return computeArtifactCollection(configType, scope, artifactType, null, additionalFilter, configurationFactory)
     }
 
     private fun computeArtifactCollection(
@@ -314,11 +315,12 @@ class VariantDependencies internal constructor(
         scope: ArtifactScope,
         artifactType: AndroidArtifacts.ArtifactType,
         attributes: AndroidAttributes?,
-        additionalFilter: ((ComponentIdentifier) -> Boolean)? = null
+        additionalFilter: ((ComponentIdentifier) -> Boolean)? = null,
+        configurationFactory: (Configuration) -> Configuration = { it }
     ): ArtifactCollection {
         checkComputeArtifactCollectionArguments(configType, scope, artifactType)
 
-        val configuration = getConfiguration(configType)
+        val configuration = configurationFactory(getConfiguration(configType))
         val attributesAction =
             Action { container: AttributeContainer ->
                 container.attribute(AndroidArtifacts.ARTIFACT_TYPE, artifactType.type)
