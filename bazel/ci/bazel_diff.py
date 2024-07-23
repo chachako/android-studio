@@ -1,0 +1,20 @@
+"""Module for running bazel-diff."""
+
+import pathlib
+
+from tools.base.bazel.ci import bazel
+
+
+def generate_hash_file(build_env: bazel.BuildEnv, output_path: pathlib.Path):
+  """Generates the hash file for the current build."""
+  bazel_cmd = bazel.BazelCmd(build_env)
+  bazel_cmd.run(
+      '//tools/base/bazel:bazel-diff',
+      '--',
+      'generate-hashes',
+      '--bazelPath',
+      build_env.bazel_path,
+      '--workspacePath',
+      build_env.workspace_dir,
+      str(output_path),
+  )

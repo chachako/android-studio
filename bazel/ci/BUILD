@@ -20,6 +20,16 @@ py_library(
 )
 
 py_library(
+    name = "bazel_diff",
+    srcs = ["bazel_diff.py"],
+)
+
+py_library(
+    name = "gce",
+    srcs = ["gce.py"],
+)
+
+py_library(
     name = "errors",
     srcs = ["errors.py"],
 )
@@ -36,7 +46,11 @@ py_library(
 py_library(
     name = "studio",
     srcs = ["studio.py"],
-    deps = [":bazel"],
+    deps = [
+        ":bazel",
+        ":bazel_diff",
+        ":gce",
+    ],
 )
 
 py_library(
