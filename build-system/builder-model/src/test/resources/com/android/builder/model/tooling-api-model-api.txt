@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-7419eddd3c0a258ce1a98dfa8c45e40779359893ce8502f67b7c8556e14a1b2b
+6a5db409e81a7bea4b3b4e451b8b6471506ea1902fd8f4f2d7711d8fe0560ed7
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -625,6 +625,10 @@ com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList implements co
 com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getCompileDependencies: java.util.List<com.android.builder.model.v2.ide.Edge> ()
 com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getRuntimeDependencies: java.util.List<com.android.builder.model.v2.ide.Edge> ()
 com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getUnresolvedDependencies: java.util.List<com.android.builder.model.v2.ide.UnresolvedDependency> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesFlatList implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.ide.ArtifactDependenciesFlatList.getCompileDependencies: java.util.List<java.lang.String> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesFlatList.getRuntimeDependencies: java.util.List<java.lang.String> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesFlatList.getUnresolvedDependencies: java.util.List<com.android.builder.model.v2.ide.UnresolvedDependency> ()
 com.android.builder.model.v2.ide.BasicArtifact
 com.android.builder.model.v2.ide.BasicArtifact.getMultiFlavorSourceProvider: com.android.builder.model.v2.ide.SourceProvider ()
 com.android.builder.model.v2.ide.BasicArtifact.getVariantSourceProvider: com.android.builder.model.v2.ide.SourceProvider ()
@@ -885,6 +889,13 @@ com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getMainArti
 com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getName: java.lang.String ()
 com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getTestFixturesArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
 com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getUnitTestArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getDeviceTestArtifacts: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.ArtifactDependenciesFlatList> ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getHostTestArtifacts: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.ArtifactDependenciesFlatList> ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getLibraries: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.Library> ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getMainArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesFlatList ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getName: java.lang.String ()
+com.android.builder.model.v2.models.VariantDependenciesFlatList.getTestFixturesArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesFlatList ()
 com.android.builder.model.v2.models.Versions implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.Versions$Companion
 com.android.builder.model.v2.models.Versions$Version

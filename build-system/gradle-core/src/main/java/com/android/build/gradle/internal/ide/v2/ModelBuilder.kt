@@ -32,19 +32,20 @@ import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
+import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.HasTestFixtures
-import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
 import com.android.build.api.variant.impl.ManifestFilesImpl
 import com.android.build.gradle.internal.attributes.VariantAttr
-import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestVariantCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
+import com.android.build.gradle.internal.dependency.AdditionalArtifactType
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl.GlobalSyncIssueService
@@ -53,6 +54,7 @@ import com.android.build.gradle.internal.ide.Utils.getGeneratedAssetsFolders
 import com.android.build.gradle.internal.ide.Utils.getGeneratedResourceFolders
 import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFolders
 import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFoldersForUnitTests
+import com.android.build.gradle.internal.ide.dependencies.AdditionalArtifacts
 import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBuilder
 import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
@@ -61,6 +63,7 @@ import com.android.build.gradle.internal.ide.dependencies.getArtifactsForModelBu
 import com.android.build.gradle.internal.ide.dependencies.getVariantName
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -106,6 +109,7 @@ import com.android.builder.model.v2.models.ProjectGraph
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
 import com.android.builder.model.v2.models.VariantDependenciesAdjacencyList
+import com.android.builder.model.v2.models.VariantDependenciesFlatList
 import com.android.builder.model.v2.models.Versions
 import com.android.utils.associateNotNull
 import com.google.common.collect.ImmutableList
@@ -114,6 +118,8 @@ import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentSelector
+import org.gradle.internal.resolve.ModuleVersionNotFoundException
+import org.gradle.internal.resolve.ModuleVersionResolveException
 import org.gradle.tooling.provider.model.ParameterizedToolingModelBuilder
 import java.io.File
 import java.io.FileInputStream
@@ -155,6 +161,7 @@ class ModelBuilder<
                 || className == ProjectGraph::class.java.name
                 || className == VariantDependencies::class.java.name
                 || className == VariantDependenciesAdjacencyList::class.java.name
+                || className == VariantDependenciesFlatList::class.java.name
                 || className == ProjectSyncIssues::class.java.name
     }
 
@@ -185,6 +192,7 @@ class ModelBuilder<
     ): Any? = when (className) {
         VariantDependencies::class.java.name -> buildVariantDependenciesModel(project, parameter)
         VariantDependenciesAdjacencyList::class.java.name -> buildVariantDependenciesModel(project, parameter, adjacencyList=true)
+        VariantDependenciesFlatList::class.java.name -> buildVariantDependenciesFlatListModel(project, parameter)
         ProjectGraph::class.java.name -> buildProjectGraphModel(project, parameter)
         Versions::class.java.name,
         AndroidProject::class.java.name,
@@ -250,7 +258,7 @@ class ModelBuilder<
          * method not called by current versions of Studio, the MINIMUM_MODEL_CONSUMER version must
          * be increased to exclude all older versions of Studio that called that method.
          */
-        val modelProducer = VersionImpl(11, 0, humanReadable = "Android Gradle Plugin 8.7")
+        val modelProducer = VersionImpl(12, 0, humanReadable = "Android Gradle Plugin 8.7")
         /**
          * The minimum required model consumer version, to allow AGP to control support for older
          * versions of Android Studio.
@@ -606,6 +614,82 @@ class ModelBuilder<
 
         return ProjectSyncIssuesImpl(issues)
     }
+
+    private fun buildVariantDependenciesFlatListModel(project: Project, parameter: ModelBuilderParameter): VariantDependenciesFlatList? {
+        val variantName = parameter.variantName
+        val variant = variantModel.variants.singleOrNull { it.name == variantName } ?: return null
+
+        val globalLibraryBuildService =
+            getBuildService(
+                project.gradle.sharedServices,
+                GlobalSyncService::class.java
+            ).get()
+
+        val libraryService = LibraryServiceImpl(globalLibraryBuildService.libraryCache)
+
+
+        val deviceTests = (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()
+        val hostTests = (variant as? HasHostTestsCreationConfig)?.hostTests?.values
+        val testFixtures = (variant as? HasTestFixtures)?.testFixtures
+
+        val components = mutableListOf<ComponentCreationConfig>()
+
+        components.add(variant)
+        deviceTests?.forEach { components.add(it) }
+        hostTests?.forEach { components.add(it) }
+        testFixtures?.let { components.add(it) }
+
+        val configTypes = listOf(COMPILE_CLASSPATH) +
+                if (parameter.dontBuildRuntimeClasspath) {
+                    emptyList()
+                } else {
+                    listOf(RUNTIME_CLASSPATH)
+                }
+
+        val results = components.associateWith { component ->
+            val failures = mutableListOf<Throwable>()
+            val graphs = configTypes.associateWith { configType ->
+                fun getAdditionalArtifacts(type: AdditionalArtifactType) =
+                    if (variant.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL))
+                        variant.variantDependencies.getAdditionalArtifacts(configType, type).artifactFiles.files.single()
+                    else
+                        null
+
+                val artifacts = getArtifactsForModelBuilder(component, configType) {
+                    failures.addAll(it)
+                }
+
+
+                artifacts.map {
+                    val javadoc = getAdditionalArtifacts(AdditionalArtifactType.JAVADOC)
+                    val source = getAdditionalArtifacts(AdditionalArtifactType.SOURCE)
+                    val sample = getAdditionalArtifacts(AdditionalArtifactType.SAMPLE)
+                    val additionalArtifacts = AdditionalArtifacts(javadoc, source, sample)
+                    libraryService.getLibrary(it, additionalArtifacts).key
+                }
+            }
+
+            ArtifactDependenciesFlatListImpl(
+                graphs[COMPILE_CLASSPATH]!!,
+                graphs[RUNTIME_CLASSPATH],
+                failures.map {
+                    // Try and extract the failed component. Unfortunately this is not provided
+                    // by gradle when requesting artifacts.
+                    UnresolvedDependencyImpl((it as? ModuleVersionResolveException)?.selector?.toString() ?: "", it.message)
+                }
+            )
+        }
+
+        return VariantDependenciesFlatListImpl(
+            name = variantName,
+            mainArtifact = results[variant]!!,
+            deviceTestArtifacts = deviceTests?.associate { it.artifactName to results[it]!! } ?: emptyMap(),
+            hostTestArtifacts = hostTests?.associate { it.componentType.artifactName to results[it]!!} ?: emptyMap(),
+            testFixturesArtifact = testFixtures?.let { results[it]!! },
+            libraryService.getAllLibraries()
+        )
+    }
+
 
     private fun buildVariantDependenciesModel(
         project: Project,
