@@ -44,6 +44,7 @@ class VariantDependencyTest : ModelComparator() {
         // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
         .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
         .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        .withHeap("2048m")
         .create()
 
      lateinit var androidProject: AndroidProject
