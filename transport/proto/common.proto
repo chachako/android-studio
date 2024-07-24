@@ -23,6 +23,7 @@ import "app_inspection.proto";
 import "cpu_data.proto";
 import "echo.proto";
 import "interaction_data.proto";
+import "leakcanary_data.proto";
 import "memory_data.proto";
 import "network_data.proto";
 import "user_counter_data.proto";
@@ -108,6 +109,9 @@ message Event {
 
     // Custom Event Visualization prefix = 700;
     USER_COUNTERS = 701;
+
+    // LeakCanary Prefix = 800
+    LEAKCANARY_LOGCAT = 801;
 
     // Demo echo event = 1000
     ECHO = 1000;
@@ -218,6 +222,9 @@ message Event {
 
     // Custom Event Visualization Prefix = 700;
     UserCounterData user_counters = 701;
+
+    // LeakCanary Prefix = 800
+    LeakCanaryLogcatData leakcanary_logcat = 801;
 
     // Echo Event Prefix = 1000
     echo.EchoData echo = 1000;

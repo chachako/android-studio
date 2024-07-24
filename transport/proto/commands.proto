@@ -57,6 +57,10 @@ message Command {
 
     // Event Profiler Prefix = 600
 
+    // LeakCanary Prefix = 800
+    START_LOGCAT_TRACKING = 801;
+    STOP_LOGCAT_TRACKING = 802;
+
     // Sample echo Command
     ECHO = 1000;
 
