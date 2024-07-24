@@ -259,6 +259,7 @@ class AccessibilityViewScrollActionsDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(AccessibilityViewScrollActionsDetector::class.java, Scope.JAVA_FILE_SCOPE),
+        androidSpecific = true,
       )
   }
 }

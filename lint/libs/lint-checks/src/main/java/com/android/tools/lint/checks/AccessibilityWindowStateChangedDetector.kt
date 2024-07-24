@@ -151,7 +151,11 @@ class AccessibilityWindowStateChangedDetector : Detector(), SourceCodeScanner {
         priority = 5,
         severity = Severity.WARNING,
         implementation =
-          Implementation(AccessibilityWindowStateChangedDetector::class.java, Scope.JAVA_FILE_SCOPE),
+          Implementation(
+            AccessibilityWindowStateChangedDetector::class.java,
+            Scope.JAVA_FILE_SCOPE,
+          ),
+        androidSpecific = true,
       )
   }
 }

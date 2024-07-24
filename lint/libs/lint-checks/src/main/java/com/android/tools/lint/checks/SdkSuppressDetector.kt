@@ -63,6 +63,7 @@ class SdkSuppressDetector : Detector(), SourceCodeScanner {
         priority = 4,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
+        androidSpecific = true,
       )
   }
 

@@ -117,6 +117,7 @@ class AccessibilityForceFocusDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(AccessibilityForceFocusDetector::class.java, Scope.JAVA_FILE_SCOPE),
+        androidSpecific = true,
       )
   }
 }
