@@ -56,8 +56,7 @@ class ProjectIsolationWithAnalyticsTest {
     fun testWithProjectIsolation() {
         project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION)
-            // b/314817109
-            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=1")
+            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=0")
             .run("assemble")
     }
 }
