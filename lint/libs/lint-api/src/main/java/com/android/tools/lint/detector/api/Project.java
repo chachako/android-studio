@@ -1025,13 +1025,21 @@ public class Project {
                 // If the minSdk version is a number we don't need to look up
                 // SDK targets to resolve code names (and computing the target list
                 // is expensive)
-                manifestMinSdk = SdkVersionInfo.getVersion(minSdk, null);
+                AndroidVersion version = SdkVersionInfo.getVersion(minSdk, null);
+                if (version == null) {
+                    version = AndroidVersion.DEFAULT;
+                }
+                manifestMinSdk = version;
             }
 
             if (element.hasAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)) {
                 String targetSdk = element.getAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION);
                 if (!targetSdk.isEmpty()) {
-                    manifestTargetSdk = SdkVersionInfo.getVersion(targetSdk, null);
+                    AndroidVersion version = SdkVersionInfo.getVersion(targetSdk, null);
+                    if (version == null) {
+                        version = AndroidVersion.DEFAULT;
+                    }
+                    manifestTargetSdk = version;
                 }
             } else {
                 manifestTargetSdk = manifestMinSdk;

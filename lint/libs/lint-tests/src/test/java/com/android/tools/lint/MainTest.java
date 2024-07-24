@@ -1031,6 +1031,30 @@ public class MainTest extends AbstractCheckTest {
                 new String[] {"--check", "HardcodedText", project.getPath()});
     }
 
+    public void testInvalidMinAndTargetSdk() throws Exception {
+        // Regression test for b/353954025
+        File project =
+                getProjectDir(
+                        null,
+                        manifest(
+                                "<manifest"
+                                    + " xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"test.pkg\">\n"
+                                    + "    <uses-sdk android:minSdkVersion=\"0\""
+                                    + " android:targetSdkVersion=\"0\" />\n"
+                                    + "</manifest>"));
+        checkDriver(
+                "No issues found.",
+                "",
+
+                // Expected exit code
+                ERRNO_SUCCESS,
+
+                // Args
+                new String[] {
+                    "--disable", "MissingVersion,ExpiredTargetSdkVersion", project.getPath()
+                });
+    }
+
     public void testSkipAnnotated() throws Exception {
         // Tests --skip-annotated
 
