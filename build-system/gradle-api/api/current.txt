@@ -548,8 +548,10 @@ package com.android.build.api.dsl {
   }
 
   public interface AssetPackBundleExtension {
+    method @org.gradle.api.Incubating public void aiModelVersion(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAiModelVersion,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void countrySet(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void deviceTier(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleAiModelVersion getAiModelVersion();
     method public String getApplicationId();
     method public java.util.Set<java.lang.String> getAssetPacks();
     method public int getCompileSdk();
@@ -564,6 +566,7 @@ package com.android.build.api.dsl {
     method public void setVersionTag(String);
     method public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     method public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleAiModelVersion aiModelVersion;
     property public abstract String applicationId;
     property public abstract java.util.Set<java.lang.String> assetPacks;
     property public abstract int compileSdk;
@@ -724,11 +727,13 @@ package com.android.build.api.dsl {
 
   public interface Bundle {
     method public void abi(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAbi,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void aiModelVersion(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAiModelVersion,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void codeTransparency(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCodeTransparency,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void countrySet(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet,kotlin.Unit> action);
     method public void density(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDensity,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void deviceTier(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier,kotlin.Unit> action);
     method public com.android.build.api.dsl.BundleAbi getAbi();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleAiModelVersion getAiModelVersion();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleCodeTransparency getCodeTransparency();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleCountrySet getCountrySet();
     method public com.android.build.api.dsl.BundleDensity getDensity();
@@ -741,6 +746,7 @@ package com.android.build.api.dsl {
     method public void storeArchive(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleStoreArchive,kotlin.Unit> action);
     method public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.BundleAbi abi;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleAiModelVersion aiModelVersion;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleCodeTransparency codeTransparency;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleCountrySet countrySet;
     property public abstract com.android.build.api.dsl.BundleDensity density;
@@ -754,6 +760,15 @@ package com.android.build.api.dsl {
   public interface BundleAbi {
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
     method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
+    property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
+  }
+
+  @org.gradle.api.Incubating public interface BundleAiModelVersion {
+    method @org.gradle.api.Incubating public String? getDefaultVersion();
+    method @org.gradle.api.Incubating public Boolean? getEnableSplit();
+    method @org.gradle.api.Incubating public void setDefaultVersion(String?);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
+    property @org.gradle.api.Incubating public abstract String? defaultVersion;
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 

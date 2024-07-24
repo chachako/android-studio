@@ -725,6 +725,15 @@ https://issuetracker.google.com/350672659
   * com.android.build.api.dsl.AiPackExtension.getModelDependency: com.android.build.api.dsl.ModelDependency ()
   * com.android.build.api.dsl.AiPackExtension.getPackName: org.gradle.api.provider.Property<java.lang.String> ()
   * com.android.build.api.dsl.AiPackExtension.modelDependency: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ModelDependency, kotlin.Unit>)
+  * com.android.build.api.dsl.AssetPackBundleExtension.aiModelVersion: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAiModelVersion, kotlin.Unit>)
+  * com.android.build.api.dsl.AssetPackBundleExtension.getAiModelVersion: com.android.build.api.dsl.BundleAiModelVersion ()
+  * com.android.build.api.dsl.Bundle.aiModelVersion: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAiModelVersion, kotlin.Unit>)
+  * com.android.build.api.dsl.Bundle.getAiModelVersion: com.android.build.api.dsl.BundleAiModelVersion ()
+  * com.android.build.api.dsl.BundleAiModelVersion
+  * com.android.build.api.dsl.BundleAiModelVersion.getDefaultVersion: java.lang.String ()
+  * com.android.build.api.dsl.BundleAiModelVersion.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleAiModelVersion.setDefaultVersion: void (java.lang.String)
+  * com.android.build.api.dsl.BundleAiModelVersion.setEnableSplit: void (java.lang.Boolean)
   * com.android.build.api.dsl.ModelDependency
   * com.android.build.api.dsl.ModelDependency.getAiModelName: org.gradle.api.provider.Property<java.lang.String> ()
   * com.android.build.api.dsl.ModelDependency.getAiModelPackageName: org.gradle.api.provider.Property<java.lang.String> ()

@@ -38,11 +38,18 @@ class AiPackTest {
     private val aiPackTestApp = MultiModuleTestProject.builder().apply {
         val app = MinimalSubProject.app("$packageName")
             .appendToBuild(
-                // TODO(@hughed): split by model version
-                """android.assetPacks = [
-                    |':customModelInstallTime',
-                    |':customModelFastFollow',
-                    |':modelAdaptationOnDemand']""".trimMargin()
+                """
+                android {
+                    assetPacks = [':customModelInstallTime', ':customModelFastFollow', ':modelAdaptationOnDemand']
+
+                    bundle {
+                        aiModelVersion {
+                            enableSplit = true
+                            defaultVersion = '1'
+                        }
+                    }
+                }
+                """.trimIndent()
             )
 
         val customModelInstallTime = MinimalSubProject.aiPack()
@@ -129,8 +136,18 @@ class AiPackTest {
         ZipFile(bundleFile).use { zip ->
             val appBundle = AppBundle.buildFromZip(zip)
 
-            // TODO(@hughed): Assert that AI_MODEL_DIMENSION is set
             val splitsConfigBuilder = Config.SplitsConfig.newBuilder()
+            splitsConfigBuilder
+                .addSplitDimension(
+                    Config.SplitDimension.newBuilder().setValue(Config.SplitDimension.Value.AI_MODEL_VERSION)
+                        .setSuffixStripping(
+                            Config.SuffixStripping.newBuilder()
+                                .setEnabled(true)
+                                .setDefaultSuffix("1")
+                        )
+                        .setNegate(false)
+                )
+                .build()
             assertThat(appBundle.bundleConfig.optimizations.splitsConfig)
                 .isEqualTo(splitsConfigBuilder.build())
 

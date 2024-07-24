@@ -296,6 +296,18 @@ abstract class PackageBundleTask : NonIncrementalTask() {
                         .setNegate(!it)
                 )
             }
+            parameters.bundleOptions.get().enableAiModelVersion?.let {
+                splitsConfig.addSplitDimension(
+                    Config.SplitDimension.newBuilder()
+                        .setValue(Config.SplitDimension.Value.AI_MODEL_VERSION)
+                        .setSuffixStripping(
+                            Config.SuffixStripping.newBuilder()
+                                .setEnabled(true)
+                                .setDefaultSuffix(parameters.bundleOptions.get().defaultAiModelVersion?: "")
+                        )
+                        .setNegate(!it)
+                )
+            }
 
             val pageAlignment = when(parameters.pageSize.orNull) {
                 null -> PageAlignment.PAGE_ALIGNMENT_UNSPECIFIED
@@ -488,6 +500,12 @@ abstract class PackageBundleTask : NonIncrementalTask() {
         @get:Input
         @get:Optional
         val defaultCountrySet: String?,
+        @get:Input
+        @get:Optional
+        val enableAiModelVersion: Boolean?,
+        @get:Input
+        @get:Optional
+        val defaultAiModelVersion: String?,
     ) : Serializable
 
     data class AssetPackOptionsForAssetPackBundle(
@@ -687,6 +705,8 @@ private fun com.android.build.api.dsl.Bundle.convert() =
       enableStoreArchive = storeArchive.enable ?: true,
       enableCountrySet = countrySet.enableSplit,
       defaultCountrySet = countrySet.defaultSet,
+      enableAiModelVersion = aiModelVersion.enableSplit,
+      defaultAiModelVersion = aiModelVersion.defaultVersion,
     )
 
 private fun AssetPackBundleExtension.convert() =
@@ -701,6 +721,8 @@ private fun AssetPackBundleExtension.convert() =
         enableStoreArchive = false,
         enableCountrySet = countrySet.enableSplit,
         defaultCountrySet = countrySet.defaultSet,
+        enableAiModelVersion = aiModelVersion.enableSplit,
+        defaultAiModelVersion = aiModelVersion.defaultVersion,
     )
 
 /**
