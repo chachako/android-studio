@@ -26,6 +26,7 @@ import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isReturningLambdaResult
 import com.android.tools.lint.detector.api.isScopingIt
 import com.android.tools.lint.detector.api.isScopingThis
+import com.android.tools.lint.detector.api.isSyntheticJavaGetterSetterCallForPropertyAccess
 import com.android.tools.lint.detector.api.skipLabeledExpression
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiClassType
@@ -535,6 +536,15 @@ abstract class DataFlowAnalyzer(
     // - After: to call "argument(...)" for each argument, we must wait until after we have visited
     //   the arguments because visiting an argument may cause it to become tracked.
 
+    // TODO: It would be better to visit the arguments of scope function calls (except for the
+    //  lambda) _before_ doing scope function tracking propagation because arguments might
+    //  not become tracked until they have been visited.
+    // E.g.
+    // with (blah!!) { } // where blah is tracked
+    // with (foo.age) {} // where age is actually a getAge() Java getter, and the call is tracked.
+    //
+    // In the above examples, the arguments are only tracked after being visited.
+
     handleVisitCallExpression(node)
     return super.visitCallExpression(node)
   }
@@ -549,6 +559,14 @@ abstract class DataFlowAnalyzer(
           argument(node, expression)
         }
       }
+    }
+
+    if (node.isSyntheticJavaGetterSetterCallForPropertyAccess() && isTracked(node)) {
+      // This UCallExpression is synthetic, and cannot be found via properties
+      // or methods of the parent USimpleNameReferenceExpression. See
+      // isSyntheticJavaGetterSetterCallForPropertyAccess. Thus, we propagate
+      // tracking to the parent.
+      node.uastParent?.let { track(it) }
     }
 
     super.afterVisitCallExpression(node)

@@ -1141,3 +1141,24 @@ fun PsiMember.belongsToJvmPrimitiveType(): Boolean {
 fun UBinaryExpression.resolveOperatorUnlessJvmPrimitiveType(): PsiMethod? {
   return resolveOperator()?.takeIf { !it.belongsToJvmPrimitiveType() }
 }
+
+/**
+ * Returns true if [this] is a synthetic call of a Java getter or setter for a Kotlin property
+ * access.
+ *
+ * KotlinUSimpleReferenceExpression adds synthetic function calls to Java getters/setters for Kotlin
+ * property accesses. See KotlinUSimpleReferenceExpression.accept(...).
+ *
+ * E.g. The right-hand side of `val r = context.contentResolver` looks like:
+ * ```
+ * USimpleNameReferenceExpression (identifier = context)
+ * USimpleNameReferenceExpression (identifier = contentResolver)
+ *     UCallExpression (kind = UastCallKind(name='method_call'), argCount = 0))
+ *         UIdentifier (Identifier (contentResolver))
+ * ```
+ *
+ * The UCallExpression is synthetic, created by the accept function. It cannot be found via
+ * properties or methods of the USimpleNameReferenceExpression.
+ */
+fun UCallExpression.isSyntheticJavaGetterSetterCallForPropertyAccess(): Boolean =
+  uastParent is USimpleNameReferenceExpression
