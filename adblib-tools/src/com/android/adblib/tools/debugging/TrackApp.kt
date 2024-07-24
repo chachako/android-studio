@@ -30,6 +30,7 @@ import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
+import com.android.adblib.tools.debugging.utils.serviceFlowToMutableStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
