@@ -43,7 +43,11 @@ class SkinTest {
 
   @Test
   fun testSkinFromConfig_genericSkin() {
-    assertThat(skinFromConfig(mapOf(ConfigKey.SKIN_NAME to "1000x1400")))
+    assertThat(
+        skinFromConfig(
+          mapOf(ConfigKey.SKIN_NAME to "1000x1400", ConfigKey.SKIN_PATH to "1000x1400")
+        )
+      )
       .isEqualTo(GenericSkin(1000, 1400))
   }
 }
