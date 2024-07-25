@@ -173,7 +173,10 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                             BuiltArtifactsSplitOutputMatcher.INSTANCE.computeBestOutput(
                                     deviceConfigProvider, builtArtifacts, supportedAbis));
                 }
-                if (device.getSupportsPrivacySandbox()) {
+                boolean privacySandboxSdksPresent =
+                        !privacySandboxSdksApksFiles.isEmpty()
+                                || additionalSupportedSdkApkSplits.isPresent();
+                if (privacySandboxSdksPresent && device.getSupportsPrivacySandbox()) {
                     privacySandboxSdksApksFiles.forEach(
                             file -> {
                                 List<File> sdkApkFiles =
@@ -192,7 +195,8 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                 } catch (DeviceException e) {
                                     logger.error(
                                             String.format(
-                                                    "Failed to install privacy sandbox SDK APKs from %s",
+                                                    "Failed to install privacy sandbox SDK APKs"
+                                                        + " from %s",
                                                     file.toPath()),
                                             e);
                                 }
