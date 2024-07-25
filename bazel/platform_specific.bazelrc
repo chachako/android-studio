@@ -1,7 +1,7 @@
 #
 # Linux
 #
-common:linux --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/linux/ndk/26.1.10909125
+common:linux --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/linux/ndk/27.0.12077973
 common:linux --repo_env=ANDROID_HOME=prebuilts/studio/sdk/linux
 
 build:linux --bes_keywords=linux
@@ -14,7 +14,7 @@ build:linux --dynamic_local_strategy=worker,sandboxed,local
 #
 # Windows
 #
-common:windows --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/windows/ndk/26.1.10909125
+common:windows --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/windows/ndk/27.0.12077973
 common:windows --repo_env=ANDROID_HOME=prebuilts/studio/sdk/windows
 
 build:windows --bes_keywords=windows
@@ -32,7 +32,7 @@ build:windows --nobuild_python_zip
 #
 # Mac
 #
-common:macos --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/darwin/ndk/26.1.10909125
+common:macos --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/darwin/ndk/27.0.12077973
 common:macos --repo_env=ANDROID_HOME=prebuilts/studio/sdk/darwin
 
 build:macos --bes_keywords=macos

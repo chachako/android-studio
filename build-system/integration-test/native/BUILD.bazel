@@ -28,10 +28,6 @@ NDK_20 = [
     "//prebuilts/studio/sdk:ndk-20",
 ]
 
-NDK_27 = [
-    "//prebuilts/studio/sdk:ndk-27",
-]
-
 DOLPHIN = [
     "//prebuilts/studio/buildbenchmarks/dolphin.3627ef8a:dolphin.3627ef8a",
 ]
@@ -363,7 +359,7 @@ gradle_integration_test(
         "src/test/java/com/android/build/gradle/integration/ndk/AbstractModuleToModuleDepsTest.kt",
         "src/test/java/com/android/build/gradle/integration/ndk/RiscvModuleToModuleDepsTest.kt",
     ],
-    data = DATA + CMAKE + NDK_27 + [
+    data = DATA + CMAKE + NDK + [
         "//tools/base/build-system/integration-test:test-projects/prefabApp",
         "//tools/base/build-system/integration-test:test-projects/prefabNoDeps",
     ],
@@ -405,7 +401,7 @@ single_gradle_integration_test(
 single_gradle_integration_test(
     name = "NdkRiscvBuildTest",
     srcs = "src/test/java/com/android/build/gradle/integration/nativebuild/",
-    data = DATA + CMAKE + NDK_27,
+    data = DATA + CMAKE + NDK,
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = MAVEN_REPOS,
     deps = DEPS,

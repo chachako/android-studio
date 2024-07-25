@@ -16,7 +16,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.checkSingleIssue
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -100,7 +100,7 @@ class AbiRelatedDslUsageTest {
                     android {
                         namespace "${HelloWorldApp.NAMESPACE}"
                         compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
-                        ndkVersion '$NDK_WITH_RISCV_ABI'
+                        ndkVersion '$DEFAULT_NDK_SIDE_BY_SIDE_VERSION'
                         buildToolsVersion '${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}'
                         defaultConfig {
                             applicationId "demo.bug"
@@ -126,7 +126,7 @@ class AbiRelatedDslUsageTest {
                     android {
                         namespace "${HelloWorldApp.NAMESPACE}"
                         compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
-                        ndkVersion '$NDK_WITH_RISCV_ABI'
+                        ndkVersion '$DEFAULT_NDK_SIDE_BY_SIDE_VERSION'
                         buildToolsVersion '${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}'
                         defaultConfig {
                             applicationId "demo.bug"
@@ -156,7 +156,7 @@ class AbiRelatedDslUsageTest {
                     android {
                         namespace "${HelloWorldApp.NAMESPACE}"
                         compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
-                        ndkVersion '$NDK_WITH_RISCV_ABI'
+                        ndkVersion '$DEFAULT_NDK_SIDE_BY_SIDE_VERSION'
                         buildToolsVersion '${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}'
                         defaultConfig {
                             applicationId "demo.bug"

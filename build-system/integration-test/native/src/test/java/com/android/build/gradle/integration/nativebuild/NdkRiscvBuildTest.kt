@@ -17,7 +17,7 @@
 package com.android.build.gradle.integration.nativebuild
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldJniApp
 import com.android.build.gradle.integration.common.truth.TruthHelper
@@ -34,7 +34,7 @@ class NdkRiscvBuildTest {
     @JvmField
     val project = builder()
         .fromTestApp(HelloWorldJniApp.builder().withCmake().build())
-        .setSideBySideNdkVersion(NDK_WITH_RISCV_ABI)
+        .setSideBySideNdkVersion(DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
         .create()
 
     private fun setupBuildFile(isLibrary: Boolean = false) {
@@ -44,7 +44,7 @@ class NdkRiscvBuildTest {
                 android {
                     namespace "com.example.hellojni"
                     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
-                    ndkVersion '$NDK_WITH_RISCV_ABI'
+                    ndkVersion '$DEFAULT_NDK_SIDE_BY_SIDE_VERSION'
                     buildToolsVersion '${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}'
                     defaultConfig {
                         minSdk 21

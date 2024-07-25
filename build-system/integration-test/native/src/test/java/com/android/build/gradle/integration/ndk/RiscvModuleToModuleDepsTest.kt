@@ -17,7 +17,7 @@
 package com.android.build.gradle.integration.ndk
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
 import com.android.testutils.AssumeUtil
 import org.junit.Before
 import org.junit.Rule
@@ -48,7 +48,7 @@ class RiscvModuleToModuleDepsTest(
     val project =
         GradleTestProject.builder()
             .fromTestApp(multiModule)
-            .setSideBySideNdkVersion(NDK_WITH_RISCV_ABI)
+            .setSideBySideNdkVersion(DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
             .create()
     companion object {
         @Parameterized.Parameters(
@@ -61,7 +61,7 @@ class RiscvModuleToModuleDepsTest(
     @Before
     fun setUp() {
         setupProject(
-            NDK_WITH_RISCV_ABI,
+            DEFAULT_NDK_SIDE_BY_SIDE_VERSION,
             appAbiFilters = """
             ndk {
                 abiFilters "riscv64"

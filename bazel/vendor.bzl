@@ -13,7 +13,7 @@ def setup_vendor_repositories():
     setup_vendor_repos()
 
     android_ndk_repository(
-      name = "androidndk",
-      api_level = 26,
+        name = "androidndk",
+        api_level = 27,
     )
     native.register_toolchains("@androidndk//:all")
