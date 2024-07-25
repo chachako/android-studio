@@ -9493,6 +9493,24 @@ public class ApiDetectorTest extends AbstractCheckTest {
         }
     }
 
+    public void testRemoveWithAlias() {
+        // TODO(b/350744053)
+        if (UastEnvironmentKt.useFirUast()) {
+            return;
+        }
+        // Regression test for b/355299370
+        lint().files(
+                        kotlin(
+                                ""
+                                        + "import kotlin.collections.removeLast as removeLastKt\n"
+                                        + "\n"
+                                        + "fun doThings(myList: MutableList<String>) {\n"
+                                        + "   myList.removeLastKt()\n"
+                                        + "}"))
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

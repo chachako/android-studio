@@ -2180,7 +2180,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
         (owner == "kotlin.collections.CollectionsKt__MutableCollectionsKt" ||
           owner == "kotlin.collections.CollectionsKt") &&
-          (name == "removeFirst" || name == "removeLast") -> {
+          (name == "removeFirst" || name == "removeLast") &&
+          !call.isAliased() -> {
           val incident =
             Incident(
               UNSUPPORTED,
@@ -2192,6 +2193,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           context.report(incident.overrideSeverity(Severity.WARNING))
         }
       }
+    }
+
+    /** Whether this method call is calling the method by something other than its real name */
+    private fun UCallExpression.isAliased(): Boolean {
+      return methodIdentifier?.name != methodName
     }
 
     private fun checkKotlinStdlibAlias(
