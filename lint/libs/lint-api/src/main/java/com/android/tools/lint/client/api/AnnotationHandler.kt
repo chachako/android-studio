@@ -620,7 +620,7 @@ internal class AnnotationHandler(
     }
     for (scanner in uastScanners) {
       if (scanner.isApplicableAnnotationUsage(type)) {
-        // Some annotations should not be treated as inherited though
+        // Some annotations should not be treated as inherited through
         // the hierarchy: if that's the case for this annotation in
         // this scanner, check whether it's inherited and if so, skip it
         if (type != DEFINITION && !scanner.inheritAnnotation(signature) && info.isInherited()) {
@@ -674,7 +674,7 @@ internal class AnnotationHandler(
     }
     for (scanner in uastScanners) {
       if (scanner.isApplicableAnnotationUsage(type)) {
-        // Some annotations should not be treated as inherited though
+        // Some annotations should not be treated as inherited through
         // the hierarchy: if that's the case for this annotation in
         // this scanner, check whether it's inherited and if so, skip it
         if (type != DEFINITION && !scanner.inheritAnnotation(signature) && info.isInherited()) {
