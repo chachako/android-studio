@@ -128,8 +128,8 @@ void CreateVulkanDevice(ANativeWindow* platformWindow,
   // for this sample, we use the very first GPU device found on the system
   uint32_t gpuCount = 0;
   CALL_VK(vkEnumeratePhysicalDevices(device.instance_, &gpuCount, nullptr));
-  VkPhysicalDevice tmpGpus[gpuCount];
-  CALL_VK(vkEnumeratePhysicalDevices(device.instance_, &gpuCount, tmpGpus));
+  std::vector<VkPhysicalDevice> tmpGpus(gpuCount);
+  CALL_VK(vkEnumeratePhysicalDevices(device.instance_, &gpuCount, tmpGpus.data()));
   device.gpuDevice_ = tmpGpus[0];  // Pick up the first GPU Device
 
   // Create a logical device (vulkan device)

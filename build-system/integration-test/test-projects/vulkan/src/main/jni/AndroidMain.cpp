@@ -43,7 +43,7 @@ void android_main(struct android_app* app) {
 
   // Main loop
   do {
-    if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
+    if (ALooper_pollOnce(IsVulkanReady() ? 1 : 0, nullptr,
                         &events, (void**)&source) >= 0) {
       if (source != NULL) source->process(app, source);
     }
