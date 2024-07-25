@@ -25,7 +25,7 @@ package google.devtools.testing.v1;
 // (-- One Platform Proto Options. See http://go/api-style#engedupagetoc42 --)
 option java_multiple_files = true;
 option java_outer_classname = "AdbServiceProto";
-option java_package = "com.android.tools.adbbridge";
+option java_package = "com.google.devtools.testing.v1";
 
 // A message returned from a device.
 message DeviceMessage {
