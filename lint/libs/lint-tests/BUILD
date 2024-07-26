@@ -91,6 +91,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:truth-java8-extension[test]",
         "//tools/analytics-library/shared:analytics-shared[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
+        "//tools/adt/idea/.idea/libraries:mockito-kotlin[test]",
         "//tools/base/common:studio.android.sdktools.common.testfixtures[module, test]",
         "//tools/base/lint:studio.android.sdktools.lint-checks[module, test]",
         "@intellij//:intellij-sdk[test]",

@@ -59,6 +59,7 @@ import com.android.utils.XmlUtils
 import com.android.utils.iterator
 import com.android.xml.AndroidManifest
 import com.android.xml.AndroidManifest.ATTRIBUTE_NAME
+import com.android.xml.AndroidManifest.NODE_ACTION
 import com.android.xml.AndroidManifest.NODE_DATA
 import com.google.common.base.Joiner
 import com.google.common.collect.Lists
@@ -66,6 +67,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.function.Consumer
 import java.util.regex.Pattern
+import org.jetbrains.annotations.VisibleForTesting
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -85,9 +87,17 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
   }
 
-  private fun checkIntentFilter(context: XmlContext, element: Element) {
-    var dataTag: Node? = XmlUtils.getFirstSubTagByName(element, NODE_DATA) ?: return
-    if (XmlUtils.getNextTagByName(dataTag, NODE_DATA) == null) return
+  /**
+   * Reports incidents for intent filter [intentFilter]. Note that intent filters inside an
+   * <activity> (as opposed to those inside a <service>, <receiver>, etc.) have additional
+   * restrictions/requirements, which are not checked here.
+   */
+  private fun checkIntentFilter(context: XmlContext, intentFilter: Element) {
+    // --- Check "splitting" (Recommend splitting a data tag into multiple tags with individual
+    // attributes ---
+    var dataTag: Node? = XmlUtils.getFirstSubTagByName(intentFilter, NODE_DATA) ?: return
+    if (XmlUtils.getNextTagByName(dataTag, NODE_DATA) == null)
+      return // This check only applies if there's > 1 data tag.
 
     val incidents = mutableListOf<Incident>()
     var dataTagCount = 0
@@ -131,7 +141,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         INTENT_FILTER_DATA_SORT_REFERENCE.indexOf(it.localName).takeIf { it >= 0 } ?: Int.MAX_VALUE
       }
 
-      val namespace = element.lookupPrefix(ANDROID_URI) ?: ANDROID_NS_NAME
+      val namespace = intentFilter.lookupPrefix(ANDROID_URI) ?: ANDROID_NS_NAME
       val hostIndex = attributes.indexOfFirst { it.localName == ATTR_HOST }
       val portIndex = attributes.indexOfFirst { it.localName == ATTR_PORT }
 
@@ -187,7 +197,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   }
 
   private fun checkActivity(context: XmlContext, element: Element) {
-    val infos = createUriInfos(element, context)
+    val infos = checkActivityIntentFiltersAndGetUriInfos(element, context)
     var current = XmlUtils.getFirstSubTagByName(element, TAG_VALIDATION)
     while (current != null) {
       if (TOOLS_URI == current.namespaceURI) {
@@ -199,7 +209,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           val testUrlString = testUrlAttr.value
           try {
             val testUrl = URL(testUrlString)
-            val reason = testElement(testUrl, infos)
+            val reason = checkTestUrlMatchesAtLeastOneInfo(testUrl, infos)
             if (reason != null) {
               reportTestUrlFailure(
                 context,
@@ -255,38 +265,39 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   }
 
   /**
-   * Given an activity (or activity alias) element, looks up the intent filters that contain URIs
-   * and creates a list of [UriInfo] objects for these
+   * Given an activity (or activity alias) element, looks up the intent filters that contain URIs,
+   * reports incidents for them, and creates a list of [UriInfo] objects to describe them.
    *
    * @param activity the activity
-   * @param context an **optional** lint context to pass in; if provided, lint will validate the
-   *   activity attributes and report link-related problems (such as unknown scheme, wrong port
-   *   number etc)
+   * @param context a Lint context to validate the activity attributes and report link-related
+   *   problems (such as unknown scheme, wrong port number, etc.)
    * @return a list of URI infos, if any
    */
-  fun createUriInfos(activity: Element, context: XmlContext?): List<UriInfo> {
+  @VisibleForTesting
+  fun checkActivityIntentFiltersAndGetUriInfos(
+    activity: Element,
+    context: XmlContext,
+  ): List<UriInfo> {
     var intent = XmlUtils.getFirstSubTagByName(activity, TAG_INTENT_FILTER)
     val infos: MutableList<UriInfo> = Lists.newArrayList()
     while (intent != null) {
-      val uriInfo = checkIntent(context, intent, activity)
-      if (uriInfo != null) {
-        infos.add(uriInfo)
-      }
+      handleIntentFilterInActivity(context, intent, activity)?.let { infos.add(it) }
       intent = XmlUtils.getNextTagByName(intent, TAG_INTENT_FILTER)
     }
     return infos
   }
 
   /**
-   * Given a test URL and a list of URI infos (previously returned from [createUriInfos]) this
-   * method checks whether the URL matches, and if so returns null, otherwise returning the reason
-   * for the mismatch.
+   * Given a test URL and a list of URI infos (previously returned from
+   * [checkActivityIntentFiltersAndGetUriInfos]) this method checks whether the URL matches, and if
+   * so returns null, otherwise returning the reason for the mismatch.
    *
    * @param testUrl the URL to test
    * @param infos the URL information
    * @return null for a match, otherwise the failure reason
    */
-  fun testElement(testUrl: URL, infos: List<UriInfo>): String? {
+  @VisibleForTesting
+  fun checkTestUrlMatchesAtLeastOneInfo(testUrl: URL, infos: List<UriInfo>): String? {
     val reasons = mutableListOf<String>()
     for (info in infos) {
       val reason = info.match(testUrl) ?: return null // found a match
@@ -301,21 +312,49 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
   }
 
-  private fun checkIntent(context: XmlContext?, intent: Element, activity: Element): UriInfo? {
-    val firstData = XmlUtils.getFirstSubTagByName(intent, TAG_DATA)
-    val actionView = hasActionView(intent)
-    val browsable = isBrowsable(intent)
-    if (actionView && context != null) {
-      ensureExported(context, activity, intent)
+  /**
+   * Processes an intent filter element ([intentFilter]), inside the activity element [activity], in
+   * the [XmlContext] [context].
+   *
+   * Note that intent filters inside an <activity> (as opposed to those inside a <service>,
+   * <receiver>, etc.) have additional restrictions/requirements. As a result, this function is only
+   * called for intent filters inside an activity, whereas [checkIntentFilter] is called for all
+   * intent filters (including those inside a <service>, <receiver>, etc.).
+   *
+   * @return The [UriInfo] containing the schemes, hosts, ports, and paths within this intent
+   *   filter.
+   */
+  private fun handleIntentFilterInActivity(
+    context: XmlContext,
+    intentFilter: Element,
+    activity: Element,
+  ): UriInfo? {
+    // --- Check "non-exported activity" (Activity has one intent filter supporting ACTION_VIEW, but
+    // is not exported) ---
+    val actionView = hasActionView(intentFilter)
+    if (actionView) {
+      ensureExported(context, activity, intentFilter)
     }
+
+    // --- Check "missing data node" (Intent filter has ACTION_VIEW & CATEGORY_BROWSABLE, but no
+    // data node) ---
+    val firstData = XmlUtils.getFirstSubTagByName(intentFilter, TAG_DATA)
+    val browsable = isBrowsable(intentFilter)
     if (firstData == null) {
-      if (actionView && browsable && context != null) {
-        // If this activity is an ACTION_VIEW action with category BROWSABLE, but doesn't
-        // have data node, it's a likely mistake
-        reportUrlError(context, intent, context.getLocation(intent), "Missing data element")
+      if (actionView && browsable) {
+        // If this intent has ACTION_VIEW and CATEGORY_BROWSABLE, but doesn't have a data node, it's
+        // a likely mistake
+        reportUrlError(
+          context,
+          intentFilter,
+          context.getLocation(intentFilter),
+          "Missing data element",
+        )
       }
       return null
     }
+
+    // Gather data about scheme, host, port, path, mimeType tags so that we can check them
     var schemes: MutableList<String>? = null
     var hosts: MutableList<String>? = null
     var ports: MutableList<String>? = null
@@ -326,24 +365,25 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       val mimeType = data.getAttributeNodeNS(ANDROID_URI, ATTR_MIME_TYPE)
       if (mimeType != null) {
         hasMimeType = true
-        if (context != null) {
-          val mimeTypeValue = mimeType.value
-          val resolved = resolvePlaceHolders(context.project, mimeTypeValue, null, "")
-          if (CharSequences.containsUpperCase(resolved)) {
-            var message =
-              ("Mime-type matching is case sensitive and should only " +
-                "use lower-case characters")
-            if (
-              !CharSequences.containsUpperCase(resolvePlaceHolders(null, mimeTypeValue, null, ""))
-            ) {
-              // The upper case character is only present in the substituted
-              // manifest place holders, so include them in the message
-              message += " (without placeholders, value is `$resolved`)"
-            }
-            reportUrlError(context, mimeType, context.getValueLocation(mimeType), message)
+        val mimeTypeValue = mimeType.value
+        val resolved = resolvePlaceHolders(context.project, mimeTypeValue, null, "")
+        if (CharSequences.containsUpperCase(resolved)) {
+          var message =
+            ("Mime-type matching is case sensitive and should only " + "use lower-case characters")
+          if (
+            !CharSequences.containsUpperCase(resolvePlaceHolders(null, mimeTypeValue, null, ""))
+          ) {
+            // The upper case character is only present in the substituted
+            // manifest placeholders, so include them in the message
+            message += " (without placeholders, value is `$resolved`)"
           }
+          // --- Check 4 "mimeType" (mimeType matching has uppercase characters) ---
+          reportUrlError(context, mimeType, context.getValueLocation(mimeType), message)
         }
       }
+
+      // Multiple checks for "valid attributes" (Schemes, hosts, ports, paths all pass validation
+      // (see validateAttribute, and requireNonEmpty below))
       schemes = addAttribute(context, ATTR_SCHEME, schemes, data)
       hosts = addAttribute(context, ATTR_HOST, hosts, data)
       ports = addAttribute(context, ATTR_PORT, ports, data)
@@ -360,9 +400,9 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         )
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
-    if (actionView && browsable && schemes == null && !hasMimeType && context != null) {
-      // If this activity is an action view, is browsable, but has neither a
-      // URL nor mimeType, it may be a mistake and we will report error.
+    if (actionView && browsable && schemes == null && !hasMimeType) {
+      // --- Check "missing URL" (This intent filter has a view action and browsable category, but
+      // has neither a URL nor mimeType.) ---
       reportUrlError(
         context,
         firstData,
@@ -394,95 +434,97 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
 
     // Validation
-    if (context != null) {
-      // autoVerify means this is an Android App Link:
-      // https://developer.android.com/training/app-links#android-app-links
-      if (isAutoVerify(intent)) {
-        // Report an error if required elements/attributes are missing.
-        if (
-          !actionView ||
-            !hasCategoryDefault(intent) ||
-            !browsable ||
-            (!isHttp && !hasSubstitutedScheme) ||
-            hosts == null
-        ) {
-          // If we are in Studio then add quick-fix data so that Studio adds the
-          // "Launch App Links Assistant" quick-fix.
-          val fix =
-            if (LintClient.isStudio) {
-              fix().data(KEY_SHOW_APP_LINKS_ASSISTANT, true)
-            } else {
-              null
-            }
-
-          reportUrlError(
-            context,
-            intent,
-            context.getLocation(intent),
-            "Missing required elements/attributes for Android App Links",
-            fix,
-          )
-        }
-      }
-
-      val hasScheme = schemes != null
-      // If there are hosts, paths, or ports, then there should be a scheme.
-      if (!hasScheme && (hosts != null || paths != null || ports != null)) {
-        val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
-        reportUrlError(
-          context,
-          firstData,
-          context.getLocation(firstData),
-          "At least one `scheme` must be specified",
-          fix,
-        )
-      }
+    // autoVerify means this is an Android App Link:
+    // https://developer.android.com/training/app-links#android-app-links
+    if (isAutoVerify(intentFilter)) {
+      // Report an error if required elements/attributes are missing.
       if (
-        hosts == null &&
-          (paths != null || ports != null) &&
-          (!hasScheme || schemes!!.contains("http") || schemes.contains("https"))
+        !actionView ||
+          !hasCategoryDefault(intentFilter) ||
+          !browsable ||
+          (!isHttp && !hasSubstitutedScheme) ||
+          hosts == null
       ) {
-        val fix = LintFix.create().set().todo(ANDROID_URI, ATTR_HOST).build()
+        // If we are in Studio then add quick-fix data so that Studio adds the
+        // "Launch App Links Assistant" quick-fix.
+        val fix =
+          if (LintClient.isStudio) {
+            fix().data(KEY_SHOW_APP_LINKS_ASSISTANT, true)
+          } else {
+            null
+          }
+
+        // --- Check "valid app link" (has autoVerify (i.e. is Android App Link) but is missing a
+        // required element / attribute) ---
         reportUrlError(
           context,
-          firstData,
-          context.getLocation(firstData),
-          "At least one `host` must be specified",
+          intentFilter,
+          context.getLocation(intentFilter),
+          "Missing required elements/attributes for Android App Links",
           fix,
         )
       }
+    }
 
-      // If this activity is an ACTION_VIEW action, has a http URL but doesn't have
-      // BROWSABLE, it may be a mistake and and we will report warning.
-      if (actionView && isHttp && !browsable) {
-        reportUrlError(
-          context,
-          intent,
-          context.getLocation(intent),
-          "Activity supporting ACTION_VIEW is not set as BROWSABLE",
-        )
-      }
-      if (actionView && (!hasScheme || implicitSchemes)) {
-        val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
-        reportUrlError(context, intent, context.getLocation(intent), "Missing URL", fix)
-      }
+    val hasScheme = schemes != null
+    // --- Check "missing scheme" (If there are hosts, paths, or ports, then there should be a
+    // scheme.) ---
+    if (!hasScheme && (hosts != null || paths != null || ports != null)) {
+      val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
+      reportUrlError(
+        context,
+        firstData,
+        context.getLocation(firstData),
+        "At least one `scheme` must be specified",
+        fix,
+      )
+    }
+    // --- Check "missing host" (Hosts are required when a web scheme is used or when a path or port
+    // is used.) ---
+    if (
+      hosts == null &&
+        (paths != null || ports != null) &&
+        (!hasScheme || schemes!!.contains("http") || schemes.contains("https"))
+    ) {
+      val fix = LintFix.create().set().todo(ANDROID_URI, ATTR_HOST).build()
+      reportUrlError(
+        context,
+        firstData,
+        context.getLocation(firstData),
+        "At least one `host` must be specified",
+        fix,
+      )
+    }
+
+    // --- Check "view + browsable" ( If this intent filter has an ACTION_VIEW action, and it has a
+    // http URL but doesn't have BROWSABLE, it may be a mistake and we will report warning. ---
+    if (actionView && isHttp && !browsable) {
+      reportUrlError(
+        context,
+        intentFilter,
+        context.getLocation(intentFilter),
+        "Activity supporting ACTION_VIEW is not set as BROWSABLE",
+      )
+    }
+
+    // --- Check "missing scheme" (We have ACTION_VIEW but the scheme is not explicitly specified)
+    // ---
+    if (actionView && (!hasScheme || implicitSchemes)) {
+      val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
+      reportUrlError(context, intentFilter, context.getLocation(intentFilter), "Missing URL", fix)
     }
     return UriInfo(schemes, hosts, ports, paths)
   }
 
-  private fun ensureExported(context: XmlContext, activity: Element, intent: Element) {
+  private fun ensureExported(context: XmlContext, activity: Element, intentFilter: Element) {
     val exported = activity.getAttributeNodeNS(ANDROID_URI, ATTR_EXPORTED) ?: return
-    if (VALUE_TRUE == exported.value) {
-      return
-    }
+    if (VALUE_TRUE == exported.value) return
 
     // Make sure there isn't some *earlier* intent filter for this activity
     // that also reported this; we don't want duplicate warnings
-    var prevIntent = XmlUtils.getPreviousTagByName(intent, TAG_INTENT_FILTER)
+    var prevIntent = XmlUtils.getPreviousTagByName(intentFilter, TAG_INTENT_FILTER)
     while (prevIntent != null) {
-      if (hasActionView(prevIntent)) {
-        return
-      }
+      if (hasActionView(prevIntent)) return
       prevIntent = XmlUtils.getNextTagByName(prevIntent, TAG_INTENT_FILTER)
     }
 
@@ -498,13 +540,13 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   /**
    * Check if the intent filter supports action view.
    *
-   * @param intent the intent filter
+   * @param intentFilter the intent filter
    * @return true if it does
    */
-  private fun hasActionView(intent: Element): Boolean {
-    for (action in XmlUtils.getSubTagsByName(intent, AndroidManifest.NODE_ACTION)) {
-      if (action.hasAttributeNS(ANDROID_URI, AndroidManifest.ATTRIBUTE_NAME)) {
-        val attr = action.getAttributeNodeNS(ANDROID_URI, AndroidManifest.ATTRIBUTE_NAME)
+  private fun hasActionView(intentFilter: Element): Boolean {
+    for (action in XmlUtils.getSubTagsByName(intentFilter, NODE_ACTION)) {
+      if (action.hasAttributeNS(ANDROID_URI, ATTRIBUTE_NAME)) {
+        val attr = action.getAttributeNodeNS(ANDROID_URI, ATTRIBUTE_NAME)
         if (attr.value == "android.intent.action.VIEW") {
           return true
         }
@@ -516,13 +558,13 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   /**
    * Check if the intent filter is browsable.
    *
-   * @param intent the intent filter
+   * @param intentFilter the intent filter
    * @return true if it does
    */
-  private fun isBrowsable(intent: Element): Boolean {
-    for (e in XmlUtils.getSubTagsByName(intent, AndroidManifest.NODE_CATEGORY)) {
-      if (e.hasAttributeNS(ANDROID_URI, AndroidManifest.ATTRIBUTE_NAME)) {
-        val attr = e.getAttributeNodeNS(ANDROID_URI, AndroidManifest.ATTRIBUTE_NAME)
+  private fun isBrowsable(intentFilter: Element): Boolean {
+    for (e in XmlUtils.getSubTagsByName(intentFilter, AndroidManifest.NODE_CATEGORY)) {
+      if (e.hasAttributeNS(ANDROID_URI, ATTRIBUTE_NAME)) {
+        val attr = e.getAttributeNodeNS(ANDROID_URI, ATTRIBUTE_NAME)
         if (attr.nodeValue == "android.intent.category.BROWSABLE") {
           return true
         }
@@ -695,7 +737,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   }
 
   private fun requireNonEmpty(context: XmlContext?, attribute: Attr, value: String?): Boolean {
-    if (context != null && (value == null || value.isEmpty())) {
+    if (context != null && value.isNullOrEmpty()) {
       reportUrlError(
         context,
         attribute,
@@ -741,7 +783,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
      * @return null for a successful match or the failure reason
      */
     fun match(testUrl: URL): String? {
-
       // Check schemes
       if (schemes != null) {
         val schemeOk =
@@ -866,7 +907,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
      * Only used for compatibility issue lookup (the driver suppression check takes an issue, not an
      * id)
      */
-    @Suppress("ObjectPropertyName")
     private val _OLD_ISSUE_URL =
       Issue.create(
         id = "GoogleAppIndexingUrlError",

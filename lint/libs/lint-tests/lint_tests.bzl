@@ -37,6 +37,7 @@ def lint_test(name, useK2):
             "//prebuilts/tools/common/lint-psi/intellij-core",
             "//prebuilts/tools/common/lint-psi/kotlin-compiler",
             "//prebuilts/tools/common/lint-psi/uast",
+            "//tools/adt/idea/.idea/libraries:mockito-kotlin",
             "//tools/analytics-library/protos/src/main/proto",
             "//tools/analytics-library/shared:tools.analytics-shared",
             "//tools/analytics-library/testing:tools.analytics-testing",
