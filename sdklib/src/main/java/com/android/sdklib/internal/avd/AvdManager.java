@@ -75,7 +75,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1472,33 +1471,28 @@ public class AvdManager {
      * @return The new AVD on success.
      */
     @Slow
-    public AvdInfo updateDeviceChanged(AvdInfo avd) throws IOException {
+    @Nullable
+    public AvdInfo updateDeviceChanged(@NonNull AvdInfo avd) throws IOException {
         // Overwrite the properties derived from the device and nothing else
         Map<String, String> properties = new HashMap<>(avd.getProperties());
 
-        Collection<Device> devices = mDeviceManager.getDevices(DeviceManager.ALL_DEVICES);
-        String name = properties.get(ConfigKey.DEVICE_NAME);
-        String manufacturer = properties.get(ConfigKey.DEVICE_MANUFACTURER);
-
-        if (name != null && manufacturer != null) {
-            for (Device d : devices) {
-                if (d.getId().equals(name) && d.getManufacturer().equals(manufacturer)) {
-                    // The device has a RAM size, but we don't want to use it.
-                    // Instead, we'll keep the AVD's existing RAM size setting.
-                    final Map<String, String> deviceHwProperties = DeviceManager.getHardwareProperties(d);
-                    deviceHwProperties.remove(ConfigKey.RAM_SIZE);
-                    properties.putAll(deviceHwProperties);
-                    try {
-                        return updateAvd(avd, properties);
-                    } catch (IOException e) {
-                        mLog.warning("%1$s", e);
-                    }
-                }
-            }
-        } else {
+        Device d = mDeviceManager.getDevice(avd);
+        if (d == null) {
             mLog.warning("Base device information incomplete or missing.");
+            return null;
         }
-        return null;
+
+        // The device has a RAM size, but we don't want to use it.
+        // Instead, we'll keep the AVD's existing RAM size setting.
+        final Map<String, String> deviceHwProperties = DeviceManager.getHardwareProperties(d);
+        deviceHwProperties.remove(ConfigKey.RAM_SIZE);
+        properties.putAll(deviceHwProperties);
+        try {
+            return updateAvd(avd, properties);
+        } catch (IOException e) {
+            mLog.warning("%1$s", e);
+            return null;
+        }
     }
 
     /**
