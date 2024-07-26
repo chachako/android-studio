@@ -112,6 +112,7 @@ kotlin_test(
         "src/test/java/**/*.java",
     ]),
     data = ["//prebuilts/studio/sdk:platforms/latest"],
+    friends = [":tools.sdklib.core"],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
     lint_baseline = "lint_baseline_tests.xml",
     resources = glob(["src/test/resources/**"]),
