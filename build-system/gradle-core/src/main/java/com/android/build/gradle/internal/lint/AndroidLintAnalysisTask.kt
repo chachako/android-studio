@@ -313,6 +313,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             )
             task.projectInputs.initialize(variant, LintMode.ANALYSIS)
             task.variantInputs.initialize(
+                task,
                 variant,
                 useModuleDependencyLintModels = false,
                 warnIfProjectTreatedAsExternalDependency = false,
@@ -420,6 +421,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             )
             task.projectInputs.initialize(mainVariant, LintMode.ANALYSIS)
             task.variantInputs.initialize(
+                task,
                 mainVariant,
                 creationConfig as? HostTestCreationConfig,
                 creationConfig as? DeviceTestCreationConfig,
@@ -537,6 +539,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         this.variantInputs
             .initializeForStandalone(
                 project,
+                this,
                 javaPluginExtension,
                 kotlinExtensionWrapper,
                 taskCreationServices.projectOptions,

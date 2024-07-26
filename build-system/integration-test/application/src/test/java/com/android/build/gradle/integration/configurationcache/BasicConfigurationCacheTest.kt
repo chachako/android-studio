@@ -122,15 +122,7 @@ class BasicConfigurationCacheTest {
                 val task = it.group(2)
                 "$buildService is used by $task"
             }.sorted().toList()
-        // TODO(b/300617088): We'll need to fix all the issues in this list
-        Truth.assertThat(violations).containsExactlyElementsIn(
-            listOf(
-                "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
-                "com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService is used by :app:lintVitalAnalyzeRelease",
-                "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:generateReleaseLintVitalReportModel",
-                "com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService is used by :app:lintVitalAnalyzeRelease",
-            )
-        )
+        Truth.assertThat(violations).isEmpty()
     }
 
     /**

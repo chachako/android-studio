@@ -41,8 +41,8 @@ import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFoldersFile
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
 import com.android.build.gradle.internal.ide.dependencies.ArtifactHandler
-import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
+import com.android.build.gradle.internal.ide.dependencies.UsesLibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.getDependencyGraphBuilder
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -791,7 +791,7 @@ abstract class EnvironmentVariableInputs {
 /**
  * Inputs for the variant.
  */
-abstract class VariantInputs {
+abstract class VariantInputs : UsesLibraryDependencyCacheBuildService {
 
     @get:Input
     abstract val name: Property<String>
@@ -902,9 +902,6 @@ abstract class VariantInputs {
     abstract val buildFeatures: BuildFeaturesInput
 
     @get:Internal
-    abstract val libraryDependencyCacheBuildService: Property<LibraryDependencyCacheBuildService>
-
-    @get:Internal
     abstract val mavenCoordinatesCache: Property<MavenCoordinatesCacheBuildService>
 
     /**
@@ -923,6 +920,7 @@ abstract class VariantInputs {
      * @param fatalOnly whether lint is being invoked with --fatal-only
      */
     fun initialize(
+        task: Task,
         variantWithTests: VariantWithTests,
         useModuleDependencyLintModels: Boolean,
         warnIfProjectTreatedAsExternalDependency: Boolean,
@@ -931,6 +929,7 @@ abstract class VariantInputs {
         fatalOnly: Boolean
     ) {
         initialize(
+            task,
             variantWithTests.main,
             variantWithTests.unitTest,
             variantWithTests.androidTest,
@@ -948,6 +947,7 @@ abstract class VariantInputs {
     }
 
     fun initialize(
+        task: Task,
         variantCreationConfig: VariantCreationConfig,
         hostTestCreationConfig: HostTestCreationConfig?,
         deviceTestCreationConfig: DeviceTestCreationConfig?,
@@ -1151,12 +1151,13 @@ abstract class VariantInputs {
                 ?: false
         )
         buildFeatures.initialize(variantCreationConfig)
-        libraryDependencyCacheBuildService.setDisallowChanges(getBuildService(variantCreationConfig.services.buildServiceRegistry))
+        initializeLibraryDependencyCacheBuildService(task)
         mavenCoordinatesCache.setDisallowChanges(getBuildService(variantCreationConfig.services.buildServiceRegistry))
     }
 
     internal fun initializeForStandalone(
         project: Project,
+        task: Task,
         javaExtension: JavaPluginExtension,
         kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         projectOptions: ProjectOptions,
@@ -1171,6 +1172,7 @@ abstract class VariantInputs {
         if (kotlinExtensionWrapper == null) {
             initializeForStandalone(
                 project,
+                task,
                 javaExtension,
                 projectOptions,
                 fatalOnly,
@@ -1183,6 +1185,7 @@ abstract class VariantInputs {
         } else {
             initializeForStandaloneWithKotlinMultiplatform(
                 project,
+                task,
                 kotlinExtensionWrapper,
                 projectOptions,
                 fatalOnly,
@@ -1198,6 +1201,7 @@ abstract class VariantInputs {
 
     private fun initializeForStandalone(
         project: Project,
+        task: Task,
         javaExtension: JavaPluginExtension,
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
@@ -1291,7 +1295,7 @@ abstract class VariantInputs {
         androidTestSourceProvider.disallowChanges()
         testFixturesSourceProvider.disallowChanges()
         buildFeatures.initializeForStandalone()
-        libraryDependencyCacheBuildService.setDisallowChanges(getBuildService(project.gradle.sharedServices))
+        initializeLibraryDependencyCacheBuildService(task)
         mavenCoordinatesCache.setDisallowChanges(getBuildService(project.gradle.sharedServices))
         proguardFiles.setDisallowChanges(null)
         extractedProguardFiles.setDisallowChanges(null)
@@ -1301,6 +1305,7 @@ abstract class VariantInputs {
 
     private fun initializeForStandaloneWithKotlinMultiplatform(
         project: Project,
+        task: Task,
         kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper,
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
@@ -1400,9 +1405,7 @@ abstract class VariantInputs {
         androidTestSourceProvider.disallowChanges()
         testFixturesSourceProvider.disallowChanges()
         buildFeatures.initializeForStandalone()
-        libraryDependencyCacheBuildService.setDisallowChanges(
-            getBuildService(project.gradle.sharedServices)
-        )
+        initializeLibraryDependencyCacheBuildService(task)
         mavenCoordinatesCache.setDisallowChanges(getBuildService(project.gradle.sharedServices))
         proguardFiles.setDisallowChanges(null)
         extractedProguardFiles.setDisallowChanges(null)
