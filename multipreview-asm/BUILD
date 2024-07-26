@@ -25,6 +25,8 @@ kotlin_test(
     friends = ["//tools/base/multipreview-asm:tools.compose-preview-detector"],
     javacopts = ["-source 17"],
     jvm_flags = ["-Dtest.suite.jar=tools.compose-preview-detector.tests.jar"],
+    resource_strip_prefix = "tools/base/multipreview-asm/testSrc/resources",
+    resources = glob(["testSrc/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":tools.compose-preview-detector",
@@ -39,9 +41,9 @@ kotlin_test(
     name = "perfgate-compose-preview-detector-tests",
     srcs = glob(["perf/testSrc/**/*.kt"]),
     tags = [
-        "noci:studio-win",
-        "noci:studio-linux",
         "ci:perfgate-linux",
+        "noci:studio-linux",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.preview.multipreview.PerfArtificialDataMultipreviewTest",
     deps = [

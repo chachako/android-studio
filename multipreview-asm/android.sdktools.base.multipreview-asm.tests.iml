@@ -4,6 +4,7 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$/testSrc">
       <sourceFolder url="file://$MODULE_DIR$/testSrc" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/testSrc/resources" type="java-test-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -11,6 +12,8 @@
     <orderEntry type="library" scope="TEST" name="kotlin-stdlib-jdk8" level="project" />
     <orderEntry type="library" scope="TEST" name="asm-tools" level="project" />
     <orderEntry type="module" module-name="android.sdktools.base.multipreview-asm" scope="TEST" />
+    <orderEntry type="library" scope="TEST" name="truth" level="project" />
+    <orderEntry type="library" scope="TEST" name="Guava" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="android.sdktools.base.multipreview-asm" />
 </module>
