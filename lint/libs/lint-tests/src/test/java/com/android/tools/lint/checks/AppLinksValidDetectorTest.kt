@@ -20,6 +20,9 @@ import com.android.tools.lint.detector.api.XmlContext
 import com.android.utils.XmlUtils
 import com.google.common.truth.Truth.assertThat
 import java.net.URL
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.w3c.dom.Element
 
 class AppLinksValidDetectorTest : AbstractCheckTest() {
@@ -1771,12 +1774,20 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
     val detector = AppLinksValidDetector()
     fun createUriInfos(
       activity: Element,
-      context: XmlContext?,
-    ): List<AppLinksValidDetector.UriInfo> = detector.createUriInfos(activity, context)
+      context: XmlContext,
+    ): List<AppLinksValidDetector.UriInfo> =
+      detector.checkActivityIntentFiltersAndGetUriInfos(activity, context)
     fun testElement(testUrl: URL, infos: List<AppLinksValidDetector.UriInfo>): String? =
-      detector.testElement(testUrl, infos)
+      detector.checkTestUrlMatchesAtLeastOneInfo(testUrl, infos)
 
-    val infos = createUriInfos(activity!!, null)
+    val infos =
+      createUriInfos(
+        activity!!,
+        mock<XmlContext>().apply {
+          whenever(getLocation(any())).thenReturn(mock())
+          whenever(driver).thenReturn(mock())
+        },
+      )
     assertThat(testElement(URL("http://example.com/literal/path"), infos)).isNull() // success
     assertThat(testElement(URL("http://example.com/gizmos/foo/bar"), infos)).isNull() // success
     assertThat(testElement(URL("https://example.com/gizmos/foo/bar"), infos))
