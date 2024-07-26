@@ -176,8 +176,10 @@ abstract class DataFlowAnalyzer(
     if (name == "print" || name == "println" || name == "log") {
       return true
     } else if (name.length == 1) {
-      val receiver = call.receiver?.skipParenthesizedExprDown()
-      if (receiver is USimpleNameReferenceExpression && receiver.identifier == "Log") {
+      // Common Android logging methods Log.d(...), Log.e(...), etc.
+      val receiverIdentifier =
+        (call.receiver?.skipParenthesizedExprDown() as? USimpleNameReferenceExpression)?.identifier
+      if (receiverIdentifier == "Log" || call.resolve()?.containingClass?.name == "Log") {
         return true
       }
     }

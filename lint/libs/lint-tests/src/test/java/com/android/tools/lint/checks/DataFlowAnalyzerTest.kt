@@ -728,7 +728,7 @@ class DataFlowAnalyzerTest : TestCase() {
                     val toast = Toast.makeText(c, r, d) // ERROR
                     // Both of these calls should be ignored via ignoreArgument so shouldn't be considered an escape
                     println(toast)
-                    Log.d("tag", toast.toString())
+                    Log.d("tag", toast)
                 }
                 """
           )
