@@ -19,12 +19,15 @@ package com.android.build.gradle.integration.common.fixture.model
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.builder.model.v2.AndroidModel
+import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import com.google.common.truth.Truth
 import junit.framework.Assert.fail
 import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.Path
 
 /**
  * Base interface for classes using [Comparator]
@@ -62,9 +65,39 @@ abstract class BasicComparator(
         goldenFile: String
     ) {
         if (System.getenv("GENERATE_MODEL_GOLDEN_FILES").isNullOrEmpty()) {
+            val expectedText = loadGoldenFile(goldenFile).trimEnd()
+            val actualText = actualContent.trimEnd()
+            if (TestUtils.runningFromBazel()) {
+                // Populate additional test output if the file needs updating
+                // This is a bit of a hack, but since we use resources for snapshot files
+                // Some assumptions have to be made and hardcoded.
+                // Assumptions made:
+                // - TEST_BINARY is a relative path to file where the source code lives
+                // - Resources are located under 'src/test/resources'
+                val snapshotFileToIncludeInBazelOutputs =
+                    TestUtils.getTestOutputDir().toFile().resolve(System.getenv("TEST_BINARY"))
+                        .parentFile
+                        .resolve("src/test/resources")
+                        .resolve(testClass.javaClass.name.replace(".", File.separator))
+                        .parentFile
+                        .resolve(getResourceName(goldenFile))
+
+                if (expectedText != actualText) {
+                    println("""
+                        Writing updated snapshot file to bazel additional test output.
+                        ${snapshotFileToIncludeInBazelOutputs.relativeTo(TestUtils.getTestOutputDir().toFile())}
+                    """.trimIndent())
+                    snapshotFileToIncludeInBazelOutputs.run {
+                        Files.createDirectories(Path(parent))
+                        writeText(actualText)
+                    }
+                }
+            }
+
             Truth.assertWithMessage("Dumped $name (full version in stdout)")
-                .that(actualContent.trimEnd())
-                .isEqualTo(loadGoldenFile(goldenFile).trimEnd())
+                .that(actualText)
+                .isEqualTo(expectedText)
+
         } else {
             val file = findGoldenFileLocation(goldenFile)
             file.writeText(actualContent)
@@ -99,16 +132,18 @@ abstract class BasicComparator(
     }
 
     private fun loadGoldenFile(name: String): String {
-        val resourceName = if (name.isNotBlank()) {
-            "${testClass.javaClass.simpleName}_${name}.txt"
-        } else {
-            "${testClass.javaClass.simpleName}.txt"
-        }
+        val resourceName = getResourceName(name)
         println("Golden file loaded from $resourceName")
         return Resources.toString(
             Resources.getResource(testClass.javaClass, resourceName
             ), Charsets.UTF_8
         )
+    }
+
+    private fun getResourceName(name: String) = if (name.isNotBlank()) {
+        "${testClass.javaClass.simpleName}_${name}.txt"
+    } else {
+        "${testClass.javaClass.simpleName}.txt"
     }
 }
 
