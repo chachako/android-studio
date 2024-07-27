@@ -1,4 +1,4 @@
-"""Implements studio-linux CI scripts."""
+"""Implements studio-mac CI scripts."""
 
 import pathlib
 from typing import List
@@ -14,7 +14,7 @@ _ARTIFACTS = [
 
 
 def studio_mac(build_env: bazel.BuildEnv) -> None:
-  """Runs studio-linux target."""
+  """Runs studio-mac target."""
   flags = build_flags(
       build_env,
       'ci:studio-mac',
@@ -47,7 +47,7 @@ def studio_mac(build_env: bazel.BuildEnv) -> None:
 
 
 def studio_mac_arm(build_env: bazel.BuildEnv) -> None:
-  """Runs studio-linux target."""
+  """Runs studio-mac-arm target."""
   flags = build_flags(
       build_env,
       'ci:studio-mac-arm',
