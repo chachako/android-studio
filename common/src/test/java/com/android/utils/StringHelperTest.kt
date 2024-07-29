@@ -77,4 +77,14 @@ class StringHelperTest {
     fun testSurrogateValuesDecapitalize() {
         assertThat("\uD801\uDC00-foo".usLocaleDecapitalize()).isEqualTo("\uD801\uDC00-foo")
     }
+
+    @Test
+    fun testAsSeparatedListContains() {
+        assertThat("foo".asSeparatedListContains("foo")).isTrue()
+        assertThat("foo".asSeparatedListContains("bar")).isFalse()
+        assertThat("foo,bar".asSeparatedListContains("barge")).isFalse()
+        assertThat("fool,bar".asSeparatedListContains("foo")).isFalse()
+        assertThat("fool,bar baz".asSeparatedListContains("bar", ", ")).isTrue()
+        assertThat("fool,bar baz".asSeparatedListContains("baz", ", ")).isTrue()
+    }
 }
