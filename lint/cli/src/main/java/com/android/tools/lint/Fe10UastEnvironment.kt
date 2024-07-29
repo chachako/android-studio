@@ -18,48 +18,60 @@ package com.android.tools.lint
 import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Companion.kotlinLibrary
 import com.intellij.core.CoreApplicationEnvironment
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFileSetFactory
-import com.intellij.openapi.vfs.impl.jar.CoreJarFileSystem
 import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartTypePointerManager
 import com.intellij.psi.impl.PsiNameHelperImpl
+import com.intellij.psi.impl.smartPointers.SmartPointerManagerImpl
+import com.intellij.psi.impl.smartPointers.SmartTypePointerManagerImpl
 import java.io.File
 import kotlin.concurrent.withLock
+import org.jetbrains.kotlin.analysis.api.KaAnalysisNonPublicApi
 import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
-import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisHandlerExtension
-import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisSessionProvider
-import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
-import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
-import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
-import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltInsVirtualFileProvider
-import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltInsVirtualFileProviderCliImpl
+import org.jetbrains.kotlin.analysis.api.descriptors.KaFe10AnalysisHandlerExtension
+import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinAnnotationsResolverFactory
+import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinDeclarationProviderFactory
+import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinDeclarationProviderMerger
+import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinAlwaysAccessibleLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinGlobalModificationService
+import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTrackerFactory
+import org.jetbrains.kotlin.analysis.api.platform.packages.KotlinPackageProviderFactory
+import org.jetbrains.kotlin.analysis.api.platform.packages.KotlinPackageProviderMerger
+import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinByModulesResolutionScopeProvider
+import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinProjectStructureProvider
+import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinResolutionScopeProvider
+import org.jetbrains.kotlin.analysis.api.standalone.base.declarations.KotlinFakeClsStubsCache
+import org.jetbrains.kotlin.analysis.api.standalone.base.declarations.KotlinStandaloneAnnotationsResolverFactory
+import org.jetbrains.kotlin.analysis.api.standalone.base.declarations.KotlinStandaloneDeclarationProviderFactory
+import org.jetbrains.kotlin.analysis.api.standalone.base.declarations.KotlinStandaloneDeclarationProviderMerger
+import org.jetbrains.kotlin.analysis.api.standalone.base.modification.KotlinStandaloneGlobalModificationService
+import org.jetbrains.kotlin.analysis.api.standalone.base.modification.KotlinStandaloneModificationTrackerFactory
+import org.jetbrains.kotlin.analysis.api.standalone.base.packages.KotlinStandalonePackageProviderFactory
+import org.jetbrains.kotlin.analysis.api.standalone.base.packages.KotlinStandalonePackageProviderMerger
+import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.AnalysisApiSimpleServiceRegistrar
+import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.PluginStructureProvider
+import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltinsVirtualFileProvider
+import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltinsVirtualFileProviderCliImpl
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.ClsKotlinBinaryClassCache
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.DummyFileAttributeService
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.FileAttributeService
-import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
 import org.jetbrains.kotlin.analysis.project.structure.impl.buildKtModuleProviderByCompilerConfiguration
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
 import org.jetbrains.kotlin.analysis.project.structure.impl.getSourceFilePaths
-import org.jetbrains.kotlin.analysis.providers.KotlinAnnotationsResolverFactory
-import org.jetbrains.kotlin.analysis.providers.KotlinDeclarationProviderFactory
-import org.jetbrains.kotlin.analysis.providers.KotlinModificationTrackerFactory
-import org.jetbrains.kotlin.analysis.providers.KotlinPackageProviderFactory
-import org.jetbrains.kotlin.analysis.providers.impl.KotlinFakeClsStubsCache
-import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticAnnotationsResolverFactory
-import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticDeclarationProviderFactory
-import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
-import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticPackageProviderFactory
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
-import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles.JVM_CONFIG_FILES
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
@@ -69,16 +81,11 @@ import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
-import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
 import org.jetbrains.kotlin.library.KotlinLibrary
-import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionHelper
-import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
 import org.jetbrains.kotlin.util.slicedMap.WritableSlice
@@ -212,14 +219,6 @@ private constructor(
       val list = field.get(kotlinCompilerEnv) as MutableList<*>
       list.clear()
     }
-    run {
-      // Clear CliModuleAnnotationsResolver.packagePartProviders.
-      val field = CliModuleAnnotationsResolver::class.java.getDeclaredField("packagePartProviders")
-      field.isAccessible = true
-      val instance = ModuleAnnotationsResolver.getInstance(ideaProject)
-      val list = field.get(instance) as MutableList<*>
-      list.clear()
-    }
   }
 
   companion object {
@@ -290,80 +289,80 @@ private fun configureAnalysisApiServices(
   config: Fe10UastEnvironment.Configuration,
 ) {
   val project = env.project
+  AnalysisApiFe10ServiceRegistrar.registerProjectServices(project)
+  AnalysisApiFe10ServiceRegistrar.registerProjectModelServices(project, env.parentDisposable)
+
   // Analysis API Base, i.e., base services for FE1.0 and FIR
   // But, for FIR, AA session builder already register these
   project.registerService(
     KotlinModificationTrackerFactory::class.java,
-    KotlinStaticModificationTrackerFactory::class.java,
+    KotlinStandaloneModificationTrackerFactory::class.java,
   )
-  project.registerKtLifetimeTokenProvider()
+  project.registerService(
+    KotlinGlobalModificationService::class.java,
+    KotlinStandaloneGlobalModificationService::class.java,
+  )
+
+  project.registerService(
+    KotlinLifetimeTokenProvider::class.java,
+    KotlinAlwaysAccessibleLifetimeTokenProvider::class.java,
+  )
+
+  project.registerService(
+    SmartTypePointerManager::class.java,
+    SmartTypePointerManagerImpl::class.java,
+  )
+  project.registerService(SmartPointerManager::class.java, SmartPointerManagerImpl::class.java)
 
   val ktFiles = getPsiFilesFromPaths<KtFile>(env, getSourceFilePaths(config.kotlinCompilerConfig))
 
   project.registerService(
-    ProjectStructureProvider::class.java,
+    KotlinAnnotationsResolverFactory::class.java,
+    KotlinStandaloneAnnotationsResolverFactory(project, ktFiles),
+  )
+  project.registerService(
+    KotlinResolutionScopeProvider::class.java,
+    KotlinByModulesResolutionScopeProvider::class.java,
+  )
+
+  project.registerService(
+    KotlinProjectStructureProvider::class.java,
     buildKtModuleProviderByCompilerConfiguration(env, config.kotlinCompilerConfig, ktFiles),
   )
 
   project.registerService(
-    KotlinAnnotationsResolverFactory::class.java,
-    KotlinStaticAnnotationsResolverFactory(project, ktFiles),
+    KotlinDeclarationProviderFactory::class.java,
+    KotlinStandaloneDeclarationProviderFactory(project, ktFiles),
   )
   project.registerService(
-    KotlinDeclarationProviderFactory::class.java,
-    KotlinStaticDeclarationProviderFactory(project, ktFiles),
+    KotlinDeclarationProviderMerger::class.java,
+    KotlinStandaloneDeclarationProviderMerger::class.java,
+  )
+  project.registerService(
+    KotlinPackageProviderMerger::class.java,
+    KotlinStandalonePackageProviderMerger::class.java,
   )
   project.registerService(
     KotlinPackageProviderFactory::class.java,
-    KotlinStaticPackageProviderFactory(project, ktFiles),
+    KotlinStandalonePackageProviderFactory(project, ktFiles),
   )
-
-  project.registerService(
-    KotlinReferenceProvidersService::class.java,
-    HLApiReferenceProviderService::class.java,
-  )
-
-  // Analysis API FE1.0-specific
-  project.registerService(
-    KtAnalysisSessionProvider::class.java,
-    KtFe10AnalysisSessionProvider(project),
-  )
-  project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade::class.java)
-  // Duplicate: already registered at [KotlinCoreEnvironment]
-  // project.registerService(ModuleVisibilityManager::class.java,
-  // CliModuleVisibilityManagerImpl(enabled = true))
-  project.registerService(
-    ReadWriteAccessChecker::class.java,
-    ReadWriteAccessCheckerDescriptorsImpl(),
-  )
-  project.registerService(
-    KotlinReferenceProviderContributor::class.java,
-    KtFe10KotlinReferenceProviderContributor::class.java,
-  )
-
-  AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension())
 }
 
 private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
   configureApplicationEnvironment(appEnv) {
-    it.addExtension(UastLanguagePlugin.extensionPointName, KotlinUastLanguagePlugin())
+    it.addExtension(UastLanguagePlugin.EP, KotlinUastLanguagePlugin())
 
     it.application.registerService(
       BaseKotlinUastResolveProviderService::class.java,
       CliKotlinUastResolveProviderService::class.java,
     )
 
-    it.application.registerService(
-      KtFe10ReferenceResolutionHelper::class.java,
-      DummyKtFe10ReferenceResolutionHelper,
-    )
-
     KotlinCoreEnvironment.underApplicationLock {
       if (it.application.getServiceIfCreated(KotlinFakeClsStubsCache::class.java) == null) {
         it.application.registerService(KotlinFakeClsStubsCache::class.java)
         it.application.registerService(
-          BuiltInsVirtualFileProvider::class.java,
-          BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem),
+          BuiltinsVirtualFileProvider::class.java,
+          BuiltinsVirtualFileProviderCliImpl::class.java,
         )
         it.application.registerService(ClsKotlinBinaryClassCache::class.java)
         it.application.registerService(
@@ -371,6 +370,7 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
           DummyFileAttributeService::class.java,
         )
       }
+      AnalysisApiFe10ServiceRegistrar.registerApplicationServices(it.application)
     }
 
     if (it.application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
@@ -411,5 +411,33 @@ private class CliBindingTraceForLint(project: Project) : CliBindingTrace(project
   override fun report(diagnostic: Diagnostic) {
     // Even with wantsDiagnostics=false, some diagnostics still come through. Ignore them.
     // Note: this is a great place to debug errors such as unresolved references.
+  }
+}
+
+@OptIn(KaAnalysisNonPublicApi::class)
+private object AnalysisApiFe10ServiceRegistrar : AnalysisApiSimpleServiceRegistrar() {
+  private const val PLUGIN_RELATIVE_PATH = "/META-INF/analysis-api/analysis-api-fe10.xml"
+
+  override fun registerApplicationServices(application: MockApplication) {
+    PluginStructureProvider.registerApplicationServices(application, PLUGIN_RELATIVE_PATH)
+    application.registerService(
+      KtFe10ReferenceResolutionHelper::class.java,
+      DummyKtFe10ReferenceResolutionHelper,
+    )
+  }
+
+  override fun registerProjectExtensionPoints(project: MockProject) {
+    AnalysisHandlerExtension.registerExtensionPoint(project)
+    PluginStructureProvider.registerProjectExtensionPoints(project, PLUGIN_RELATIVE_PATH)
+  }
+
+  override fun registerProjectServices(project: MockProject) {
+    PluginStructureProvider.registerProjectServices(project, PLUGIN_RELATIVE_PATH)
+    PluginStructureProvider.registerProjectListeners(project, PLUGIN_RELATIVE_PATH)
+  }
+
+  override fun registerProjectModelServices(project: MockProject, disposable: Disposable) {
+    project.apply { registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade()) }
+    AnalysisHandlerExtension.registerExtension(project, KaFe10AnalysisHandlerExtension())
   }
 }

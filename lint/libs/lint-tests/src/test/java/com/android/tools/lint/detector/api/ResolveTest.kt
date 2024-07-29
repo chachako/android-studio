@@ -75,7 +75,6 @@ class ResolveTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = Foo) [Foo] => PsiClass:Foo
                                 UCallExpression (kind = UastCallKind(name='method_call'), argCount = 0)) [test()] => PsiMethod:test
                                     UIdentifier (Identifier (test)) [UIdentifier (Identifier (test))]
-                                    USimpleNameReferenceExpression (identifier = test, resolvesTo = null) [test] => <FAILED>
             """
         .trimIndent()
         .trim(),
@@ -113,9 +112,21 @@ class ResolveTest : TestCase() {
                         UBlockExpression [{...}]
                             UQualifiedReferenceExpression [KotlinTest.members] => PsiMethod:getMembers
                                 UClassLiteralExpression [KotlinTest]
+                                    UThisExpression (label = null) [this] => KtUltraLightClass:class KotlinTest {
+                fun test() {
+                    this::class.members
+                    this::class.declaredMemberFunctions
+                }
+            }
                                 USimpleNameReferenceExpression (identifier = members) [members] => PsiMethod:getMembers
                             UQualifiedReferenceExpression [KotlinTest.declaredMemberFunctions] => PsiMethod:getDeclaredMemberFunctions
                                 UClassLiteralExpression [KotlinTest]
+                                    UThisExpression (label = null) [this] => KtUltraLightClass:class KotlinTest {
+                fun test() {
+                    this::class.members
+                    this::class.declaredMemberFunctions
+                }
+            }
                                 USimpleNameReferenceExpression (identifier = declaredMemberFunctions) [declaredMemberFunctions] => PsiMethod:getDeclaredMemberFunctions
                     UMethod (name = KotlinTest) [public fun KotlinTest() = UastEmptyExpression]
             """
@@ -156,18 +167,18 @@ class ResolveTest : TestCase() {
                 UClass (name = TestKt) [public final class TestKt {...}]
                     UMethod (name = test) [public static final fun test() : void {...}]
                         UBlockExpression [{...}]
-                            UDeclarationsExpression [var bar: lib.Bar = <init>("hello1")]
-                                ULocalVariable (name = bar) [var bar: lib.Bar = <init>("hello1")]
-                                    UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [<init>("hello1")] => PsiMethod:Bar
+                            UDeclarationsExpression [var bar: lib.Bar = Bar("hello1")]
+                                ULocalVariable (name = bar) [var bar: lib.Bar = Bar("hello1")]
+                                    UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [Bar("hello1")] => PsiMethod:Bar
                                         UIdentifier (Identifier (Bar)) [UIdentifier (Identifier (Bar))]
-                                        USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Bar) [<init>] => PsiClass:Bar
+                                        USimpleNameReferenceExpression (identifier = Bar, resolvesTo = PsiClass: Bar) [Bar] => PsiClass:Bar
                                         UPolyadicExpression (operator = +) ["hello1"]
                                             ULiteralExpression (value = "hello1") ["hello1"]
-                            UDeclarationsExpression [var bar2: lib.Bar2 = <init>("hello2")]
-                                ULocalVariable (name = bar2) [var bar2: lib.Bar2 = <init>("hello2")]
-                                    UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [<init>("hello2")] => PsiMethod:Bar2
+                            UDeclarationsExpression [var bar2: lib.Bar2 = Bar2("hello2")]
+                                ULocalVariable (name = bar2) [var bar2: lib.Bar2 = Bar2("hello2")]
+                                    UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [Bar2("hello2")] => PsiMethod:Bar2
                                         UIdentifier (Identifier (Bar2)) [UIdentifier (Identifier (Bar2))]
-                                        USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Bar2) [<init>] => PsiClass:Bar2
+                                        USimpleNameReferenceExpression (identifier = Bar2, resolvesTo = PsiClass: Bar2) [Bar2] => PsiClass:Bar2
                                         UPolyadicExpression (operator = +) ["hello2"]
                                             ULiteralExpression (value = "hello2") ["hello2"]
             """

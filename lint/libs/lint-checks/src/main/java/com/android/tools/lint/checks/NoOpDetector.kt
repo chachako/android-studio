@@ -393,14 +393,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           val sourcePsi = call.sourcePsi as? KtElement ?: return
           analyze(sourcePsi) {
             val symbol = getFunctionLikeSymbol(sourcePsi) ?: return
-            val callName = symbol.callableIdIfNonLocal?.callableName?.asString() ?: return
-            checkCall(
-              call,
-              node,
-              callName,
-              null,
-              symbol.callableIdIfNonLocal?.classId?.asFqNameString(),
-            )
+            val callName = symbol.callableId?.callableName?.asString() ?: return
+            checkCall(call, node, callName, null, symbol.callableId?.classId?.asFqNameString())
           }
         }
       }

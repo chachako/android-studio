@@ -42,11 +42,11 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import com.intellij.util.containers.headTail
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtTypeParameterSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolKind
+import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolLocation
+import org.jetbrains.kotlin.analysis.api.symbols.KaTypeParameterSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.typeParameters
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtElement
@@ -465,50 +465,49 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       }
     }
 
-    private fun KtAnalysisSession.isArrayOfOrArrayOfNulls(
-      symbol: KtFunctionLikeSymbol,
+    private fun KaSession.isArrayOfOrArrayOfNulls(
+      symbol: KaFunctionSymbol,
       arrayOfMethodName: String,
     ): Boolean {
       if (!hasSingleTypeParameter(symbol) { it.isReified }) return false
       if (arrayOfMethodName == METHOD_ARRAY_OF && !hasVarargValueParameterOnly(symbol)) {
         return false
       }
-      val callableId = symbol.callableIdIfNonLocal ?: return false
+      val callableId = symbol.callableId ?: return false
       val packageName = callableId.packageName
       val methodName = callableId.callableName.asString()
       val returnType = symbol.returnType
       return packageName == StandardClassIds.BASE_KOTLIN_PACKAGE &&
-        symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
+        symbol.location == KaSymbolLocation.TOP_LEVEL &&
         methodName == arrayOfMethodName &&
         returnType.isArrayOrPrimitiveArray
     }
 
-    private fun KtAnalysisSession.isListOf(symbol: KtFunctionLikeSymbol): Boolean {
+    private fun KaSession.isListOf(symbol: KaFunctionSymbol): Boolean {
       if (!hasSingleTypeParameter(symbol) || !hasVarargValueParameterOnly(symbol)) {
         return false
       }
-      val callableId = symbol.callableIdIfNonLocal ?: return false
+      val callableId = symbol.callableId ?: return false
       val packageName = callableId.packageName
       val methodName = callableId.callableName.asString()
       val returnType = symbol.returnType
       return packageName == StandardClassIds.BASE_COLLECTIONS_PACKAGE &&
-        symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
+        symbol.location == KaSymbolLocation.TOP_LEVEL &&
         methodName == METHOD_LIST_OF &&
-        returnType.isClassTypeWithClassId(StandardClassIds.List)
+        returnType.isClassType(StandardClassIds.List)
     }
 
     private fun hasSingleTypeParameter(
-      symbol: KtFunctionLikeSymbol,
-      typeParameterCheck: (KtTypeParameterSymbol) -> Boolean = { true },
+      symbol: KaFunctionSymbol,
+      typeParameterCheck: (KaTypeParameterSymbol) -> Boolean = { true },
     ): Boolean {
-      @OptIn(KaExperimentalApi::class)
-      val typeParameters = symbol.typeParameters
+      @OptIn(KaExperimentalApi::class) val typeParameters = symbol.typeParameters
       if (typeParameters.size != 1) return false
       val typeParam = typeParameters[0]
       return typeParam.name.asString() == TYPE_PARAM && typeParameterCheck(typeParam)
     }
 
-    private fun hasVarargValueParameterOnly(symbol: KtFunctionLikeSymbol): Boolean {
+    private fun hasVarargValueParameterOnly(symbol: KaFunctionSymbol): Boolean {
       val valueParameters = symbol.valueParameters
       if (valueParameters.size != 1) return false
       return valueParameters[0].isVararg

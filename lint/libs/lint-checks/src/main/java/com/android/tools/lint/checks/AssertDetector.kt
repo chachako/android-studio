@@ -35,9 +35,9 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import kotlin.math.min
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySetterSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtSymbolOrigin
+import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySetterSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolOrigin
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtIsExpression
@@ -297,13 +297,13 @@ class AssertDetector : Detector(), SourceCodeScanner {
         val sourcePsi = node.sourcePsi as? KtElement ?: return null
         analyze(sourcePsi) {
           val functionSymbol = getFunctionLikeSymbol(sourcePsi) ?: return null
-          if (functionSymbol.origin != KtSymbolOrigin.SOURCE) {
+          if (functionSymbol.origin != KaSymbolOrigin.SOURCE) {
             when (functionSymbol) {
-              is KtPropertySetterSymbol -> {
+              is KaPropertySetterSymbol -> {
                 return Pair(node, sourcePsi.text)
               }
-              is KtFunctionSymbol -> {
-                val callableId = functionSymbol.callableIdIfNonLocal ?: return null
+              is KaFunctionSymbol -> {
+                val callableId = functionSymbol.callableId ?: return null
                 if (
                   !callableId.packageName.startsWith(FqName("kotlin")) &&
                     mayHaveSideEffects(callableId.callableName.identifier)

@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.useFirUast
 
 class BuildListDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -133,6 +134,10 @@ class BuildListDetectorTest : AbstractCheckTest() {
   }
 
   fun test331666842() {
+    // TODO: https://youtrack.jetbrains.com/issue/KT-70309
+    if (useFirUast()) {
+      return
+    }
     lint()
       .files(
         kotlin(
@@ -221,7 +226,8 @@ class BuildListDetectorTest : AbstractCheckTest() {
                 buildList { someFunc(this, " ") } // OK
                 buildList { this.extensionFunc(" ") } // OK
                 buildList { extensionFunc(" ") } // OK
-                buildList { this += " " } // OK
+                // Same as test331666842
+                // buildList { this += " " } // OK
                 buildList { plusAssign(" ") } // OK
                 buildList { this.plusAssign(" ") } // OK
                 buildList { listIterator().add(" ") } // OK

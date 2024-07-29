@@ -17,19 +17,19 @@ package com.android.tools.lint.checks
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiParameter
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.calls.KtAnnotationCall
-import org.jetbrains.kotlin.analysis.api.calls.KtCall
-import org.jetbrains.kotlin.analysis.api.calls.KtCallableMemberCall
-import org.jetbrains.kotlin.analysis.api.calls.KtCompoundAccessCall
-import org.jetbrains.kotlin.analysis.api.calls.KtImplicitReceiverValue
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.resolution.KaAnnotationCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCallableMemberCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaImplicitReceiverValue
 import org.jetbrains.kotlin.analysis.api.resolution.singleCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.singleConstructorCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.symbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtReceiverParameterSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaReceiverParameterSymbol
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtLambdaExpression
@@ -47,11 +47,11 @@ import org.jetbrains.uast.toUElementOfType
  *
  * The returned function-like symbol from Analysis API should be used *within* [KtAnalysisSession].
  */
-internal fun KtAnalysisSession.getFunctionLikeSymbol(ktElement: KtElement): KtFunctionLikeSymbol? {
-  val callInfo = ktElement.resolveCall() ?: return null
+internal fun KaSession.getFunctionLikeSymbol(ktElement: KtElement): KaFunctionSymbol? {
+  val callInfo = ktElement.resolveToCall() ?: return null
   return callInfo.singleFunctionCallOrNull()?.symbol
     ?: callInfo.singleConstructorCallOrNull()?.symbol
-    ?: callInfo.singleCallOrNull<KtAnnotationCall>()?.symbol
+    ?: callInfo.singleCallOrNull<KaAnnotationCall>()?.symbol
 }
 
 /**
@@ -62,7 +62,7 @@ internal fun KtAnalysisSession.getFunctionLikeSymbol(ktElement: KtElement): KtFu
  * resolves to a compiled function), this analysis API-based function can identify calls to
  * extensions functions, regardless of whether the function declaration is in source or binary.
  */
-internal fun KtAnalysisSession.isExtensionFunctionCall(ktElement: KtElement): Boolean =
+internal fun KaSession.isExtensionFunctionCall(ktElement: KtElement): Boolean =
   getFunctionLikeSymbol(ktElement)?.isExtension == true
 
 /** Returns the `<this>` UParameter of [this] ULambdaExpression, if it exists. */
@@ -88,7 +88,7 @@ internal fun ULambdaExpression.getThisParameter(
  * Returns the implicit receiver of the call-like expression [ktExpression] if the implicit receiver
  * resolves to a `<this>` UParameter of a lambda expression, otherwise null.
  */
-internal fun KtAnalysisSession.getImplicitReceiverIfFromLambdaExpr(
+internal fun KaSession.getImplicitReceiverIfFromLambdaExpr(
   ktExpression: KtExpression,
   resolveProviderService: BaseKotlinUastResolveProviderService,
 ): UParameter? =
@@ -100,12 +100,12 @@ internal fun KtAnalysisSession.getImplicitReceiverIfFromLambdaExpr(
 /**
  * Returns the PSI for [this], which will be the owning lambda expression or the surrounding class.
  */
-internal fun KtImplicitReceiverValue.getImplicitReceiverPsi(): PsiElement? {
+internal fun KaImplicitReceiverValue.getImplicitReceiverPsi(): PsiElement? {
   return when (val receiverParameterSymbol = this.symbol) {
     // the owning lambda expression
-    is KtReceiverParameterSymbol -> receiverParameterSymbol.owningCallableSymbol.psi
+    is KaReceiverParameterSymbol -> receiverParameterSymbol.owningCallableSymbol.psi
     // the class that we are in, calling a method
-    is KtClassOrObjectSymbol -> receiverParameterSymbol.psi
+    is KaClassSymbol -> receiverParameterSymbol.psi
     else -> null
   }
 }
@@ -114,12 +114,12 @@ internal fun KtImplicitReceiverValue.getImplicitReceiverPsi(): PsiElement? {
  * Returns the implicit receiver value of the call-like expression [ktExpression] (can include
  * property accesses, for example).
  */
-internal fun KtAnalysisSession.getImplicitReceiverValue(
+internal fun KaSession.getImplicitReceiverValue(
   ktExpression: KtExpression
-): KtImplicitReceiverValue? {
+): KaImplicitReceiverValue? {
   val partiallyAppliedSymbol =
-    when (val call = ktExpression.resolveCall()?.singleCallOrNull<KtCall>()) {
-      // Note: Calls that are a `KtCompoundAccessCall` (especially, `KtCompoundArrayAccessCall`) are
+    when (val call = ktExpression.resolveToCall()?.singleCallOrNull<KaCall>()) {
+      // Note: Calls that are a `KaCompoundAccessCall` (especially, `KaCompoundArrayAccessCall`) are
       // quite complex, as such a call essentially contains multiple calls. For example, in:
       //
       // m["a"] += "b"
@@ -128,11 +128,11 @@ internal fun KtAnalysisSession.getImplicitReceiverValue(
       // the second call, which can only exist in this example if the extension function also
       // requires a dispatch receiver (an instance of a class in which the extension function is
       // declared).
-      is KtCompoundAccessCall -> call.compoundAccess.operationPartiallyAppliedSymbol
-      is KtCallableMemberCall<*, *> -> call.partiallyAppliedSymbol
+      is KaCompoundAccessCall -> call.compoundAccess.operationPartiallyAppliedSymbol
+      is KaCallableMemberCall<*, *> -> call.partiallyAppliedSymbol
       else -> null
     } ?: return null
 
-  return partiallyAppliedSymbol.extensionReceiver as? KtImplicitReceiverValue
-    ?: partiallyAppliedSymbol.dispatchReceiver as? KtImplicitReceiverValue
+  return partiallyAppliedSymbol.extensionReceiver as? KaImplicitReceiverValue
+    ?: partiallyAppliedSymbol.dispatchReceiver as? KaImplicitReceiverValue
 }

@@ -31,11 +31,11 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
+import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.decompiled.light.classes.ClsJavaStubByVirtualFileCache
-import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
@@ -143,7 +143,6 @@ private fun createAnalysisSession(
   val analysisSession =
     buildStandaloneAnalysisAPISession(
       projectDisposable = parentDisposable,
-      withPsiDeclarationFromBinaryModuleProvider = true,
       compilerConfiguration = config.kotlinCompilerConfig,
     ) {
       CoreApplicationEnvironment.registerExtensionPoint(
@@ -151,7 +150,6 @@ private fun createAnalysisSession(
         KtResolveExtensionProvider.EP_NAME.name,
         KtResolveExtensionProvider::class.java,
       )
-      (project as MockProject).registerKtLifetimeTokenProvider()
       registerProjectService(
         ClsJavaStubByVirtualFileCache::class.java,
         ClsJavaStubByVirtualFileCache(),
@@ -192,7 +190,7 @@ private fun createAnalysisSession(
           GraphUtils.reverseTopologicalSort(config.modules.map { it.name }) {
             uastEnvModuleByName[it]!!.directDependencies.map { (depName, _) -> depName }
           }
-        val builtKtModuleByName = hashMapOf<String, KtModule>() // incrementally added below
+        val builtKtModuleByName = hashMapOf<String, KaModule>() // incrementally added below
         val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
 
         uastEnvModuleOrder.forEach { name ->
@@ -225,7 +223,7 @@ private fun createAnalysisSession(
                   buildKtSdkModule {
                     platform = mPlatform
                     addBinaryRoots(LibraryUtils.findClassesFromJdkHome(jdkHomePath, isJre = true))
-                    sdkName = "JDK for $moduleName"
+                    libraryName = "JDK for $moduleName"
                   }
                 )
               }
@@ -334,7 +332,7 @@ private fun configureFirProjectEnvironment(
 
 private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
   configureApplicationEnvironment(appEnv) {
-    it.addExtension(UastLanguagePlugin.extensionPointName, FirKotlinUastLanguagePlugin())
+    it.addExtension(UastLanguagePlugin.EP, FirKotlinUastLanguagePlugin())
 
     it.application.registerService(
       BaseKotlinUastResolveProviderService::class.java,

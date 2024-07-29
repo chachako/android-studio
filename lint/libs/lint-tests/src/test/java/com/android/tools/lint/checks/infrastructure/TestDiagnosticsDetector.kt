@@ -27,6 +27,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.components.KtDiagnosticCheckerFilter
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
@@ -40,6 +41,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
   override fun getApplicableUastTypes(): List<Class<out UElement>> =
     listOf(UFile::class.java, UCallExpression::class.java)
 
+  @OptIn(KaExperimentalApi::class)
   override fun createUastHandler(context: JavaContext): UElementHandler =
     object : UElementHandler() {
       override fun visitFile(node: UFile) {
@@ -48,7 +50,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
 
         analyze(ktFile) {
           val diagnostics =
-            ktFile.collectDiagnosticsForFile(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
+            ktFile.collectDiagnostics(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
           assertEquals(
             1,
             diagnostics.size,
@@ -74,7 +76,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
         val withReceiver = ktSource.parent as? KtDotQualifiedExpression ?: return
         analyze(withReceiver) {
           val diagnostics =
-            withReceiver.getDiagnostics(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
+            withReceiver.diagnostics(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
           assertEquals(
             1,
             diagnostics.size,

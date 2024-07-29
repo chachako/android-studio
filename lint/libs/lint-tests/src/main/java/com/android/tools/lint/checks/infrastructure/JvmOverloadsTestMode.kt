@@ -23,8 +23,8 @@ import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassKind
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_OVERLOADS_FQ_NAME
 import org.jetbrains.kotlin.psi.KtClass
@@ -140,12 +140,12 @@ class JvmOverloadsTestMode :
           if (valueParameters.size == 1) {
             val parameter = valueParameters[0]
             analyze(parameter) {
-              val parameterSymbol = parameter.getParameterSymbol()
+              val parameterSymbol = parameter.symbol
               val returnType = parameterSymbol.returnType
-              val typeSymbol = returnType.expandedClassSymbol
-              if (typeSymbol is KtClassOrObjectSymbol) {
+              val typeSymbol = returnType.expandedSymbol
+              if (typeSymbol is KaClassSymbol) {
                 val classKind = typeSymbol.classKind
-                if (classKind == KtClassKind.INTERFACE) {
+                if (classKind == KaClassKind.INTERFACE) {
                   return
                 }
               }

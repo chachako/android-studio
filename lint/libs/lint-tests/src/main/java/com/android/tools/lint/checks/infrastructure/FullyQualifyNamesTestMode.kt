@@ -26,7 +26,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
 import java.util.ArrayDeque
-import org.jetbrains.kotlin.psi.KtCallElement
 import org.jetbrains.kotlin.psi.KtClassLiteralExpression
 import org.jetbrains.kotlin.psi.KtConstructorCalleeExpression
 import org.jetbrains.kotlin.psi.KtConstructorDelegationCall
@@ -371,12 +370,9 @@ class FullyQualifyNamesTestMode :
 
       // We sometimes get qualified expressions that are not
       // provided as a UQualifiedReferenceExpression
-      if (reference.sourcePsi is KtCallElement) {
-        val ktCallElement = reference.sourcePsi as KtCallElement
+      if (reference.sourcePsi is KtConstructorCalleeExpression) {
         val typeReference =
-          (ktCallElement.calleeExpression as? KtConstructorCalleeExpression)
-            ?.typeReference
-            ?.toUElement()
+          (reference.sourcePsi as? KtConstructorCalleeExpression)?.typeReference?.toUElement()
         if (typeReference != null) {
           replaceClassReference(cls, typeReference, node.getExpressionType())
           return

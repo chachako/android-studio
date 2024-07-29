@@ -744,7 +744,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
         """
                 ../lib/src/main/kotlin/test/pkg/test.kt:5: Warning: Call requires API level 14 (current min is 5): android.widget.GridLayout() [NewApi]
                                         val y = android.widget.GridLayout(null)
-                                                               ~~~~~~~~~~~~~~~~
+                                                               ~~~~~~~~~~
                 ../lib/src/main/kotlin/test/pkg/test.kt:6: Error: Use Integer.valueOf(42) instead [UseValueOf]
                                         val z = java.lang.Integer(42)
                                                 ~~~~~~~~~~~~~~~~~~~~~

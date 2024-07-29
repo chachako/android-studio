@@ -1363,7 +1363,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             src/test/pkg/TypedefWarnings.java:51: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
                 public static @DialogStyle String EXTRA_AUDIO_CODEC; // ERROR 1
                               ~~~~~~~~~~~~
-            src/test/pkg/TypedefWarnings.kt:76: Error: This annotation does not apply for type String; expected int. Should @test.pkg.TypedefWarnings.DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
+            src/test/pkg/TypedefWarnings.kt:76: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
                                 @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
                                 ~~~~~~~~~~~~
             4 errors, 0 warnings

@@ -24,16 +24,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.annotations.annotations
-import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
-import org.jetbrains.kotlin.analysis.api.calls.symbol
-import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithVisibility
-import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
-import org.jetbrains.kotlin.analysis.api.types.KtFunctionalType
-import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
-import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinProjectStructureProvider
+import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolVisibility
+import org.jetbrains.kotlin.analysis.api.symbols.typeParameters
+import org.jetbrains.kotlin.analysis.api.types.KaDynamicType
+import org.jetbrains.kotlin.analysis.api.types.KaFunctionalType
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
@@ -69,7 +69,7 @@ abstract class AnalysisApiServicesTestBase {
 
               analyze(returnTypeReference) {
                 val ktType = returnTypeReference.getKtType()
-                assertTrue(ktType is KtDynamicType)
+                assertTrue(ktType is KaDynamicType)
               }
 
               return super.visitMethod(node)
@@ -95,9 +95,8 @@ abstract class AnalysisApiServicesTestBase {
               val ktDeclaration = node.sourcePsi as? KtDeclaration ?: return super.visitMethod(node)
 
               analyze(ktDeclaration) {
-                val symbol = ktDeclaration.getSymbol()
-                val visibility = (symbol as? KtSymbolWithVisibility)?.visibility
-                assertEquals(Visibilities.Internal, visibility)
+                val visibility = ktDeclaration.symbol.visibility
+                assertEquals(KaSymbolVisibility.INTERNAL, visibility)
               }
 
               return super.visitMethod(node)
@@ -126,8 +125,8 @@ abstract class AnalysisApiServicesTestBase {
               val ktParameter = node.sourcePsi as? KtParameter ?: return super.visitParameter(node)
 
               analyze(ktParameter) {
-                val ktType = ktParameter.getParameterSymbol().returnType
-                assertTrue(ktType.isFunctionalInterfaceType)
+                val ktType = ktParameter.symbol.returnType
+                assertTrue(ktType.isFunctionalInterface)
               }
 
               return super.visitParameter(node)
@@ -163,8 +162,8 @@ abstract class AnalysisApiServicesTestBase {
                 node.sourcePsi as? KtLambdaExpression ?: return super.visitLambdaExpression(node)
 
               analyze(ktLambdaExpression) {
-                val lambdaType = ktLambdaExpression.getKtType()
-                assertTrue(lambdaType is KtFunctionalType && lambdaType.hasReceiver)
+                val lambdaType = ktLambdaExpression.expressionType
+                assertTrue(lambdaType is KaFunctionalType && lambdaType.hasReceiver)
               }
 
               return super.visitLambdaExpression(node)
@@ -195,8 +194,8 @@ abstract class AnalysisApiServicesTestBase {
               val ktClass = node.sourcePsi as? KtClassOrObject ?: return super.visitClass(node)
 
               analyze(ktClass) {
-                val symbol = ktClass.getClassOrObjectSymbol()!!
-                val typeParams = symbol.typeParameters
+                val symbol = ktClass.classSymbol!!
+                @OptIn(KaExperimentalApi::class) val typeParams = symbol.typeParameters
                 assertEquals(1, typeParams.size)
                 val typeParam = typeParams.single()
                 val hasAnn = typeParam.annotations.any { it.classId?.asFqNameString() == "Ann" }
@@ -233,10 +232,10 @@ abstract class AnalysisApiServicesTestBase {
               val ktElement = node.sourcePsi as? KtElement ?: return super.visitCallExpression(node)
               analyze(ktElement) {
                 val ktFunctionSymbol =
-                  ktElement.resolveCall()?.singleFunctionCallOrNull()?.symbol
+                  ktElement.resolveToCall()?.singleFunctionCallOrNull()?.symbol
                     ?: return super.visitCallExpression(node)
                 val ktParamSymbol = ktFunctionSymbol.valueParameters.single()
-                if (ktFunctionSymbol.callableIdIfNonLocal?.callableName?.identifier == "myLet") {
+                if (ktFunctionSymbol.callableId?.callableName?.identifier == "myLet") {
                   assertTrue(ktParamSymbol.isNoinline)
                 } else { // built-in `let`
                   assertFalse(ktParamSymbol.isNoinline)
@@ -271,7 +270,7 @@ abstract class AnalysisApiServicesTestBase {
       }
   }
 
-  @OptIn(KtAnalysisApiInternals::class)
+  @OptIn(KaAnalysisApiInternals::class)
   protected fun checkAnalysisAPIOnPsiElement(isK2: Boolean) {
     listOf(
         kotlin(
@@ -335,11 +334,12 @@ abstract class AnalysisApiServicesTestBase {
             return super.visitSimpleNameReferenceExpression(node)
           }
 
-          val projectStructureProvider = c.project.getService(ProjectStructureProvider::class.java)
+          val projectStructureProvider =
+            c.project.getService(KotlinProjectStructureProvider::class.java)
           val module = projectStructureProvider.getModule(c, null)
           analyze(module) {
-            val symbolFromPsiElement = c.getCallableSymbol()
-            val callableId = symbolFromPsiElement?.callableIdIfNonLocal
+            val symbolFromPsiElement = c.callableSymbol
+            val callableId = symbolFromPsiElement?.callableId
             assertEquals("JavaClass", callableId?.classId?.asFqNameString())
             assertEquals("count", callableId?.callableName?.identifier)
           }

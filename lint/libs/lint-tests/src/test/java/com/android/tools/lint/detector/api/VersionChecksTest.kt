@@ -2268,7 +2268,7 @@ class VersionChecksTest : AbstractCheckTest() {
         """
                 src/p1/p2/NestedChecks.kt:39: Error: Call requires API level 14 (current min is 11): android.widget.GridLayout() [NewApi]
                         GridLayout(null) // ERROR
-                        ~~~~~~~~~~~~~~~~
+                        ~~~~~~~~~~
                 src/p1/p2/NestedChecks.kt:51: Warning: Unnecessary; SDK_INT is always >= 11 [ObsoleteSdkInt]
                             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

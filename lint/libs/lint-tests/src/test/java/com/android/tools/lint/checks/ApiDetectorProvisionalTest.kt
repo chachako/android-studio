@@ -59,7 +59,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
         """
                 ../library/src/test.kt:5: Error: Call requires API level 14 (current min is 8): android.widget.GridLayout() [NewApi]
                    val layout = GridLayout(null) // requires API 14
-                                ~~~~~~~~~~~~~~~~
+                                ~~~~~~~~~~
                 1 errors, 0 warnings
                 """
       )
@@ -164,7 +164,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ../lib/src/test.kt:6: Error: Call requires API level 14 (current min is 8): android.widget.GridLayout() [NewApi]
                                     val layout = GridLayout(null) // requires API 14
-                                                 ~~~~~~~~~~~~~~~~
+                                                 ~~~~~~~~~~
                 ../lib/src/test.kt:7: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
                                     val path = "/sdcard/path"
                                                 ~~~~~~~~~~~~

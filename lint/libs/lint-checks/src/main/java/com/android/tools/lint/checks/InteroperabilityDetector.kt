@@ -44,14 +44,14 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
-import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KtTypeRendererForSource
+import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KaTypeRendererForSource
 import org.jetbrains.kotlin.analysis.api.renderer.types.renderers.KaFlexibleTypeRenderer
-import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
-import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
-import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
-import org.jetbrains.kotlin.analysis.api.types.KtType
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
+import org.jetbrains.kotlin.analysis.api.types.KaDynamicType
+import org.jetbrains.kotlin.analysis.api.types.KaFlexibleType
+import org.jetbrains.kotlin.analysis.api.types.KaStarTypeProjection
+import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtProperty
@@ -293,22 +293,23 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             else -> return
           }
         analyze(expression) {
-          val ktType = expression.getKtType() ?: return
-          if (ktType is KtDynamicType) return
+          val ktType = expression.expressionType ?: return
+          if (ktType is KaDynamicType) return
           // We're considering flexible types as platform types since Kotlin doesn't support union
           // types yet. In the future this may need to be refined.
           if (!ktType.isFlexibleRecursive()) return
           // NB: The return type of the declaration isn't flexible type.
           // Rather, type arguments could be flexible, e.g., Lazy<(String..String?)>
           val typeString =
-            if (ktType is KtFlexibleType) null
+            if (ktType is KaFlexibleType) null
             else {
               @OptIn(KaExperimentalApi::class)
-              val renderer = KtTypeRendererForSource.WITH_SHORT_NAMES.with {
-                // By default, nullability flexible type is rendered with ! at the end,
-                // e.g., Lazy<String!>
-                flexibleTypeRenderer = KaFlexibleTypeRenderer.AS_RANGE
-              }
+              val renderer =
+                KaTypeRendererForSource.WITH_SHORT_NAMES.with {
+                  // By default, nullability flexible type is rendered with ! at the end,
+                  // e.g., Lazy<String!>
+                  flexibleTypeRenderer = KaFlexibleTypeRenderer.AS_RANGE
+                }
               @OptIn(KaExperimentalApi::class)
               ktType.render(renderer, position = Variance.INVARIANT)
             }
@@ -317,10 +318,10 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
       }
     }
 
-    private fun KtType.isFlexibleRecursive(): Boolean {
-      if (this is KtFlexibleType) return true
-      val arguments = (this as? KtNonErrorClassType)?.ownTypeArguments ?: return false
-      return arguments.any { it !is KtStarTypeProjection && it.type?.isFlexibleRecursive() == true }
+    private fun KaType.isFlexibleRecursive(): Boolean {
+      if (this is KaFlexibleType) return true
+      val arguments = (this as? KaClassType)?.typeArguments ?: return false
+      return arguments.any { it !is KaStarTypeProjection && it.type?.isFlexibleRecursive() == true }
     }
 
     override fun visitField(node: UField) {}

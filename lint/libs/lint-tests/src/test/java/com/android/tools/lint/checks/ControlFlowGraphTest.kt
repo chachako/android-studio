@@ -2896,15 +2896,15 @@ class ControlFlowGraphTest {
                Lambda: │ │ │ │ │ │ ╰→╭─ { i-> firstLambda() }
                  Body: │ │ │ │ │ │ ╭─╰→ firstLambda()
              FuncCall: │ │ │ │ │ │ ╰→╭─ firstLambda()
-      Implicit Return: │ │ ╰─│ │ │   ╰→ return <anonymous class>()
+      Implicit Return: │ │ ╰─│ │ │   ╰→ return UIdenti…firstLambda))()
                Lambda: │ │   │ │ ╰→  ╭─ { j-> secondLambda(j) }
                  Body: │ │   │ │   ╭─╰→ secondLambda(j)
              FuncCall: │ │   │ │   ╰→╭─ secondLambda(j)
-      Implicit Return: │ ╰─  │ │     ╰→ return <anonymous class>(j)
+      Implicit Return: │ ╰─  │ │     ╰→ return UIdenti…condLambda))(j)
                Lambda: │     │ ╰→    ╭─ { k -> thirdLambda(k) }
                  Body: │     │     ╭─╰→ thirdLambda(k)
              FuncCall: │     │     ╰→╭─ thirdLambda(k)
-      Implicit Return: ╰─    │       ╰→ return <anonymous class>(k)
+      Implicit Return: ╰─    │       ╰→ return UIdenti…hirdLambda))(k)
         LocalVariable:       ╰→      ╭─ val foo = foo(…hirdLambda(k) }
          Declarations:             ╭─╰→ val foo = foo(…hirdLambda(k) }
              FuncCall:             ╰→╭─ next()

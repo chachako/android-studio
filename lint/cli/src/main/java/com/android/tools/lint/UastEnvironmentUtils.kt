@@ -39,10 +39,6 @@ import it.unimi.dsi.fastutil.ints.IntSet
 import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.pathString
-import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
-import org.jetbrains.kotlin.analysis.api.lifetime.KtDefaultLifetimeTokenProvider
-import org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenProvider
-import org.jetbrains.kotlin.analysis.api.standalone.KtAlwaysAccessibleLifetimeTokenProvider
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
@@ -130,17 +126,6 @@ internal fun configureProjectEnvironment(
   @Suppress("DEPRECATION") project.registerService(UastContext::class.java, UastContext(project))
 }
 
-@OptIn(KtAnalysisApiInternals::class)
-internal fun MockProject.registerKtLifetimeTokenProvider() {
-  // TODO: remove this after a couple release cycles
-  //  to make sure Lint clients, including androidx runtime, catch up.
-  @Suppress("DEPRECATION") registerService(KtDefaultLifetimeTokenProvider::class.java)
-  registerService(
-    KtLifetimeTokenProvider::class.java,
-    KtAlwaysAccessibleLifetimeTokenProvider::class.java,
-  )
-}
-
 // In parallel builds the Kotlin compiler will reuse the application environment
 // (see KotlinCoreEnvironment.getOrCreateApplicationEnvironmentForProduction).
 // So we need a lock to ensure that we only configure the application environment once.
@@ -164,14 +149,14 @@ internal fun configureApplicationEnvironment(
 
   // The Kotlin compiler does not use UAST, so we must configure it ourselves.
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
-    UastLanguagePlugin.extensionPointName,
+    UastLanguagePlugin.EP,
     UastLanguagePlugin::class.java,
   )
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     UEvaluatorExtension.EXTENSION_POINT_NAME,
     UEvaluatorExtension::class.java,
   )
-  appEnv.addExtension(UastLanguagePlugin.extensionPointName, JavaUastLanguagePlugin())
+  appEnv.addExtension(UastLanguagePlugin.EP, JavaUastLanguagePlugin())
 
   appEnv.addExtension(UEvaluatorExtension.EXTENSION_POINT_NAME, KotlinEvaluatorExtension())
 
