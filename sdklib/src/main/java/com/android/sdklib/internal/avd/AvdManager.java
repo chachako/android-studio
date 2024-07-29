@@ -1264,6 +1264,13 @@ public class AvdManager {
                 }
             }
         }
+        // Set the "tag.ids" property if it is not present but the "tag.id" property is.
+        if (!properties.containsKey(ConfigKey.TAG_IDS)) {
+            String tagId = properties.get(ConfigKey.TAG_ID);
+            if (tagId != null && !tagId.isEmpty()) {
+                properties.put(ConfigKey.TAG_IDS, tagId);
+            }
+        }
 
         Map<String, String> userSettings = AvdInfo.parseUserSettingsFile(avdPath, mLog);
 
