@@ -19,6 +19,9 @@ import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toTargetPlatform
 import com.android.tools.lint.detector.api.GraphUtils
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.uast.DecompiledPsiDeclarationProvider
+import com.android.tools.lint.uast.KotlinPsiDeclarationProviderFactory
+import com.android.tools.lint.uast.KotlinStaticPsiDeclarationProviderFactory
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
@@ -54,6 +57,7 @@ import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
+import org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService
 
 /**
  * This class is FIR (or K2) version of [UastEnvironment]
@@ -328,11 +332,21 @@ private fun configureFirProjectEnvironment(
   val project = analysisAPISession.mockProject
 
   configureProjectEnvironment(project, config)
+
+  project.registerService(
+    KotlinPsiDeclarationProviderFactory::class.java,
+    KotlinStaticPsiDeclarationProviderFactory::class.java,
+  )
 }
 
 private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
   configureApplicationEnvironment(appEnv) {
     it.addExtension(UastLanguagePlugin.EP, FirKotlinUastLanguagePlugin())
+
+    it.application.registerService(
+      FirKotlinUastLibraryPsiProviderService::class.java,
+      DecompiledPsiDeclarationProvider::class.java,
+    )
 
     it.application.registerService(
       BaseKotlinUastResolveProviderService::class.java,

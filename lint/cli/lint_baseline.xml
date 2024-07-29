@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.5.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.5.0-dev">
+<issues format="6" by="lint 8.7.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.7.0-dev">
 
     <issue
         id="SimpleDateFormat"
@@ -8,7 +8,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/LintIssueDocGenerator.kt"
-            line="3035"
+            line="3373"
             column="13"/>
     </issue>
 
@@ -19,8 +19,19 @@
         errorLine2="                   ~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/LintCliClient.kt"
-            line="556"
+            line="569"
             column="20"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces."
+        errorLine1="import org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/uast/DecompiledPsiDeclarationProvider.kt"
+            line="26"
+            column="1"/>
     </issue>
 
     <issue
@@ -30,7 +41,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="89"
+            line="92"
             column="1"/>
     </issue>
 
@@ -41,7 +52,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="90"
+            line="93"
             column="1"/>
     </issue>
 
@@ -52,7 +63,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="91"
+            line="94"
             column="1"/>
     </issue>
 
@@ -63,7 +74,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="92"
+            line="95"
             column="1"/>
     </issue>
 
@@ -74,7 +85,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="278"
+            line="273"
             column="5"/>
     </issue>
 
@@ -85,7 +96,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="279"
+            line="274"
             column="5"/>
     </issue>
 
@@ -96,7 +107,7 @@
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="360"
+            line="355"
             column="7"/>
     </issue>
 
@@ -107,7 +118,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="72"
+            line="55"
             column="1"/>
     </issue>
 
@@ -118,7 +129,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="73"
+            line="56"
             column="1"/>
     </issue>
 
@@ -129,8 +140,30 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="74"
+            line="57"
             column="1"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces."
+        errorLine1="import org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
+            line="58"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.FirKotlinUastLibraryPsiProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces."
+        errorLine1="      FirKotlinUastLibraryPsiProviderService::class.java,"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
+            line="327"
+            column="7"/>
     </issue>
 
     <issue
@@ -140,7 +173,7 @@
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="367"
+            line="333"
             column="7"/>
     </issue>
 
@@ -151,7 +184,7 @@
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="370"
+            line="336"
             column="7"/>
     </issue>
 
@@ -162,7 +195,7 @@
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="371"
+            line="337"
             column="7"/>
     </issue>
 
@@ -173,7 +206,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/UastEnvironmentUtils.kt"
-            line="61"
+            line="49"
             column="1"/>
     </issue>
 
