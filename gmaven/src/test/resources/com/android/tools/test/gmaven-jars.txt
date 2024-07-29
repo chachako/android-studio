@@ -2971,23 +2971,12 @@ com/android/tools/lint/lint-api
   com/android/
   com/android/tools/
   com/android/tools/lint/
-  com/android/tools/lint/checks/
   com/android/tools/lint/client/
   com/android/tools/lint/client/api/
   com/android/tools/lint/detector/
   com/android/tools/lint/detector/api/
   com/android/tools/lint/detector/api/interprocedural/
   com/android/tools/lint/helpers/
-  org/
-  org/jetbrains/
-  org/jetbrains/kotlin/
-  org/jetbrains/kotlin/analysis/
-  org/jetbrains/kotlin/analysis/api/
-  org/jetbrains/kotlin/analysis/api/renderer/
-  org/jetbrains/kotlin/analysis/api/renderer/types/
-  org/jetbrains/kotlin/analysis/api/renderer/types/renderers/
-  org/jetbrains/kotlin/analysis/api/resolution/
-  org/jetbrains/kotlin/analysis/api/symbols/
 
 com/android/tools/lint/lint-checks
   META-INF/
