@@ -100,6 +100,8 @@ class NonTransitiveCompileRClassFlowTest {
         .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
         // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
         .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        // consider using default heap size when b/339837484 is resolved
+        .withHeap("2048m")
         .create()
 
     @Test

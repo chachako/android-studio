@@ -95,7 +95,10 @@ class CompileRClassFlowTest {
             .build()
 
     @get:Rule
-    val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    val project = GradleTestProject.builder().fromTestApp(testApp)
+        // consider using default heap size when b/339837484 is resolved
+        .withHeap("2048m")
+        .create()
 
     /** Verifies the behavior when enabling and disabling the COMPILE_CLASSPATH_LIBRARY_R_CLASSES flag. */
     @Test
