@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.backup
 
-internal class Stub
+internal fun interface AdbServicesFactory {
 
+  fun createAdbServices(
+    serialNumber: String,
+    listener: BackupProgressListener?,
+    steps: Int,
+  ): AdbServices
+}

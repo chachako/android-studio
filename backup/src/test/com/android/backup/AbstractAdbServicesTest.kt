@@ -15,19 +15,19 @@
  */
 package com.android.backup
 
-import com.android.backup.testing.FakeBackupServices
+import com.android.backup.testing.FakeAdbServices
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-/** Tests for [AbstractBackupServices] */
-class AbstractBackupServicesTest {
+/** Tests for [AbstractAdbServices] */
+class AbstractAdbServicesTest {
 
   @Test
   fun setTransport_withBadExistingTransport_doesNotThrow() = runBlocking {
     val transport = "com.google.android.gms/.backup.migrate.service.D2dTransport"
     val invalidTransport = "Invalid"
-    val backupServices = FakeBackupServices("serial", 10)
+    val backupServices = FakeAdbServices("serial", 10)
     backupServices.activeTransport = invalidTransport
     backupServices.withSetup(transport) {
       assertThat(backupServices.activeTransport).isEqualTo(transport)

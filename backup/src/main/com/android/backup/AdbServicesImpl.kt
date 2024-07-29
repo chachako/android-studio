@@ -28,13 +28,13 @@ import java.io.OutputStream
 import kotlinx.coroutines.flow.first
 
 /** Provides backup services for a specific device */
-internal class BackupServicesImpl(
+internal class AdbServicesImpl(
   private val adbSession: AdbSession,
   serialNumber: String,
   logger: Logger,
   progressListener: BackupProgressListener?,
   totalSteps: Int,
-) : AbstractBackupServices(serialNumber, logger, progressListener, totalSteps) {
+) : AbstractAdbServices(serialNumber, logger, progressListener, totalSteps) {
 
   override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
     val output =

@@ -17,8 +17,9 @@ package com.android.backup
 
 import ai.grazie.utils.dropPrefix
 import com.android.adblib.DeviceSelector
+import com.android.backup.AdbServices.Companion.BACKUP_DIR
 import com.android.backup.BackupProgressListener.Step
-import com.android.backup.BackupServices.Companion.BACKUP_DIR
+import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
 import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
 import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
@@ -30,12 +31,12 @@ private val TRANSPORT_COMMAND_REGEX =
   "Selected transport [^ ]+ \\(formerly (?<old>[^ ]+)\\)".toRegex()
 private val PACKAGE_VERSION_CODE_REGEX = "^ {4}versionCode=(?<version>\\d+).*$".toRegex()
 
-abstract class AbstractBackupServices(
+abstract class AbstractAdbServices(
   protected val serialNumber: String,
   protected val logger: Logger,
   protected val progressListener: BackupProgressListener?,
   private var totalSteps: Int,
-) : BackupServices {
+) : AdbServices {
 
   private var step = 0
 
@@ -63,6 +64,20 @@ abstract class AbstractBackupServices(
     val out = executeCommand("bmgr init $transport", TRANSPORT_INIT_FAILED)
     if (out.lines().last() != "Initialization result: 0") {
       throw BackupException(TRANSPORT_INIT_FAILED, "Failed to initialize '$transport`: $out")
+    }
+  }
+
+  override suspend fun backupNow(applicationId: String) {
+    val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED)
+    if (out.lines().last() != "Backup finished with result: Success") {
+      throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
+    }
+  }
+
+  override suspend fun restore(token: String, applicationId: String) {
+    val out = executeCommand("bmgr restore $token $applicationId", ErrorCode.RESTORE_FAILED)
+    if (out.indexOf("restoreFinished: 0\n") < 0) {
+      throw BackupException(ErrorCode.RESTORE_FAILED, "Error restoring app: $out")
     }
   }
 
@@ -120,7 +135,7 @@ abstract class AbstractBackupServices(
         reportProgress("Restoring backup transport")
         // It's possible to set to a "transport" that does not exist. If the device was already in
         // this state, trying to restore to it will result in the "transport" being set but not
-        // marked as "current" (prefix of "*" in list transports.
+        // marked as "current" (prefix of "*" in list transports).
         // In order to not fail the entire operation when this happens, we do not verify that the
         // "transport" is set when we restore it.
         setTransport(oldTransport, verify = false)

@@ -19,7 +19,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /** Provides backup services for a specific device */
-internal interface BackupServices {
+interface AdbServices {
 
   /** Report progress of backup/restore */
   suspend fun reportProgress(text: String)
@@ -75,4 +75,8 @@ internal interface BackupServices {
       "/sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data"
     val BACKUP_METADATA_FILES = setOf("@pm@", "restore_token_file")
   }
+
+  suspend fun backupNow(applicationId: String)
+
+  suspend fun restore(token: String, applicationId: String)
 }

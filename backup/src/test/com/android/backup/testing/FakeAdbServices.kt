@@ -17,7 +17,7 @@
 package com.android.backup.testing
 
 import ai.grazie.utils.dropPrefix
-import com.android.backup.AbstractBackupServices
+import com.android.backup.AbstractAdbServices
 import com.android.backup.BackupException
 import com.android.backup.ErrorCode
 import com.android.tools.environment.log.NoopLogger
@@ -35,9 +35,9 @@ private const val RESTORE = "bmgr restore "
 private const val DELETE_FILES = "rm -rf "
 private const val DUMPSYS_GMSCORE = "dumpsys package com.google.android.gms"
 
-/** A fake [com.android.backup.BackupServices] */
-internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
-  AbstractBackupServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
+/** A fake [com.android.backup.AdbServices] */
+internal class FakeAdbServices(serialNumber: String, totalSteps: Int) :
+  AbstractAdbServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
 
   sealed class CommandOverride(val command: String) {
     class Output(command: String, val output: String) : CommandOverride(command) {
@@ -113,7 +113,7 @@ internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
     @Suppress("BlockingMethodInNonBlockingContext") inputStream.close()
   }
 
-  fun addCommandOverride(override: CommandOverride): FakeBackupServices {
+  fun addCommandOverride(override: CommandOverride): FakeAdbServices {
     commandOverrides[override.command] = override
     return this
   }

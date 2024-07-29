@@ -15,15 +15,17 @@
  */
 package com.android.backup
 
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import com.android.adblib.AdbSession
+import com.android.tools.environment.Logger
 
-/** Placeholder for actual tests */
-internal class StubTest {
+internal class AdbServicesFactoryImpl(
+  private val adbSession: AdbSession,
+  private val logger: Logger,
+) : AdbServicesFactory {
 
-    @Test
-    fun pass() {
-        assertThat(Stub()).isInstanceOf(Stub::class.java)
-    }
+  override fun createAdbServices(
+    serialNumber: String,
+    listener: BackupProgressListener?,
+    steps: Int,
+  ): AdbServices = AdbServicesImpl(adbSession, serialNumber, logger, listener, steps)
 }
-
