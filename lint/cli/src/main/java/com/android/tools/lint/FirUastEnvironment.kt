@@ -27,8 +27,6 @@ import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFileSetFactory
-import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import java.io.File
 import java.nio.file.Path
@@ -162,24 +160,6 @@ private fun createAnalysisSession(
       appLock.withLock {
         // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
         //  which led to duplicate app-level service registration.
-        if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
-          // Note that this app-level service should be initialized before any other entities
-          // attempt to instantiate [FilesScope]
-          // For FIR UAST, the first attempt will be made while building the module structure below.
-          registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
-        }
-        // This app-level service should be registered before building project structure
-        // which attempt to read JvmRoots for java files
-        if (
-          application.getServiceIfCreated(
-            InternalPersistentJavaLanguageLevelReaderService::class.java
-          ) == null
-        ) {
-          registerApplicationService(
-            InternalPersistentJavaLanguageLevelReaderService::class.java,
-            InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
-          )
-        }
         // We need to re-register Application-level service before AA session is built.
         reRegisterProgressManager(application as MockApplication)
       }

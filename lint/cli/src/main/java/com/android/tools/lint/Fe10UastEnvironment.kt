@@ -24,8 +24,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
-import com.intellij.openapi.vfs.VirtualFileSetFactory
-import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
@@ -373,23 +371,6 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
       AnalysisApiFe10ServiceRegistrar.registerApplicationServices(it.application)
     }
 
-    if (it.application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
-      // Note that this app-level service should be initialized before any other entities
-      // attempt to instantiate [FilesScope]
-      // For FE1.0 UAST, the first attempt will be made during project env setup,
-      // so any place inside this app env setup is safe.
-      it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
-    }
-    if (
-      it.application.getServiceIfCreated(
-        InternalPersistentJavaLanguageLevelReaderService::class.java
-      ) == null
-    ) {
-      it.application.registerService(
-        InternalPersistentJavaLanguageLevelReaderService::class.java,
-        InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
-      )
-    }
     reRegisterProgressManager(it.application)
   }
 }

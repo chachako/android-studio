@@ -22,7 +22,6 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.DefaultLogger
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressManager
@@ -30,15 +29,8 @@ import com.intellij.openapi.progress.impl.CoreProgressManager
 import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.openapi.vfs.CompactVirtualFileSet
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileSet
-import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.pom.java.LanguageFeatureProvider
-import it.unimi.dsi.fastutil.ints.IntSet
-import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.io.path.pathString
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
@@ -80,13 +72,6 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
   System.setProperty("idea.use.native.fs.for.win", "false")
 
   config.put(JVMConfigurationKeys.NO_JDK, true)
-
-  // To work around any `bin/idea.properties` issues, e.g.,
-  // https://youtrack.jetbrains.com/issue/KT-56279 (IJ 223)
-  // https://youtrack.jetbrains.com/issue/KT-62039 (IJ 232)
-  val bin = Files.createTempDirectory("fake_bin")
-  bin.toFile().deleteOnExit()
-  System.setProperty(PathManager.PROPERTY_HOME_PATH, bin.pathString)
 
   return config
 }
@@ -195,20 +180,6 @@ internal fun reRegisterProgressManager(application: MockApplication) {
       override fun isInNonCancelableSection() = true
     },
   )
-}
-
-// KT-56277: [CompactVirtualFileSetFactory] is package-private, so we introduce our own default-ish
-// implementation.
-internal object LintVirtualFileSetFactory : VirtualFileSetFactory {
-  override fun createCompactVirtualFileSet(): VirtualFileSet {
-    return CompactVirtualFileSet(IntSet.of())
-  }
-
-  override fun createCompactVirtualFileSet(
-    files: MutableCollection<out VirtualFile>
-  ): VirtualFileSet {
-    return CompactVirtualFileSet(IntSet.of()).apply { addAll(files) }
-  }
 }
 
 // Most Logger.error() calls exist to trigger bug reports but are
