@@ -21,11 +21,3 @@ toolchain(
     toolchain = ":prebuilt_python",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
-
-filegroup(
-    name = "extra_files",
-    srcs = [
-        "wrapped_ar",
-    ],
-    visibility = ["//visibility:public"],
-)
