@@ -32,6 +32,10 @@ KGP_FOR_TESTS = [
 ]
 
 # Previous versions of KGP. This is used for Gradle recipe testing
+KGP_1_9_23 = [
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.23",
+]
+
 KGP_1_9_22 = [
     "@maven//:org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_1.9.22",
     "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.22",

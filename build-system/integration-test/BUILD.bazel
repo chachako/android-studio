@@ -90,7 +90,7 @@ maven_repository(
 # Kotlin dependencies for Gradle
 KTS = [
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.22",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.22",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.23",
 ]
 
 # Kotlin Gradle plugin dependencies
