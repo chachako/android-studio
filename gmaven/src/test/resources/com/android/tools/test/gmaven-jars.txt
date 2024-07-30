@@ -868,6 +868,14 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/maven/com.fasterxml/aalto-xml/
   META-INF/maven/com.fasterxml/aalto-xml/pom.properties
   META-INF/maven/com.fasterxml/aalto-xml/pom.xml
+  META-INF/maven/commons-codec/
+  META-INF/maven/commons-codec/commons-codec/
+  META-INF/maven/commons-codec/commons-codec/pom.properties
+  META-INF/maven/commons-codec/commons-codec/pom.xml
+  META-INF/maven/commons-io/
+  META-INF/maven/commons-io/commons-io/
+  META-INF/maven/commons-io/commons-io/pom.properties
+  META-INF/maven/commons-io/commons-io/pom.xml
   META-INF/maven/jaxen/
   META-INF/maven/jaxen/jaxen/
   META-INF/maven/jaxen/jaxen/pom.properties
@@ -927,6 +935,7 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/services/org.jetbrains.jps.model.java.JpsJavaExtensionService
   META-INF/services/org.jetbrains.jps.model.serialization.JpsModelSerializerExtension
   META-INF/services/org.jetbrains.jps.model.serialization.JpsSerializationManager
+  META-INF/services/org.jetbrains.jps.model.serialization.impl.JpsSerializationViaWorkspaceModel
   META-INF/services/org.jetbrains.jps.service.JpsServiceManager
   META-INF/services/org.jetbrains.jps.service.SharedThreadPool
   META-INF/services/reactor.blockhound.integration.BlockHoundIntegration
@@ -1000,6 +1009,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/codeInspection/
   com/intellij/codeWithMe/
   com/intellij/concurrency/
+  com/intellij/concurrency/client/
   com/intellij/configurationStore/
   com/intellij/core/
   com/intellij/diagnostic/
@@ -1018,6 +1028,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/execution/process/
   com/intellij/execution/rmi/
   com/intellij/execution/rmi/ssl/
+  com/intellij/execution/wsl/
   com/intellij/extapi/
   com/intellij/extapi/psi/
   com/intellij/filename/
@@ -1030,6 +1041,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/ide/highlighter/custom/tokens/
   com/intellij/ide/lightEdit/
   com/intellij/ide/plugins/
+  com/intellij/ide/plugins/.editorconfig
   com/intellij/ide/plugins/cl/
   com/intellij/ide/util/
   com/intellij/idea/
@@ -1047,7 +1059,9 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/java/workspace/
   com/intellij/java/workspace/entities/
   com/intellij/java/workspace/entities/README.md
+  com/intellij/java/workspace/entities/impl/
   com/intellij/jna/
+  com/intellij/l10n/
   com/intellij/lang/
   com/intellij/lang/folding/
   com/intellij/lang/impl/
@@ -1065,6 +1079,8 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/lang/jvm/types/
   com/intellij/lang/jvm/util/
   com/intellij/lang/spi/
+  com/intellij/lang/tree/
+  com/intellij/lang/tree/util/
   com/intellij/lexer/
   com/intellij/mock/
   com/intellij/model/
@@ -1158,13 +1174,23 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/platform/util/
   com/intellij/platform/util/coroutines/
   com/intellij/platform/util/coroutines/channel/
+  com/intellij/platform/util/coroutines/compute/
   com/intellij/platform/util/coroutines/flow/
   com/intellij/platform/util/coroutines/sync/
   com/intellij/platform/util/progress/
   com/intellij/platform/util/progress/impl/
   com/intellij/platform/workspace/
   com/intellij/platform/workspace/jps/
+  com/intellij/platform/workspace/jps/bridge/
+  com/intellij/platform/workspace/jps/bridge/impl/
+  com/intellij/platform/workspace/jps/bridge/impl/java/
+  com/intellij/platform/workspace/jps/bridge/impl/library/
+  com/intellij/platform/workspace/jps/bridge/impl/library/sdk/
+  com/intellij/platform/workspace/jps/bridge/impl/module/
+  com/intellij/platform/workspace/jps/bridge/impl/serialization/
   com/intellij/platform/workspace/jps/entities/
+  com/intellij/platform/workspace/jps/entities/impl/
+  com/intellij/platform/workspace/jps/impl/
   com/intellij/platform/workspace/jps/serialization/
   com/intellij/platform/workspace/jps/serialization/impl/
   com/intellij/platform/workspace/storage/
@@ -1306,12 +1332,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/indexing/impl/forward/
   com/intellij/util/io/
   com/intellij/util/io/blobstorage/
-  com/intellij/util/io/dev/
-  com/intellij/util/io/dev/appendonlylog/
-  com/intellij/util/io/dev/durablemaps/
-  com/intellij/util/io/dev/enumerator/
-  com/intellij/util/io/dev/intmultimaps/
-  com/intellij/util/io/dev/mmapped/
   com/intellij/util/io/externalizer/
   com/intellij/util/io/keyStorage/
   com/intellij/util/io/pagecache/
@@ -1330,6 +1350,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/ref/
   com/intellij/util/system/
   com/intellij/util/text/
+  com/intellij/util/text/minimatch/
   com/intellij/util/text/package.html
   com/intellij/util/ui/
   com/intellij/util/xml/
@@ -1448,8 +1469,13 @@ com/android/tools/external/com-intellij/intellij-core
   io/opentelemetry/api/baggage/
   io/opentelemetry/api/baggage/propagation/
   io/opentelemetry/api/common/
-  io/opentelemetry/api/events/
-  io/opentelemetry/api/events/version.properties
+  io/opentelemetry/api/incubator/
+  io/opentelemetry/api/incubator/events/
+  io/opentelemetry/api/incubator/logs/
+  io/opentelemetry/api/incubator/metrics/
+  io/opentelemetry/api/incubator/propagation/
+  io/opentelemetry/api/incubator/trace/
+  io/opentelemetry/api/incubator/version.properties
   io/opentelemetry/api/internal/
   io/opentelemetry/api/logs/
   io/opentelemetry/api/metrics/
@@ -1462,13 +1488,6 @@ com/android/tools/external/com-intellij/intellij-core
   io/opentelemetry/context/internal/shaded/
   io/opentelemetry/context/propagation/
   io/opentelemetry/context/version.properties
-  io/opentelemetry/extension/
-  io/opentelemetry/extension/incubator/
-  io/opentelemetry/extension/incubator/logs/
-  io/opentelemetry/extension/incubator/metrics/
-  io/opentelemetry/extension/incubator/propagation/
-  io/opentelemetry/extension/incubator/trace/
-  io/opentelemetry/extension/incubator/version.properties
   io/opentelemetry/internal/
   io/opentelemetry/internal/shaded/
   io/opentelemetry/internal/shaded/jctools/
@@ -1547,6 +1566,7 @@ com/android/tools/external/com-intellij/intellij-core
   kotlinx/coroutines/flow/internal/
   kotlinx/coroutines/future/
   kotlinx/coroutines/internal/
+  kotlinx/coroutines/internal/intellij/
   kotlinx/coroutines/intrinsics/
   kotlinx/coroutines/repackaged/
   kotlinx/coroutines/repackaged/net/
@@ -1642,6 +1662,141 @@ com/android/tools/external/com-intellij/intellij-core
   org/
   org/apache/
   org/apache/commons/
+  org/apache/commons/codec/
+  org/apache/commons/codec/binary/
+  org/apache/commons/codec/cli/
+  org/apache/commons/codec/digest/
+  org/apache/commons/codec/language/
+  org/apache/commons/codec/language/bm/
+  org/apache/commons/codec/language/bm/ash_approx_any.txt
+  org/apache/commons/codec/language/bm/ash_approx_common.txt
+  org/apache/commons/codec/language/bm/ash_approx_cyrillic.txt
+  org/apache/commons/codec/language/bm/ash_approx_english.txt
+  org/apache/commons/codec/language/bm/ash_approx_french.txt
+  org/apache/commons/codec/language/bm/ash_approx_german.txt
+  org/apache/commons/codec/language/bm/ash_approx_hebrew.txt
+  org/apache/commons/codec/language/bm/ash_approx_hungarian.txt
+  org/apache/commons/codec/language/bm/ash_approx_polish.txt
+  org/apache/commons/codec/language/bm/ash_approx_romanian.txt
+  org/apache/commons/codec/language/bm/ash_approx_russian.txt
+  org/apache/commons/codec/language/bm/ash_approx_spanish.txt
+  org/apache/commons/codec/language/bm/ash_exact_any.txt
+  org/apache/commons/codec/language/bm/ash_exact_approx_common.txt
+  org/apache/commons/codec/language/bm/ash_exact_common.txt
+  org/apache/commons/codec/language/bm/ash_exact_cyrillic.txt
+  org/apache/commons/codec/language/bm/ash_exact_english.txt
+  org/apache/commons/codec/language/bm/ash_exact_french.txt
+  org/apache/commons/codec/language/bm/ash_exact_german.txt
+  org/apache/commons/codec/language/bm/ash_exact_hebrew.txt
+  org/apache/commons/codec/language/bm/ash_exact_hungarian.txt
+  org/apache/commons/codec/language/bm/ash_exact_polish.txt
+  org/apache/commons/codec/language/bm/ash_exact_romanian.txt
+  org/apache/commons/codec/language/bm/ash_exact_russian.txt
+  org/apache/commons/codec/language/bm/ash_exact_spanish.txt
+  org/apache/commons/codec/language/bm/ash_hebrew_common.txt
+  org/apache/commons/codec/language/bm/ash_lang.txt
+  org/apache/commons/codec/language/bm/ash_languages.txt
+  org/apache/commons/codec/language/bm/ash_rules_any.txt
+  org/apache/commons/codec/language/bm/ash_rules_cyrillic.txt
+  org/apache/commons/codec/language/bm/ash_rules_english.txt
+  org/apache/commons/codec/language/bm/ash_rules_french.txt
+  org/apache/commons/codec/language/bm/ash_rules_german.txt
+  org/apache/commons/codec/language/bm/ash_rules_hebrew.txt
+  org/apache/commons/codec/language/bm/ash_rules_hungarian.txt
+  org/apache/commons/codec/language/bm/ash_rules_polish.txt
+  org/apache/commons/codec/language/bm/ash_rules_romanian.txt
+  org/apache/commons/codec/language/bm/ash_rules_russian.txt
+  org/apache/commons/codec/language/bm/ash_rules_spanish.txt
+  org/apache/commons/codec/language/bm/gen_approx_any.txt
+  org/apache/commons/codec/language/bm/gen_approx_arabic.txt
+  org/apache/commons/codec/language/bm/gen_approx_common.txt
+  org/apache/commons/codec/language/bm/gen_approx_cyrillic.txt
+  org/apache/commons/codec/language/bm/gen_approx_czech.txt
+  org/apache/commons/codec/language/bm/gen_approx_dutch.txt
+  org/apache/commons/codec/language/bm/gen_approx_english.txt
+  org/apache/commons/codec/language/bm/gen_approx_french.txt
+  org/apache/commons/codec/language/bm/gen_approx_german.txt
+  org/apache/commons/codec/language/bm/gen_approx_greek.txt
+  org/apache/commons/codec/language/bm/gen_approx_greeklatin.txt
+  org/apache/commons/codec/language/bm/gen_approx_hebrew.txt
+  org/apache/commons/codec/language/bm/gen_approx_hungarian.txt
+  org/apache/commons/codec/language/bm/gen_approx_italian.txt
+  org/apache/commons/codec/language/bm/gen_approx_polish.txt
+  org/apache/commons/codec/language/bm/gen_approx_portuguese.txt
+  org/apache/commons/codec/language/bm/gen_approx_romanian.txt
+  org/apache/commons/codec/language/bm/gen_approx_russian.txt
+  org/apache/commons/codec/language/bm/gen_approx_spanish.txt
+  org/apache/commons/codec/language/bm/gen_approx_turkish.txt
+  org/apache/commons/codec/language/bm/gen_exact_any.txt
+  org/apache/commons/codec/language/bm/gen_exact_approx_common.txt
+  org/apache/commons/codec/language/bm/gen_exact_arabic.txt
+  org/apache/commons/codec/language/bm/gen_exact_common.txt
+  org/apache/commons/codec/language/bm/gen_exact_cyrillic.txt
+  org/apache/commons/codec/language/bm/gen_exact_czech.txt
+  org/apache/commons/codec/language/bm/gen_exact_dutch.txt
+  org/apache/commons/codec/language/bm/gen_exact_english.txt
+  org/apache/commons/codec/language/bm/gen_exact_french.txt
+  org/apache/commons/codec/language/bm/gen_exact_german.txt
+  org/apache/commons/codec/language/bm/gen_exact_greek.txt
+  org/apache/commons/codec/language/bm/gen_exact_greeklatin.txt
+  org/apache/commons/codec/language/bm/gen_exact_hebrew.txt
+  org/apache/commons/codec/language/bm/gen_exact_hungarian.txt
+  org/apache/commons/codec/language/bm/gen_exact_italian.txt
+  org/apache/commons/codec/language/bm/gen_exact_polish.txt
+  org/apache/commons/codec/language/bm/gen_exact_portuguese.txt
+  org/apache/commons/codec/language/bm/gen_exact_romanian.txt
+  org/apache/commons/codec/language/bm/gen_exact_russian.txt
+  org/apache/commons/codec/language/bm/gen_exact_spanish.txt
+  org/apache/commons/codec/language/bm/gen_exact_turkish.txt
+  org/apache/commons/codec/language/bm/gen_hebrew_common.txt
+  org/apache/commons/codec/language/bm/gen_lang.txt
+  org/apache/commons/codec/language/bm/gen_languages.txt
+  org/apache/commons/codec/language/bm/gen_rules_any.txt
+  org/apache/commons/codec/language/bm/gen_rules_arabic.txt
+  org/apache/commons/codec/language/bm/gen_rules_cyrillic.txt
+  org/apache/commons/codec/language/bm/gen_rules_czech.txt
+  org/apache/commons/codec/language/bm/gen_rules_dutch.txt
+  org/apache/commons/codec/language/bm/gen_rules_english.txt
+  org/apache/commons/codec/language/bm/gen_rules_french.txt
+  org/apache/commons/codec/language/bm/gen_rules_german.txt
+  org/apache/commons/codec/language/bm/gen_rules_greek.txt
+  org/apache/commons/codec/language/bm/gen_rules_greeklatin.txt
+  org/apache/commons/codec/language/bm/gen_rules_hebrew.txt
+  org/apache/commons/codec/language/bm/gen_rules_hungarian.txt
+  org/apache/commons/codec/language/bm/gen_rules_italian.txt
+  org/apache/commons/codec/language/bm/gen_rules_polish.txt
+  org/apache/commons/codec/language/bm/gen_rules_portuguese.txt
+  org/apache/commons/codec/language/bm/gen_rules_romanian.txt
+  org/apache/commons/codec/language/bm/gen_rules_russian.txt
+  org/apache/commons/codec/language/bm/gen_rules_spanish.txt
+  org/apache/commons/codec/language/bm/gen_rules_turkish.txt
+  org/apache/commons/codec/language/bm/lang.txt
+  org/apache/commons/codec/language/bm/sep_approx_any.txt
+  org/apache/commons/codec/language/bm/sep_approx_common.txt
+  org/apache/commons/codec/language/bm/sep_approx_french.txt
+  org/apache/commons/codec/language/bm/sep_approx_hebrew.txt
+  org/apache/commons/codec/language/bm/sep_approx_italian.txt
+  org/apache/commons/codec/language/bm/sep_approx_portuguese.txt
+  org/apache/commons/codec/language/bm/sep_approx_spanish.txt
+  org/apache/commons/codec/language/bm/sep_exact_any.txt
+  org/apache/commons/codec/language/bm/sep_exact_approx_common.txt
+  org/apache/commons/codec/language/bm/sep_exact_common.txt
+  org/apache/commons/codec/language/bm/sep_exact_french.txt
+  org/apache/commons/codec/language/bm/sep_exact_hebrew.txt
+  org/apache/commons/codec/language/bm/sep_exact_italian.txt
+  org/apache/commons/codec/language/bm/sep_exact_portuguese.txt
+  org/apache/commons/codec/language/bm/sep_exact_spanish.txt
+  org/apache/commons/codec/language/bm/sep_hebrew_common.txt
+  org/apache/commons/codec/language/bm/sep_lang.txt
+  org/apache/commons/codec/language/bm/sep_languages.txt
+  org/apache/commons/codec/language/bm/sep_rules_any.txt
+  org/apache/commons/codec/language/bm/sep_rules_french.txt
+  org/apache/commons/codec/language/bm/sep_rules_hebrew.txt
+  org/apache/commons/codec/language/bm/sep_rules_italian.txt
+  org/apache/commons/codec/language/bm/sep_rules_portuguese.txt
+  org/apache/commons/codec/language/bm/sep_rules_spanish.txt
+  org/apache/commons/codec/language/dmrules.txt
+  org/apache/commons/codec/net/
   org/apache/commons/compress/
   org/apache/commons/compress/archivers/
   org/apache/commons/compress/archivers/ar/
@@ -1682,6 +1837,21 @@ com/android/tools/external/com-intellij/intellij-core
   org/apache/commons/compress/java/util/jar/
   org/apache/commons/compress/parallel/
   org/apache/commons/compress/utils/
+  org/apache/commons/io/
+  org/apache/commons/io/build/
+  org/apache/commons/io/channels/
+  org/apache/commons/io/charset/
+  org/apache/commons/io/comparator/
+  org/apache/commons/io/file/
+  org/apache/commons/io/file/attribute/
+  org/apache/commons/io/file/spi/
+  org/apache/commons/io/filefilter/
+  org/apache/commons/io/function/
+  org/apache/commons/io/input/
+  org/apache/commons/io/input/buffer/
+  org/apache/commons/io/monitor/
+  org/apache/commons/io/output/
+  org/apache/commons/io/serialization/
   org/apache/log4j/
   org/apache/log4j/NOTICE
   org/apache/log4j/helpers/
@@ -1802,10 +1972,17 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/analysis-api-fir.kotlin_module
   META-INF/analysis-api-impl-barebone.kotlin_module
   META-INF/analysis-api-impl-base.kotlin_module
-  META-INF/analysis-api-providers.kotlin_module
+  META-INF/analysis-api-platform-interface.kotlin_module
   META-INF/analysis-api-standalone-base.kotlin_module
   META-INF/analysis-api-standalone.kotlin_module
   META-INF/analysis-api.kotlin_module
+  META-INF/analysis-api/
+  META-INF/analysis-api/analysis-api-fe10.xml
+  META-INF/analysis-api/analysis-api-fir-standalone-base.xml
+  META-INF/analysis-api/analysis-api-fir.xml
+  META-INF/analysis-api/analysis-api-impl-base.xml
+  META-INF/analysis-api/low-level-api-fir.xml
+  META-INF/analysis-api/symbol-light-classes.xml
   META-INF/analysis-internal-utils.kotlin_module
   META-INF/backend-common.kotlin_module
   META-INF/backend.common.jvm.kotlin_module
@@ -1879,6 +2056,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/kotlin-build-common.kotlin_module
   META-INF/kotlin-build-statistics.kotlin_module
   META-INF/kotlin-build-tools-api.kotlin_module
+  META-INF/kotlin-build-tools-jdk-utils.kotlin_module
   META-INF/kotlin-compiler-runner-unshaded.kotlin_module
   META-INF/kotlin-daemon-client.kotlin_module
   META-INF/kotlin-native-utils.kotlin_module
@@ -1892,7 +2070,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/kotlin-util-klib-metadata.kotlin_module
   META-INF/kotlin-util-klib.kotlin_module
   META-INF/kotlinx-collections-immutable.kotlin_module
-  META-INF/kt-references-fe10.kotlin_module
   META-INF/kt-references.kotlin_module
   META-INF/light-classes-base.kotlin_module
   META-INF/light-classes-for-decompiled-fe10.kotlin_module
@@ -1965,7 +2142,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/native.kotlin_module
   META-INF/plugin-api.kotlin_module
   META-INF/plugin-utils.kotlin_module
-  META-INF/project-structure.kotlin_module
   META-INF/providers.kotlin_module
   META-INF/psi.kotlin_module
   META-INF/psi2fir.kotlin_module
@@ -2008,6 +2184,9 @@ com/android/tools/external/com-intellij/kotlin-compiler
   com/google/gwt/dev/js/parserExceptions/
   com/google/gwt/dev/js/rhino/
   com/intellij/
+  com/intellij/openapi/
+  com/intellij/openapi/util/
+  com/intellij/openapi/vfs/
   com/intellij/util/
   com/intellij/util/io/
   javaslang/
@@ -2140,15 +2319,33 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/impl/base/
   org/jetbrains/kotlin/analysis/api/impl/base/annotations/
   org/jetbrains/kotlin/analysis/api/impl/base/components/
+  org/jetbrains/kotlin/analysis/api/impl/base/contracts/
+  org/jetbrains/kotlin/analysis/api/impl/base/contracts/description/
+  org/jetbrains/kotlin/analysis/api/impl/base/contracts/description/booleans/
   org/jetbrains/kotlin/analysis/api/impl/base/java/
   org/jetbrains/kotlin/analysis/api/impl/base/java/source/
+  org/jetbrains/kotlin/analysis/api/impl/base/lifetime/
+  org/jetbrains/kotlin/analysis/api/impl/base/permissions/
+  org/jetbrains/kotlin/analysis/api/impl/base/projectStructure/
   org/jetbrains/kotlin/analysis/api/impl/base/references/
+  org/jetbrains/kotlin/analysis/api/impl/base/resolution/
   org/jetbrains/kotlin/analysis/api/impl/base/scopes/
+  org/jetbrains/kotlin/analysis/api/impl/base/sessions/
   org/jetbrains/kotlin/analysis/api/impl/base/symbols/
   org/jetbrains/kotlin/analysis/api/impl/base/symbols/pointers/
+  org/jetbrains/kotlin/analysis/api/impl/base/types/
   org/jetbrains/kotlin/analysis/api/impl/base/util/
   org/jetbrains/kotlin/analysis/api/lifetime/
-  org/jetbrains/kotlin/analysis/api/lifetime/impl/
+  org/jetbrains/kotlin/analysis/api/permissions/
+  org/jetbrains/kotlin/analysis/api/platform/
+  org/jetbrains/kotlin/analysis/api/platform/declarations/
+  org/jetbrains/kotlin/analysis/api/platform/lifetime/
+  org/jetbrains/kotlin/analysis/api/platform/modification/
+  org/jetbrains/kotlin/analysis/api/platform/packages/
+  org/jetbrains/kotlin/analysis/api/platform/permissions/
+  org/jetbrains/kotlin/analysis/api/platform/projectStructure/
+  org/jetbrains/kotlin/analysis/api/platform/utils/
+  org/jetbrains/kotlin/analysis/api/projectStructure/
   org/jetbrains/kotlin/analysis/api/renderer/
   org/jetbrains/kotlin/analysis/api/renderer/base/
   org/jetbrains/kotlin/analysis/api/renderer/base/annotations/
@@ -2168,6 +2365,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/renderer/types/
   org/jetbrains/kotlin/analysis/api/renderer/types/impl/
   org/jetbrains/kotlin/analysis/api/renderer/types/renderers/
+  org/jetbrains/kotlin/analysis/api/resolution/
   org/jetbrains/kotlin/analysis/api/resolve/
   org/jetbrains/kotlin/analysis/api/resolve/extensions/
   org/jetbrains/kotlin/analysis/api/scopes/
@@ -2175,14 +2373,18 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/signatures/
   org/jetbrains/kotlin/analysis/api/standalone/
   org/jetbrains/kotlin/analysis/api/standalone/base/
-  org/jetbrains/kotlin/analysis/api/standalone/base/project/
-  org/jetbrains/kotlin/analysis/api/standalone/base/project/structure/
-  org/jetbrains/kotlin/analysis/api/standalone/base/providers/
+  org/jetbrains/kotlin/analysis/api/standalone/base/declarations/
+  org/jetbrains/kotlin/analysis/api/standalone/base/modification/
+  org/jetbrains/kotlin/analysis/api/standalone/base/packages/
+  org/jetbrains/kotlin/analysis/api/standalone/base/permissions/
+  org/jetbrains/kotlin/analysis/api/standalone/base/projectStructure/
   org/jetbrains/kotlin/analysis/api/standalone/base/services/
   org/jetbrains/kotlin/analysis/api/symbols/
   org/jetbrains/kotlin/analysis/api/symbols/markers/
   org/jetbrains/kotlin/analysis/api/symbols/pointers/
   org/jetbrains/kotlin/analysis/api/types/
+  org/jetbrains/kotlin/analysis/api/utils/
+  org/jetbrains/kotlin/analysis/api/utils/errors/
   org/jetbrains/kotlin/analysis/decompiled/
   org/jetbrains/kotlin/analysis/decompiled/light/
   org/jetbrains/kotlin/analysis/decompiled/light/classes/
@@ -2217,8 +2419,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/low/level/api/fir/fir/caches/
   org/jetbrains/kotlin/analysis/low/level/api/fir/lazy/
   org/jetbrains/kotlin/analysis/low/level/api/fir/lazy/resolve/
-  org/jetbrains/kotlin/analysis/low/level/api/fir/project/
-  org/jetbrains/kotlin/analysis/low/level/api/fir/project/structure/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/projectStructure/
   org/jetbrains/kotlin/analysis/low/level/api/fir/providers/
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/extensions/
@@ -2234,12 +2435,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/project/structure/
   org/jetbrains/kotlin/analysis/project/structure/builder/
   org/jetbrains/kotlin/analysis/project/structure/impl/
-  org/jetbrains/kotlin/analysis/providers/
-  org/jetbrains/kotlin/analysis/providers/impl/
-  org/jetbrains/kotlin/analysis/providers/impl/declarationProviders/
-  org/jetbrains/kotlin/analysis/providers/impl/packageProviders/
-  org/jetbrains/kotlin/analysis/providers/impl/util/
-  org/jetbrains/kotlin/analysis/providers/topics/
   org/jetbrains/kotlin/analysis/utils/
   org/jetbrains/kotlin/analysis/utils/caches/
   org/jetbrains/kotlin/analysis/utils/collections/
@@ -2293,6 +2488,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/buildtools/
   org/jetbrains/kotlin/buildtools/api/
   org/jetbrains/kotlin/buildtools/api/jvm/
+  org/jetbrains/kotlin/buildtools/internal/
   org/jetbrains/kotlin/builtins/
   org/jetbrains/kotlin/builtins/functions/
   org/jetbrains/kotlin/builtins/jvm/
@@ -2445,6 +2641,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/backend/jvm/
   org/jetbrains/kotlin/fir/backend/native/
   org/jetbrains/kotlin/fir/backend/native/interop/
+  org/jetbrains/kotlin/fir/backend/utils/
   org/jetbrains/kotlin/fir/builder/
   org/jetbrains/kotlin/fir/caches/
   org/jetbrains/kotlin/fir/checkers/
@@ -2484,7 +2681,10 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/renderer/
   org/jetbrains/kotlin/fir/resolve/
   org/jetbrains/kotlin/fir/resolve/calls/
+  org/jetbrains/kotlin/fir/resolve/calls/candidate/
   org/jetbrains/kotlin/fir/resolve/calls/jvm/
+  org/jetbrains/kotlin/fir/resolve/calls/overloads/
+  org/jetbrains/kotlin/fir/resolve/calls/stages/
   org/jetbrains/kotlin/fir/resolve/calls/tower/
   org/jetbrains/kotlin/fir/resolve/dfa/
   org/jetbrains/kotlin/fir/resolve/dfa/cfg/
@@ -2508,7 +2708,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/serialization/constant/
   org/jetbrains/kotlin/fir/session/
   org/jetbrains/kotlin/fir/session/environment/
-  org/jetbrains/kotlin/fir/signaturer/
   org/jetbrains/kotlin/fir/symbols/
   org/jetbrains/kotlin/fir/symbols/impl/
   org/jetbrains/kotlin/fir/types/
@@ -2822,6 +3021,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/utils/strings/
   org/jetbrains/kotlin/wasm/
   org/jetbrains/kotlin/wasm/analyze/
+  org/jetbrains/kotlin/wasm/config/
   org/jetbrains/kotlin/wasm/resolve/
   org/jetbrains/kotlin/wasm/resolve/diagnostics/
   org/jetbrains/kotlin/wasm/util/
@@ -2961,6 +3161,7 @@ com/android/tools/lint/lint
   com/android/tools/
   com/android/tools/lint/
   com/android/tools/lint/gradle/
+  com/android/tools/lint/uast/
 
 com/android/tools/lint/lint-api
   META-INF/
