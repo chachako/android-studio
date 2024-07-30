@@ -69,14 +69,6 @@ public class ConnectedDeviceProvider extends DeviceProvider {
     @NonNull
     private final List<ConnectedDevice> localDevices = Lists.newArrayList();
 
-    private final Thread shutdownHook =
-            new Thread() {
-                @Override
-                public void run() {
-                    closeDdmlib();
-                }
-            };
-
     @Nullable private LogAdapter logAdapter;
 
     /** @param timeOutInMs The time out for each adb command, where 0 means wait forever. */
@@ -135,52 +127,8 @@ public class ConnectedDeviceProvider extends DeviceProvider {
         logAdapter = new LogAdapter(iLogger);
         Log.addLogger(logAdapter);
 
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-
         try {
-            DdmPreferences.setLogLevel(Log.LogLevel.VERBOSE.getStringValue());
-            // TODO: switch to devicelib
-            if (timeOut > 0) {
-                DdmPreferences.setTimeOut((int) timeOutUnit.toMillis(timeOut));
-            } else {
-                DdmPreferences.setTimeOut(Integer.MAX_VALUE);
-            }
-
-            AndroidDebugBridge.initIfNeeded(false /*clientSupport*/);
-            File adbLocation = adbLocationSupplier.get();
-            AndroidDebugBridge bridge =
-                    AndroidDebugBridge.createBridge(
-                            adbLocation.getAbsolutePath(),
-                            false /*forceNewBridge*/,
-                            timeOut == 0 ? Long.MAX_VALUE : timeOut,
-                            timeOutUnit);
-
-            if (bridge == null) {
-                throw new DeviceException(
-                        "Could not create ADB Bridge. "
-                                + "ADB location: "
-                                + adbLocation.getAbsolutePath());
-            }
-
-            long getDevicesCountdown = timeOutUnit.toMillis(timeOut);
-            final int sleepTime = 1000;
-            while (!bridge.hasInitialDeviceList() && getDevicesCountdown >= 0) {
-                try {
-                    Thread.sleep(sleepTime);
-                } catch (InterruptedException e) {
-                    throw new DeviceException(e);
-                }
-                // If timeOut is 0, wait forever.
-                if (timeOut != 0) {
-                    getDevicesCountdown -= sleepTime;
-                }
-            }
-
-            if (!bridge.hasInitialDeviceList()) {
-                throw new DeviceException("Timeout getting device list.");
-            }
-
-            IDevice[] devices = bridge.getDevices();
+            IDevice[] devices = loadDevices();
 
             if (devices.length == 0) {
                 throw new DeviceException("No connected devices!");
@@ -238,14 +186,12 @@ public class ConnectedDeviceProvider extends DeviceProvider {
             }
             // ensure device names are unique since many reports are keyed off of names.
             makeDeviceNamesUnique();
+
         } catch (Throwable throwable) {
             Log.removeLogger(logAdapter);
             logAdapter = null;
             sessionLock.unlock();
             throw throwable;
-        } finally {
-            closeDdmlib();
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
         }
     }
 
@@ -276,8 +222,54 @@ public class ConnectedDeviceProvider extends DeviceProvider {
 
     }
 
-    private void closeDdmlib() {
-        AndroidDebugBridge.terminate();
+    private IDevice[] loadDevices() throws DeviceException {
+        DdmPreferences.setLogLevel(Log.LogLevel.VERBOSE.getStringValue());
+        // TODO: switch to devicelib
+        if (timeOut > 0) {
+            DdmPreferences.setTimeOut((int) timeOutUnit.toMillis(timeOut));
+        } else {
+            DdmPreferences.setTimeOut(Integer.MAX_VALUE);
+        }
+
+        AndroidDebugBridge.initIfNeeded(false /*clientSupport*/);
+        File adbLocation = adbLocationSupplier.get();
+        try {
+            AndroidDebugBridge bridge =
+                    AndroidDebugBridge.createBridge(
+                            adbLocation.getAbsolutePath(),
+                            false /*forceNewBridge*/,
+                            timeOut == 0 ? Long.MAX_VALUE : timeOut,
+                            timeOutUnit);
+
+            if (bridge == null) {
+                throw new DeviceException(
+                        "Could not create ADB Bridge. "
+                                + "ADB location: "
+                                + adbLocation.getAbsolutePath());
+            }
+
+            long getDevicesCountdown = timeOutUnit.toMillis(timeOut);
+            final int sleepTime = 1000;
+            while (!bridge.hasInitialDeviceList() && getDevicesCountdown >= 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    throw new DeviceException(e);
+                }
+                // If timeOut is 0, wait forever.
+                if (timeOut != 0) {
+                    getDevicesCountdown -= sleepTime;
+                }
+            }
+
+            if (!bridge.hasInitialDeviceList()) {
+                throw new DeviceException("Timeout getting device list.");
+            }
+
+            return bridge.getDevices();
+        } finally {
+            AndroidDebugBridge.terminate();
+        }
     }
 
     @Override
