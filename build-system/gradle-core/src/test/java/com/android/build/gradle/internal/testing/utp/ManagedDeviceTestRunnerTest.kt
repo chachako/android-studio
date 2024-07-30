@@ -87,6 +87,8 @@ class ManagedDeviceTestRunnerTest {
     @Mock private lateinit var emulatorDirectory: Directory
     @Mock private lateinit var avdProvider: Provider<Directory>
     @Mock private lateinit var avdDirectory: Directory
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    lateinit var mockUtpRunProfileManager: UtpRunProfileManager
     private lateinit var emulatorFolder: File
     private lateinit var avdFolder: File
     private lateinit var emulatorFile: File
@@ -201,6 +203,7 @@ class ManagedDeviceTestRunnerTest {
                 Level.WARNING,
                 false,
                 false,
+                mockUtpRunProfileManager,
                 mockUtpConfigFactory,
                 { runnerConfigs, _, _, resultsDir, _ ->
                     utpInvocationCount++

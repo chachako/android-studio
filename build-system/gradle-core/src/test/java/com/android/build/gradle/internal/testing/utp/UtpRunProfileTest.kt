@@ -93,19 +93,15 @@ class UtpRunProfileTest {
             850L
         )
 
-        val metadata = UtpRunProfile.ProfileData(
+        val profileManager = UtpRunProfileManager(mockClock).also {
+            it.recordDeviceLockStart()
+            it.recordDeviceLockEnd()
+        }
+
+        val profileProto = profileManager.createTestRunProfile (
             deviceProfileFolder,
             DeviceTestSpanProfile.DeviceType.VIRTUAL_MANAGED_DEVICE,
-            "device1",
-            UtpRunProfile.TimeSpan(mockClock).apply {
-                recordStart()
-                recordEnd()
-            }
-        )
-
-        val profileProto = UtpRunProfile(
-            metadata,
-            mockClock
+            "device1"
         ).apply {
             recordSetupStart()
 

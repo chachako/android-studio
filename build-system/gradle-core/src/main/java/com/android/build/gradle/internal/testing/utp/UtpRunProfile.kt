@@ -23,15 +23,24 @@ import com.google.wireless.android.sdk.stats.DeviceTestSpanProfile.TestProgressR
 import com.google.wireless.android.sdk.stats.TestRun
 import java.io.File
 import java.time.Clock
+import java.time.Instant
 
 /**
  * Class for managing test run result profiling and providing the proto for studio metrics.
  */
-class UtpRunProfile(
-    private val profileData: ProfileData,
-    private val clock: Clock = Clock.systemDefaultZone()) {
+class UtpRunProfile internal constructor (
+    outputDirectory: File,
+    private val device: DeviceTestSpanProfile.DeviceType,
+    private val profileId: String,
+    private val deviceLock: Pair<Instant, Instant>?,
+    private val clock: Clock) {
 
     // Device lock only exists for Gradle Managed Device Tasks.
+    private val deviceLockSpan: TimeSpan? = deviceLock?.let {
+        TimeSpan(clock).apply {
+            recordFromInstants(it.first, it.second)
+        }
+    }
     private var utpSetupStartMs: Long = 0L
     private val deviceProvisionSpan: TimeSpan = TimeSpan(clock)
     private val testRunSpan: TimeSpan = TimeSpan(clock)
@@ -39,7 +48,7 @@ class UtpRunProfile(
     private var resultStatus: TestProgressResult = TestProgressResult.UNKNOWN_RESULT
 
     private val profileFile: File =
-        profileData.outputDirectory.resolve("profiling/${profileData.profileId}_profile.pb")
+        outputDirectory.resolve("profiling/${profileId}_profile.pb")
 
     fun listener() = TestResultListener()
 
@@ -70,10 +79,10 @@ class UtpRunProfile(
 
     fun toDeviceTestSpanProfileProto(): DeviceTestSpanProfile =
         DeviceTestSpanProfile.newBuilder().apply {
-            deviceType = profileData.device
+            deviceType = device
             testKind = TestRun.TestKind.INSTRUMENTATION_TEST
             processType = DeviceTestSpanProfile.ProcessType.EXTERNAL_UTP_PROCESS
-            profileData.deviceLockSpan?.let {
+            deviceLockSpan?.let {
                 deviceLockWaitStartTimeMs = it.startMs
                 deviceLockWaitDurationMs = it.durationMs
             }
@@ -104,7 +113,7 @@ class UtpRunProfile(
             progressResult = resultStatus
         }.build()
 
-    class TimeSpan(private val clock: Clock) {
+    private class TimeSpan(private val clock: Clock) {
 
         internal var startMs: Long  = 0L
             private set
@@ -122,6 +131,11 @@ class UtpRunProfile(
             endMs = clock.instant().toEpochMilli()
         }
 
+        fun recordFromInstants(start: Instant, end: Instant) {
+            startMs = start.toEpochMilli()
+            endMs = end.toEpochMilli()
+        }
+
         fun recordFromProtoSpan(span: DeviceProviderProfileProto.TimeSpan) {
             if (span.spanBeginMs == 0L) {
                 return
@@ -134,13 +148,7 @@ class UtpRunProfile(
             get() = endMs - startMs
     }
 
-    data class ProfileData (
-        val outputDirectory: File,
-        val device: DeviceTestSpanProfile.DeviceType =
-            DeviceTestSpanProfile.DeviceType.UNKNOWN_DEVICE_TYPE,
-        val profileId: String = "",
-        val deviceLockSpan: TimeSpan? = null
-    )
+
 
 
     inner class TestResultListener: UtpTestResultListener {

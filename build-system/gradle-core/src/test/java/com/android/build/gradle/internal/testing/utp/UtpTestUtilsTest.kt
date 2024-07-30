@@ -72,6 +72,8 @@ class UtpTestUtilsTest {
     private lateinit var mockUtpTestResultListener: UtpTestResultListener
     @Mock(answer = RETURNS_DEEP_STUBS)
     private lateinit var mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    private lateinit var mockUtpRunProfile: UtpRunProfile
 
     lateinit var utpResultDir: File
     lateinit var jvmExecutable: File
@@ -95,6 +97,7 @@ class UtpTestUtilsTest {
             utpOutputDir,
             { _, _ -> RunnerConfigProto.RunnerConfig.getDefaultInstance() },
             ServerConfigProto.ServerConfig.getDefaultInstance(),
+            mockUtpRunProfile,
             shardConfig
         )
 

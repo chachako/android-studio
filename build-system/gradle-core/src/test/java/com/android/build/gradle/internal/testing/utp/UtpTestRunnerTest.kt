@@ -78,6 +78,8 @@ class UtpTestRunnerTest {
     @Mock lateinit var mockRetentionConfig: RetentionConfig
     @Mock lateinit var mockTestResultListener: UtpTestResultListener
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    lateinit var mockUtpRunProfileManager: UtpRunProfileManager
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var mockUtpDependencies: UtpDependencies
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata
@@ -156,6 +158,7 @@ class UtpTestRunnerTest {
             null,
             false,
             false,
+            mockUtpRunProfileManager,
             mockUtpConfigFactory,
             { runnerConfigs, _, _, _, _ ->
                 capturedRunnerConfigs = runnerConfigs
