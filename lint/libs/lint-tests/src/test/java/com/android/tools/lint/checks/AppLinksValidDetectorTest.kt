@@ -417,6 +417,89 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testValidation_hostPortPairs() {
+    val expected =
+      """
+      AndroidManifest.xml:19: Error: Test URL did not match any of host+port example.com:8000, host+port twitter.com:8001 [TestAppLink]
+                  <tools:validation testUrl="https://example.com:8001/" />
+                                             ~~~~~~~~~~~~~~~~~~~~~~~~~
+      1 errors, 0 warnings
+      """
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher" >
+                        <activity android:name=".MainActivity" >
+                            <intent-filter>
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+                                <data android:scheme="https" />
+                                <data android:host="example.com" android:port="8000" />
+                                <data android:host="twitter.com" android:port="8001" />
+                            </intent-filter>
+                            <tools:validation testUrl="https://example.com:8000/" />
+                            <tools:validation testUrl="https://twitter.com:8001/" />
+                            <tools:validation testUrl="https://example.com:8001/" />
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
+
+  fun testUrlMatchingWithOnlyPort() {
+    val expected =
+      """
+    AndroidManifest.xml:8: Error: At least one host must be specified [AppLinkUrlError]
+                    <data android:scheme="http"/>
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    AndroidManifest.xml:9: Error: The port must be specified in the same <data> element as the host [AppLinkUrlError]
+                    <data android:port="8000" />
+                                        ~~~~
+    2 errors, 0 warnings
+      """
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    package="test.pkg" >
+                    <application>
+                        <activity>
+                            <intent-filter>
+                                <action android:name="android.intent.action.VIEW" />
+                                <data android:scheme="http"/>
+                                <data android:port="8000" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+                            </intent-filter>
+                            <tools:validation testUrl="http://:8000" />
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
+
   fun testHostWildcardMatching() {
     val expected =
       """
@@ -462,14 +545,11 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testPortMatching() {
     val expected =
       """
-            AndroidManifest.xml:34: Error: Test URL did not match port none or did not match port 85 or did not match host android.com [TestAppLink]
-                        <tools:validation testUrl="http://example.com:80/path/foo/bar"/>
-                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:38: Error: Test URL did not match host example.com or did not match port 86 [TestAppLink]
-                        <tools:validation testUrl="http://android.com/path/foo/bar"/>
-                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            2 errors, 0 warnings
-            """
+      AndroidManifest.xml:38: Error: Test URL did not match host example.com or did not match host+port example.com:85 or did not match host+port android.com:86 [TestAppLink]
+                  <tools:validation testUrl="http://android.com/path/foo/bar"/>
+                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      1 errors, 0 warnings
+      """
     lint()
       .files(
         xml(
@@ -970,20 +1050,20 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testSchemeAndHostMissing() {
     val expected =
       """
-            AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
-                        <intent-filter android:label="@string/title_activity_fullscreen">
-                        ^
-            AndroidManifest.xml:16: Error: At least one host must be specified [AppLinkUrlError]
-                            <data android:pathPrefix="/gizmos" />
-                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:16: Error: At least one scheme must be specified [AppLinkUrlError]
-                            <data android:pathPrefix="/gizmos" />
-                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:16: Error: Missing URL for the intent filter [AppLinkUrlError]
-                            <data android:pathPrefix="/gizmos" />
-                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            4 errors, 0 warnings
-            """
+      AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
+                  <intent-filter android:label="@string/title_activity_fullscreen">
+                  ^
+      AndroidManifest.xml:16: Error: At least one host must be specified [AppLinkUrlError]
+                      <data android:pathPrefix="/gizmos" />
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      AndroidManifest.xml:16: Error: At least one scheme must be specified [AppLinkUrlError]
+                      <data android:pathPrefix="/gizmos" />
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      AndroidManifest.xml:16: Error: Missing URL for the intent filter [AppLinkUrlError]
+                      <data android:pathPrefix="/gizmos" />
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      4 errors, 0 warnings
+      """
     lint()
       .files(
         xml(
@@ -1417,7 +1497,42 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
-  fun testMimeType() {
+  fun testImplicitSchemeBecauseOfMimeType() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+                            <intent-filter android:label="@string/title_activity_fullscreen">
+                                <data android:mimeType="mimetype" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+                            </intent-filter>
+                        </activity>
+                  </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testViewWithMimeType() {
     val expected =
       """
             AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
@@ -1445,7 +1560,8 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             android:theme="@style/FullscreenTheme" >
                             <intent-filter android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
-                                <data android:mimeType="mimetype" />                 <category android:name="android.intent.category.DEFAULT" />
+                                <data android:mimeType="mimetype" />
+                                <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
@@ -1677,8 +1793,15 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun test62810553() {
+  fun suggestAddHost_whenCustomSchemeAndPathArePresent() {
     // Regression test for https://issuetracker.google.com/62810553
+    val expected =
+      """
+    AndroidManifest.xml:8: Error: At least one host must be specified [AppLinkUrlError]
+                    <data android:scheme="myscheme" android:pathPrefix="/path/to/there"/> <!-- Missing host -->
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1 errors, 0 warnings
+    """
     lint()
       .files(
         xml(
@@ -1691,7 +1814,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter>
-                                <data android:scheme="myscheme" android:pathPrefix="/path/to/there"/> <!-- OK -->
+                                <data android:scheme="myscheme" android:pathPrefix="/path/to/there"/> <!-- Missing host -->
                             </intent-filter>
                         </activity>
                     </application>
@@ -1702,7 +1825,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
           .indented()
       )
       .run()
-      .expectClean()
+      .expect(expected)
   }
 
   fun test68322249() {
@@ -1914,7 +2037,10 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
           AndroidManifest.xml:71: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
                       <intent-filter android:autoVerify="true"> <!-- Missing host -->
                       ^
-          6 errors, 0 warnings
+          AndroidManifest.xml:76: Error: At least one host must be specified [AppLinkUrlError]
+                          <data android:scheme="http" />
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          7 errors, 0 warnings
         """
       )
   }
@@ -2113,4 +2239,100 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   }
 
   fun testAdvancedPatternValidation() {}
+
+  fun testPortByItselfNotCounted() {
+    // This test makes sure that a port by itself cannot be counted as a "host" (which could happen
+    // due to host-port pairings).
+    // Compare with the test below. Here, we should get a "Missing required elements/attributes for
+    // Android App Links" error.
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:port='8080' />'
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+          AndroidManifest.xml:15: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true">
+                      ^
+          AndroidManifest.xml:20: Error: At least one host must be specified [AppLinkUrlError]
+                          <data android:scheme="http" />
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          AndroidManifest.xml:21: Error: The port must be specified in the same <data> element as the host [AppLinkUrlError]
+                          <data android:port='8080' />'
+                                              ~~~~
+          3 errors, 0 warnings
+      """
+      )
+  }
+
+  fun testHostByItselfIsCounted() {
+    // Compare with the test above.
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

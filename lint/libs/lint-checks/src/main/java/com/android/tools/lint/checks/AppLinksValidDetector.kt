@@ -363,8 +363,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
 
     // Gather data about scheme, host, port, path, mimeType tags so that we can check them
     var schemes: MutableList<String>? = null
-    var hosts: MutableList<String>? = null
-    var ports: MutableList<String>? = null
+    val hostPortPairs: MutableList<Pair<String?, String?>> = mutableListOf()
     var paths: MutableList<AndroidPatternMatcher>? = null
     var hasMimeType = false
     var data = firstData
@@ -392,8 +391,13 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       // Multiple checks for "valid attributes" (Schemes, hosts, ports, paths all pass validation
       // (see validateAttribute, and requireNonEmpty below))
       schemes = addAttribute(context, ATTR_SCHEME, schemes, data)
-      hosts = addAttribute(context, ATTR_HOST, hosts, data)
-      ports = addAttribute(context, ATTR_PORT, ports, data)
+      val host = checkAndGetAttributeValue(context, ATTR_HOST, data)
+      val port = checkAndGetAttributeValue(context, ATTR_PORT, data)
+      // Don't add ports on their own to hostPortPairs to make it simpler to check whether there are
+      // any hosts (hostPortPairs.isEmpty()).
+      if (host != null) {
+        hostPortPairs.add(Pair(host, port))
+      }
       paths = addMatcher(context, ATTR_PATH, PATTERN_LITERAL, paths, data)
       paths = addMatcher(context, ATTR_PATH_PREFIX, PATTERN_PREFIX, paths, data)
       paths = addMatcher(context, ATTR_PATH_PATTERN, PATTERN_SIMPLE_GLOB, paths, data)
@@ -444,7 +448,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           !hasCategoryDefault(intentFilter) ||
           !browsable ||
           (!isHttp && !hasSubstitutedScheme) ||
-          hosts == null
+          hostPortPairs.isEmpty()
       ) {
         // If we are in Studio then add quick-fix data so that Studio adds the
         // "Launch App Links Assistant" quick-fix.
@@ -467,10 +471,12 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
     }
 
-    val hasScheme = schemes != null
+    val hasExplicitScheme = schemes != null && !implicitSchemes
     // --- Check "missing scheme" (If there are hosts, paths, or ports, then there should be a
     // scheme.) ---
-    if (!hasScheme && (hosts != null || paths != null || ports != null)) {
+    // We insist on this because hosts, paths, and ports will be ignored if there is no explicit
+    // scheme, which makes the intent filter very misleading.
+    if (!hasExplicitScheme && (paths != null || hostPortPairs.isNotEmpty())) {
       val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
       reportUrlError(
         context,
@@ -480,12 +486,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         fix,
       )
     }
-    // --- Check "missing host" (Hosts are required when a web scheme is used or when a path or port
-    // is used.) ---
+    // --- Check "missing host" (Hosts are required when a web scheme or path is used.) ---
     if (
-      hosts == null &&
-        (paths != null || ports != null) &&
-        (!hasScheme || schemes!!.contains("http") || schemes.contains("https"))
+      (schemes?.any { it == "http" || it == "https" } == true || paths != null) &&
+        hostPortPairs.all { (host, _) -> host.isNullOrBlank() }
     ) {
       val fix = LintFix.create().set().todo(ANDROID_URI, ATTR_HOST).build()
       reportUrlError(
@@ -510,11 +514,11 @@ class AppLinksValidDetector : Detector(), XmlScanner {
 
     // --- Check "missing scheme" (We have ACTION_VIEW but the scheme is not explicitly specified)
     // ---
-    if (actionView && (!hasScheme || implicitSchemes)) {
+    if (actionView && !hasExplicitScheme) {
       val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
       reportUrlError(context, intentFilter, context.getLocation(intentFilter), "Missing URL", fix)
     }
-    return UriInfo(schemes, hosts, ports, paths)
+    return UriInfo(schemes, hostPortPairs, paths)
   }
 
   private fun ensureExported(context: XmlContext, activity: Element, intentFilter: Element) {
@@ -583,40 +587,53 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         it.getAttributeNS(ANDROID_URI, ATTRIBUTE_NAME) == "android.intent.category.DEFAULT"
     }
 
-  private fun addAttribute(
+  /**
+   * Reports incidents related to attribute with name [attributeName] inside [data] <data> element,
+   * within XmlContext [context].
+   *
+   * @return The value that [attributeName] defines.
+   */
+  private fun checkAndGetAttributeValue(
     context: XmlContext?,
     attributeName: String,
-    existing: MutableList<String>?,
     data: Element,
-  ): MutableList<String>? {
-    var current = existing
+  ): String? {
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
     if (attribute != null) {
       var value = attribute.value
       if (requireNonEmpty(context, attribute, value)) {
-        return current
+        return null
       }
       if (value.startsWith(PREFIX_RESOURCE_REF) || value.startsWith(PREFIX_THEME_REF)) {
         value = replaceUrlWithValue(context, value)
       }
-      if (current == null) {
-        current = Lists.newArrayListWithCapacity(4)
-      }
-      current!!.add(value)
       if (
         isSubstituted(value) ||
           value.startsWith(PREFIX_RESOURCE_REF) ||
           value.startsWith(PREFIX_THEME_REF)
       ) { // already checked but can be nested
-        return current
+        return value
       }
 
       // Validation
       if (context != null) {
         validateAttribute(context, attributeName, data, attribute, value)
       }
+      return value
     }
-    return current
+    return null
+  }
+
+  private fun addAttribute(
+    context: XmlContext?,
+    attributeName: String,
+    existing: MutableList<String>?,
+    data: Element,
+  ): MutableList<String>? {
+    val attributeValue = checkAndGetAttributeValue(context, attributeName, data) ?: return existing
+    val result = existing ?: mutableListOf()
+    result.add(attributeValue)
+    return result
   }
 
   private fun validateAttribute(
@@ -775,8 +792,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   /** URL information from an intent filter */
   class UriInfo(
     private val schemes: List<String>?,
-    private val hosts: List<String>?,
-    private val ports: List<String>?,
+    private val hostPortPairs: List<Pair<String?, String?>>,
     private val paths: List<AndroidPatternMatcher>?,
   ) {
     /**
@@ -787,7 +803,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
      * @return null for a successful match or the failure reason
      */
     fun match(testUrl: URL): String? {
-      // Check schemes
       if (schemes != null) {
         val schemeOk =
           schemes.any { scheme: String -> scheme == testUrl.protocol || isSubstituted(scheme) }
@@ -795,27 +810,17 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           return "did not match scheme ${Joiner.on(", ").join(schemes)}"
         }
       }
-      if (hosts != null) {
+      if (hostPortPairs.isNotEmpty()) {
         val hostOk =
-          hosts.any { host: String -> matchesHost(testUrl.host, host) || isSubstituted(host) }
+          hostPortPairs.any { (host, port) ->
+            (host?.let { matchesHost(testUrl.host, it) || isSubstituted(it) } ?: true) &&
+              (port?.let { testUrl.port.toString() == port || isSubstituted(port) } ?: true)
+          }
         if (!hostOk) {
-          return "did not match host ${Joiner.on(", ").join(hosts)}"
+          return "did not match${if (hostPortPairs.size > 1) " any of" else ""} ${
+            hostPortPairs.joinToString(", ") { (host, port) -> if (host != null && port != null) "host+port $host:$port" else if (host != null) "host $host" else "" }
+          }"
         }
-      }
-
-      // Port matching:
-      var portOk = false
-      if (testUrl.port != -1) {
-        val testPort = testUrl.port.toString()
-        if (ports != null) {
-          portOk = ports.any { port: String -> testPort == port || isSubstituted(port) }
-        }
-      } else if (ports == null) {
-        portOk = true
-      }
-      if (!portOk) {
-        val portList = if (ports == null) "none" else Joiner.on(", ").join(ports)
-        return "did not match port $portList"
       }
       if (paths != null) {
         val testPath = testUrl.path
