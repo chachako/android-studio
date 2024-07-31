@@ -133,6 +133,40 @@ sealed class Flag<T>(
   }
 }
 
+class MendelFlag private constructor(
+    group: FlagGroup,
+    name: String,
+    val mendelId: Int,
+    displayName: String,
+    description: String,
+    defaultValue: Boolean,
+    defaultValueDescription: String? = null,
+) : Flag<Boolean>(group, name, displayName, description, defaultValue, defaultValueDescription, Converter) {
+    constructor(
+        group: FlagGroup,
+        name: String,
+        mendelId: Int,
+        displayName: String,
+        description: String,
+        defaultValue: Boolean,
+    ) : this(group, name, mendelId, displayName, description, defaultValue, null)
+
+    constructor(
+        group: FlagGroup,
+        name: String,
+        mendelId: Int,
+        displayName: String,
+        description: String,
+        defaultValueProvider: FlagDefault<Boolean>
+    ) : this(group, name, mendelId, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
+
+    object Converter : ValueConverter<Boolean> {
+        override fun serialize(value: Boolean) = value.toString()
+
+        override fun deserialize(strValue: String) = strValue.toBoolean()
+    }
+}
+
 class BooleanFlag private constructor(
   group: FlagGroup,
   name: String,
