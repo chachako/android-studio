@@ -248,6 +248,23 @@ public class AvdManager {
         return null;
     }
 
+    /**
+     * Returns the {@link AvdInfo} with the given <var>display name</var>.
+     *
+     * @return the matching AvdInfo or <code>null</code> if none were found.
+     */
+    @Nullable
+    public AvdInfo findAvdWithDisplayName(@NonNull String displayName) {
+        synchronized (mAllAvdList) {
+            for (AvdInfo avd : mAllAvdList) {
+                if (avd.getDisplayName().equals(displayName)) {
+                    return avd;
+                }
+            }
+        }
+        return null;
+    }
+
     /** Returns whether an emulator is currently running the AVD. */
     @Slow
     public boolean isAvdRunning(@NonNull AvdInfo info) {

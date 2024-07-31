@@ -15,6 +15,9 @@
  */
 package com.android.sdklib.internal.avd
 
+import com.android.sdklib.AndroidVersion
+import com.android.sdklib.devices.Device
+
 object AvdNames {
   private const val ALLOWED_CHARS = "0-9a-zA-Z-_. ()"
   private const val ALLOWED_CHARS_READABLE = "a-z A-Z 0-9 . _ - ( )"
@@ -43,4 +46,46 @@ object AvdNames {
   }
 
   @JvmStatic fun humanReadableAllowedCharacters(): String = ALLOWED_CHARS_READABLE
+
+  /**
+   * Get a version of `candidateBase` modified such that it is a valid filename. Invalid characters
+   * will be removed. If all the characters are invalid, "myavd" will be returned.
+   */
+  @JvmStatic
+  fun cleanAvdName(avdName: String): String {
+    return stripBadCharactersAndCollapse(avdName).ifBlank { "myavd" }
+  }
+
+  /**
+   * Computes a reasonable display name for a newly-created AVD with the given device and version.
+   */
+  @JvmStatic
+  fun getDefaultDeviceDisplayName(device: Device, version: AndroidVersion): String {
+    // A device name might include the device's screen size as, e.g., 7". The " is not allowed in
+    // a display name. Ensure that the display name does not include any forbidden characters.
+    return stripBadCharacters(device.displayName) + " API " + version.apiStringWithExtension
+  }
+
+  fun uniquify(name: String, separator: String, isPresent: (String) -> Boolean): String {
+    var suffix = 1
+    var candidate = name
+    while (isPresent(candidate)) {
+      candidate = "$name$separator${++suffix}"
+    }
+    return candidate
+  }
 }
+
+/**
+ * Appends _n to the name if necessary to make the name unique, where n is the first number that
+ * makes the filename unique (starting with 2).
+ */
+fun AvdManager.uniquifyAvdName(displayName: String): String =
+  AvdNames.uniquify(displayName, "_") { getAvd(it, false) != null }
+
+/**
+ * If the given display name is already present on an AVD, appends the first number that makes it
+ * unique (starting with 2).
+ */
+fun AvdManager.uniquifyDisplayName(displayName: String): String =
+  AvdNames.uniquify(displayName, " ") { findAvdWithDisplayName(it) != null }

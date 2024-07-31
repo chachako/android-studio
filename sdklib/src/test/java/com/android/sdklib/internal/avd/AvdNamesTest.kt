@@ -59,4 +59,10 @@ class AvdNamesTest {
     assertThat(stripBadCharactersAndCollapse("9\" nails__  ")).isEqualTo("9_nails_")
     assertThat(stripBadCharactersAndCollapse("'6' under'")).isEqualTo("6_under")
   }
+
+  @Test
+  fun testUniquify() {
+    val names = setOf("Test", "Test 2", "Test 3")
+    assertThat(AvdNames.uniquify("Test", " ") { it in names }).isEqualTo("Test 4")
+  }
 }
