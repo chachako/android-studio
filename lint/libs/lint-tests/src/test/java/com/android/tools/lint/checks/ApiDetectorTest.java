@@ -6140,10 +6140,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testGetOrDefault221280939() {
-        // TODO(b/350536825)
-        if (UastEnvironmentKt.useFirUast()) {
-            return;
-        }
         // https://issuetracker.google.com/221280939
         lint().files(
                         kotlin(
@@ -7818,10 +7814,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testKotlinStdlibPlatformDependent() {
-        // TODO(b/345586500)
-        if (UastEnvironmentKt.useFirUast()) {
-            return;
-        }
         // Regression test for https://issuetracker.google.com/77187996
         lint().files(
                         kotlin(

@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.api.types.KaTypeMappingMode
+import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
 
 // TODO replace with structural type comparison?
 @OptIn(KaExperimentalApi::class)
@@ -107,14 +108,19 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
   private fun KaSession.isTheSameTypes(
     context: PsiMethod,
     psi: PsiType,
-    ktType: KaType,
+    kaType: KaType,
     mode: KaTypeMappingMode = KaTypeMappingMode.DEFAULT,
     isVararg: Boolean = false,
     isVarargs: Boolean = false, // isVarargs == isVararg && last param
   ): Boolean {
     // Shortcut: primitive void == Unit as a function return type
-    if (psi == PsiTypes.voidType() && ktType.isUnitType) return true
-    val ktTypeRendered = ktType.asPsiType(context, allowErrorTypes = true, mode) ?: return false
+    if (psi == PsiTypes.voidType() && kaType.isUnitType) return true
+    // Without type substitution (from resolved call info), we can't
+    // tell their equality: assume they are matched conservatively.
+    if (kaType is KaTypeParameterType) {
+      return true
+    }
+    val ktTypeRendered = kaType.asPsiType(context, allowErrorTypes = true, mode) ?: return false
     return if (isVararg) {
       if (isVarargs) {
         // last vararg
