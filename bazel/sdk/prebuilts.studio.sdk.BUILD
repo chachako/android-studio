@@ -356,10 +356,10 @@ filegroup(
         include = ["ndk/27.0.12077973/**"],
         exclude = [
             # Bazel can't handle paths with spaces in them.
-            "ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.10/site-packages/setuptools/command/launcher manifest.xml",
-            "ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.10/site-packages/setuptools/script (dev).tmpl",
-            "ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.10/site-packages/setuptools/command/launcher manifest.xml",
-            "ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.10/site-packages/setuptools/script (dev).tmpl",
+            "ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.11/site-packages/setuptools/command/launcher manifest.xml",
+            "ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.11/site-packages/setuptools/script (dev).tmpl",
+            "ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.11/site-packages/setuptools/command/launcher manifest.xml",
+            "ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.11/site-packages/setuptools/script (dev).tmpl",
         ],
     ),
     visibility = ["//visibility:public"],
