@@ -123,14 +123,6 @@ public final class RemoteSystemImage implements ISystemImage {
     }
 
     @Override
-    public int compareTo(@NonNull ISystemImage o) {
-        if (o instanceof RemoteSystemImage) {
-            return myRemotePackage.compareTo(((RemoteSystemImage) o).myRemotePackage);
-        }
-        return 1;
-    }
-
-    @Override
     public int hashCode() {
         return myRemotePackage.hashCode();
     }
