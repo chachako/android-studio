@@ -37,12 +37,12 @@ class PreviewableMethodFinder(
     private val annotationResolver = MultipreviewAnnotationResolver(
         screenshotTestDirectory, screenshotTestJars, mainDirectory, mainJars, dependencyJars)
 
-    private val previewableMethods: MutableSet<String> = mutableSetOf()
+    private val previewMethods: MutableSet<PreviewMethod> = mutableSetOf()
 
     /**
      * Finds all preview-able methods.
      */
-    fun findAllPreviewableMethods(): Set<String> {
+    fun findAllPreviewableMethods(): Set<PreviewMethod> {
         for (dir in screenshotTestDirectory) {
             if (!dir.exists() || !dir.isDirectory) {
                 continue
@@ -68,8 +68,7 @@ class PreviewableMethodFinder(
                 }
             }
         }
-
-        return previewableMethods
+        return previewMethods
     }
 
     private fun processTestClass(classToProcess: ClassReader) {
@@ -85,28 +84,95 @@ class PreviewableMethodFinder(
 
                     private var hasComposableAnnotation: Boolean = false
                     private var isPreviewableMethod: Boolean = false
+                    private val methodPreviewParameters = mutableListOf<ParameterRepresentation>()
+                    private val multipreview = MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation()
 
                     override fun visitAnnotation(
                         descriptor: String,
                         visible: Boolean
                     ): AnnotationVisitor? {
-                        if (hasComposableAnnotation && isPreviewableMethod) {
-                            return null
-                        }
+                        when (descriptor) {
+                            "Landroidx/compose/runtime/Composable;" -> hasComposableAnnotation = true
+                            "Landroidx/compose/ui/tooling/preview/Preview;" -> {
+                                isPreviewableMethod = true
+                                return object: AnnotationVisitor(Opcodes.ASM9) {
+                                    private val parameters = mutableMapOf<String, Any?>()
 
-                        if (descriptor == "Landroidx/compose/runtime/Composable;") {
-                            hasComposableAnnotation = true
-                        } else if (annotationResolver.isMultipreviewAnnotation(descriptor)) {
-                            isPreviewableMethod = true
+                                    override fun visit(name: String?, value: Any?) {
+                                        if (name != null) {
+                                            parameters[name] = value
+                                        }
+                                    }
+
+                                    override fun visitEnd() {
+                                        multipreview.addPreview(BaseAnnotationRepresentation(parameters))
+                                    }
+                                }
+                            }
+                            "Landroidx/compose/ui/tooling/preview/Preview\$Container;" -> {
+                                isPreviewableMethod = true
+                                return object: AnnotationVisitor(Opcodes.ASM9) {
+                                    override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor {
+                                        return object: AnnotationVisitor(Opcodes.ASM9) {
+                                            private val parameters = mutableMapOf<String, Any?>()
+
+                                            override fun visit(name: String?, value: Any?) {
+                                                if (name != null) {
+                                                    parameters[name] = value
+                                                }
+                                            }
+
+                                            override fun visitEnd() {
+                                                multipreview.addPreview(BaseAnnotationRepresentation(parameters))
+                                            }
+                                        }
+                                    }
+
+                                    override fun visitArray(name: String?): AnnotationVisitor {
+                                        return this
+                                    }
+                                }
+                            }
+                            else -> annotationResolver.isMultipreviewAnnotation(descriptor).let { details ->
+                                if (details is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation) {
+                                    isPreviewableMethod = true
+                                    multipreview.addPreviewList(details.previewList)
+                                }
+                            }
                         }
 
                         return null
                     }
 
+                    override fun visitParameterAnnotation(
+                        parameter: Int,
+                        descriptor: String?,
+                        visible: Boolean,
+                    ): AnnotationVisitor? {
+                        if (descriptor == "Landroidx/compose/ui/tooling/preview/PreviewParameter;" && methodPreviewParameters.size == parameter) {
+                            return object: AnnotationVisitor(Opcodes.ASM9) {
+                                private val annotationParams = mutableMapOf<String, Any?>()
+
+                                override fun visit(name: String?, value: Any?) {
+                                    if (name != null) {
+                                        annotationParams[name] = value
+                                    }
+                                }
+
+                                override fun visitEnd() {
+                                    methodPreviewParameters.add(ParameterRepresentation(annotationParams))
+                                }
+                            }
+                        }
+                        return null
+                    }
+
+
                     override fun visitEnd() {
                         if (hasComposableAnnotation && isPreviewableMethod) {
-                            // TODO(b/345529313): This is a temporary implementation. Replace it with data class.
-                            previewableMethods.add("class = ${classToProcess.className}, method = $methodName")
+                            multipreview.previewList.forEach { previewAnnotation ->
+                                previewMethods.add(PreviewMethod(MethodRepresentation("${classToProcess.className.classPathToName}.$methodName", methodPreviewParameters), previewAnnotation))
+                            }
                         }
                     }
                 }
@@ -114,3 +180,5 @@ class PreviewableMethodFinder(
         }, /*parsingOptions=*/0)
     }
 }
+
+data class PreviewMethod(val method: MethodRepresentation, val preview: BaseAnnotationRepresentation)

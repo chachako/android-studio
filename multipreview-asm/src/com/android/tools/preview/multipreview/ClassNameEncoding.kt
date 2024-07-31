@@ -16,8 +16,8 @@
 
 package com.android.tools.preview.multipreview
 
-internal val String.classPathToName: String
-  get() = this.replace('/', '.')
+val String.classPathToName: String
+    get() = this.replace('/', '.')
 
 /** Remove the leading "L", the trailing ";" and convert. */
 internal fun descriptorToFqcn(descriptor: String?): String? =

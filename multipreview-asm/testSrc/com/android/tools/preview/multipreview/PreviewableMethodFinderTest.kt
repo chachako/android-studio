@@ -22,6 +22,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.nio.file.Files
+import java.util.stream.Collectors
 import java.util.zip.ZipInputStream
 
 class PreviewableMethodFinderTest {
@@ -57,15 +58,19 @@ class PreviewableMethodFinderTest {
 
     @Test
     fun findPreviewableFunctions() {
-        assertThat(finder.findAllPreviewableMethods()).containsExactly(
-            "class = com/example/myprecompiledtestclasses/PreviewableMethodsFromStaticLibraryKt, method = GreetingPreview1",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTest, method = GreetingPreview2",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = CustomMultipreviewAnnotationTest",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = CyclicPreviewableAnnotationTest",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = GreetingPreview1",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = GreetingPreviewWithRepeatedAnnotation",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = PreviewAnnotationFromLibrary",
-            "class = com/example/myscreenshottestexample/screenshottest/ExampleScreenshotTestKt, method = PreviewAnnotationFromMain",
+        val discoveredPreviews = finder.findAllPreviewableMethods()
+        val uniqueMethods = discoveredPreviews.stream().map { it.method.methodFqn }.collect(Collectors.toSet())
+        assertThat(discoveredPreviews.size).isEqualTo(11)
+        assertThat(uniqueMethods.size).isEqualTo(8)
+        assertThat(uniqueMethods).containsExactly(
+            "com.example.myprecompiledtestclasses.PreviewableMethodsFromStaticLibraryKt.GreetingPreview1",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTest.GreetingPreview2",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CustomMultipreviewAnnotationTest",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CyclicPreviewableAnnotationTest",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreview1",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreviewWithRepeatedAnnotation",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromLibrary",
+            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromMain",
         )
     }
 }

@@ -35,11 +35,20 @@ class MultipreviewAnnotationResolver(
     private val mainJars: List<File>,
     private val dependencyJars: List<File>,
 ) {
+    private val resolvedMultipreviewAnnotationClasses= mutableMapOf<String, AnnotationDetails>()
 
-    private val resolvedAnnotationClasses: MutableMap<String, Boolean> = mutableMapOf(
-        "Landroidx/compose/ui/tooling/preview/Preview;" to true,
-        "Landroidx/compose/ui/tooling/preview/Preview\$Container;" to true,
-    )
+    sealed class AnnotationDetails {
+        data class MultiPreviewAnnotation(val previewList: MutableList<BaseAnnotationRepresentation> = mutableListOf()): AnnotationDetails() {
+            fun addPreviewList(previewListToAdd: MutableList<BaseAnnotationRepresentation>) {
+                previewList.addAll(previewListToAdd)
+            }
+
+            fun addPreview(preview: BaseAnnotationRepresentation) {
+                previewList.add(preview)
+            }
+        }
+        object NonMultiPreview: AnnotationDetails()
+    }
 
     private val currentlyResolvingAnnotationClasses: MutableSet<String> = mutableSetOf()
 
@@ -47,24 +56,27 @@ class MultipreviewAnnotationResolver(
      * Returns true if a given [annotationClassDescriptor] has a Preview annotation
      * in its ancestors, otherwise false.
      */
-    fun isMultipreviewAnnotation(annotationClassDescriptor: String): Boolean {
+    fun isMultipreviewAnnotation(annotationClassDescriptor: String): AnnotationDetails? {
         if (currentlyResolvingAnnotationClasses.contains(annotationClassDescriptor)) {
             // This annotation class has a cyclic dependency.
-            return false
+            return AnnotationDetails.NonMultiPreview
         }
 
         // Note that computeIfAbsent() throws ConcurrentModificationException due to recursion.
-        return resolvedAnnotationClasses[annotationClassDescriptor] ?: run {
-            val resolvedValue = resolve(annotationClassDescriptor)
-            resolvedAnnotationClasses[annotationClassDescriptor] = resolvedValue
-            resolvedValue
+        val annotationDetails = resolvedMultipreviewAnnotationClasses[annotationClassDescriptor]
+        if (annotationDetails != null) {
+            return annotationDetails
+        } else {
+            val resolvedAnnotationDetails = resolve(annotationClassDescriptor)
+            resolvedMultipreviewAnnotationClasses[annotationClassDescriptor] = resolvedAnnotationDetails
+            return resolvedAnnotationDetails
         }
     }
 
-    private fun resolve(annotationClassDescriptor: String): Boolean {
+    private fun resolve(annotationClassDescriptor: String): AnnotationDetails {
         if (!annotationClassDescriptor.startsWith("L") ||
             !annotationClassDescriptor.endsWith(";")) {
-            return false
+            return AnnotationDetails.NonMultiPreview
         }
 
         try {
@@ -106,7 +118,7 @@ class MultipreviewAnnotationResolver(
                 }
             }
 
-            return false
+            return AnnotationDetails.NonMultiPreview
         } finally {
             currentlyResolvingAnnotationClasses -= annotationClassDescriptor
         }
@@ -133,21 +145,74 @@ class MultipreviewAnnotationResolver(
         }
     }
 
-    private fun resolveAnnotationClass(annotationClass: ClassReader): Boolean {
+    private fun resolveAnnotationClass(annotationClass: ClassReader): AnnotationDetails {
         var isThisClassMultipreviewAnnotation = false
+        val multipreview = AnnotationDetails.MultiPreviewAnnotation()
 
         annotationClass.accept(object: ClassVisitor(Opcodes.ASM9) {
             override fun visitAnnotation(
                 descriptor: String,
                 visible: Boolean
             ): AnnotationVisitor? {
-                if (!isThisClassMultipreviewAnnotation) {
-                    isThisClassMultipreviewAnnotation = isMultipreviewAnnotation(descriptor)
+                val baseAnnotation = "Landroidx/compose/ui/tooling/preview/Preview;"
+                val repeatedBaseAnnotation = "Landroidx/compose/ui/tooling/preview/Preview\$Container;"
+
+                when (descriptor) {
+                    baseAnnotation -> {
+                        isThisClassMultipreviewAnnotation = true
+                        return object: AnnotationVisitor(Opcodes.ASM9) {
+                            private val parameters = mutableMapOf<String, Any?>()
+
+                            override fun visit(name: String?, value: Any?) {
+                                if (name != null) {
+                                    parameters[name] = value
+                                }
+                            }
+
+                            override fun visitEnd() {
+                                multipreview.addPreview(BaseAnnotationRepresentation(parameters))
+                            }
+                        }
+                    }
+                    repeatedBaseAnnotation -> {
+                        isThisClassMultipreviewAnnotation = true
+                        return object: AnnotationVisitor(Opcodes.ASM9) {
+                            override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor {
+                                return object: AnnotationVisitor(Opcodes.ASM9) {
+                                    private val parameters = mutableMapOf<String, Any?>()
+
+                                    override fun visit(name: String?, value: Any?) {
+                                        if (name != null) {
+                                            parameters[name] = value
+                                        }
+                                    }
+
+                                    override fun visitEnd() {
+                                        multipreview.addPreview(BaseAnnotationRepresentation(parameters))
+                                    }
+                                }
+                            }
+
+                            override fun visitArray(name: String?): AnnotationVisitor {
+                                return this
+                            }
+                        }
+                    }
+                    else -> {
+                        val annotationDetails = isMultipreviewAnnotation(descriptor)
+                        if (annotationDetails is AnnotationDetails.MultiPreviewAnnotation) {
+                            multipreview.addPreviewList(annotationDetails.previewList)
+                            isThisClassMultipreviewAnnotation = true
+                        }
+                    }
+
                 }
+
                 return null
             }
+
         }, /*parsingOptions=*/0)
 
-        return isThisClassMultipreviewAnnotation
+        return if (isThisClassMultipreviewAnnotation) multipreview else AnnotationDetails.NonMultiPreview
     }
 }

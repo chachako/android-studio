@@ -56,57 +56,61 @@ class MultipreviewAnnotationResolverTest {
     }
 
     @Test
-    fun knownPreviewAnnotationsShouldBeResolvedToTrue() {
+    fun basePreviewAnnotationsShouldBeResolvedToFalse() {
         assertThat(resolver.isMultipreviewAnnotation(
-            "Landroidx/compose/ui/tooling/preview/Preview;")).isTrue()
+            "Landroidx/compose/ui/tooling/preview/Preview;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
         assertThat(resolver.isMultipreviewAnnotation(
-            "Landroidx/compose/ui/tooling/preview/Preview\$Container;")).isTrue()
+            "Landroidx/compose/ui/tooling/preview/Preview\$Container;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
     }
 
     @Test
     fun nonMultipreviewAnnotationsShouldBeResolvedToFalse() {
-        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Rule;")).isFalse()
-        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Test;")).isFalse()
+        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Rule;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
+        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Test;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
     }
 
     @Test
     fun invalidInputShouldBeResolvedToFalse() {
-        assertThat(resolver.isMultipreviewAnnotation("")).isFalse()
-        assertThat(resolver.isMultipreviewAnnotation("invalid input")).isFalse()
+        assertThat(resolver.isMultipreviewAnnotation("")is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
+        assertThat(resolver.isMultipreviewAnnotation("invalid input") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
     }
 
     @Test
     fun multipreviewIsDefinedInTestSource() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/MyCustomMultipreviewAnnotation;"))
-            .isTrue()
+        val annotation = resolver.isMultipreviewAnnotation(
+            "Lcom/example/myscreenshottestexample/screenshottest/MyCustomMultipreviewAnnotation;")
+        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
+            .isEqualTo(2)
     }
 
     @Test
     fun multipreviewIsDefinedInMainSource() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/MyCustomMultipreviewAnnotationInMain;"))
-            .isTrue()
+        val annotation = resolver.isMultipreviewAnnotation(
+            "Lcom/example/myscreenshottestexample/MyCustomMultipreviewAnnotationInMain;")
+        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
+            .isEqualTo(1)
     }
 
     @Test
     fun multipreviewIsDefinedInDependency() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/mylibrary/MyCustomPreviewAnnotationInLibrary;"))
-            .isTrue()
+        val annotation = resolver.isMultipreviewAnnotation(
+            "Lcom/example/mylibrary/MyCustomPreviewAnnotationInLibrary;")
+        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
+            .isEqualTo(1)
     }
 
     @Test
     fun cyclicPreviewableAnnotation() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/CyclicPreviewableAnnotation;"))
-            .isTrue()
+        val annotation = resolver.isMultipreviewAnnotation(
+            "Lcom/example/myscreenshottestexample/screenshottest/CyclicPreviewableAnnotation;")
+        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
+            .isEqualTo(2)
     }
 
     @Test
     fun cyclicNonPreviewableAnnotation() {
         assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/CyclicNonPreviewableAnnotation;"))
+            "Lcom/example/myscreenshottestexample/screenshottest/CyclicNonPreviewableAnnotation;")is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation)
             .isFalse()
     }
 }
