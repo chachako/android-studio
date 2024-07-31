@@ -10,13 +10,7 @@ from typing import Iterable, List, Sequence, Tuple
 import uuid
 
 from tools.base.bazel.ci import bazel
-from tools.base.bazel.ci import bazel_diff
 from tools.base.bazel.ci import errors
-from tools.base.bazel.ci import gce
-
-
-_HASH_FILE_BUCKET = 'adt-byob'
-_HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
 
 
 @dataclasses.dataclass(frozen=True,kw_only=True)
@@ -50,17 +44,6 @@ class BazelTestResult:
   """Represents the output of a bazel test."""
   exit_code: int
   bes_path: pathlib.Path
-
-
-def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
-  """Generates and uploads the hash file for the current build to GCS."""
-  object_name = _HASH_FILE_NAME.format(
-      bid=build_env.build_number,
-      target=build_env.build_target_name,
-  )
-  hash_file_path = os.path.join(build_env.dist_dir, 'bazel-diff-hashes.json')
-  bazel_diff.generate_hash_file(build_env, hash_file_path)
-  gce.upload_to_gcs(hash_file_path, _HASH_FILE_BUCKET, object_name)
 
 
 def run_bazel_test(
@@ -110,8 +93,10 @@ def run_bazel_test(
       '--experimental_execution_graph_log_dep_type=all',
   ])
 
+  target_file = dist_path / 'targets.txt'
+  target_file.write_text('\n'.join(targets))
   bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.test(*flags, '--', *targets)
+  result = bazel_cmd.test(*flags, '--target_pattern_file', str(target_file))
 
   return BazelTestResult(
       exit_code=result.returncode,

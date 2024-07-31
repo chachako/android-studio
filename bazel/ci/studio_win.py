@@ -4,6 +4,7 @@ import pathlib
 import tempfile
 
 from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import presubmit
 from tools.base.bazel.ci import studio
 
 
@@ -11,7 +12,7 @@ def studio_win(build_env: bazel.BuildEnv):
   """Runs Windows pre/postsubmit tests."""
   build_type = studio.BuildType.from_build_number(build_env.build_number)
   if build_type == studio.BuildType.POSTSUBMIT:
-    studio.generate_and_upload_hash_file(build_env)
+    presubmit.generate_and_upload_hash_file(build_env)
 
   # If DIST_DIR does not exist, create one.
   if not build_env.dist_dir:

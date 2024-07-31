@@ -8,6 +8,7 @@ from typing import List, Sequence
 import zipfile
 
 from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import presubmit
 from tools.base.bazel.ci import studio
 
 
@@ -91,7 +92,7 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   """Runs studio-linux target."""
   build_type = studio.BuildType.from_build_number(build_env.build_number)
   if build_type == studio.BuildType.POSTSUBMIT:
-    studio.generate_and_upload_hash_file(build_env)
+    presubmit.generate_and_upload_hash_file(build_env)
 
   setup_environment(build_env)
   flags = build_flags(

@@ -226,6 +226,9 @@ build:ci --bes_timeout=1200s
 build:ci --experimental_collect_system_network_usage
 # Limit the progress avoid spammy build logs.
 build:ci --show_progress_rate_limit=60
+# Avoid incompatible targets when targets are set explicitly with selective
+# presubmit.
+build:ci --skip_incompatible_explicit_targets
 
 ## Enables dynamic scheduling. This will run some actions locally
 ## as well as remotely, choosing whichever finishes first.

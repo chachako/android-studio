@@ -35,6 +35,16 @@ py_library(
 )
 
 py_library(
+    name = "presubmit",
+    srcs = ["presubmit.py"],
+    deps = [
+        ":bazel",
+        ":bazel_diff",
+        ":gce",
+    ],
+)
+
+py_library(
     name = "query_checks",
     srcs = ["query_checks.py"],
     deps = [
@@ -48,8 +58,7 @@ py_library(
     srcs = ["studio.py"],
     deps = [
         ":bazel",
-        ":bazel_diff",
-        ":gce",
+        ":errors",
     ],
 )
 
@@ -58,7 +67,7 @@ py_library(
     srcs = ["studio_linux.py"],
     deps = [
         ":bazel",
-        ":errors",
+        ":presubmit",
         ":studio",
     ],
 )
@@ -68,7 +77,7 @@ py_library(
     srcs = ["studio_win.py"],
     deps = [
         ":bazel",
-        ":errors",
+        ":presubmit",
         ":studio",
     ],
 )
