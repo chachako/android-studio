@@ -118,7 +118,8 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
             nameWithoutPrefix.decapitalizeSmart().let { decapitalizedPrefix ->
               decapitalizedPrefix.endsWith(id) ||
                 // value class mangling: getColor-hash
-                isValueClassMangled(decapitalizedPrefix, id)
+                // internal mangling: getColor$moduleName
+                isMangled(decapitalizedPrefix, id)
             }
         }
       }
@@ -158,15 +159,18 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
         psiClass.methods.filter { psiMethod ->
           psiMethod.name == id ||
             // value class mangling: functionName-hash
-            isValueClassMangled(psiMethod.name, id)
+            // internal mangling: functionName$moduleName
+            isMangled(psiMethod.name, id)
         }
       }
       .toList()
   }
 
-  private fun isValueClassMangled(name: String, prefix: String): Boolean {
+  private fun isMangled(name: String, prefix: String): Boolean {
     // A memory optimization for `name.startsWith("$prefix-")`, see KT-63486
-    return name.length > prefix.length && name[prefix.length] == '-' && name.startsWith(prefix)
+    return name.length > prefix.length &&
+      (name[prefix.length] == '-' || name[prefix.length] == '$') &&
+      name.startsWith(prefix)
   }
 }
 
