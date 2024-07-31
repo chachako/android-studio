@@ -36,8 +36,18 @@ private const val DELETE_FILES = "rm -rf "
 private const val DUMPSYS_GMSCORE = "dumpsys package com.google.android.gms"
 
 /** A fake [com.android.backup.AdbServices] */
-internal class FakeAdbServices(serialNumber: String, totalSteps: Int) :
-  AbstractAdbServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
+internal class FakeAdbServices(
+  serialNumber: String = "serial",
+  totalSteps: Int = 10,
+  minGmsVersion: Int = 100,
+) :
+  AbstractAdbServices(
+    serialNumber,
+    NoopLogger(),
+    FakeProgressListener(),
+    totalSteps,
+    minGmsVersion,
+  ) {
 
   sealed class CommandOverride(val command: String) {
     class Output(command: String, val output: String) : CommandOverride(command) {

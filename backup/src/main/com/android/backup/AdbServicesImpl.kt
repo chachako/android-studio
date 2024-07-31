@@ -34,7 +34,8 @@ internal class AdbServicesImpl(
   logger: Logger,
   progressListener: BackupProgressListener?,
   totalSteps: Int,
-) : AbstractAdbServices(serialNumber, logger, progressListener, totalSteps) {
+  minGmsVersion: Int,
+) : AbstractAdbServices(serialNumber, logger, progressListener, totalSteps, minGmsVersion) {
 
   override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
     val output =

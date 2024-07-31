@@ -21,6 +21,7 @@ import com.android.backup.AdbServices.Companion.BACKUP_DIR
 import com.android.backup.BackupProgressListener.Step
 import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
+import com.android.backup.ErrorCode.GMSCORE_IS_TOO_OLD
 import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
 import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
 import com.android.backup.ErrorCode.TRANSPORT_NOT_SELECTED
@@ -36,6 +37,7 @@ abstract class AbstractAdbServices(
   protected val logger: Logger,
   protected val progressListener: BackupProgressListener?,
   private var totalSteps: Int,
+  private var minGmsVersion: Int,
 ) : AdbServices {
 
   private var step = 0
@@ -101,14 +103,22 @@ abstract class AbstractAdbServices(
 
   private suspend fun verifyGmsCore() {
     reportProgress("Verifying Google services")
-    val lines = executeCommand("dumpsys package com.google.android.gms").lineSequence()
+    val lines =
+      executeCommand("dumpsys package com.google.android.gms").lineSequence().dropWhile {
+        it != "Packages:"
+      }
     val versionMatch = lines.firstNotNullOfOrNull { PACKAGE_VERSION_CODE_REGEX.matchEntire(it) }
     if (versionMatch == null) {
       throw BackupException(GMSCORE_NOT_FOUND, "Google Services not found on device")
     }
-    val version = versionMatch.getGroup("version")
-    // TODO(b/348406593): Verify version
-    logger.debug("GmsCore version: $version")
+    val versionString = versionMatch.getGroup("version")
+    val version = versionString.toIntOrNull() ?: 0
+    if (version < minGmsVersion) {
+      throw BackupException(
+        GMSCORE_IS_TOO_OLD,
+        "Google Services version is too old ($versionString).  Min version is $minGmsVersion",
+      )
+    }
   }
 
   private suspend fun withTestMode(block: suspend () -> Unit) {
