@@ -1,1 +1,4 @@
-per-file artifacts_allowlist.txt = file:platform/tools/base:/owners/studio_leads_OWNERS
+# OWNERS of artifacts_allowlist.txt should verify new Maven artifacts are
+# added to the admrs_config.textproto in google3.
+# See http://go/gmaven#registering-new-artifacts.
+per-file artifacts_allowlist.txt = saurabhc@google.com, ammanf@google.com
