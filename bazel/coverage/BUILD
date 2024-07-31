@@ -1010,7 +1010,7 @@ coverage_report(
         "//tools/adt/idea/android:intellij.android.core.agp-integration-tests_tests",
         "//tools/adt/idea/android:intellij.android.core.tests_tests",
         "//tools/adt/idea/android-adb:intellij.android.adb.tests_tests",
-        "//tools/adt/idea/android-common:intellij.android.common_tests",
+        "//tools/adt/idea/android-common:intellij.android.common.tests_tests",
         "//tools/adt/idea/android-kotlin:intellij.android.kotlin.tests_tests",
         "//tools/adt/idea/android-lang:intellij.android.lang.tests_tests",
         "//tools/adt/idea/android-lang-databinding:intellij.android.lang-databinding.tests_tests",
