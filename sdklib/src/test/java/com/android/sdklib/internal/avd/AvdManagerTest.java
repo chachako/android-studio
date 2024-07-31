@@ -580,30 +580,45 @@ public final class AvdManagerTest {
                         false,
                         false);
 
+        Path metadataIniFile = mAvdFolder.getParent().resolve(name.getMethodName() + ".ini");
+
+        assertTrue(Files.exists(metadataIniFile));
         assertTrue(Files.exists(mAvdFolder.resolve("boot.prop")));
         assertTrue(Files.exists(mAvdFolder.resolve("user-settings.ini")));
 
+        // Move the AVD, updating its name and data folder path
         String newAvdName = avdInfo.getName() + "_2";
-        Path newAvdPath = avdInfo.getDataFolderPath().getParent().resolve(newAvdName);
-        assertThat(mAvdManager.moveAvd(avdInfo, newAvdName, newAvdPath)).isTrue();
+        Path newAvdFolder = avdInfo.getDataFolderPath().resolveSibling(newAvdName + ".avd");
+        assertThat(mAvdManager.moveAvd(avdInfo, newAvdName, newAvdFolder)).isTrue();
 
+        // The locations of the metadata .ini and the data folder are updated
+        assertFalse(Files.exists(metadataIniFile));
         assertFalse(Files.isDirectory(mAvdFolder));
-        assertTrue(Files.isDirectory(newAvdPath));
+        Path newMetadataIniPath = metadataIniFile.resolveSibling(newAvdName + ".ini");
+        assertTrue(Files.exists(newMetadataIniPath));
+        assertTrue(Files.isDirectory(newAvdFolder));
+
+        // The contents of the metadata .ini reflect the new paths
+        Map <String, String> metadata =
+                AvdManager.parseIniFile(new PathFileWrapper(newMetadataIniPath), null);
+        assertThat(metadata.get(MetadataKey.ABS_PATH)).isEqualTo(newAvdFolder.toString());
+        assertThat(metadata.get(MetadataKey.REL_PATH))
+                .isEqualTo(newAvdFolder.getParent().getParent().relativize(newAvdFolder).toString());
 
         Map<String, String> movedBootProps =
-                AvdManager.parseIniFile(new PathFileWrapper(newAvdPath.resolve("boot.prop")), null);
+                AvdManager.parseIniFile(new PathFileWrapper(newAvdFolder.resolve("boot.prop")), null);
         movedBootProps.remove(ENCODING);
         assertThat(movedBootProps).isEqualTo(bootProps);
 
         Map<String, String> movedUserSettings =
                 AvdManager.parseIniFile(
-                        new PathFileWrapper(newAvdPath.resolve("user-settings.ini")), null);
+                        new PathFileWrapper(newAvdFolder.resolve("user-settings.ini")), null);
         movedUserSettings.remove(ENCODING);
         assertThat(movedUserSettings).isEqualTo(userSettings);
 
         Map<String, String> movedConfig =
                 AvdManager.parseIniFile(
-                        new PathFileWrapper(newAvdPath.resolve("config.ini")), null);
+                        new PathFileWrapper(newAvdFolder.resolve("config.ini")), null);
         movedConfig.remove(ENCODING);
         assertThat(movedConfig)
                 .containsEntry("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
