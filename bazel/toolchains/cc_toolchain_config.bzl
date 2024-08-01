@@ -1376,7 +1376,7 @@ def _impl(ctx):
                 actions = [ACTION_NAMES.cpp_link_static_library],
                 flag_groups = [
                     flag_group(
-                        flags = [CLANG_LATEST["darwin"], "rcS"] if ctx.attr.cpu == "darwin" else ["/MACHINE:X64"] if ctx.attr.cpu == "x64_windows" else ["rcsD"],
+                        flags = ["/MACHINE:X64"] if ctx.attr.cpu == "x64_windows" else ["rcsD"],
                     ),
                     flag_group(
                         flags = ["/OUT:%{output_execpath}" if ctx.attr.cpu == "x64_windows" else "%{output_execpath}"],
