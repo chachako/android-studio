@@ -51,6 +51,10 @@ com.android.build.gradle.AndroidConfig.getTestServers: java.util.List<com.androi
 com.android.build.gradle.AndroidConfig.getTransforms: java.util.List<com.android.build.api.transform.Transform> ()
 com.android.build.gradle.AndroidConfig.getTransformsDependencies: java.util.List<java.util.List<java.lang.Object>> ()
 com.android.build.gradle.AndroidConfig.getVariantFilter: org.gradle.api.Action<com.android.build.api.variant.VariantFilter> ()
+com.android.build.gradle.AndroidEcosystemPlugin implements org.gradle.api.Plugin
+com.android.build.gradle.AndroidEcosystemPlugin.<init>: com.android.build.gradle.AndroidEcosystemPlugin ()
+com.android.build.gradle.AndroidEcosystemPlugin.apply: void (java.lang.Object)
+com.android.build.gradle.AndroidEcosystemPlugin.apply: void (org.gradle.api.initialization.Settings)
 com.android.build.gradle.AppExtension extends com.android.build.gradle.AbstractAppExtension
 com.android.build.gradle.AppExtension.<init>: com.android.build.gradle.AppExtension (com.android.build.gradle.internal.services.DslServices, com.android.build.gradle.internal.tasks.factory.BootClasspathConfig, org.gradle.api.NamedDomainObjectContainer<com.android.build.gradle.api.BaseVariantOutput>, com.android.build.gradle.internal.dependency.SourceSetManager, com.android.build.gradle.internal.ExtraModelInfo, boolean, com.google.wireless.android.sdk.stats.GradleBuildProject$Builder)
 com.android.build.gradle.AppPlugin extends com.android.build.gradle.BasePlugin

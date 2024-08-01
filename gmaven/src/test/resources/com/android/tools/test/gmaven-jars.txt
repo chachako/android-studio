@@ -369,12 +369,14 @@ com/android/tools/build/gradle
   META-INF/gradle-plugins/com.android.asset-pack.properties
   META-INF/gradle-plugins/com.android.base.properties
   META-INF/gradle-plugins/com.android.dynamic-feature.properties
+  META-INF/gradle-plugins/com.android.ecosystem.properties
   META-INF/gradle-plugins/com.android.fused-library.properties
   META-INF/gradle-plugins/com.android.internal.ai-pack.properties
   META-INF/gradle-plugins/com.android.internal.application.properties
   META-INF/gradle-plugins/com.android.internal.asset-pack-bundle.properties
   META-INF/gradle-plugins/com.android.internal.asset-pack.properties
   META-INF/gradle-plugins/com.android.internal.dynamic-feature.properties
+  META-INF/gradle-plugins/com.android.internal.ecosystem.properties
   META-INF/gradle-plugins/com.android.internal.fused-library.properties
   META-INF/gradle-plugins/com.android.internal.kotlin.multiplatform.library.properties
   META-INF/gradle-plugins/com.android.internal.library.properties

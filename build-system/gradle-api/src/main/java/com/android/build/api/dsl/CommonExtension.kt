@@ -18,6 +18,7 @@ package com.android.build.api.dsl
 
 import org.gradle.api.Incubating
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.declarative.dsl.model.annotations.Restricted
 import java.io.File
 
 /**
@@ -800,6 +801,7 @@ interface CommonExtension<
      *
      * This can be set on all Gradle projects with [com.android.build.api.dsl.SettingsExtension.compileSdk]
      */
+    @get:Restricted
     var compileSdk: Int?
 
     /**
@@ -844,6 +846,7 @@ interface CommonExtension<
      * The namespace of the generated R and BuildConfig classes. Also, the namespace used to resolve
      * any relative class names that are declared in the AndroidManifest.xml.
      */
+    @get:Restricted
     var namespace: String?
 
     fun getDefaultProguardFile(name: String): File
