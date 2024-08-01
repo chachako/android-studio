@@ -220,8 +220,10 @@ class AvdManagerTest {
                 anyString(),
                 any(ILogger::class.java),
                 anyString()))
-            // first return false to force generation, then return true to assert success.
-            .thenReturn(false, true)
+            // first return false to force the writelock
+            // then false again to force generation
+            // then return true to assert success.
+            .thenReturn(false, false, true)
 
         manager.createAvd(
             FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),

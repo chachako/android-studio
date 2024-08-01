@@ -82,34 +82,72 @@ class AvdManager(
         imageHash: String,
         deviceName: String,
         hardwareProfile: String
-    ): File {
-        // It fails to generate a snapshot image if you try to create two AVDs with a same name
-        // simultaneously. https://issuetracker.google.com/issues/206798666
-        return runWithMultiProcessLocking(deviceName) {
-            avdManager.reloadAvds()
-            val info = avdManager.getAvd(deviceName, false)
-            info?.let {
-                if (info.status == AvdStatus.OK) {
-                    logger.info("Device: $deviceName already exists. AVD creation skipped.")
-                    return@runWithMultiProcessLocking info.configFile.toFile()
+    ): File =
+        getOrCreateWithLocking(
+            deviceName,
+            getFunction = {
+                avdManager.reloadAvds()
+                avdManager.getAvd(deviceName, false)
+            },
+            validationFunction = { info ->
+                when {
+                    info == null -> false
+                    info.status == AvdStatus.OK -> {
+                        logger.info("Device: $deviceName already exists. AVD creation skipped.")
+                        true
+                    }
+                    else -> {
+                        // AVD is invalid
+                        logger.warning(
+                            "$deviceName needs to be recreated because it is invalid " +
+                                    "(AvdStatus = ${info.status})"
+                        )
+                        false
+                    }
                 }
-                // avd exists but is invalid, remove before we recreate.
-                logger.warning(
-                    "$deviceName needs to be recreated because it is invalid " +
-                            "(AvdStatus = ${info.status})"
-                )
-                avdManager.deleteAvd(info)
+            },
+            createFunction = {
+                avdManager.getAvd(deviceName, false)?.let { info ->
+                    // avd exists but is invalid, remove before we attempt to recreate
+                    avdManager.deleteAvd(info)
+                }
+                createAvd(imageProvider, imageHash, deviceName, hardwareProfile)
             }
-
-            val newInfo = createAvd(imageProvider, imageHash, deviceName, hardwareProfile)
-            return@runWithMultiProcessLocking newInfo?.configFile?.toFile()
-                ?: error("AVD could not be created.")
-        }
-    }
+        )?.configFile?.toFile() ?: error("AVD could not be created.")
 
     private fun <V> runWithMultiProcessLocking(deviceName: String, runnable: () -> V): V {
         return SynchronizedFile.getInstanceWithMultiProcessLocking(avdFolder.resolve(deviceName))
             .write { runnable() }
+    }
+
+    private fun <V> runWithNoWriteProcessLocking(deviceName: String, runnable: () -> V): V {
+        return SynchronizedFile.getInstanceWithMultiProcessLocking(avdFolder.resolve(deviceName))
+            .read { runnable() }
+    }
+
+    private fun <V> getOrCreateWithLocking(
+        deviceName: String,
+        getFunction: () -> V,
+        validationFunction: (V) -> Boolean,
+        createFunction: () -> V
+    ): V {
+        val getResult = runWithNoWriteProcessLocking(deviceName, getFunction)
+
+        if (validationFunction(getResult)) {
+            return getResult
+        }
+
+        return runWithMultiProcessLocking(deviceName) {
+            // Check again as the result might have been created by a separate process in the
+            // interim
+            val retryResult = getFunction()
+
+            if (validationFunction(retryResult)) {
+                retryResult
+            } else {
+                createFunction()
+            }
+        }
     }
 
     private fun deleteLockFile(deviceName: String) {
@@ -195,33 +233,38 @@ class AvdManager(
     }
 
     fun loadSnapshotIfNeeded(deviceName: String, emulatorGpuFlag: String) {
-        // It fails to generate a snapshot image if you try to create a snapshot for two
-        // AVD with a same name simultaneously. https://issuetracker.google.com/issues/206798666
-        runWithMultiProcessLocking(deviceName) {
-
-            if (snapshotHandler.checkSnapshotLoadable(
+        getOrCreateWithLocking(
+            deviceName,
+            getFunction = {
+                snapshotHandler.checkSnapshotLoadable(
                     deviceName,
                     avdFolder,
                     emulatorGpuFlag,
                     logger
                 )
-            ) {
-                logger.verbose("Snapshot already exists for device $deviceName")
-                return@runWithMultiProcessLocking
+            },
+            validationFunction = { hasSnapshot ->
+                if (hasSnapshot) {
+                    logger.verbose("Snapshot already exists for device $deviceName")
+                }
+                hasSnapshot
+            },
+            createFunction = {
+                deviceLockManager.lock(1).use {
+                    snapshotHandler.generateSnapshot(
+                        deviceName,
+                        avdFolder,
+                        emulatorGpuFlag,
+                        avdManager,
+                        logger
+                    )
+
+                    logger.verbose("Verified snapshot created for: $deviceName.")
+                    true
+                }
             }
 
-            deviceLockManager.lock(1).use {
-                snapshotHandler.generateSnapshot(
-                    deviceName,
-                    avdFolder,
-                    emulatorGpuFlag,
-                    avdManager,
-                    logger
-                )
-            }
-
-            logger.verbose("Verified snapshot created for: $deviceName.")
-        }
+        )
     }
 
     /**
