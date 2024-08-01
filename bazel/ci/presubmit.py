@@ -112,6 +112,8 @@ def find_impacted_test_targets(
       else:
         include_query.append(f'attr(tags, "{test_filter}", {target})')
 
+    exclude_query.append(f'attr(target_compatible_with, "@platforms//:incompatible", {target})')
+
   bazel_cmd = bazel.BazelCmd(build_env)
   query = (
       ' union '.join(include_query) +
