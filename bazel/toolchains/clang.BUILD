@@ -26,7 +26,7 @@ cc_toolchain_suite(
 filegroup(
     name = "toolchain_deps",
     srcs =
-        glob([clang_latest + "/**/*" for clang_latest in CLANG_LATEST.values()]),
+        glob([clang_latest + "/**/*" for clang_latest in CLANG_LATEST.values()] + ["studio-extra/**/*"]) + ["@//tools/base/bazel/toolchains/darwin:extra_files"],
 )
 
 filegroup(
@@ -217,7 +217,7 @@ cc_toolchain_config(
     target_libc = "macosx",
     target_system_name = "local",
     tool_paths = {
-        "ar": clang_latest_darwin + "/bin/llvm-ar",
+        "ar": "studio-extra/wrapped_ar.darwin",
         "compat-ld": "/usr/bin/ld/",
         "cpp": clang_latest_darwin + "/bin/clang++",
         "dwp": "/bin/false",
