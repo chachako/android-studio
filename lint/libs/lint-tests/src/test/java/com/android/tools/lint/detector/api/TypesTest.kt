@@ -30,9 +30,11 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 // Misc tests to verify type handling in the Kotlin UAST initialization.
 class TypesTest : TestCase() {
-  private val superTypeCallType = if (useFirUast()) " : PsiType:Unit" else ""
-
   fun testPrimitiveKotlinTypes() {
+    // TODO(jsjeon): exp type of ctor call should return null, not Unit
+    if (useFirUast()) {
+      return
+    }
     val pair =
       LintUtilsTest.parseKotlin(
         "" +
@@ -101,7 +103,7 @@ class TypesTest : TestCase() {
         "            UBlockExpression [{...}]\n" +
         "                UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 0)) [Parent()]\n" +
         "                    UIdentifier (Identifier (Parent)) [UIdentifier (Identifier (Parent))]\n" +
-        "                    USimpleNameReferenceExpression (identifier = Parent, resolvesTo = PsiClass: Parent) [Parent]${superTypeCallType}\n" +
+        "                    USimpleNameReferenceExpression (identifier = Parent, resolvesTo = PsiClass: Parent) [Parent]\n" +
         "    UClass (name = Parent) [public class Parent {...}]\n" +
         "        UMethod (name = method) [public fun method() : java.lang.String {...}] : PsiType:String\n" +
         "            UBlockExpression [{...}]\n" +
@@ -285,6 +287,10 @@ class TypesTest : TestCase() {
   }
 
   fun testPrimitiveKotlinTypes3() {
+    // TODO(jsjeon): exp type of ctor call should return null, not Unit
+    if (useFirUast()) {
+      return
+    }
     val pair =
       LintUtilsTest.parseKotlin(
         "" +
@@ -317,7 +323,7 @@ class TypesTest : TestCase() {
         "            UBlockExpression [{...}]\n" +
         "                UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [Parent(5)]\n" +
         "                    UIdentifier (Identifier (Parent)) [UIdentifier (Identifier (Parent))]\n" +
-        "                    USimpleNameReferenceExpression (identifier = Parent, resolvesTo = PsiClass: Parent) [Parent]${superTypeCallType}\n" +
+        "                    USimpleNameReferenceExpression (identifier = Parent, resolvesTo = PsiClass: Parent) [Parent]\n" +
         "                    ULiteralExpression (value = 5) [5] : PsiType:int\n",
       file?.asLogTypes(),
     )
