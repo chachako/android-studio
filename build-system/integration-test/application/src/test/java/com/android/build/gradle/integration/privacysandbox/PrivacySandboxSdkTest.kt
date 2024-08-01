@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.privacysandbox
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -156,7 +157,7 @@ class PrivacySandboxSdkTest {
 
                     <uses-sdk
                         android:minSdkVersion="23"
-                        android:targetSdkVersion="34" />
+                        android:targetSdkVersion="$DEFAULT_COMPILE_SDK_VERSION" />
 
                     <uses-permission android:name="android.permission.INTERNET" />
                     <uses-permission
