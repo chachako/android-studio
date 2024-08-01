@@ -691,7 +691,7 @@ gradle_test(
 # This should be kept in sync with
 # tools/base/testutils/src/main/java/com/android/testutils/TestUtils.ANDROID_PLATFORM_FOR_AGP_UNIT_TESTS
 filegroup(
-    name = "android_platform_for_tests",
+    name = "android_platform_for_agp_unit_tests",
     srcs = ["//prebuilts/studio/sdk:platforms/android-35"],
     visibility = ["//visibility:public"],
 )

@@ -78,7 +78,8 @@ public class TestUtils {
     /**
      * The Android platform version used in the gradle-core and builder unit tests.
      *
-     * <p>If changing this value, also update //tools/base/build-system:android_platform_for_tests
+     * <p>If changing this value, also update
+     * //tools/base/build-system:android_platform_for_agp_unit_tests
      */
     public static final int ANDROID_PLATFORM_FOR_AGP_UNIT_TESTS = 35;
 

@@ -189,7 +189,7 @@ kotlin_test(
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:platforms/android-24",
         "//prebuilts/studio/sdk:platforms/android-27",
-        "//tools/base/build-system:android_platform_for_tests",
+        "//tools/base/build-system:android_platform_for_agp_unit_tests",
         "//tools/base/build-system/aapt2:aapt2_for_tests",
     ],
     friends = [":gradle-core"],

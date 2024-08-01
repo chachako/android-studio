@@ -29,7 +29,7 @@ kotlin_test(
         "src/test/java/**/*.java",
     ]),
     data = [
-        "//tools/base/build-system:android_platform_for_tests",
+        "//tools/base/build-system:android_platform_for_agp_unit_tests",
         "@maven//:com.android.tools.desugar_jdk_libs",
         "@maven//:com.android.tools.desugar_jdk_libs_configuration",
     ],
