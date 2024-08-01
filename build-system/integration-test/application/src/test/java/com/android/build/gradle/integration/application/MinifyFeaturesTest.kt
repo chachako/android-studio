@@ -17,6 +17,8 @@
 package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -554,7 +556,7 @@ class MinifyFeaturesTest {
             override val isSigned: Boolean = true
         }
 
-        project.executor().run("assembleMinified")
+        executor().run("assembleMinified")
 
         // check aapt_rules.txt merging
         val aaptProguardFile =
@@ -637,7 +639,7 @@ class MinifyFeaturesTest {
 
     @Test
     fun testBundleIsMinified() {
-        project.executor().run("bundleMinified")
+        executor().run("bundleMinified")
         val modelV2 = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
         val bundleFile = project.locateBundleFileViaModel(modelV2, "minified", ":baseModule")
         assertThat(bundleFile).exists()
@@ -796,7 +798,7 @@ class MinifyFeaturesTest {
 }
                     """
             )
-        val output = project.executor().run("tasks")
+        val output = executor().run("tasks")
         output.stdout.use {
             ScannerSubject.assertThat(it).contains("beforeVariants.appMinified=true")
             ScannerSubject.assertThat(it).contains("beforeVariants.appMinifiedEnabled=false")
@@ -810,7 +812,7 @@ class MinifyFeaturesTest {
     fun appTestExtractedJarKeepRules() {
         AssumeUtil.assumeNotWindows()  // b/146571219
 
-        project.executor().run("assembleMinified")
+        executor().run("assembleMinified")
 
         val classContent = "package example;\n" + "public class ToBeKept { }"
         val toBeKept = project.getSubproject("baseModule").mainSrcDir.toPath().resolve("example/ToBeKept.java")
@@ -843,7 +845,7 @@ class MinifyFeaturesTest {
                     + "}"
         )
 
-        project.executor().run("assembleMinified")
+        executor().run("assembleMinified")
 
         val apkType = GradleTestProject.ApkType.of("minified", true)
 
@@ -857,7 +859,7 @@ class MinifyFeaturesTest {
     @Test
     fun testMinifyEnabledToggling() {
         // first run with minifyEnabled true
-        project.executor().run("assembleMinified")
+        executor().run("assembleMinified")
 
         // then run with minifyEnabled false
         TestFileUtils.searchAndReplace(
@@ -865,6 +867,10 @@ class MinifyFeaturesTest {
                 "minifyEnabled true",
                 "minifyEnabled false"
         )
-        project.executor().run("assembleMinified")
+        executor().run("assembleMinified")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

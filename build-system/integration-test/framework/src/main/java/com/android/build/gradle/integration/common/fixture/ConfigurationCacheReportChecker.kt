@@ -49,6 +49,11 @@ class ConfigurationCacheReportChecker {
                 name = ".knownPackages"
             ),
 
+            Error.file(
+                location = "plugin class 'org.jetbrains.kotlin.gradle.plugin.KotlinBaseApiPlugin'",
+                name = ".profile"
+            ),
+
             // Native
             Error.file(
                 location = "//tools/base/build-system/integration-test/native:CmakeTargetsTest",
@@ -280,6 +285,11 @@ class ConfigurationCacheReportChecker {
                 name = ".disable"
             ),
 
+            Error.fileSystemEntry(
+                location = "plugin class 'org.jetbrains.kotlin.gradle.plugin.KotlinBaseApiPlugin'",
+                name = ".profile"
+            ),
+
             // safeargs plugin
             Error.fileSystemEntry(
                 location = "androidx.navigation.safeargs.gradle.SafeArgsPlugin",
@@ -360,7 +370,8 @@ class ConfigurationCacheReportChecker {
                         System.err.println("Error : $error")
                     }
                 }
-                throw RuntimeException("Configuration Cache report contains error(s)")
+                val allErrors = unknownErrors.joinToString("\n") { it.toString() }
+                throw RuntimeException("Configuration Cache report contains error(s):\n $allErrors")
             }
         }
     }

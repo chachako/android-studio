@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -106,7 +107,8 @@ class RulesExtractionDynamicAppTest {
 
     @Test
     fun testRightClassesAreKept() {
-        project.executor().run("assembleMinified")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("assembleMinified")
 
         val baseModuleApk = project.getSubproject("baseModule").getApk(APK_TYPE)
         assertThat(baseModuleApk).containsClass("Lcom/example/baseModule/BaseClassToKeep;")

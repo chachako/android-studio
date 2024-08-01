@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.dependencies.app
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.build.gradle.integration.common.truth.TruthHelper
@@ -72,7 +73,8 @@ class AppWithProvidedAarAsJarTest : ModelComparator() {
 
     @Test
     fun `check provided jar is not packaged`() {
-        project.execute("clean", ":app:assembleDebug")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("clean", ":app:assembleDebug")
         val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG)
         TruthHelper.assertThat(apk).doesNotContainClass("Lcom/example/android/multiproject/library/PersonView;")
     }

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.annotationprocessor
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_COMPILE_SDK_VERSION
@@ -503,7 +504,9 @@ class IncrementalJavaCompileWithAPsTest(
      * generated source files.
      */
     private fun runFullBuild(): GradleBuildResult {
-        val result = project.executor().run(CLEAN_TASK, COMPILE_TASK)
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(CLEAN_TASK, COMPILE_TASK)
         recordTimestamps()
         return result
     }
@@ -511,7 +514,9 @@ class IncrementalJavaCompileWithAPsTest(
     /** Runs an incremental build. */
     private fun runIncrementalBuild()
             : GradleBuildResult {
-        return project.executor().run(COMPILE_TASK)
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(COMPILE_TASK)
     }
 
     private fun assertFileHasChanged(file: File) {

@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.library
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -225,7 +226,9 @@ class FusedLibraryClassesVerificationTest {
     }
 
     private fun assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies: List<String>) {
-        project.execute(":$FUSED_LIBRARY_PROJECT_NAME:bundle")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":$FUSED_LIBRARY_PROJECT_NAME:bundle")
         val fusedLib1Project = project.getSubproject(":$FUSED_LIBRARY_PROJECT_NAME")
         val classesJar = extractClassesJar(fusedLib1Project)
 

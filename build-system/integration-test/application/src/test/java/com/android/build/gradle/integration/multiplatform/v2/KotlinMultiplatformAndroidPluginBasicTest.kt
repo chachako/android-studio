@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -46,7 +48,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            project.executor()
+            executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         result.assertErrorContains(
@@ -68,7 +70,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            project.executor()
+            executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -90,7 +92,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            project.executor()
+            executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -120,7 +122,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:androidPrebuild")
     }
 
@@ -140,7 +142,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpSecondLib:androidPrebuild")
     }
 
@@ -155,10 +157,15 @@ class KotlinMultiplatformAndroidPluginBasicTest {
 
         val deleted = Files.deleteIfExists(manifest)
         Truth.assertThat(deleted).isTrue()
-        val result = project.executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
+        val result = executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
 
         ScannerSubject.assertThat(result.stderr).doesNotContain(
             "Manifest file does not exist"
         )
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

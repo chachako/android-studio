@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.AnnotationProcessorLib
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
@@ -118,7 +119,9 @@ project.getSubproject(":app").file("build.gradle").writeText(buildScript)
 
     @Test
     fun checkIncrementalCompilation() {
-        project.executor().run(":lib-compiler:jar", ":app:assembleDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":lib-compiler:jar", ":app:assembleDebug")
         val app = project.getSubproject(":app")
         val apk = app.getApk(GradleTestProject.ApkType.DEBUG)
         TruthHelper.assertThat(apk).containsClass("Lcom/example/helloworld/HelloWorldStringValue;")
@@ -126,7 +129,9 @@ project.getSubproject(":app").file("build.gradle").writeText(buildScript)
 
         // Modify the main file and rerun compilation. (b/65519025)
         TestFileUtils.addMethod(app.file("src/main/java/com/example/helloworld/HelloWorld.java"), "void foo() {}")
-        project.executor().run(":app:assembleDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":app:assembleDebug")
         TruthHelper.assertThat(apk).containsClass("Lcom/example/helloworld/HelloWorldStringValue;")
         TruthHelper.assertThat(apk).containsClass("Lcom/example/helloworld/HelloWorld\$\$InnerClass;")
     }

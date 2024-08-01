@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -41,6 +42,8 @@ class KotlinMultiplatformAndroidVitalsTest {
      */
     @Test
     fun kotlinMultiplatformPluginIsAppliedFirst() {
-        project.executor().run(":shared:androidPrebuild")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":shared:androidPrebuild")
     }
 }

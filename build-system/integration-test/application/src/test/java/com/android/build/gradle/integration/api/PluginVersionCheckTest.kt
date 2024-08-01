@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.api
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -71,7 +72,9 @@ class PluginVersionCheckTest {
                 "com.jakewharton:butterknife-gradle-plugin:9.0.0-rc1"
         assertThat(syncIssue.message).isEqualTo(expected)
 
-        val failure = project.executor().expectFailure().run("generateDebugR2")
+        val failure = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .expectFailure().run("generateDebugR2")
         failure.stderr.use {
             ScannerSubject.assertThat(it).contains(expected)
         }
@@ -98,7 +101,9 @@ class PluginVersionCheckTest {
         val model = project.modelV2().fetchModels()
         assertThat(model.container.getNonDeprecationIssues()).isEmpty()
 
-        project.executor().run("generateDebugR2")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("generateDebugR2")
     }
 
     private fun ModelContainerV2.getNonDeprecationIssues(): List<SyncIssue> {
@@ -141,7 +146,9 @@ class PluginVersionCheckTest {
                 "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
         assertThat(syncIssue.message).isEqualTo(expected)
 
-        val failure = project.executor().expectFailure().run("assembleDebug")
+        val failure = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .expectFailure().run("assembleDebug")
         failure.stderr.use {
             ScannerSubject.assertThat(it).contains(expected)
         }

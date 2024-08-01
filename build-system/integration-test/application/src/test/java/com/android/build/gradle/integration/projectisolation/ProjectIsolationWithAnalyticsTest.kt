@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.projectisolation
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -54,9 +53,6 @@ class ProjectIsolationWithAnalyticsTest {
 
     @Test
     fun testWithProjectIsolation() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION)
-            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=0")
-            .run("assemble")
+        project.executor().run("assemble")
     }
 }

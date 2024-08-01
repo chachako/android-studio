@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,11 +33,15 @@ public class OptionalLibraryWithProguardTest {
 
     @Test
     public void testThatProguardCompilesWithOptionalClasses() throws Exception {
-        project.executor().run("clean", "app:assembleDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "app:assembleDebug");
     }
 
     @Test
     public void testUnitTestWithOptionalClasses() throws Exception {
-        project.executor().run("clean", "mylibrary:test");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "mylibrary:test");
     }
 }

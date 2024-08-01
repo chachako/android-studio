@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.dependencies
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -107,8 +108,10 @@ class AarApiJarTest {
                 """.trimIndent()
         )
 
-        project.executor().run(":publishedLib:assembleRelease")
-        project.executor().run(":consumingApp:assembleDebug")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":publishedLib:assembleRelease")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":consumingApp:assembleDebug")
 
         project.getSubproject("consumingApp")
             .getApk(GradleTestProject.ApkType.DEBUG).use { apk ->

@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.application
 
 import com.android.Version
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -66,7 +67,7 @@ class DifferentProjectClassLoadersTest {
     /** Regression test for b/154388196. */
     @Test
     fun testCleanBuild() {
-        val result = project.executor().run("assembleDebug")
+        val result = executor().run("assembleDebug")
         verifyClassLoaderSetup(result)
     }
 
@@ -76,7 +77,7 @@ class DifferentProjectClassLoadersTest {
      */
     @Test
     fun testLint() {
-        val result = project.executor().run("lintDebug")
+        val result = executor().run("lintDebug")
         verifyClassLoaderSetup(result)
     }
 
@@ -107,7 +108,7 @@ class DifferentProjectClassLoadersTest {
         )
 
         val attributionDir = temporaryFolder.newFolder()
-        val result = project.executor()
+        val result = executor()
             .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION, attributionDir.absolutePath)
             .run("assembleDebug")
         verifyClassLoaderSetup(result)
@@ -149,5 +150,9 @@ class DifferentProjectClassLoadersTest {
         }
         assertThat(taskLogs).named("Log lines that should contain different class loader hashes")
             .hasSize(2)
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.analytics
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
@@ -80,7 +81,11 @@ class AnalyticsConfigurationCachingTest {
     @Test
     fun testSpanIdAllocation() {
         val capturer = ProfileCapturer(project)
-        val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        val nonCachedRun = capturer.capture {
+            project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("assembleDebug")
+        }.single()
         project.buildResult.assertConfigurationCacheMiss()
 
         // ensure uniqueness of allocated ids

@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.instrumentation
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.AsmApiApiTestUtils.appClassesDescriptorPrefix
 import com.android.build.gradle.integration.common.utils.AsmApiApiTestUtils.checkClassesAreInstrumented
@@ -77,12 +79,12 @@ class AsmTransformApiInstrumentationTest {
         configureExtensionForAnnotationAddingVisitor(project)
         configureExtensionForInterfaceAddingVisitor(project)
 
-        project.executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
 
         assertClassesAreInstrumentedInDebugVariant()
 
         // check task is up-to-date
-        val result = project.executor().run(":app:assembleDebug")
+        val result = executor().run(":app:assembleDebug")
         assertThat(result.upToDateTasks).contains(":app:transformDebugClassesWithAsm")
     }
 
@@ -96,7 +98,7 @@ class AsmTransformApiInstrumentationTest {
             )
         )
 
-        project.executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
 
         val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG)
 
@@ -135,7 +137,7 @@ class AsmTransformApiInstrumentationTest {
             """.trimIndent()
         )
 
-        project.executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
 
 
         val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG)
@@ -177,7 +179,7 @@ class AsmTransformApiInstrumentationTest {
                 classesToInstrument = listOf("com.example.feature.ClassExtendsAnAppClass")
         )
 
-        project.executor().run(":feature:assembleDebug")
+        executor().run(":feature:assembleDebug")
 
         // feature classes
         checkClassesAreInstrumented(
@@ -249,7 +251,7 @@ class AsmTransformApiInstrumentationTest {
                 classesToInstrument = listOf("com.example.unittest.UnitTestSourcesInstrumentationTest")
         )
 
-        project.executor().run(":app:testDebugUnitTest")
+        executor().run(":app:testDebugUnitTest")
     }
 
     @Test
@@ -297,7 +299,7 @@ class AsmTransformApiInstrumentationTest {
         configureExtensionForAnnotationAddingVisitor(project)
         configureExtensionForInterfaceAddingVisitor(project)
 
-        project.executor().run(":app:testDebugUnitTest")
+        executor().run(":app:testDebugUnitTest")
     }
 
     @Test
@@ -305,7 +307,7 @@ class AsmTransformApiInstrumentationTest {
         configureExtensionForAnnotationAddingVisitor(project)
         configureExtensionForInterfaceAddingVisitor(project)
 
-        project.executor().with(BooleanOption.INCLUDE_DEPENDENCY_INFO_IN_APKS, false)
+        executor().with(BooleanOption.INCLUDE_DEPENDENCY_INFO_IN_APKS, false)
             .run(":app:assembleRelease")
 
         val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.RELEASE)
@@ -350,7 +352,7 @@ class AsmTransformApiInstrumentationTest {
                 classesToInstrument = listOf("com.example.lib.InterfaceExtendsI")
         )
 
-        project.executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
 
         val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG)
 
@@ -447,9 +449,13 @@ class AsmTransformApiInstrumentationTest {
         )
 
         // run twice to catch recursive input
-        project.executor().run(":app:assembleDebug")
-        project.executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
+        executor().run(":app:assembleDebug")
 
         assertClassesAreInstrumentedInDebugVariant()
+    }
+
+    private fun executor(): GradleTaskExecutor {
+       return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

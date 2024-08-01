@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
@@ -81,7 +82,9 @@ internal class FusedLibraryClassesRewriteTaskTest {
 
     @Test
     fun rewritesUnderFusedRClass() {
-        project.execute(":fusedLib1:rewriteClasses")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":fusedLib1:rewriteClasses")
         val rewrittenClasses =
             project.getSubproject("fusedLib1")
                 .getIntermediateFile(

@@ -18,7 +18,9 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import org.junit.Rule;
@@ -34,7 +36,7 @@ public class LibWithResourcesTest {
     @Test
     public void checkInvalidResourcesWithAapt2() throws Exception {
         // Build should be successful for release mode without invalid resources.
-        project.executor().run("clean", "lib:assembleRelease");
+        executor().run("clean", "lib:assembleRelease");
 
         TestFileUtils.searchAndReplace(
                 project.file("lib/src/main/res/values/strings.xml"),
@@ -43,11 +45,11 @@ public class LibWithResourcesTest {
                         + "<string name=\"oops\">@string/invalid</string>");
 
         // Build should be successful for debug mode even if there are invalid references.
-        project.executor().run("clean", "lib:assembleDebug");
+        executor().run("clean", "lib:assembleDebug");
 
         // Build should fail for release mode if there are invalid references.
         GradleBuildResult result =
-                project.executor().expectFailure().run("clean", "lib:assembleRelease");
+                executor().expectFailure().run("clean", "lib:assembleRelease");
 
         assertThat(result.getFailureMessage())
                 .contains(
@@ -60,6 +62,11 @@ public class LibWithResourcesTest {
                 "");
 
         // Again, build should be successful for release mode without invalid resources.
-        project.executor().run("lib:assembleRelease");
+        executor().run("lib:assembleRelease");
+    }
+
+    public GradleTaskExecutor executor() {
+        return project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

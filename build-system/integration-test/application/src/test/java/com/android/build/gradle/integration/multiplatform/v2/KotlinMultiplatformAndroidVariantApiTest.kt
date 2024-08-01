@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -43,7 +44,9 @@ class KotlinMultiplatformAndroidVariantApiTest {
             """.trimIndent()
         )
 
-        val result = project.executor().run(":kmpFirstLib:assemble")
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":kmpFirstLib:assemble")
 
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidUnitTest")
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidInstrumentedTest")

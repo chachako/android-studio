@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.compose
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.internal.CompileOptions.Companion.DEFAULT_JAVA_VERSION
@@ -91,6 +92,7 @@ class ComposePluginOptionsTest {
             """.trimIndent()
         )
 
-        project.execute(":app:compileDebugKotlin")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":app:compileDebugKotlin")
     }
 }

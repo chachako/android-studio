@@ -272,6 +272,12 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
                 arguments.add("--configuration-cache-problems=fail");
                 break;
             case PROJECT_ISOLATION:
+                arguments.add("--configuration-cache");
+                arguments.add("-Dorg.gradle.unsafe.isolated-projects=true");
+                arguments.add("--configuration-cache-problems=fail");
+                break;
+            case PROJECT_ISOLATION_WARN:
+                arguments.add("--configuration-cache");
                 arguments.add("-Dorg.gradle.unsafe.isolated-projects=true");
                 arguments.add("--configuration-cache-problems=warn");
                 break;
@@ -474,8 +480,8 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
     public enum ConfigurationCaching {
         ON,
+        PROJECT_ISOLATION_WARN,
         PROJECT_ISOLATION,
-
         /**
          * Disables configuration cache (i.e., pass `--no-configuration-cache` to the build's
          * arguments).

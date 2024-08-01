@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -60,7 +61,9 @@ class KotlinMultiplatformGeneratedSourcesTest {
             """.trimIndent()
         )
 
-        project.executor().run(":library:assembleAndroidMain")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":library:assembleAndroidMain")
 
         Aar(project.getSubproject("library").getOutputFile("aar", "library.aar")).use {
             AarSubject.assertThat(it).containsJavaResource("res.txt")

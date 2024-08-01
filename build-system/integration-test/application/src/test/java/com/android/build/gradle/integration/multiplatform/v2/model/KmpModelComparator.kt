@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.multiplatform.v2.model
 
 import com.android.SdkConstants.DOT_JSON
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.FileNormalizerImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
@@ -33,7 +34,9 @@ class KmpModelComparator(
     testClass: BaseModelComparator,
     private val project: GradleTestProject,
     private val modelSnapshotTask: String,
-    private val taskOutputsLocator: (String) -> List<File>
+    private val taskOutputsLocator: (String) -> List<File>,
+    private val configCacheMode: BaseGradleExecutor.ConfigurationCaching
+    = BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION
 ): BasicComparator(testClass) {
 
     private val buildMap = project.getBuildMap()
@@ -42,7 +45,7 @@ class KmpModelComparator(
         projectPath: String,
         printModelToStdout: Boolean = true
     ): Map<String, String> {
-        val executor = project.executor()
+        val executor = project.executor().withConfigurationCaching(configCacheMode)
         executor.run("$projectPath:$modelSnapshotTask")
 
         val outputs = taskOutputsLocator(projectPath)

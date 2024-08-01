@@ -185,8 +185,13 @@ class ConfigurationCacheReportParser(
                                         || name.contains("build${sep}intermediates${sep}cxx")
                                         || name.contains("build${sep}intermediates${sep}prefab_package_header_only")
                                     )) {
-                                        errorBuilder.name =
-                                            name.substring(name.lastIndexOf("/") + 1)
+                                        // some profile file generated with timestamp as prefix
+                                        if (name.endsWith(".profile")) {
+                                            errorBuilder.name = name.substring(name.lastIndexOf(".") )
+                                        } else {
+                                            errorBuilder.name =
+                                                name.substring(name.lastIndexOf("/") + 1)
+                                        }
                                     }
                                 }
                                 if (input.has("text")) {

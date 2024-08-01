@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.app.KotlinHelloWorldApp
 import com.android.Version
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.testutils.TestUtils
 import com.google.common.collect.Iterables
 import com.google.wireless.android.sdk.stats.GradleBuildProject
@@ -52,10 +53,14 @@ class ProfileContentTest {
             capturer.capture { project.modelV2().fetchModels() })
 
         val cleanBuild = Iterables.getOnlyElement(
-            capturer.capture { project.execute("assembleRelease") })
+            capturer.capture { project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("assembleRelease") })
 
         val noOpBuild = Iterables.getOnlyElement(
-            capturer.capture { project.execute("assembleRelease") })
+            capturer.capture { project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("assembleRelease") })
 
         for (profile in listOf(getModel, cleanBuild, noOpBuild)) {
             assertThat(profile.spanCount).isGreaterThan(0)

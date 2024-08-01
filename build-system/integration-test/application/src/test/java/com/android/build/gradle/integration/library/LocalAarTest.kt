@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import org.junit.Rule
@@ -40,6 +41,8 @@ class LocalAarTest : ModelComparator() {
 
     @Test
     fun lint() {
-        project.executor().run("lint")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("lint")
     }
 }

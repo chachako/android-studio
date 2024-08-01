@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.kotlin
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.VERSION_CATALOG
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -204,6 +205,7 @@ class BuiltInKotlinForTestFixturesTest {
         )
         // We expect no build failure in this case.
         // Set failOnWarning to false because Gradle warns about deprecated feature(s) used by KGP 1.8.10.
-        lib.executor().withFailOnWarning(false).run(":lib:assembleDebugTestFixtures")
+        lib.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .withFailOnWarning(false).run(":lib:assembleDebugTestFixtures")
     }
 }

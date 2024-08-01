@@ -16,7 +16,9 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleProject
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_BUILD_TOOL_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_COMPILE_SDK_VERSION
@@ -105,7 +107,7 @@ class AnnotationProcessorTest {
             """.trimIndent()
         )
 
-        project.executor().run("assembleDebug")
+        executor().run("assembleDebug")
         val aptOutputFolder = project.getSubproject(":app")
             .file(ANNOTATION_PROCESSOR_SOURCES_OUT_FOLDER + "debug/out")
         assertThat(File(aptOutputFolder, "com/example/helloworld/HelloWorldStringValue.java"))
@@ -135,7 +137,7 @@ class AnnotationProcessorTest {
         assertThat(androidTest!!.generatedSourceFolders).contains(androidTestAptOutputFolder)
 
         // check incrementality.
-        val result = project.executor().run("assembleDebug")
+        val result = executor().run("assembleDebug")
         assertThat(result.upToDateTasks).contains(":app:javaPreCompileDebug")
     }
 
@@ -153,7 +155,7 @@ class AnnotationProcessorTest {
             """.trimIndent()
         )
 
-        project.executor().run("assembleDebugAndroidTest", "testDebug")
+        executor().run("assembleDebugAndroidTest", "testDebug")
         val aptOutputFolder =
             project.getSubproject(":app").file(ANNOTATION_PROCESSOR_SOURCES_OUT_FOLDER)
         assertThat(
@@ -178,7 +180,11 @@ class AnnotationProcessorTest {
             project.getSubproject(":app").buildFile,
             "apply plugin: 'com.neenbedankt.android-apt'\n")
 
-        project.executor().expectFailure().run("assembleDebug")
+        executor().expectFailure().run("assembleDebug")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     companion object {

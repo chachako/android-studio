@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
@@ -72,7 +74,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:mergeAndroidInstrumentedTestJavaResource")
 
         val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(
@@ -124,7 +126,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
 
         assertWithMessage(
@@ -157,7 +159,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
 
         assertWithMessage(
@@ -214,12 +216,12 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
         assertThat(packageCoveragePercentage.trimEnd('%').toInt() > 0).isTrue()
 
-        project.executor().run(":app:testDebugUnitTest")
+        executor().run(":app:testDebugUnitTest")
     }
 
     @Test
     fun testAppApkContents() {
-        project.executor()
+        executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -267,7 +269,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 "com", "example", "kmpFirstLib-android", "1.0", "kmpFirstLib-android-1.0.aar"
             )
         } else {
-            project.executor()
+            executor()
                 .run(":kmpFirstLib:assemble")
 
             project.getSubproject("kmpFirstLib").getOutputFile(
@@ -343,7 +345,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:assembleInstrumentedTest")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
@@ -428,5 +430,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         assertThat(apkIdeRedirectFile.exists()).isTrue()
         assertThat(apkIdeRedirectFile.readText())
             .contains("listingFile=../../../../outputs/apk/androidTest/main/output-metadata.json")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

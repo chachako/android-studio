@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.api
 
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.google.common.truth.Truth
@@ -123,7 +124,9 @@ class DynamicAppClassesAccessTest(val minified: Boolean) {
             """.trimIndent()
             )
         }
-        val result = project.executor().run("assembleDebug")
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("assembleDebug")
         Truth.assertThat(result.didWorkTasks).contains(":app:debugModifyPROJECTClasses")
         Truth.assertThat(result.didWorkTasks).contains(":app:debugModifyALLClasses")
         // check resulting APK that new classes is present in the dex.

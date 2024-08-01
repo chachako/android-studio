@@ -17,16 +17,14 @@
 package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
-import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.tasks.AarMetadataReader
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
-import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -35,7 +33,6 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
 /** Tests for [FusedLibraryMergeArtifactTask] */
 internal class FusedLibraryMergeArtifactTaskTest {
@@ -267,7 +264,9 @@ internal class FusedLibraryMergeArtifactTaskTest {
             )
         }
         try {
-            val result = project.executor().expectFailure().run(":fusedLib1:bundle")
+            val result = project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .expectFailure().run(":fusedLib1:bundle")
             result.stderr.use { out ->
                 assertThat(out).contains("2 files found with path 'my_java_resource.txt'")
             }
@@ -282,7 +281,9 @@ internal class FusedLibraryMergeArtifactTaskTest {
     }
 
     private fun getFusedLibraryAar(): File? {
-        project.execute(":fusedLib1:bundle")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":fusedLib1:bundle")
         val fusedLib1 = project.getSubproject("fusedLib1")
         return FileUtils.join(fusedLib1.bundleDir, "bundle.aar")
     }

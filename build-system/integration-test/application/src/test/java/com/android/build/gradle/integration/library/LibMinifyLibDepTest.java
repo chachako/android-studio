@@ -18,6 +18,8 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.testutils.truth.PathSubject.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import java.io.File;
 import java.io.IOException;
@@ -32,12 +34,12 @@ public class LibMinifyLibDepTest {
 
     @Test
     public void lint() throws IOException, InterruptedException {
-        project.executor().run("lint");
+        executor().run("lint");
     }
 
     @Test
     public void checkMapping() throws Exception {
-        project.executor().run("assembleDebug");
+        executor().run("assembleDebug");
         File mapping = project.getSubproject("lib").file("build/outputs/mapping/debug/mapping.txt");
         // Check classes are obfuscated unless it is kept by the proguard configuration.
         assertThat(mapping)
@@ -48,6 +50,11 @@ public class LibMinifyLibDepTest {
 
     @Test
     public void checkTestAssemblyWithR8() throws Exception {
-        project.executor().run("assembleAndroidTest");
+        executor().run("assembleAndroidTest");
+    }
+
+    public GradleTaskExecutor executor() {
+        return project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

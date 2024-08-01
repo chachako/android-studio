@@ -65,7 +65,7 @@ public class GradleTestProjectBuilder {
     @Nullable private Path profileDirectory;
     private boolean withDependencyChecker = true;
     private BaseGradleExecutor.ConfigurationCaching withConfigurationCaching =
-            BaseGradleExecutor.ConfigurationCaching.ON;
+            BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION;
     // Indicates if we need to create a project without setting cmake.dir in local.properties.
     private boolean withCmakeDirInLocalProp = false;
     // NDK symlink path is relative to the test's BUILD_DIR. A full path example of

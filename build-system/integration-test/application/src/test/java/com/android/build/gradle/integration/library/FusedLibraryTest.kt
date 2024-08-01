@@ -16,7 +16,9 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_MIN_SDK_VERSION
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -115,10 +117,9 @@ class FusedLibraryTest(
     @Test
     fun test() {
         if (includePublishing) {
-            project
-                    .execute("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
+            executor().run("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
         } else {
-            project.execute(":fusedLib1:assemble")
+            executor().run(":fusedLib1:assemble")
         }
         val fusedLib1BuildDir = project.getSubproject(":fusedLib1").buildDir
         File(fusedLib1BuildDir, "bundle/bundle.aar").also { aarFile ->
@@ -138,5 +139,10 @@ class FusedLibraryTest(
                 Truth.assertThat(File(publicationDir, "module.json").exists()).isTrue()
             }
         }
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

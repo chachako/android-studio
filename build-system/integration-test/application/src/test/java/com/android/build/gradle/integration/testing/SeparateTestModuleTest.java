@@ -8,6 +8,7 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
@@ -103,7 +104,9 @@ public class SeparateTestModuleTest {
     @Test
     public void checkDependenciesBetweenTasks() throws Exception {
         // Check :test:assembleDebug succeeds on its own, i.e. compiles the app module.
-        GradleBuildResult result = project.executor().run("clean", ":test:assembleDebug");
+        GradleBuildResult result = project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", ":test:assembleDebug");
         assertThat(result.getTask(":test:validateSigningDebug")).didWork();
         project.executor().run(":test:checkDependencies");
     }

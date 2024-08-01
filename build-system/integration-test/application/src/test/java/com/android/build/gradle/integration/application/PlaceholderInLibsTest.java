@@ -20,12 +20,14 @@ import static com.android.build.gradle.integration.common.truth.TruthHelper.asse
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ApkSubject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.builder.model.v2.ide.Variant;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import org.junit.Assert;
@@ -40,8 +42,11 @@ public class PlaceholderInLibsTest {
             GradleTestProject.builder().fromTestProject("placeholderInLibsTest").create();
 
     @Test
-    public void testLibraryPlaceholderSubstitutionInFinalApk() {
-        project.execute(
+    public void testLibraryPlaceholderSubstitutionInFinalApk()
+            throws IOException, InterruptedException {
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(
                 "clean",
                 ":examplelibrary:generateDebugAndroidTestSources",
                 "app:assembleDebug"
@@ -79,7 +84,10 @@ public class PlaceholderInLibsTest {
 
     // Regression test for b/316057932
     @Test
-    public void testVerifyResourcesWithLibraryManifestPlaceholders() {
-        project.execute("examplelibrary:verifyReleaseResources");
+    public void testVerifyResourcesWithLibraryManifestPlaceholders()
+            throws IOException, InterruptedException {
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("examplelibrary:verifyReleaseResources");
     }
 }

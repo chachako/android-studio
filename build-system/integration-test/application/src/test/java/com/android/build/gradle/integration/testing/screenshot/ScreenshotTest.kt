@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.testing.screenshot
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
@@ -299,6 +300,7 @@ class ScreenshotTest {
 
     private fun getExecutor(): GradleTaskExecutor =
         project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .with(BooleanOption.USE_ANDROID_X, true)
             .withLoggingLevel(LoggingLevel.LIFECYCLE)
 

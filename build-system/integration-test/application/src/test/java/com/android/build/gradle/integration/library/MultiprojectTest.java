@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.library;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import java.io.IOException;
 import org.junit.After;
@@ -33,7 +34,9 @@ public class MultiprojectTest {
 
     @Before
     public void setUp() throws IOException, InterruptedException {
-        project.execute("clean", "assembleDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "assembleDebug");
     }
 
     @After
@@ -43,6 +46,8 @@ public class MultiprojectTest {
 
     @Test
     public void lint() throws IOException, InterruptedException {
-        project.executor().run("lint");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("lint");
     }
 }

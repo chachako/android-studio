@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.analytics
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -68,6 +69,7 @@ class AnalyticsConfigureOnDemandTest {
             """.trimIndent()
         )
         val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .withArgument("-Dorg.gradle.configureondemand=true")
             .run(":app:resolution")
         ScannerSubject.assertThat(result.stdout).doesNotContain(

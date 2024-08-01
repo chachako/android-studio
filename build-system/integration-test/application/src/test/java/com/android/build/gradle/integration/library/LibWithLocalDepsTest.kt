@@ -16,8 +16,9 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.AarSubject.assertThat
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import org.gradle.tooling.BuildException
@@ -49,7 +50,7 @@ class LibWithLocalDepsTest {
 
     @Test
     fun testLocalJarPackagedWithAar() {
-        project.execute("clean", ":baseLibrary:assembleDebug")
+        executor().run("clean", ":baseLibrary:assembleDebug")
         project.getSubproject("baseLibrary").assertThatAar("debug") {
             containsClass("Lcom/example/local/Foo;")
             containsJavaResourceWithContent(
@@ -61,7 +62,7 @@ class LibWithLocalDepsTest {
 
     @Test
     fun testTransitiveLocalJarNotPackagedWithAar() {
-        project.execute("clean", ":library:assembleDebug")
+        executor().run("clean", ":library:assembleDebug")
         // library depends on baseLibrary, so library has localJavaLib.jar as a transitive
         // dependency.
         project.getSubproject("library").assertThatAar("debug") {
@@ -81,7 +82,7 @@ class LibWithLocalDepsTest {
                 }
                 """
         )
-        val result = project.executor().run("clean", ":baseLibrary:assembleDebug")
+        val result = executor().run("clean", ":baseLibrary:assembleDebug")
         result.stderr.use {
             ScannerSubject.assertThat(it).contains(
                 "Direct local .aar file dependencies are not supported when building an AAR."
@@ -99,6 +100,11 @@ class LibWithLocalDepsTest {
                 }
                 """
         )
-        project.executor().run("clean", ":library:assembleDebug")
+        executor().run("clean", ":library:assembleDebug")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

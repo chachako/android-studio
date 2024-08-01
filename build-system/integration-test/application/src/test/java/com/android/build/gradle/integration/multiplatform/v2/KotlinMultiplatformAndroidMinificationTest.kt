@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -73,7 +75,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testKmpLibClassesAreMinified() {
-        project.executor()
+        executor()
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -94,7 +96,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testAppClassesAreMinified() {
-        project.executor()
+        executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -122,7 +124,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -154,7 +156,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -186,7 +188,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -218,7 +220,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -226,5 +228,10 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpAndroidActivity;"
             )
         }
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

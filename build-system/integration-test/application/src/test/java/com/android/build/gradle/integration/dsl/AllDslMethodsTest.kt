@@ -27,6 +27,7 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm
 import com.android.build.api.dsl.LibraryBuildType
 import com.android.build.api.dsl.LibraryDefaultConfig
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -144,6 +145,7 @@ class AllDslMethodsTest(
     fun configureAllProjects() {
         project
             .executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .withFailOnWarning(false)
             .run(
                 allProjects.map { projectName -> ":$projectName:clean" }

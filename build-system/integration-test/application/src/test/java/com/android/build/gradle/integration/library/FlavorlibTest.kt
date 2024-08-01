@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.testutils.truth.PathSubject.assertThat
@@ -34,7 +36,7 @@ class FlavorlibTest : ModelComparator() {
 
     @Before
     fun setUp() {
-        project.execute("clean", "assembleDebug");
+        executor().run("clean", "assembleDebug");
     }
 
     @Test
@@ -63,14 +65,14 @@ class FlavorlibTest : ModelComparator() {
 
     @Test
     fun lint() {
-        project.executor().run("lint")
+        executor().run("lint")
     }
 
     @Test
     fun report() {
-        project.executor().run("androidDependencies", "signingReport")
+        executor().run("androidDependencies", "signingReport")
         // run twice to verify config cached run works
-        project.executor().run("signingReport")
+        executor().run("signingReport")
     }
 
     @Test
@@ -79,5 +81,10 @@ class FlavorlibTest : ModelComparator() {
             FileUtils.join(project.projectDir, "app", "build", "intermediates")
         assertThat(intermediates).isDirectory()
         assertThat(File(intermediates, "exploded-aar")).doesNotExist()
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

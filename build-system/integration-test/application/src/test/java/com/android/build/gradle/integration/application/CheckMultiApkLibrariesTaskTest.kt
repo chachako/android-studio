@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -66,7 +67,9 @@ class CheckMultiApkLibrariesTaskTest {
 
     @Test
     fun `test library collision yields error`() {
-        val result = project.executor().expectFailure().run("assembleDebug")
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .expectFailure().run("assembleDebug")
 
         assertThat(result.failureMessage).contains(
             "[:otherFeature1, :otherFeature2, :otherFeature3] all package the same library [:lib;Capability: group='project', name='lib'].")

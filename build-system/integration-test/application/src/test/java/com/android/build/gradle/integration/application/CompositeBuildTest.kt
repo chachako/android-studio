@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
@@ -87,7 +88,9 @@ class CompositeBuildTest {
 
     @Test
     fun assembleDebug() {
-        app.execute(":assembleDebug")
+        app.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":assembleDebug")
         ZipFileSubject.assertThat(
             app.getApkAsFile(GradleTestProject.ApkType.DEBUG)
         ) { it.exists() }
@@ -106,6 +109,8 @@ class CompositeBuildTest {
      */
     @Test
     fun lintDebug() {
-        app.execute(":lintDebug")
+        app.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":lintDebug")
     }
 }

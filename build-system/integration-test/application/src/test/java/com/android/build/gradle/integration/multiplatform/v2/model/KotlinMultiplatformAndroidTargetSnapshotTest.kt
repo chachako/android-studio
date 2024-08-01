@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.multiplatform.v2.model
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.utils.FileUtils
@@ -41,7 +42,8 @@ class KotlinMultiplatformAndroidTargetSnapshotTest: BaseModelComparator {
                     "ide",
                     "targets"
                 ).listFiles()!!.toList()
-            }
+            },
+            configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON
         ).fetchAndCompareModels(listOf(":kmpFirstLib", ":kmpSecondLib"))
     }
 }

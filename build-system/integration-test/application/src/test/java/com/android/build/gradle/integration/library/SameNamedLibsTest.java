@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.library;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import java.io.IOException;
 import org.junit.Before;
@@ -35,6 +37,11 @@ public class SameNamedLibsTest {
 
     @Test
     public void lint() throws IOException, InterruptedException {
-        project.executor().run("lint");
+        executor().run("lint");
+    }
+
+    public GradleTaskExecutor executor() {
+        return project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

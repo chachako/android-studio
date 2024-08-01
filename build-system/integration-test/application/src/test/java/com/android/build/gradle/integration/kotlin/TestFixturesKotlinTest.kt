@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.kotlin
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.VERSION_CATALOG
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -151,25 +153,25 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
         }
 
         if (publishJavaLib) {
-            project.executor()
+            executor()
                 .run(":javaLib:publish")
         }
 
         if (publishAndroidLib) {
-            project.executor()
+            executor()
                 .run(":lib:publish")
         }
     }
 
     @Test
     fun `library consumes local test fixtures`() {
-        project.executor()
+        executor()
             .run(":lib:testDebugUnitTest")
     }
 
     @Test
     fun `verify library test fixtures resources dependency on main resources`() {
-        project.executor()
+        executor()
             .run(":lib:verifyReleaseTestFixturesResources")
     }
 
@@ -179,7 +181,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":lib2:verifyReleaseResources")
     }
 
@@ -189,7 +191,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":lib2:verifyReleaseResources")
     }
 
@@ -199,7 +201,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":lib2:testDebugUnitTest")
     }
 
@@ -209,7 +211,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":lib2:testDebugUnitTest")
     }
 
@@ -219,7 +221,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -229,7 +231,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = true,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -239,7 +241,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -277,7 +279,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishAndroidLib = false,
             publishJavaLib = false
         )
-        project.executor().run(":app:lintRelease")
+        executor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).containsAllOf(
@@ -295,7 +297,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             publishAndroidLib = false,
             publishJavaLib = false
         )
-        project.executor().run(":app:lintRelease")
+        executor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).containsAllOf(
@@ -311,7 +313,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
         )
         useAndroidX()
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -327,7 +329,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
         )
         useAndroidX()
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -349,7 +351,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             "implementation"
         )
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -365,7 +367,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
         )
         useAndroidX()
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
@@ -381,7 +383,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
         )
         useAndroidX()
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
@@ -403,7 +405,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             "implementation"
         )
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
@@ -418,7 +420,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             "testFixturesImplementation \"org.jetbrains.kotlin:kotlin-stdlib:\${libs.versions.kotlinVersion.get()}\"",
             ""
         )
-        val result = project.executor().expectFailure().run(":app:testDebugUnitTest")
+        val result = executor().expectFailure().run(":app:testDebugUnitTest")
         result.assertErrorContains("Kotlin standard library is missing")
     }
 
@@ -430,7 +432,7 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
             "version('kotlinVersion', '$kotlinVersion' )",
             "version('kotlinVersion', '1.8.10' )"
         )
-        val result = project.executor().expectFailure().run(":app:testDebugUnitTest")
+        val result = executor().expectFailure().run(":app:testDebugUnitTest")
         result.assertErrorContains(
             "The current Kotlin Gradle plugin version (1.8.10) is below the required"
         )
@@ -534,5 +536,10 @@ class TestFixturesKotlinTest(private val kotlinVersion: String) {
 
     private fun useAndroidX() {
         TestFileUtils.appendToFile(project.file("gradle.properties"), "android.useAndroidX=true")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

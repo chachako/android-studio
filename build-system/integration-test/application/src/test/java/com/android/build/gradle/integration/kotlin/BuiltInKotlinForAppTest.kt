@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.kotlin
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.ANDROIDTEST_DEBUG
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
@@ -391,7 +392,8 @@ class BuiltInKotlinForAppTest {
                         """.trimIndent()
                 )
             }
-        project.executor().run(":app:assembleDebug")
+        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":app:assembleDebug")
         app.getApk(DEBUG).use {
             assertThat(it).hasClass("Lcom/foo/application/AppFooKt;")
             assertThat(it).hasClass("Lcom/foo/library/LibFoo;")

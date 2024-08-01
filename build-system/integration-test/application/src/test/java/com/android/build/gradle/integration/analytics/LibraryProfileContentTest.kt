@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.analytics
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.app.KotlinHelloWorldApp
@@ -42,7 +43,9 @@ class LibraryProfileContentTest {
         val capturer = ProfileCapturer(project)
 
         val cleanBuild = Iterables.getOnlyElement(
-            capturer.capture { project.executor().withArguments(listOf("--parallel", "--max-workers=1")).run("assembleDebug") })
+            capturer.capture { project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .withArguments(listOf("--parallel", "--max-workers=1")).run("assembleDebug") })
 
         // Check that the generate library R file task records its worker spans.
         val generateLibraryTask = cleanBuild.spanList.first() {

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.attribution
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -74,6 +75,7 @@ class BuildAttributionDataTest {
         val attributionFileLocation = temporaryFolder.newFolder()
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION,
                         attributionFileLocation.absolutePath)
                 .run("mergeDebugResources")
@@ -89,6 +91,7 @@ class BuildAttributionDataTest {
         FileUtils.deleteDirectoryContents(attributionFileLocation)
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION,
                         attributionFileLocation.absolutePath)
                 .run("mergeDebugResources")

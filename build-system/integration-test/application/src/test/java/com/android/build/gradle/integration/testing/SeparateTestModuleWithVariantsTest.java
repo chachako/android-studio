@@ -3,6 +3,7 @@ package com.android.build.gradle.integration.testing;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -47,8 +48,12 @@ public class SeparateTestModuleWithVariantsTest {
     @Test
     public void checkDependenciesBetweenTasks() throws Exception {
         // Check :test:assembleDebug succeeds on its own, i.e. compiles the app module.
-        project.execute("clean", ":test:assembleDebug");
-        project.executor().run(":test:checkDependencies");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", ":test:assembleDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(":test:checkDependencies");
     }
 
     @Test

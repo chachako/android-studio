@@ -1,5 +1,6 @@
 package com.android.build.gradle.integration.application;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.truth.ApkSubject;
@@ -30,7 +31,9 @@ public class ApplicationIdInLibsTest {
 
     @Test
     public void testLibPlaceholderSubstitutionInFinalApk() throws Exception {
-        project.execute("clean", "app:assembleDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "app:assembleDebug");
         ModelContainerV2 outputModels =
                 project.modelV2().fetchModels("debug", null).getContainer();
         assertThat(
@@ -44,7 +47,9 @@ public class ApplicationIdInLibsTest {
                 "manifest_merger_example.flavor",
                 "manifest_merger_example.change");
 
-        project.execute("clean", "app:assembleDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "app:assembleDebug");
         outputModels = project.modelV2().fetchModels("debug", null).getContainer();
         assertThat(
                         checkPermissionPresent(

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.attribution
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
@@ -44,6 +45,7 @@ class BuildScriptDependenciesDataTest {
         val attributionFileLocation = temporaryFolder.newFolder()
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION,
                         attributionFileLocation.absolutePath)
                 .run(":compileDebugJavaWithJavac")
@@ -69,6 +71,7 @@ buildscript {
         """.trimIndent())
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION,
                         attributionFileLocation.absolutePath)
                 .run(":compileDebugJavaWithJavac")
@@ -120,6 +123,7 @@ dependencies {
         """.trimIndent())
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION,
                         attributionFileLocation.absolutePath)
                 .run(":compileDebugJavaWithJavac")

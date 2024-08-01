@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.TemporaryProjectModification
@@ -34,6 +35,7 @@ class MessageRewriteWithJvmResCompilerTest {
         // Incorrect strings.xml should cause the res compiler to throw an error and we should
         // rewrite it to point to the original file.
         val executor = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
         TemporaryProjectModification.doTest(project) { it: TemporaryProjectModification ->
             it.replaceInFile(
                     "app/src/flavor1/res/values/strings.xml",

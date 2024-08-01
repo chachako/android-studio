@@ -16,11 +16,12 @@
 
 package com.android.build.gradle.integration.testing.testFixtures
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Apk
 import com.android.testutils.truth.PathSubject.assertThat
-import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
@@ -127,25 +128,25 @@ class TestFixturesTest {
         }
 
         if (publishJavaLib) {
-            project.executor()
+            executor()
                 .run(":javaLib:publish")
         }
 
         if (publishAndroidLib) {
-            project.executor()
+            executor()
                 .run(":lib:publish")
         }
     }
 
     @Test
     fun `library consumes local test fixtures`() {
-        project.executor()
+        executor()
             .run(":lib:testDebugUnitTest")
     }
 
     @Test
     fun `verify library test fixtures resources dependency on main resources`() {
-        project.executor()
+        executor()
             .run(":lib:verifyReleaseTestFixturesResources")
     }
 
@@ -155,7 +156,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":lib2:verifyReleaseResources")
     }
 
@@ -165,7 +166,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":lib2:verifyReleaseResources")
     }
 
@@ -175,7 +176,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":lib2:testDebugUnitTest")
     }
 
@@ -185,7 +186,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":lib2:testDebugUnitTest")
     }
 
@@ -195,7 +196,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = false
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -205,7 +206,7 @@ class TestFixturesTest {
             publishJavaLib = true,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -215,7 +216,7 @@ class TestFixturesTest {
             publishJavaLib = false,
             publishAndroidLib = true
         )
-        project.executor()
+        executor()
             .run(":app:testDebugUnitTest")
     }
 
@@ -253,7 +254,7 @@ class TestFixturesTest {
             publishAndroidLib = false,
             publishJavaLib = false
         )
-        project.executor().run(":app:lintRelease")
+        executor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).containsAllOf(
@@ -271,7 +272,7 @@ class TestFixturesTest {
             publishAndroidLib = false,
             publishJavaLib = false
         )
-        project.executor().run(":app:lintRelease")
+        executor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).containsAllOf(
@@ -287,7 +288,7 @@ class TestFixturesTest {
         )
         useAndroidX()
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -303,7 +304,7 @@ class TestFixturesTest {
         )
         useAndroidX()
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -325,7 +326,7 @@ class TestFixturesTest {
             "implementation"
         )
 
-        project.executor().run(":appTests:packageDebug")
+        executor().run(":appTests:packageDebug")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":appTests").getApk(GradleTestProject.ApkType.DEBUG),
@@ -341,7 +342,7 @@ class TestFixturesTest {
         )
         useAndroidX()
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
@@ -357,7 +358,7 @@ class TestFixturesTest {
         )
         useAndroidX()
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
@@ -379,12 +380,16 @@ class TestFixturesTest {
             "implementation"
         )
 
-        project.executor().run(":app:packageDebugAndroidTest")
+        executor().run(":app:packageDebugAndroidTest")
 
         testExclusionInTestApk(
             testApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG),
             expectLibAndJavaLibClassesToBeIncluded = false,
         )
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     private fun testExclusionInTestApk(

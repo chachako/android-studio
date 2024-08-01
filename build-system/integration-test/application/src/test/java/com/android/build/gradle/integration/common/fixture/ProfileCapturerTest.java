@@ -86,8 +86,12 @@ public class ProfileCapturerTest {
         Collection<GradleBuildProfile> profiles =
                 capturer.capture(
                         () -> {
-                            project.execute("tasks");
-                            project.execute("tasks");
+                            project.executor()
+                                    .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                                    .run("tasks");
+                            project.executor()
+                                    .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                                    .run("tasks");
                         });
 
         assertThat(profiles).hasSize(2);

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
@@ -46,6 +47,7 @@ class Java11CompositeBuildTest {
         """.trimIndent())
 
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(BooleanOption.INCLUDE_DEPENDENCY_INFO_IN_APKS, false)
                 .withArgument("--dry-run")
                 .run("build")

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TemporaryProjectModification
 import com.android.build.gradle.integration.common.truth.ScannerSubject
@@ -35,7 +36,9 @@ class MessageRewriteTest {
 
     @Test
     fun invalidAppLayoutFile() {
-        project.execute("assembleDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("assembleDebug")
         TemporaryProjectModification.doTest(project) {
             it.replaceInFile("app/src/main/res/layout/main.xml", "</LinearLayout>", "")
             val result = project.executor()
