@@ -17,7 +17,7 @@ package com.android.sdklib.internal.avd
 
 import com.android.sdklib.internal.avd.AvdNames.isValid
 import com.android.sdklib.internal.avd.AvdNames.stripBadCharacters
-import com.android.sdklib.internal.avd.AvdNames.stripBadCharactersAndCollapse
+import com.android.sdklib.internal.avd.AvdNames.cleanAvdName
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -46,18 +46,18 @@ class AvdNamesTest {
   }
 
   @Test
-  fun testStripBadCharactersAndCollapse() {
-    assertThat(stripBadCharactersAndCollapse("")).isEqualTo("")
-    assertThat(stripBadCharactersAndCollapse("Simple")).isEqualTo("Simple")
-    assertThat(stripBadCharactersAndCollapse("no_change.f0r_this-string"))
+  fun testCleanAvdName() {
+    assertThat(cleanAvdName("")).isEqualTo("myavd")
+    assertThat(cleanAvdName("Simple")).isEqualTo("Simple")
+    assertThat(cleanAvdName("no_change.f0r_this-string"))
       .isEqualTo("no_change.f0r_this-string")
 
-    assertThat(stripBadCharactersAndCollapse(" ")).isEqualTo("")
-    assertThat(stripBadCharactersAndCollapse("this.name is-also_(OK) 45"))
+    assertThat(cleanAvdName(" ")).isEqualTo("myavd")
+    assertThat(cleanAvdName("this.name is-also_(OK) 45"))
       .isEqualTo("this.name_is-also_OK_45")
-    assertThat(stripBadCharactersAndCollapse("  either/or _ _more ")).isEqualTo("either_or_more")
-    assertThat(stripBadCharactersAndCollapse("9\" nails__  ")).isEqualTo("9_nails_")
-    assertThat(stripBadCharactersAndCollapse("'6' under'")).isEqualTo("6_under")
+    assertThat(cleanAvdName("  either/or _ _more ")).isEqualTo("either_or_more")
+    assertThat(cleanAvdName("9\" nails__  ")).isEqualTo("9_nails_")
+    assertThat(cleanAvdName("'6' under'")).isEqualTo("6_under")
   }
 
   @Test

@@ -30,30 +30,26 @@ object AvdNames {
   }
 
   @JvmStatic
-  fun stripBadCharacters(candidateName: String): String {
+  internal fun stripBadCharacters(candidateName: String): String {
     // Remove any invalid characters.
     return candidateName.replace("[^$ALLOWED_CHARS]".toRegex(), " ")
-  }
-
-  @JvmStatic
-  fun stripBadCharactersAndCollapse(candidateName: String): String {
-    // Remove any invalid characters. Remove leading and trailing spaces. Replace consecutive
-    // spaces, parentheses, and underscores by a single underscore.
-    return candidateName
-      .replace("[^$ALLOWED_CHARS]".toRegex(), " ")
-      .trim()
-      .replace("[ ()_]+".toRegex(), "_")
   }
 
   @JvmStatic fun humanReadableAllowedCharacters(): String = ALLOWED_CHARS_READABLE
 
   /**
-   * Get a version of `candidateBase` modified such that it is a valid filename. Invalid characters
-   * will be removed. If all the characters are invalid, "myavd" will be returned.
+   * Get a version of `avdName` modified such that it is an allowed AVD filename. (This may be more
+   * restrictive than what the underlying filesystem requires.) Remove leading and trailing spaces.
+   * Replace consecutive disallowed characters, spaces, parentheses, and underscores by a single
+   * underscore. If the result is empty, "myavd" will be returned.
    */
   @JvmStatic
   fun cleanAvdName(avdName: String): String {
-    return stripBadCharactersAndCollapse(avdName).ifBlank { "myavd" }
+    return avdName
+      .replace("[^$ALLOWED_CHARS]".toRegex(), " ")
+      .trim()
+      .replace("[ ()_]+".toRegex(), "_")
+      .ifBlank { "myavd" }
   }
 
   /**
