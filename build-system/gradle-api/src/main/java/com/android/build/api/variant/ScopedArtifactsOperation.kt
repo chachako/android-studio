@@ -90,10 +90,14 @@ interface ScopedArtifactsOperation<T: Task> {
         into: (T) -> RegularFileProperty)
 
     /**
-     * Transform the current version of the [type] artifact into a new version. The order in which
-     * the replace [Task]s are applied is directly set by the order of this method call. Last one
-     * wins and none of the previously set append/transform/replace registered [Task]s will be
-     * invoked since this [Task] [T] replace the final version.
+     * Replace the current version of the [type] artifact with a new version.
+     *
+     * The main difference with the [toTransform] method is that the previously set of producers of
+     * this [ScopedArtifact] will not be invoked.
+     *
+     * The order in which the replace [Task]s are applied is directly set by the order of this
+     * method call. Last one wins and none of the previously set append/transform/replace registered
+     * [Task]s will be invoked since this [Task] [T] replace the final version.
      *
      * @param type the [ScopedArtifact] to replace.
      * @param into lambda that returns the [Property] used by the [Task] to save the replaced
