@@ -18,21 +18,16 @@ package com.android.processmonitor.monitor.adblib
 import com.android.adblib.AdbLogger
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceInfo
-import com.android.adblib.tools.debugging.AppProcess
-import com.android.adblib.tools.debugging.appProcessFlow
-import com.android.adblib.tools.debugging.isTrackAppSupported
-import com.android.adblib.tools.debugging.jdwpProcessFlow
+import com.android.adblib.tools.debugging.JdwpProcessChange
+import com.android.adblib.tools.debugging.deviceDebuggableProcessesFlow
 import com.android.adblib.withPrefix
 import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.common.ProcessTracker
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -47,43 +42,41 @@ internal class JdwpProcessTracker(
         logger.withPrefix("JdwpProcessTracker: ${device.deviceInfo.serialNumber}: ")
 
     override fun trackProcesses(): Flow<ProcessEvent> {
-        return channelFlow {
-            val currentPids: MutableSet<Int> = mutableSetOf()
+        return flow {
+            // Keep track of PIDs for which we sent out a `ProcessAdded` event
+            val sentProcessAddedEvents: MutableSet<Int> = mutableSetOf()
 
-            val flow = when (device.isTrackAppSupported()) {
-                true -> device.appProcessFlow.asJdwpProcessFlow()
-                false -> device.jdwpProcessFlow
-            }
-            flow.collect { processes ->
-                val currentProcesses = processes.associateBy { it.pid }
-                val removed = currentPids - currentProcesses.keys
-                val added = currentProcesses.keys - currentPids
+            device.deviceDebuggableProcessesFlow.collect { processChange ->
+                val processProperties = processChange.processInfo.properties
+                when (processChange) {
+                    is JdwpProcessChange.Removed -> {
+                        emit(ProcessRemoved(processProperties.pid))
+                        // remove pid from `sentProcessAddedEvents` in case a process with
+                        // the same id is created later on
+                        sentProcessAddedEvents.remove(processProperties.pid)
+                    }
 
-                removed.forEach { pid ->
-                    currentPids.remove(pid)
-                    val event = ProcessRemoved(pid)
-                    logger.verbose { "$event" }
-                    send(event)
-                }
-
-                added.forEach { pid ->
-                    val process = currentProcesses[pid] ?: return@forEach
-                    currentPids.add(pid)
-                    process.scope.launch {
-                        logger.verbose { "Waiting for properties of $pid" }
-                        val properties = process.propertiesFlow.first {
-                            it.processName != null || it.completed
-                        }
-                        logger.verbose { "Properties of $pid: $properties" }
-
-                        val processName = properties.processName
-                        if (processName == null) {
-                            logger.warn("Incomplete properties: $properties")
-                        } else {
-                            val packageName = properties.packageName
-                            val event = ProcessAdded(pid, packageName, processName)
-                            logger.verbose { "$event" }
-                            send(event)
+                    // We want to emit `ProcessAdded` events only when the JDWP process name
+                    // is known, so we process `Added` and `Updated` events the same way.
+                    is JdwpProcessChange.Added, is JdwpProcessChange.Updated -> {
+                        if (!sentProcessAddedEvents.contains(processProperties.pid)) {
+                            if (processProperties.processName != null || processProperties.completed) {
+                                val processName = processProperties.processName
+                                if (processName == null) {
+                                    logger.warn("Incomplete properties: $processProperties")
+                                } else {
+                                    val packageName = processProperties.packageName
+                                    val event =
+                                        ProcessAdded(
+                                            processProperties.pid,
+                                            packageName,
+                                            processName
+                                        )
+                                    logger.verbose { "$event" }
+                                    sentProcessAddedEvents.add(processProperties.pid)
+                                    emit(event)
+                                }
+                            }
                         }
                     }
                 }
@@ -91,6 +84,3 @@ internal class JdwpProcessTracker(
         }.flowOn(device.session.ioDispatcher + parentContext)
     }
 }
-
-private fun Flow<List<AppProcess>>.asJdwpProcessFlow() =
-    transform { emit(it.mapNotNull { process -> process.jdwpProcess }) }

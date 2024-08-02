@@ -30,7 +30,9 @@ import kotlinx.coroutines.launch
  * This flow can be used to keep track of debuggable processes.
  *
  * The [Flow] starts when the device becomes [DeviceState.ONLINE] and ends
- * when the device scope is disconnected.
+ * when the device scope is disconnected. This flow keeps the caller informed about
+ * the lifecycle of debuggable processes, notifying it when they start, stop, or
+ * have their properties modified.
  *
  * See [JdwpProcessChange] for more info.
  */
@@ -97,22 +99,20 @@ private fun Flow<List<AppProcess>>.asJdwpProcessFlow() =
 /**
  * Represents a change in debuggable processes on a [ConnectedDevice]
  */
-sealed class JdwpProcessChange {
+sealed class JdwpProcessChange(val processInfo: JdwpProcessInfo) {
 
     /**
      * Debuggable process added since last flow emit
      */
-    class Added(val added: JdwpProcessInfo) : JdwpProcessChange()
+    class Added(processInfo: JdwpProcessInfo) : JdwpProcessChange(processInfo)
 
     /**
      * Debuggable process removed since last flow emit
      */
-    class Removed(val removed: JdwpProcessInfo) : JdwpProcessChange()
+    class Removed(processInfo: JdwpProcessInfo) : JdwpProcessChange(processInfo)
 
     /**
      * Debuggable process for which the process properties have changed
      */
-    class Updated(val updated: JdwpProcessInfo) : JdwpProcessChange()
+    class Updated(processInfo: JdwpProcessInfo) : JdwpProcessChange(processInfo)
 }
-
-
