@@ -80,6 +80,9 @@ interface JdwpProcess {
     suspend fun <T> withJdwpSession(block: suspend SharedJdwpSession.() -> T): T
 }
 
+/** Creates immutable [JdwpProcessInfo] from the [JdwpProcess] */
+internal fun JdwpProcess.toJdwpProcessInfo() = JdwpProcessInfo(device, propertiesFlow.value)
+
 /**
  * Returns a snapshot of the current [JdwpProcessProperties] for this process.
  *
