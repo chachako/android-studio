@@ -107,10 +107,10 @@ public class AvdManager {
 
     public static final String AVD_FOLDER_EXTENSION = ".avd";           //$NON-NLS-1$
 
-    /**
-     * Pattern to match pixel-sized skin "names", e.g. "320x480".
-     */
-    public static final Pattern NUMERIC_SKIN_SIZE = Pattern.compile("([0-9]{2,})x([0-9]{2,})"); //$NON-NLS-1$
+    /** Pattern to match pixel-sized skin "names", e.g. "320x480". */
+    public static final Pattern NUMERIC_SKIN_SIZE =
+            Pattern.compile("([0-9]{2,})x([0-9]{2,})"); // $NON-NLS-1$
+
     public static final String DATA_FOLDER = "data";
     public static final String USERDATA_IMG = "userdata.img";
     public static final String USERDATA_QEMU_IMG = "userdata-qemu.img";
@@ -159,16 +159,19 @@ public class AvdManager {
             @NonNull AndroidSdkHandler sdkHandler,
             @NonNull Path baseAvdFolder,
             @NonNull DeviceManager deviceManager,
-            @NonNull ILogger log)
-            throws AndroidLocationsException {
+            @NonNull ILogger log) {
         if (sdkHandler.getLocation() == null) {
-            throw new AndroidLocationsException("Local SDK path not set!");
+            throw new IllegalArgumentException("Local SDK path not set!");
         }
         mSdkHandler = sdkHandler;
         mBaseAvdFolder = baseAvdFolder;
         mLog = log;
         mDeviceManager = deviceManager;
-        buildAvdList(mAllAvdList);
+        try {
+            buildAvdList(mAllAvdList);
+        } catch (AndroidLocationsException e) {
+            mLog.warning("Constructing AvdManager: %s", e.getMessage());
+        }
     }
 
     @NonNull
@@ -176,8 +179,7 @@ public class AvdManager {
             @NonNull AndroidSdkHandler sdkHandler,
             @NonNull Path baseAvdFolder,
             @NonNull DeviceManager deviceManager,
-            @NonNull ILogger log)
-            throws AndroidLocationsException {
+            @NonNull ILogger log) {
         return new AvdManager(sdkHandler, baseAvdFolder, deviceManager, log);
     }
 
@@ -322,7 +324,8 @@ public class AvdManager {
         }
         if (pid == null) {
             mLog.warning(
-                    "AVD not launched but PID is null. Should not have indicated that the AVD is running.");
+                    "AVD not launched but PID is null. Should not have indicated that the AVD is"
+                            + " running.");
             return;
         }
         mLog.warning("AVD not launched because an instance appears to be running on PID " + pid);
@@ -333,7 +336,9 @@ public class AvdManager {
             numTermChars = 2; // <CR><LF>
         }
         else {
-            command = "ps -o pid= -o user= -o pcpu= -o tty= -o stat= -o time= -o etime= -o cmd= -p " + pid;
+            command =
+                    "ps -o pid= -o user= -o pcpu= -o tty= -o stat= -o time= -o etime= -o cmd= -p "
+                            + pid;
             numTermChars = 1; // <LF>
         }
         try {
@@ -718,11 +723,12 @@ public class AvdManager {
             ProgressIndicator progInd = new ConsoleProgressIndicator();
             progInd.setText("Copying files");
             progInd.setIndeterminate(true);
-            FileOpUtils.recursiveCopy(origAvd,
-                                      destAvdFolder,
-                                      false,
-                                      path -> !path.toString().endsWith(".lock"), // Do not copy *.lock files
-                                      progInd);
+            FileOpUtils.recursiveCopy(
+                    origAvd,
+                    destAvdFolder,
+                    false,
+                    path -> !path.toString().endsWith(".lock"), // Do not copy *.lock files
+                    progInd);
 
             // Modify the ID and display name in the new config.ini
             Path configIni = destAvdFolder.resolve(CONFIG_INI);
@@ -1078,12 +1084,17 @@ public class AvdManager {
         // ensure folder validity.
         if (CancellableFileIo.isRegularFile(mBaseAvdFolder)) {
             throw new AndroidLocationsException(
-                    String.format("%1$s is not a valid folder.", mBaseAvdFolder.toAbsolutePath()));
+                    String.format(
+                            "%1$s is a regular file; expected a directory.",
+                            mBaseAvdFolder.toAbsolutePath()));
         } else if (CancellableFileIo.notExists(mBaseAvdFolder)) {
             // folder is not there, we create it and return
             try {
                 Files.createDirectories(mBaseAvdFolder);
-            } catch (IOException ignore) {
+            } catch (IOException e) {
+                throw new AndroidLocationsException(
+                        "Unable to create AVD home directory: " + mBaseAvdFolder.toAbsolutePath(),
+                        e);
             }
             return null;
         }
