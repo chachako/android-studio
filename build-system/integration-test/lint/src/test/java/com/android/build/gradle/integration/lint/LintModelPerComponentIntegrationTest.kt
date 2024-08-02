@@ -15,7 +15,9 @@
  */
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -56,7 +58,7 @@ class LintModelPerComponentIntegrationTest {
     @Test
     fun checkLintReportModels() {
         // Check lint runs correctly before asserting about the model.
-        project.executor().expectFailure().run("clean", ":app:lintDebug")
+        executor().expectFailure().run("clean", ":app:lintDebug")
         val lintResults = project.file("app/build/reports/lint-results.txt")
         assertThat(lintResults).contains("9 errors, 4 warnings")
 
@@ -75,7 +77,7 @@ class LintModelPerComponentIntegrationTest {
 
     @Test
     fun checkLintAnalysisModels_mainVariant() {
-        project.executor().run("clean", ":app:lintAnalyzeDebug")
+        executor().run("clean", ":app:lintAnalyzeDebug")
 
         checkLintModels(
             project = project,
@@ -91,7 +93,7 @@ class LintModelPerComponentIntegrationTest {
 
     @Test
     fun checkLintAnalysisModels_androidTest() {
-        project.executor().run("clean", ":app:lintAnalyzeDebugAndroidTest")
+        executor().run("clean", ":app:lintAnalyzeDebugAndroidTest")
 
         checkLintModels(
             project = project,
@@ -107,7 +109,7 @@ class LintModelPerComponentIntegrationTest {
 
     @Test
     fun checkLintAnalysisModels_unitTest() {
-        project.executor().run("clean", ":app:lintAnalyzeDebugUnitTest")
+        executor().run("clean", ":app:lintAnalyzeDebugUnitTest")
 
         checkLintModels(
             project = project,
@@ -123,7 +125,7 @@ class LintModelPerComponentIntegrationTest {
 
     @Test
     fun checkLintAnalysisModels_testFixtures() {
-        project.executor().run("clean", ":app:lintAnalyzeDebugTestFixtures")
+        executor().run("clean", ":app:lintAnalyzeDebugTestFixtures")
 
         checkLintModels(
             project = project,
@@ -163,7 +165,7 @@ class LintModelPerComponentIntegrationTest {
         )
 
         // Check lint runs correctly before asserting about the model.
-        project.executor().run("clean", ":library:lintDebug")
+        executor().run("clean", ":library:lintDebug")
 
         checkLintModels(
             project = project,
@@ -192,7 +194,7 @@ class LintModelPerComponentIntegrationTest {
             """.trimIndent()
         )
         // Check lint runs correctly before asserting about the model.
-        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+        executor().expectFailure().run(":app:clean", ":app:lintDebug")
         val lintResults = project.file("app/build/reports/lint-results.txt")
         assertThat(lintResults).contains("9 errors, 4 warnings")
 
@@ -234,7 +236,7 @@ class LintModelPerComponentIntegrationTest {
                 }
             """.trimIndent()
         )
-        project.executor().expectFailure().run(":library:clean", ":library:lintDebug")
+        executor().expectFailure().run(":library:clean", ":library:lintDebug")
         val model = project.file("library/build/intermediates/incremental/lintAnalyzeDebug/debug.xml")
         assertThat(model).contains("targetSdkVersion=\"1\"")
     }
@@ -254,7 +256,7 @@ class LintModelPerComponentIntegrationTest {
                 }
             """.trimIndent()
         )
-        val result = project.executor().expectFailure().run(":app:tasks")
+        val result = executor().expectFailure().run(":app:tasks")
         ScannerSubject.assertThat(result.stderr)
             .contains("lint.targetSdk (15) for non library is smaller than android.targetSdk (16) for variants debug, release. "
                     + "Please change the values such that lint.targetSdk is greater than or equal to android.targetSdk.")
@@ -275,7 +277,7 @@ class LintModelPerComponentIntegrationTest {
                 }
             """.trimIndent()
         )
-        project.executor().run(":app:tasks")
+        executor().run(":app:tasks")
     }
 
     @Test
@@ -294,9 +296,13 @@ class LintModelPerComponentIntegrationTest {
                 }
             """.trimIndent()
         )
-        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+        executor().expectFailure().run(":app:clean", ":app:lintDebug")
         val lintResults = project.file("app/build/reports/lint-results.txt")
         assertThat(lintResults).contains("10 errors, 4 warnings")
         assertThat(lintResults).contains("targetSdk 1")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

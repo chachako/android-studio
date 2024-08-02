@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.connected.library;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
@@ -38,13 +40,18 @@ public class MultiProjectConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        executor().run("uninstallAll");
     }
 
     @Test
     public void connectedCheckAndReport() throws IOException, InterruptedException {
-        project.execute("connectedCheck");
+        executor().run("connectedCheck");
         // android-reporting plugin currently executes connected tasks.
-        project.execute("mergeAndroidReports");
+        executor().run("mergeAndroidReports");
+    }
+
+    private GradleTaskExecutor executor() {
+        return project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

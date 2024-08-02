@@ -20,6 +20,8 @@ import static com.android.SdkConstants.FN_LINT_JAR;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.options.BooleanOption;
@@ -47,11 +49,11 @@ public class LintCustomLocalAndPublishTest {
 
     @Test
     public void checkCustomLint() throws Exception {
-        project.executor().withFailOnWarning(false).run("clean");
-        project.executor().withFailOnWarning(false).run(":library-remote:publish");
+        executor().withFailOnWarning(false).run("clean");
+        executor().withFailOnWarning(false).run(":library-remote:publish");
         // Run twice to catch issues with configuration caching
-        project.executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
-        project.executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
+        executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
+        executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
         project.getBuildResult().assertConfigurationCacheHit();
 
         String libexpected =
@@ -93,8 +95,8 @@ public class LintCustomLocalAndPublishTest {
                         "library-lint-results.txt");
         assertThat(liblintfile).exists();
         assertThat(liblintfile).contentWithUnixLineSeparatorsIsExactly(libexpected);
-        project.executor().withFailOnWarning(false).expectFailure().run(":app:lintDebug");
-        project.executor().withFailOnWarning(false).expectFailure().run(":app:lintDebug");
+        executor().withFailOnWarning(false).expectFailure().run(":app:lintDebug");
+        executor().withFailOnWarning(false).expectFailure().run(":app:lintDebug");
 
         String appExpected =
                 ""
@@ -141,10 +143,10 @@ public class LintCustomLocalAndPublishTest {
 
     @Test
     public void checkAarHasLintJar() throws Exception {
-        project.executor().withFailOnWarning(false).run("clean");
-        project.executor().withFailOnWarning(false).run(":library:assembleDebug");
-        project.executor().withFailOnWarning(false).run(":library-publish-only:assembleDebug");
-        project.executor().withFailOnWarning(false).run(":library-local-only:assembleDebug");
+        executor().withFailOnWarning(false).run("clean");
+        executor().withFailOnWarning(false).run(":library:assembleDebug");
+        executor().withFailOnWarning(false).run(":library-publish-only:assembleDebug");
+        executor().withFailOnWarning(false).run(":library-local-only:assembleDebug");
 
         project.getSubproject("library").testAar("debug", it -> it.contains(FN_LINT_JAR));
 
@@ -176,5 +178,9 @@ public class LintCustomLocalAndPublishTest {
         assertThat(appUnresolvedDeps.get(0).getName())
                 .isEqualTo("com.example.google:library-remote:1.0");
         assertThat(appUnresolvedDeps.get(0).getCause()).isNull();
+    }
+
+    private GradleTaskExecutor executor() {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

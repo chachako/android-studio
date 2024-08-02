@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.databinding;
 
 import com.android.annotations.NonNull;
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
@@ -88,10 +89,12 @@ public class DataBindingExternalArtifactDependencyTest {
                         + "' } } }");
         // just provide maven_repo so that build.gradle does not complain
         library.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withArguments(ImmutableList.of(MAVEN_REPO_ARG_PREFIX + "."))
                 .withFailOnWarning(false)
                 .run("clean");
         app.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withArguments(ImmutableList.of(MAVEN_REPO_ARG_PREFIX + "."))
                 .withFailOnWarning(false)
                 .run("clean");
@@ -102,6 +105,7 @@ public class DataBindingExternalArtifactDependencyTest {
         List<String> args =
                 ImmutableList.of(MAVEN_REPO_ARG_PREFIX + mavenRepo.getRoot().getAbsolutePath());
         library.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withArguments(args)
                 .withFailOnWarning(false)
                 .run("publishDebugPublicationToTestRepoRepository");
@@ -112,11 +116,13 @@ public class DataBindingExternalArtifactDependencyTest {
     public void runTest() throws Exception {
         List<String> args = createLibraryArtifact();
         app.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withFailOnWarning(false)
                 .with(BooleanOption.NON_TRANSITIVE_R_CLASS, useNonTransitiveR)
                 .withArguments(args)
                 .run("assembleDebug");
         app.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withFailOnWarning(false)
                 .with(BooleanOption.NON_TRANSITIVE_R_CLASS, useNonTransitiveR)
                 .withArguments(args)
@@ -135,6 +141,7 @@ public class DataBindingExternalArtifactDependencyTest {
         List<String> args = createLibraryArtifact();
         GradleBuildResult result =
                 app.executor()
+                        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                         .withFailOnWarning(false)
                         .with(BooleanOption.NON_TRANSITIVE_R_CLASS, useNonTransitiveR)
                         .withArguments(args)

@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.connected.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.connected.utils.getEmulator
@@ -64,7 +66,7 @@ class UtpConnectedTest : UtpTestBase() {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll")
+        executor().run("uninstallAll")
     }
 
     override fun selectModule(moduleName: String, isDynamicFeature: Boolean) {
@@ -93,7 +95,7 @@ class UtpConnectedTest : UtpTestBase() {
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
         var testExecutionStartTime: Long = System.currentTimeMillis()
-        val result = project.executor()
+        val result = executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
@@ -110,7 +112,7 @@ class UtpConnectedTest : UtpTestBase() {
 
         // Run the task again after clean. This time the task configuration is
         // restored from the configuration cache. We expect no crashes.
-        project.executor().run("clean")
+        executor().run("clean")
 
         assertThat(project.file(testReportPath)).doesNotExist()
         assertThat(project.file(testResultPbPath)).doesNotExist()
@@ -144,7 +146,7 @@ class UtpConnectedTest : UtpTestBase() {
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
         val testExecutionStartTime: Long = System.currentTimeMillis()
-        val result = project.executor()
+        val result = executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .run(testTaskName)
@@ -165,13 +167,13 @@ class UtpConnectedTest : UtpTestBase() {
     fun connectedAndroidTestShouldUninstallAppsAfterTest() {
         selectModule("library", isDynamicFeature = false)
 
-        project.executor().run(testTaskName)
+        executor().run(testTaskName)
 
         val utpLogFile = project.file("library/$UTP_LOG")
         assertThat(utpLogFile).exists()
         assertThat(utpLogFile).contains("Uninstalling com.example.android.kotlin.library.test")
 
-        project.executor()
+        executor()
             .with(BooleanOption.ANDROID_TEST_LEAVE_APKS_INSTALLED_AFTER_RUN, true)
             .run(testTaskName)
 
@@ -191,6 +193,10 @@ class UtpConnectedTest : UtpTestBase() {
         SecondaryUser().use {
             additionalTestOutputWithoutTestStorageService()
         }
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     /**

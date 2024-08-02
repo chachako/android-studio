@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.feature
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.TEST_SUPPORT_LIB_VERSION
@@ -150,13 +151,17 @@ class DynamicFeatureConnectedTest {
 
     @Test
     fun runTestInDynamicFeature() {
-        project.executor().run(":dynamicFeature:connectedAndroidTest")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":dynamicFeature:connectedAndroidTest")
     }
 
     // Regression test for b/314731501
     @Test
     fun testInstallAppWithDynamicFeatureInstall() {
-        project.executor().run(":app:installDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":app:installDebug")
     }
 
 }

@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.connected.application;
 
 import static com.android.testutils.truth.PathSubject.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
@@ -39,17 +40,20 @@ public class KotlinAppConnectedTest {
                     .create();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, InterruptedException {
         // fail fast if no response
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("uninstallAll");
     }
 
     @Test
     public void connectedAndroidTest() throws Exception {
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=10000")
                 .run("connectedAndroidTest");
 

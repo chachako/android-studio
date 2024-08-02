@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.api
 
 import com.android.Version
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
@@ -151,7 +152,9 @@ class SourceSetsTest {
 
     @Test
     fun sourceRegistrationShouldBeSuccessful() {
-        val result = project.executor().run(":api-use:assembleDebug")
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":api-use:assembleDebug")
         Truth.assertThat(result.didWorkTasks.contains(":api-use:debugReproTask")).isTrue()
         Truth.assertThat(result.stdout.findAll("ReproducerTask called !").count())
             .isEqualTo(1)
@@ -182,6 +185,7 @@ class SourceSetsTest {
             """.trimIndent()
         )
         val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run("clean", ":api-use:mergeDebugAssets")
         Truth.assertThat(result.failedTasks).isEmpty()
         // check the file got merged
@@ -242,7 +246,9 @@ class SourceSetsTest {
                         }
                 """.trimIndent()
         )
-        project.executor().run(":api-use:mapDebugSourceSetPaths")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":api-use:mapDebugSourceSetPaths")
         val content = File(
             project.projectDir,
             "./api-use/build/intermediates/source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt"

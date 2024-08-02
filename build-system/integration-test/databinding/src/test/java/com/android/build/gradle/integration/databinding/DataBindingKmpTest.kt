@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.databinding
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.options.BooleanOption
@@ -149,6 +150,7 @@ class DataBindingKmpTest {
     @Test
     fun testCompilation() {
         project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run("clean", "compileDebugJavaWithJavac")
     }
 }

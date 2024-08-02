@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.connected.databinding;
 
 import com.android.annotations.NonNull;
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -52,7 +53,9 @@ public class DataBindingExternalArtifactDependencyConnectedTest {
         appProject.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        appProject.execute("uninstallAll");
+        appProject.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("uninstallAll");
     }
 
     public DataBindingExternalArtifactDependencyConnectedTest(boolean useAndroidX) {
@@ -85,21 +88,26 @@ public class DataBindingExternalArtifactDependencyConnectedTest {
     }
 
     @Test
-    public void buildLibraryThenBuildApp_connectedCheck() throws IOException {
+    public void buildLibraryThenBuildApp_connectedCheck() throws IOException, InterruptedException {
         TestFileUtils.appendToFile(
                 appProject.getSettingsFile(),
                 "dependencyResolutionManagement { repositories { maven { url '"
                         + mavenRepo.getRoot().getAbsolutePath()
                         + "' } } }");
         List<String> args = createLibraryArtifact();
-        appProject.execute(args, ":app:connectedCheck");
+        appProject.executor().withArguments(args)
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(":app:connectedCheck");
     }
 
     @NonNull
-    private List<String> createLibraryArtifact() {
+    private List<String> createLibraryArtifact() throws IOException, InterruptedException {
         List<String> args =
                 ImmutableList.of(MAVEN_REPO_ARG_PREFIX + mavenRepo.getRoot().getAbsolutePath());
-        libraryProject.execute(args, "publishDebugPublicationToTestRepoRepository");
+        libraryProject.executor()
+                .withArguments(args)
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("publishDebugPublicationToTestRepoRepository");
         return args;
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -254,6 +255,7 @@ class TestFixturesProjectLintModelIntegrationTest(private val lintAnalysisPerCom
 
     private fun getExecutor(): GradleTaskExecutor {
         return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
     }
 }

@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.connected.testing;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -44,7 +46,7 @@ public class SeparateTestModuleConnectedTest {
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, InterruptedException {
         TestFileUtils.appendToFile(
                 project.getSubproject("test").getBuildFile(),
                 "\n"
@@ -62,16 +64,21 @@ public class SeparateTestModuleConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        executor().run("uninstallAll");
     }
 
     @Test
     public void checkWillRunWithoutInstrumentationInManifest() throws Exception {
-        project.execute(":test:deviceCheck");
+        executor().run(":test:deviceCheck");
     }
 
     @Test
     public void checkConnectedCheckCompletesNormally() throws Exception {
-        project.execute(":test:connectedCheck");
+        executor().run(":test:connectedCheck");
+    }
+
+    public GradleTaskExecutor executor() {
+        return project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

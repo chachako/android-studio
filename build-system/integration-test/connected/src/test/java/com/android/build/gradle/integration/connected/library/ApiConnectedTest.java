@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.library;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
@@ -43,6 +44,8 @@ public class ApiConnectedTest {
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.executor().run("connectedAndroidTest");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("connectedAndroidTest");
     }
 }

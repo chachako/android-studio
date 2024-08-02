@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.options.BooleanOption
@@ -51,6 +52,8 @@ class ComposeHelloWorldConnectedTest {
 
     @Test
     fun connectedCheck() {
-        project.executor().run("connectedAndroidTest")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("connectedAndroidTest")
     }
 }

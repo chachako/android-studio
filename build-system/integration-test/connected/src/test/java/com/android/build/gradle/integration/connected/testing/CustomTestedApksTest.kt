@@ -17,6 +17,7 @@ package com.android.build.gradle.integration.connected.testing
 
 import com.android.SdkConstants
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -190,7 +191,9 @@ class CustomTestedApksTest {
 
     @Test
     fun connectedCheckInstalls() {
-        project.execute(":test:connectedCheck")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":test:connectedCheck")
         val androidProject = project.modelV2().fetchModels().container.getProject(":test")
             .androidProject!!
 

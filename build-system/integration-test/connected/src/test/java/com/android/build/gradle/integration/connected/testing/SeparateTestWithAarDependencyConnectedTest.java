@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.testing;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -71,11 +72,15 @@ public class SeparateTestWithAarDependencyConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("uninstallAll");
     }
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.execute("clean", ":test:connectedCheck");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", ":test:connectedCheck");
     }
 }

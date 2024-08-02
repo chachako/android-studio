@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.manageddevice.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -31,7 +32,7 @@ class FirebaseTestLabDeviceTest {
             .create()
 
     private val executor: GradleTaskExecutor
-        get() = project.executor()
+        get() = project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
 
     @Before
     fun setUp() {

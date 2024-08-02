@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.lint;
 
 import static com.android.testutils.truth.PathSubject.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import java.io.File;
 import org.junit.Rule;
@@ -36,8 +37,12 @@ public class LintMultipleLintJarsTest {
     @Test
     public void checkBothErrorsFound() throws Exception {
         // Run twice to catch issues with configuration caching
-        project.executor().run(":app:clean", ":app:lintDebug");
-        project.executor().run(":app:clean", ":app:lintDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(":app:clean", ":app:lintDebug");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(":app:clean", ":app:lintDebug");
         project.getBuildResult().assertConfigurationCacheHit();
 
         File file = new File(project.getSubproject("app").getProjectDir(), "lint-results.xml");

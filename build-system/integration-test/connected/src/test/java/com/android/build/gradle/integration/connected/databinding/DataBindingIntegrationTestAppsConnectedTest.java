@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.databinding;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
@@ -81,7 +82,7 @@ public class DataBindingIntegrationTestAppsConnectedTest {
     Boolean useAndroidX;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, InterruptedException {
         if ("ViewBindingTestApp".equals(projectName) && !useAndroidX) {
             // Support version has no subprojects
             project.addAdbTimeout();
@@ -91,17 +92,22 @@ public class DataBindingIntegrationTestAppsConnectedTest {
 
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("uninstallAll");
     }
 
     @Before
-    public void clean() {
-        project.execute("clean");
+    public void clean() throws IOException, InterruptedException {
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean");
     }
 
     @Test
     public void connectedCheck() throws Exception {
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(
                         BooleanOption.USE_NON_FINAL_RES_IDS,
                         !"ProguardedAppWithTest".equals(projectName))

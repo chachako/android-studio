@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.executeShellCommand
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
@@ -49,6 +50,7 @@ class PrivacySandboxSdkConnectedTest {
     }
 
     private fun executor() = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
             .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
 

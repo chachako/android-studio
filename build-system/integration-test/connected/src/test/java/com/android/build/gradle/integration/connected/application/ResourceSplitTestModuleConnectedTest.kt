@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.application
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
@@ -73,18 +74,24 @@ class ResourceSplitTestModuleConnectedTest {
         project.addAdbTimeout()
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("uninstallAll")
     }
 
     // Regression test for b/341266993
     @Test
     fun resourceSplitWithTestModuleAndroidTest() {
-        project.executor().run(":test:connectedCheck")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":test:connectedCheck")
         TestFileUtils.searchAndReplace(
             project.getSubproject(":app").buildFile,
             "universalApk true",
             "universalApk false"
         )
-        project.executor().run(":test:connectedCheck")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":test:connectedCheck")
     }
 }

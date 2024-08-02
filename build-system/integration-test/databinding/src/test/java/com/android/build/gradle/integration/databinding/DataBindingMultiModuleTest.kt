@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.databinding
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
@@ -50,9 +52,8 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
 
     @Test
     fun checkBRClasses() {
-        val executor = project.executor();
         // use release to get 1 classes.dex instead of many
-        executor.run("clean", "assembleRelease")
+        executor().run("clean", "assembleRelease")
         getApk().use {
             assertThat(it).exists()
         }
@@ -72,7 +73,7 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
                 }
                 """.trimIndent()
             )
-        executor.run("assembleRelease")
+        executor().run("assembleRelease")
         assertBRs("_all", "inheritedInput", "input", "newBindableVar", "appInput")
         // rename an input field
         TestFileUtils.searchAndReplace(
@@ -80,10 +81,10 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
             "inheritedInput",
             "inheritedInput2"
         )
-        executor.run("assembleRelease")
+        executor().run("assembleRelease")
         assertBRs("_all", "inheritedInput2", "input", "newBindableVar", "appInput")
         newBindable.delete()
-        executor.run("assembleRelease")
+        executor().run("assembleRelease")
         assertBRs("_all", "inheritedInput2", "input", "appInput")
     }
 
@@ -95,7 +96,7 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
             "android:text=\"@{input}\"",
             "app:customSetText=\"@{input}\""
         )
-        val result = project.executor().run("assembleRelease")
+        val result = executor().run("assembleRelease")
         assertNull(result.exception)
         // now try to use it in the app, should fail
         val appLayout = project.file("app/src/main/res/layout/app_layout.xml")
@@ -105,7 +106,7 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
             "android:text=\"@{appInput}\"",
             "app:customSetText=\"@{appInput}\""
         )
-        val result2 = project.executor().expectFailure().run("assembleRelease")
+        val result2 = executor().expectFailure().run("assembleRelease")
         MatcherAssert.assertThat(
             result2.failureMessage ?: "",
             CoreMatchers.containsString("Cannot find a setter for <android.widget.TextView app:customSetText> that accepts parameter type 'java.lang.String'")
@@ -114,26 +115,26 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
 
     @Test
     fun checkCompilationAvoidanceOnLayoutChange() {
-        project.executor().run(APP_COMPILE_JAVA_TASK)
+        executor().run(APP_COMPILE_JAVA_TASK)
         TestFileUtils.searchAndReplace(
             project.file("inherited/src/main/res/layout/inherited_main.xml"),
             "android:text=\"@{inheritedInput}\"",
             "android:text=\"@{inheritedInput + inheritedInput}\""
         )
-        val result = project.executor().run(APP_COMPILE_JAVA_TASK)
+        val result = executor().run(APP_COMPILE_JAVA_TASK)
         GradleTaskSubject.assertThat(result.getTask(APP_COMPILE_JAVA_TASK)).wasUpToDate()
     }
 
     @Test
     fun checkCompilationAvoidanceOnAdapterChange() {
-        project.executor().run(APP_COMPILE_JAVA_TASK)
+        executor().run(APP_COMPILE_JAVA_TASK)
         createAdapterInInherited("setMyText")
         TestFileUtils.searchAndReplace(
             project.file("inherited/src/main/res/layout/inherited_main.xml"),
             "android:text=\"@{inheritedInput}\"",
             "app:setMyText=\"@{inheritedInput}\""
         )
-        val result = project.executor().run(APP_COMPILE_JAVA_TASK)
+        val result = executor().run(APP_COMPILE_JAVA_TASK)
         GradleTaskSubject.assertThat(result.getTask(LIBRARY_COMPILE_JAVA_TASK)).didWork()
         GradleTaskSubject.assertThat(result.getTask(APP_COMPILE_JAVA_TASK)).wasUpToDate()
     }
@@ -141,14 +142,18 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
     @Test
     fun checkCompilationAvoidanceOnDummyAdapterChange() {
         val adapterFile = createAdapterInInherited("setMyText")
-        project.executor().run(APP_COMPILE_JAVA_TASK)
+        executor().run(APP_COMPILE_JAVA_TASK)
         TestFileUtils.searchAndReplace(adapterFile,
             "public class NewAdapter {",
             "public class //dummy comment\nNewAdapter {"
         )
-        val result = project.executor().run(APP_COMPILE_JAVA_TASK)
+        val result = executor().run(APP_COMPILE_JAVA_TASK)
         GradleTaskSubject.assertThat(result.getTask(LIBRARY_COMPILE_JAVA_TASK)).wasUpToDate()
         GradleTaskSubject.assertThat(result.getTask(APP_COMPILE_JAVA_TASK)).wasUpToDate()
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     private fun createAdapterInInherited(attributeName: String) : File {

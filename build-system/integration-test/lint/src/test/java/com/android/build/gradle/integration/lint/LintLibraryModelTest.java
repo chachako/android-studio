@@ -19,7 +19,9 @@ package com.android.build.gradle.integration.lint;
 import static com.android.build.gradle.integration.common.truth.ScannerSubject.assertThat;
 import static com.android.testutils.truth.PathSubject.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.options.BooleanOption;
@@ -55,8 +57,8 @@ public class LintLibraryModelTest {
     @Test
     public void checkLintLibraryModel() throws Exception {
         // Run twice to catch issues with configuration caching
-        project.executor().run(":app:clean", ":app:lintDebug");
-        GradleBuildResult result = project.executor().run(":app:clean", ":app:lintDebug");
+        executor().run(":app:clean", ":app:lintDebug");
+        GradleBuildResult result = executor().run(":app:clean", ":app:lintDebug");
         result.assertConfigurationCacheHit();
         String expected =
                 ""
@@ -79,7 +81,7 @@ public class LintLibraryModelTest {
                 project.getSubproject("javalib").getBuildFile(),
                 "apply plugin: 'com.android.lint'",
                 "/* Lint plugin not applied */");
-        GradleBuildResult result = project.executor().run("clean", ":app:lintDebug");
+        GradleBuildResult result = executor().run("clean", ":app:lintDebug");
         String expected =
                 ""
                         + FileUtils.join("src", "main", "java", "com", "android", "test", "lint", "lintmodel", "mylibrary", "MyLibrary.java") + ":9: Warning: DateFormat character 'Y' in YYYY is the week-era-year; did you mean 'y'? [WeekBasedYear]\n"
@@ -90,5 +92,9 @@ public class LintLibraryModelTest {
         assertThat(file).exists();
         assertThat(file).contentWithUnixLineSeparatorsIsExactly(expected);
         assertThat(result.getStdout()).contains(APPLY_THE_PLUGIN_TO_JAVA_LIBRARY_PROJECT);
+    }
+
+    private GradleTaskExecutor executor() {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
     }
 }

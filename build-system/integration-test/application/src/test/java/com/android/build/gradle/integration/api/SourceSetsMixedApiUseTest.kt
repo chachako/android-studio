@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.api
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
@@ -206,7 +207,9 @@ class SourceSetsMixedApiUseTest {
 
     @Test
     fun sourceRegistrationShouldBeRepresented() {
-        project.executor().run(":api-use:assembleDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":api-use:assembleDebug")
         project.getSubproject(":api-use").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             assertThat(apk).containsFile("lib/armeabi-v7a/main-sourceset-generated.so")
             assertThat(apk).containsFile("lib/armeabi-v7a/debug-sourceset-generated.so")

@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.nativebuild
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Aar
@@ -136,7 +138,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
 
     @Test
     fun testKmpLibraryAarContents() {
-        project.executor()
+        executor()
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -179,7 +181,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        project.executor()
+        executor()
             .run(":kmpFirstLib:assembleInstrumentedTest")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
@@ -232,7 +234,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:publish")
+        executor().run(":kmpFirstLib:publish")
 
 
         // Assert that maven metadata and gradle module metadata files have no mention of the native
@@ -248,5 +250,9 @@ class KotlinMultiplatformAndroidPluginNativeTest {
                 project.projectDir, "testRepo", "com", "example", "kmpFirstLib-android", "1.0", "kmpFirstLib-android-1.0.module"
             ).readText()
         ).doesNotContain("native")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.library;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
@@ -35,16 +36,20 @@ public class SameNamedLibsConnectedTest {
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, InterruptedException {
         // fail fast if no response
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("uninstallAll");
     }
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.executor().run("connectedAndroidTest");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("connectedAndroidTest");
     }
 }

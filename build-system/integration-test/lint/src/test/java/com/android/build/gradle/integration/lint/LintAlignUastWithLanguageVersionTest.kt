@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -54,8 +56,8 @@ class LintAlignUastWithLanguageVersionTest {
             kmpJvmLibExpectedUseK2Uast = true
         )
 
-        project.executor().run("clean", "lint")
-        val result = project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
+        val result = executor().run("clean", "lint")
         result.assertConfigurationCacheHit()
     }
 
@@ -83,7 +85,7 @@ class LintAlignUastWithLanguageVersionTest {
             sourceSetsLanguageVersion = "1.9"
         )
 
-        project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
     }
 
     /**
@@ -109,7 +111,7 @@ class LintAlignUastWithLanguageVersionTest {
             kmpJvmLibExpectedUseK2Uast = true,
         )
 
-        project.executor()
+        executor()
             .withArgument("-Pkotlin.experimental.tryNext=true")
             .run("clean", "lint")
     }
@@ -138,7 +140,7 @@ class LintAlignUastWithLanguageVersionTest {
             sourceSetsLanguageVersion = "1.9"
         )
 
-        project.executor()
+        executor()
             .with(OptionalBooleanOption.LINT_USE_K2_UAST, true)
             .run("clean", "lint")
     }
@@ -175,7 +177,7 @@ class LintAlignUastWithLanguageVersionTest {
                 }
             """.trimIndent()
         )
-        project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
     }
 
     /**
@@ -210,7 +212,7 @@ class LintAlignUastWithLanguageVersionTest {
                 }
             """.trimIndent()
         )
-        project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
     }
 
     /**
@@ -236,7 +238,7 @@ class LintAlignUastWithLanguageVersionTest {
             kmpJvmLibExpectedUseK2Uast = false,
         )
 
-        project.executor()
+        executor()
             .with(OptionalBooleanOption.LINT_USE_K2_UAST, false)
             .run("clean", "lint")
     }
@@ -272,7 +274,7 @@ class LintAlignUastWithLanguageVersionTest {
                 }
             """.trimIndent()
         )
-        project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
     }
 
     /**
@@ -306,7 +308,12 @@ class LintAlignUastWithLanguageVersionTest {
                 }
             """.trimIndent()
         )
-        project.executor().run("clean", "lint")
+        executor().run("clean", "lint")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     companion object {

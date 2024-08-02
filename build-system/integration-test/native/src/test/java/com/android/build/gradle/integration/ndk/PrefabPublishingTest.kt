@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.ndk
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.recoverExistingCxxAbiModels
 import com.android.build.gradle.internal.core.Abi
@@ -182,12 +184,12 @@ class PrefabPublishingTest(
 
     @Test
     fun `project builds`() {
-        project.execute("clean", "assemble$variant")
+        executor().run("clean", "assemble$variant")
     }
 
     @Test
     fun `prefab package was constructed correctly`() {
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
 
         val packageDir = project.getSubproject(gradleModuleName)
             .getIntermediateFile("prefab_package", variant, "prefab")
@@ -209,7 +211,7 @@ class PrefabPublishingTest(
 
     @Test
     fun `AAR contains the prefab packages`() {
-        project.execute("clean", "assemble$variant")
+        executor().run("clean", "assemble$variant")
         project.getSubproject(gradleModuleName).assertThatAar(variant) {
             containsFile("prefab/prefab.json")
             containsFile("prefab/modules/$gradleModuleName/module.json")
@@ -224,18 +226,18 @@ class PrefabPublishingTest(
     // dependency on PREFAB_PACKAGE_CONFIGURATION
     @Test
     fun `Bundle AAR has no dependency warnings `() {
-        project.execute("bundle${variant}Aar", "prefab${variant}ConfigurePackage")
+        executor().run("bundle${variant}Aar", "prefab${variant}ConfigurePackage")
     }
 
     // See b/203448887
     @Test
     fun `Bundle local lint AAR has no dependency warnings `() {
-        project.execute("bundle${variant}LocalLintAar", "prefab${variant}ConfigurePackage")
+        executor().run("bundle${variant}LocalLintAar", "prefab${variant}ConfigurePackage")
     }
 
     @Test
     fun `adding a new header causes a rebuild`() {
-        project.execute("assemble${variant.lowercase()}")
+        executor().run("assemble${variant.lowercase()}")
         val packageDir = project.getSubproject(gradleModuleName)
             .getIntermediateFile("prefab_package", variant, "prefab")
         val moduleDir = packageDir.resolve("modules/$gradleModuleName")
@@ -252,7 +254,7 @@ class PrefabPublishingTest(
                 """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
         assertThat(header).exists()
     }
 
@@ -272,11 +274,11 @@ class PrefabPublishingTest(
             """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
         assertThat(header).exists()
 
         headerSrc.delete()
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
         assertThat(header).doesNotExist()
     }
 
@@ -296,7 +298,7 @@ class PrefabPublishingTest(
                 """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
         assertThat(header).exists()
 
         val newHeaderContents = """
@@ -305,7 +307,7 @@ class PrefabPublishingTest(
                 """.trimIndent()
 
         headerSrc.writeText(newHeaderContents)
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
         Truth.assertThat(header.readText()).isEqualTo(newHeaderContents)
     }
 
@@ -391,7 +393,7 @@ class PrefabPublishingTest(
             """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
 
         project.getSubproject(gradleModuleName).assertThatAar(variant) {
             containsFile("prefab/prefab.json")
@@ -437,7 +439,7 @@ class PrefabPublishingTest(
             """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
 
         val packageDir = project.getSubproject(gradleModuleName)
             .getIntermediateFile("prefab_package", variant, "prefab")
@@ -517,11 +519,15 @@ class PrefabPublishingTest(
             """.trimIndent()
         )
 
-        project.execute("assemble$variant")
+        executor().run("assemble$variant")
 
         val packageDir = project.getSubproject(gradleModuleName)
             .getIntermediateFile("prefab_package", variant, "prefab")
 
         verifyModule(project, packageDir, gradleModuleName, libraryType = LibraryType.HeaderOnly)
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

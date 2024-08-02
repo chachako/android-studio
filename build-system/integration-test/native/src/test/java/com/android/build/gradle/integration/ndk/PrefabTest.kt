@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.ndk
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
 import com.android.build.gradle.integration.common.fixture.model.recoverExistingCxxAbiModels
@@ -109,7 +111,7 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
 
     @Test
     fun `build integrations are passed to build system`() {
-        project.execute("assembleDebug")
+        executor(project).run("assembleDebug")
         val abis = project.recoverExistingCxxAbiModels().sortedBy { it.name }
         assertThat(abis.map { it.name }).containsExactlyElementsIn(expectedAbis)
         for (abi in abis) {
@@ -135,18 +137,18 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
 
     @Test
     fun `cleaning a cleaned project works`() {
-        project.execute("clean")
-        project.execute("clean")
+        executor(project).run("clean")
+        executor(project).run("clean")
     }
 
     @Test
     fun `project builds`() {
-        project.execute("clean", "assembleDebug")
+        executor(project).run("clean", "assembleDebug")
     }
 
     @Test
     fun `dependencies are copied to the APK`() {
-        project.execute("clean", "assembleDebug")
+        executor(project).run("clean", "assembleDebug")
         val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG)
         assertThat(apk.file).exists()
         for (abi in expectedAbis) {
@@ -161,6 +163,11 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
     @Test
     fun `enabling without prefab AARs doesn't break the build`() {
         // https://issuetracker.google.com/183634734
-        prefabNoDepsProject.execute("clean", "assembleDebug")
+        executor(prefabNoDepsProject).run("clean", "assembleDebug")
+    }
+
+    private fun executor(project: GradleTestProject): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

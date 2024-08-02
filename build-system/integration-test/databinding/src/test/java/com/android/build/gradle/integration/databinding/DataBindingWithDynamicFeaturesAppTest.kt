@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.databinding
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.options.BooleanOption
@@ -48,18 +50,22 @@ class DataBindingWithDynamicFeaturesAppTest(useAndroidX: Boolean) {
 
     @Before
     fun clean() {
-        project.execute("clean")
+        executor().run("clean")
     }
 
     @Test
     fun app() {
-        project.executor()
-            .run(":app:assemble")
+        executor().run(":app:assemble")
     }
 
     @Test
     fun project() {
-        project.execute("assembleDebug")
+        executor().run("assembleDebug")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     companion object {

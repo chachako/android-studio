@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.databinding
 
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.testutils.apk.Apk
@@ -130,7 +131,9 @@ class DataBindingMinifyDynamicFeaturesTest {
 
     @Test
     fun assembleMinified() {
-        project.executor().run("assembleMinified")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("assembleMinified")
 
         val minifiedApk = "minified"
 

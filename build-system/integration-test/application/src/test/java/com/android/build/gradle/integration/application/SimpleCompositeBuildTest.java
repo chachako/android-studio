@@ -16,9 +16,12 @@
 
 package com.android.build.gradle.integration.application;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.google.common.truth.Truth;
+
+import java.io.IOException;
 import java.util.List;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -33,8 +36,10 @@ public class SimpleCompositeBuildTest {
                     .create();
 
     @Test
-    public void testBuild() {
-        project.execute("clean", "assembleDebug");
+    public void testBuild() throws IOException, InterruptedException {
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("clean", "assembleDebug");
         ModelContainerV2.ModelInfo modelInfo = project.modelV2()
                 .fetchVariantDependencies("debug")
                 .getContainer()

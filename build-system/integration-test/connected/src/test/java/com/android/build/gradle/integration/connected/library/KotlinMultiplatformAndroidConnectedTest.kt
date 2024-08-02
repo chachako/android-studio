@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.connected.library
 
 import com.android.build.gradle.integration.common.fixture.ANDROIDX_TEST_ESPRESSO_ESPRESSO_CORE_VERSION
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
@@ -74,6 +75,7 @@ class KotlinMultiplatformAndroidConnectedTest {
     @Test
     fun connectedKmpLibraryTests() {
         project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":kmpFirstLib:androidConnectedCheck")
 
         val testResultFolder = FileUtils.join(

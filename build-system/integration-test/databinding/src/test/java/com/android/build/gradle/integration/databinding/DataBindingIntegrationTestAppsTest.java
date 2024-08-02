@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.databinding;
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
@@ -68,12 +69,15 @@ public class DataBindingIntegrationTestAppsTest {
 
     @Before
     public void clean() throws IOException, InterruptedException {
-        project.executor().withFailOnWarning(false).run("clean");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .withFailOnWarning(false).run("clean");
     }
 
     @Test
     public void compile() throws Exception {
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .withFailOnWarning(false)
                 .run("assembleDebug", "assembleDebugAndroidTest");
     }

@@ -15,7 +15,9 @@
  */
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
@@ -46,11 +48,11 @@ class LintModelIntegrationTest {
     @Test
     fun checkLintReportModels() {
         // Check lint runs correctly before asserting about the model.
-        project.executor()
+        executor()
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, false)
             .expectFailure()
             .run("clean", ":app:lintDebug")
-        project.executor()
+        executor()
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, false)
             .expectFailure()
             .run(":app:clean", ":app:lintDebug")
@@ -79,7 +81,7 @@ class LintModelIntegrationTest {
      */
     @Test
     fun checkLintAnalysisModels() {
-        project.executor()
+        executor()
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, false)
             .expectFailure()
             .run("clean", ":app:lintDebug")
@@ -130,7 +132,7 @@ class LintModelIntegrationTest {
         )
 
         // Check lint runs correctly before asserting about the model.
-        project.executor()
+        executor()
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, false)
             .run("clean", ":library:lintDebug")
 
@@ -148,5 +150,9 @@ class LintModelIntegrationTest {
             "debug.xml",
             "module.xml",
         )
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

@@ -16,7 +16,9 @@
 
 package com.android.build.gradle.integration.connected.testing
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -49,7 +51,7 @@ class InstrumentationRunnerConnectedTest {
         project.addAdbTimeout()
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("uninstallAll")
+        executor().run("uninstallAll")
     }
 
     @Test
@@ -83,21 +85,26 @@ class InstrumentationRunnerConnectedTest {
             """.trimIndent()
         )
 
-        var result = project.executor().run(":app:connectedF1DebugAndroidTest")
+        var result = executor().run(":app:connectedF1DebugAndroidTest")
         checkArgsInOutput(
             f2ArgPresent = false, f3ArgPresent = false, f4ArgPresent = false, result)
 
-        result = project.executor().run(":app:connectedF2DebugAndroidTest")
+        result = executor().run(":app:connectedF2DebugAndroidTest")
         checkArgsInOutput(
             f2ArgPresent = true, f3ArgPresent = false, f4ArgPresent = false, result)
 
-        result = project.executor().run(":app:connectedF3DebugAndroidTest")
+        result = executor().run(":app:connectedF3DebugAndroidTest")
         checkArgsInOutput(
             f2ArgPresent = false, f3ArgPresent = true, f4ArgPresent = false, result)
 
-        result = project.executor().run(":app:connectedF4DebugAndroidTest")
+        result = executor().run(":app:connectedF4DebugAndroidTest")
         checkArgsInOutput(
             f2ArgPresent = false, f3ArgPresent = false, f4ArgPresent = true, result)
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     private fun checkArgsInOutput(
@@ -139,7 +146,7 @@ class InstrumentationRunnerConnectedTest {
             """.trimIndent()
         )
 
-        val result = project.executor().run(":test:connectedCheck")
+        val result = executor().run(":test:connectedCheck")
         assertThat(result.stdout).contains("key: \"testKey\"\nvalue: \"testValue\"")
     }
 }

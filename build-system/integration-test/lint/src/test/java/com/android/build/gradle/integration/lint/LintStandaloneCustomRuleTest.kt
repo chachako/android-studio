@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.testutils.truth.PathSubject.assertThat
@@ -44,8 +46,8 @@ class LintStandaloneCustomRuleTest {
     @Throws(Exception::class)
     fun checkStandaloneLint() {
         // Run twice to catch issues with configuration caching
-        project.executor().run(":library:clean", ":library:lint")
-        project.executor().run(":library:clean", ":library:lint")
+        executor().run(":library:clean", ":library:lint")
+        executor().run(":library:clean", ":library:lint")
         project.buildResult.assertConfigurationCacheHit()
 
         val file = project.getSubproject("library").file("lint-results.txt")
@@ -56,7 +58,7 @@ class LintStandaloneCustomRuleTest {
 
     @Test
     fun checkPublishing() {
-        project.executor().run(":library:publishAllPublicationsToMavenRepository")
+        executor().run(":library:publishAllPublicationsToMavenRepository")
 
         val publishDir = project.file("repo/org/example/sample/library/0.1")
         val publishedFiles = publishDir.list()?.filter { !isCheckSum(it) }
@@ -73,8 +75,8 @@ class LintStandaloneCustomRuleTest {
         // Android report. Conversely, there are Android issues in the lint module
         // (/sdcard references) which are not included in that report, but *are*
         // included in the Android app report.
-        project.executor().run(":app:clean", ":lint:lint", ":app:lint")
-        val result = project.executor().run(":app:clean", ":lint:lint", ":app:lint")
+        executor().run(":app:clean", ":lint:lint", ":app:lint")
+        val result = executor().run(":app:clean", ":lint:lint", ":app:lint")
 
         val lintReport = project.getSubproject("lint").file("lint-results.txt")
         val appReport = project.getSubproject("app").file("lint-report.txt")
@@ -103,5 +105,9 @@ class LintStandaloneCustomRuleTest {
             fileName.endsWith("sha1") ||
             fileName.endsWith("sha256") ||
             fileName.endsWith("sha512")
+    }
+
+    private fun executor(): GradleTaskExecutor {
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

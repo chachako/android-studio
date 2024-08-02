@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -72,6 +73,7 @@ class LintStandaloneModelTest {
     @Test
     fun testLintModel() {
         project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, false)
             .run("clean", ":java-lib1:lint")
 
@@ -95,6 +97,7 @@ class LintStandaloneModelTest {
     @Test
     fun testLintModelWithPerComponentAnalysis() {
         project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, true)
             .run("clean", ":java-lib1:lint")
 

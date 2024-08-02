@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.RELEASE
@@ -506,7 +507,9 @@ class ResourceShrinkerTest {
         )
 
 
-        project.executor().run("clean", "abisplits:assembleRelease")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("clean", "abisplits:assembleRelease")
         val shrunkUniversalApk =
                 FileUtils.join(abiSplitsSubproject.outputDir,
                         "apk",
