@@ -898,7 +898,7 @@ class VariantManager<
         }
 
         if (variantFactory.componentType.hasTestComponents) {
-            (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests
+            (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests?.values
                 ?.filter { it.enable && buildTypeData == testBuildTypeData }
                 ?.forEach { deviceTestBuilder ->
                     val deviceTest = createTestComponents<AndroidTestComponentDslInfo>(
@@ -911,7 +911,10 @@ class VariantManager<
                         deviceTestBuilder,
                     )
                     addTestComponent(deviceTest)
-                    (variant as HasDeviceTestsCreationConfig).addDeviceTest(deviceTest as DeviceTestImpl)
+                    (variant as HasDeviceTestsCreationConfig).addDeviceTest(
+                        DeviceTestBuilder.ANDROID_TEST_TYPE,
+                        deviceTest as DeviceTestImpl
+                    )
             }
 
             (variantBuilder as? HasHostTestsBuilder)?.hostTests

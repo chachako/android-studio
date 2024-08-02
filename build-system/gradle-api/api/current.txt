@@ -2730,6 +2730,12 @@ package com.android.build.api.variant {
     method @Deprecated @org.gradle.api.Incubating public void setEnableCodeCoverage(boolean);
     property @org.gradle.api.Incubating public abstract boolean enable;
     property @Deprecated @org.gradle.api.Incubating public abstract boolean enableCodeCoverage;
+    field @org.gradle.api.Incubating public static final String ANDROID_TEST_TYPE = "AndroidTest";
+    field public static final com.android.build.api.variant.DeviceTestBuilder.Companion Companion;
+  }
+
+  public static final class DeviceTestBuilder.Companion {
+    field @org.gradle.api.Incubating public static final String ANDROID_TEST_TYPE = "AndroidTest";
   }
 
   public interface DexPackagingOptions {
@@ -2886,13 +2892,13 @@ package com.android.build.api.variant {
   }
 
   @org.gradle.api.Incubating public interface HasDeviceTests {
-    method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.DeviceTest> getDeviceTests();
-    property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.DeviceTest> deviceTests;
+    method @org.gradle.api.Incubating public java.util.Map<java.lang.String,com.android.build.api.variant.DeviceTest> getDeviceTests();
+    property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,com.android.build.api.variant.DeviceTest> deviceTests;
   }
 
   @org.gradle.api.Incubating public interface HasDeviceTestsBuilder {
-    method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.DeviceTestBuilder> getDeviceTests();
-    property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.DeviceTestBuilder> deviceTests;
+    method @org.gradle.api.Incubating public java.util.Map<java.lang.String,com.android.build.api.variant.DeviceTestBuilder> getDeviceTests();
+    property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,com.android.build.api.variant.DeviceTestBuilder> deviceTests;
   }
 
   @org.gradle.api.Incubating public interface HasHostTests {

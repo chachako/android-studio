@@ -15,11 +15,16 @@
  */
 package com.android.build.api.variant.impl;
 
+import com.android.build.api.variant.AndroidVersion;
 import com.android.build.api.variant.DeviceTestBuilder;
 import com.android.build.api.variant.PropertyAccessNotAllowedException;
+import com.android.build.gradle.internal.core.dsl.ComponentDslInfo.DslDefinedDeviceTest;
 import com.android.build.gradle.internal.services.VariantBuilderServices;
 import com.android.build.gradle.options.ProjectOptions;
+
+import com.google.common.collect.Lists;
 import com.google.common.truth.Truth;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -34,13 +39,21 @@ public class DeviceTestBuilderImplTest {
         ProjectOptions projectOptions = Mockito.mock(ProjectOptions.class);
         VariantBuilderServices variantBuilderServices = Mockito.mock(VariantBuilderServices.class);
         GlobalVariantBuilderConfig global = Mockito.mock(GlobalVariantBuilderConfig.class);
-        VariantBuilderImpl variantBuilder = Mockito.mock(ApplicationVariantBuilderImpl.class);
+        AndroidVersion androidVersion = Mockito.mock(AndroidVersion.class);
 
         Mockito.when(variantBuilderServices.getProjectOptions()).thenReturn(projectOptions);
 
+        DslDefinedDeviceTest dslDefinedDeviceTest =
+                new DslDefinedDeviceTest(DeviceTestBuilder.ANDROID_TEST_TYPE, true);
+
         DeviceTestBuilder builder =
-                new DeviceTestBuilderImpl(
-                        variantBuilderServices, global, variantBuilder, false, false);
+                DeviceTestBuilderImpl.Companion.create(
+                                Lists.newArrayList(dslDefinedDeviceTest),
+                                variantBuilderServices,
+                                global,
+                                () -> androidVersion,
+                                false)
+                        .get(DeviceTestBuilder.ANDROID_TEST_TYPE);
         builder.getEnableMultiDex();
     }
 
@@ -49,12 +62,20 @@ public class DeviceTestBuilderImplTest {
         ProjectOptions projectOptions = Mockito.mock(ProjectOptions.class);
         VariantBuilderServices variantBuilderServices = Mockito.mock(VariantBuilderServices.class);
         GlobalVariantBuilderConfig global = Mockito.mock(GlobalVariantBuilderConfig.class);
-        VariantBuilderImpl variantBuilder = Mockito.mock(ApplicationVariantBuilderImpl.class);
+        AndroidVersion androidVersion = Mockito.mock(AndroidVersion.class);
         Mockito.when(variantBuilderServices.getProjectOptions()).thenReturn(projectOptions);
 
+        DslDefinedDeviceTest dslDefinedDeviceTest =
+                new DslDefinedDeviceTest(DeviceTestBuilder.ANDROID_TEST_TYPE, true);
+
         DeviceTestBuilder builder =
-                new DeviceTestBuilderImpl(
-                        variantBuilderServices, global, variantBuilder, false, false);
+                DeviceTestBuilderImpl.Companion.create(
+                                Lists.newArrayList(dslDefinedDeviceTest),
+                                variantBuilderServices,
+                                global,
+                                () -> androidVersion,
+                                false)
+                        .get(DeviceTestBuilder.ANDROID_TEST_TYPE);
 
         Truth.assertThat(builder.getTargetSdk()).isNull();
         Truth.assertThat(builder.getTargetSdkPreview()).isNull();

@@ -628,7 +628,7 @@ class ModelBuilder<
         val libraryService = LibraryServiceImpl(globalLibraryBuildService.libraryCache)
 
 
-        val deviceTests = (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()
+        val deviceTests = (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.values?.filterIsInstance<DeviceTestImpl>()
         val hostTests = (variant as? HasHostTestsCreationConfig)?.hostTests?.values
         val testFixtures = (variant as? HasTestFixtures)?.testFixtures
 
@@ -713,7 +713,7 @@ class ModelBuilder<
 
         if (adjacencyList) {
             val deviceTestArtifacts = mutableMapOf<String, ArtifactDependenciesAdjacencyList>()
-            (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()?.forEach {
+            (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.values?.filterIsInstance<DeviceTestImpl>()?.forEach {
                 deviceTestArtifacts[it.artifactName] =
                     createDependenciesWithAdjacencyList(
                         it,
@@ -755,7 +755,7 @@ class ModelBuilder<
             )
         } else {
             val deviceTestArtifacts = mutableMapOf<String, ArtifactDependencies>()
-            (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()?.forEach {
+            (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.values?.filterIsInstance<DeviceTestImpl>()?.forEach {
                 deviceTestArtifacts[it.artifactName] =
                     createDependencies(
                         it,
@@ -797,7 +797,7 @@ class ModelBuilder<
         features: BuildFeatureValues
     ): BasicVariantImpl {
         val deviceTestArtifacts = mutableMapOf<String, BasicArtifact>()
-        (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()?.forEach {
+        (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.values?.filterIsInstance<DeviceTestImpl>()?.forEach {
             deviceTestArtifacts[it.artifactName] = createBasicArtifact(it, features)
         }
         val hostTestArtifacts = mutableMapOf<String, BasicArtifact>()
@@ -838,7 +838,7 @@ class ModelBuilder<
         instantAppResultMap: MutableMap<File, Boolean>
     ): VariantImpl {
         val deviceTestArtifacts = mutableMapOf<String, AndroidArtifact>()
-        (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.filterIsInstance<DeviceTestImpl>()?.forEach {
+        (variant as? HasDeviceTestsCreationConfig)?.deviceTests?.values?.filterIsInstance<DeviceTestImpl>()?.forEach {
             deviceTestArtifacts[it.artifactName] = createAndroidArtifact(it)
         }
         val hostTestArtifacts = mutableMapOf<String, JavaArtifact>()

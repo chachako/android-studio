@@ -258,7 +258,6 @@ https://issuetracker.google.com/328748784
   * com.android.build.api.variant.DeviceTest.getProguardFiles: org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> ()
   * com.android.build.api.variant.DeviceTest.getSigningConfig: com.android.build.api.variant.SigningConfig ()
   * com.android.build.api.variant.HasDeviceTests
-  * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTest> ()
 https://issuetracker.google.com/328748820
   * com.android.build.api.dsl.Device implements org.gradle.api.Named, java.io.Serializable
   * com.android.build.api.dsl.Device.getName: java.lang.String ()
@@ -479,7 +478,6 @@ https://issuetracker.google.com/328749039
   * com.android.build.api.variant.JavaCompilation.getAnnotationProcessor: com.android.build.api.variant.AnnotationProcessor ()
 https://issuetracker.google.com/328749058
   * com.android.build.api.variant.HasDeviceTestsBuilder
-  * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTestBuilder> ()
 https://issuetracker.google.com/328749059
   * com.android.build.api.variant.Variant.getNestedComponents: java.util.List<com.android.build.api.variant.Component> ()
 https://issuetracker.google.com/328749079
@@ -737,3 +735,6 @@ https://issuetracker.google.com/350672659
   * com.android.build.api.dsl.ModelDependency
   * com.android.build.api.dsl.ModelDependency.getAiModelName: org.gradle.api.provider.Property<java.lang.String> ()
   * com.android.build.api.dsl.ModelDependency.getAiModelPackageName: org.gradle.api.provider.Property<java.lang.String> ()
+https://issuetracker.google.com/357083708
+  * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTest> ()
+  * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTestBuilder> ()

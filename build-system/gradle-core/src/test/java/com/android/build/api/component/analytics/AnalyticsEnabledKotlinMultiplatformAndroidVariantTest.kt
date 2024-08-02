@@ -16,6 +16,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.DeviceTest
+import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
@@ -45,11 +46,11 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
     @Test
     fun getDeviceTests() {
         val deviceTest = Mockito.mock(DeviceTest::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
-        val deviceTestProxy = deviceTestsProxy.single()
+        val deviceTestProxy = deviceTestsProxy[DeviceTestBuilder.ANDROID_TEST_TYPE]
         Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
         Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
@@ -64,12 +65,12 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
     fun getDeviceTests_for_android_test() {
         @Suppress("DEPRECATION")
         val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTest::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         Mockito.`when`(delegate.androidTest).thenReturn(deviceTest)
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
-        var deviceTestProxy = deviceTestsProxy.single()
+        var deviceTestProxy = deviceTestsProxy[DeviceTestBuilder.ANDROID_TEST_TYPE]
         Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTest).isTrue()
         Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTest).delegate).isEqualTo(deviceTest)
 

@@ -517,7 +517,7 @@ open class GradleTestProject @JvmOverloads constructor(
                     }
                     openConnections?.forEach(ProjectConnection::close)
                     if (!System.getProperty("os.name").contains("Windows")) {
-                        checkConfigurationCache(_buildResult)
+                        checkConfigurationCache()
                     }
 
                     if (outputLogOnFailure && testFailed) {
@@ -570,7 +570,7 @@ open class GradleTestProject @JvmOverloads constructor(
                 """.trimIndent()
     }
 
-    private fun checkConfigurationCache(_buildResult: GradleBuildResult?) {
+    private fun checkConfigurationCache() {
         val checker = ConfigurationCacheReportChecker()
         File(buildDir, "reports").walk()
             .filter { it.isFile }

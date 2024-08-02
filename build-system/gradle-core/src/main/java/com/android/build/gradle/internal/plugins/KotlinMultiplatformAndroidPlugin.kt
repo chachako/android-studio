@@ -32,6 +32,7 @@ import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.extension.impl.KotlinMultiplatformAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.MultiplatformVariantApiOperationsRegistrar
+import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.impl.KmpAndroidCompilationType
 import com.android.build.api.variant.impl.KmpVariantImpl
@@ -354,7 +355,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         mainVariant.unitTest = unitTest
         androidTest?.let {
-            mainVariant.addDeviceTest(it)
+            mainVariant.addDeviceTest(DeviceTestBuilder.ANDROID_TEST_TYPE, it)
         }
 
         val stats = configuratorService.getVariantBuilder(

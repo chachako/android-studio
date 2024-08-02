@@ -126,11 +126,11 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
     @Test
     fun getDeviceTests() {
         val deviceTest = Mockito.mock(DeviceTestBuilder::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
-        val deviceTestProxy = deviceTestsProxy.single()
+        val deviceTestProxy = deviceTestsProxy[DeviceTestBuilder.ANDROID_TEST_TYPE]
         Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTestBuilder).isTrue()
         Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTestBuilder).delegate).isEqualTo(deviceTest)
         Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
@@ -144,11 +144,11 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
     @Test
     fun getDeviceTests_for_android_test() {
         @Suppress("DEPRECATION") val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTestBuilder::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
-        val deviceTestProxy = deviceTestsProxy.single()
+        val deviceTestProxy = deviceTestsProxy[DeviceTestBuilder.ANDROID_TEST_TYPE]
         Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTestBuilder).isTrue()
         Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTestBuilder).delegate).isEqualTo(deviceTest)
 
