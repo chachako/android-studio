@@ -19,9 +19,11 @@ package com.android.tools.apk.analyzer.internal;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.tools.apk.analyzer.ApkSizeCalculator;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -31,7 +33,12 @@ import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.zip.*;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class GzipSizeCalculator implements ApkSizeCalculator {
 
@@ -40,10 +47,13 @@ public class GzipSizeCalculator implements ApkSizeCalculator {
     public GzipSizeCalculator() {}
 
     private static void verify(@NonNull Path apk) {
+        //noinspection EmptyTryBlock
         try (ZipFile zf = new ZipFile(apk.toFile())) {
-            // just verifying that this is a valid zip file
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot open apk: ", e);
+            // Ignore exceptions if the file doesn't exist (b/351919218)
+            if (Files.exists(apk)) {
+                throw new IllegalArgumentException("Cannot open apk: ", e);
+            }
         }
     }
 
