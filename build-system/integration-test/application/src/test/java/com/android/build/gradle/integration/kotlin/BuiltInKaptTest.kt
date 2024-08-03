@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.kotlin
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.ANDROIDTEST_DEBUG
@@ -332,6 +333,8 @@ class BuiltInKaptTest {
             """.trimIndent()
         )
 
-        project.executor().with(BooleanOption.USE_ANDROID_X, true).run("app:assembleDebug")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .with(BooleanOption.USE_ANDROID_X, true).run("app:assembleDebug")
     }
 }

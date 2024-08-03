@@ -236,7 +236,9 @@ internal class FusedLibraryManifestMergerTaskTest {
     }
 
     private fun getFusedLibraryAar(): File {
-        project.getSubproject("fusedLib1").execute(":fusedLib1:bundle")
+        project.getSubproject("fusedLib1").executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(":fusedLib1:bundle")
         return FileUtils.join(project.getSubproject("fusedLib1").buildDir, "bundle", "bundle.aar")
     }
 }

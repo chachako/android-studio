@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.kotlin
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.AnnotationProcessorLib
@@ -121,7 +122,9 @@ class BuiltInKaptForTestFixturesTest {
                 }
                 """.trimIndent(),
         )
-        project.executor().run("app:assembleDebugTestFixtures")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("app:assembleDebugTestFixtures")
         val aar = app.outputDir.resolve("aar").listFiles()!!.single()
         Aar(aar).use {
             assertThat(it).containsMainClass("Lcom/example/FooStringValue;")

@@ -108,7 +108,9 @@ public class SeparateTestModuleTest {
                 .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .run("clean", ":test:assembleDebug");
         assertThat(result.getTask(":test:validateSigningDebug")).didWork();
-        project.executor().run(":test:checkDependencies");
+        project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run(":test:checkDependencies");
     }
 
     @Test

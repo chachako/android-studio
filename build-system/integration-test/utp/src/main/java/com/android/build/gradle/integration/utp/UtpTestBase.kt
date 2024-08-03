@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.utp
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.LoggingLevel
@@ -53,7 +54,9 @@ abstract class UtpTestBase {
         .create()
 
     open val executor: GradleTaskExecutor
-        get() = project.executor().withLoggingLevel(LoggingLevel.LIFECYCLE)
+        get() = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .withLoggingLevel(LoggingLevel.LIFECYCLE)
 
     abstract fun selectModule(moduleName: String, isDynamicFeature: Boolean)
 

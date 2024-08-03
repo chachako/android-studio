@@ -56,7 +56,9 @@ class ResourceShrinkerTest {
 
     @Test
     fun `shrink resources for APKs with R8`() {
-        project.executor().run("clean", "assembleDebug", "assembleRelease")
+        project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("clean", "assembleDebug", "assembleRelease")
         val debugApk = project.getApk(DEBUG)
         val releaseApk = project.getApk(RELEASE)
         // Check that unused resources are replaced in shrunk apk.
@@ -271,6 +273,7 @@ class ResourceShrinkerTest {
     @Test
     fun `shrink resources in single module bundles`() {
         project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .run(
                         "clean",
                         "packageDebugUniversalApk",

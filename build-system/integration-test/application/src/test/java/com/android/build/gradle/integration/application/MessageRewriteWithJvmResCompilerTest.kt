@@ -61,7 +61,9 @@ class MessageRewriteWithJvmResCompilerTest {
                     "<id name=\"incorrect\">hello</id>",
                     ""
             )
-            project.executor().run("assembleDebug")
+            project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                .run("assembleDebug")
         }
     }
 

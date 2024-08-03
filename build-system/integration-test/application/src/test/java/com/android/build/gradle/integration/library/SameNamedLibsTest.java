@@ -32,7 +32,7 @@ public class SameNamedLibsTest {
 
     @Before
     public void setUp() throws IOException, InterruptedException {
-        project.execute("clean", "assembleDebug");
+        executor().run("clean", "assembleDebug");
     }
 
     @Test

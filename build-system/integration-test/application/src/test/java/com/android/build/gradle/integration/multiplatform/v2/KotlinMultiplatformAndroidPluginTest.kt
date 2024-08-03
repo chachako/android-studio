@@ -57,7 +57,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
     @Before
     fun setUpProject() {
         if (publishLibs) {
-            project.publishLibs()
+            project.publishLibs(configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON)
         }
     }
 

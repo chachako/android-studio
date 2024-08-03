@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.Version
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
@@ -153,6 +154,6 @@ class DifferentProjectClassLoadersTest {
     }
 
     private fun executor(): GradleTaskExecutor {
-        return project.executor()
+        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

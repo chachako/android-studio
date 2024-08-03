@@ -118,7 +118,7 @@ class UtpConnectedTest : UtpTestBase() {
         assertThat(project.file(testResultPbPath)).doesNotExist()
 
         testExecutionStartTime = System.currentTimeMillis()
-        val resultWithConfigCache = project.executor()
+        val resultWithConfigCache = executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
