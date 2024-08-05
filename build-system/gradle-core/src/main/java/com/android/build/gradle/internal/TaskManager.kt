@@ -73,6 +73,7 @@ import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
+import com.android.build.gradle.internal.services.KotlinServices
 import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AndroidVariantTask
@@ -134,6 +135,7 @@ import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
 import com.android.build.gradle.internal.transforms.ShrinkResourcesNewShrinkerTask
+import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.build.gradle.internal.utils.checkKotlinStdLibIsInDependencies
 import com.android.build.gradle.internal.utils.isKotlinKaptPluginApplied
 import com.android.build.gradle.internal.utils.isKspPluginApplied
@@ -194,6 +196,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.dsl.KaptExtensionConfig
 import java.io.File
 import java.util.Locale
 
@@ -938,10 +941,43 @@ abstract class TaskManager(
         } else {
             checkKotlinStdLibIsInDependencies(project, creationConfig)
             if (creationConfig.useBuiltInKaptSupport) {
+                copyKaptExtensionProperties(kotlinServices)
                 KaptStubGenerationCreationAction(creationConfig, kotlinServices).registerTask()
                 KaptCreationAction(creationConfig, project, kotlinServices).registerTask()
             }
             KotlinCompileCreationAction(creationConfig, kotlinServices).registerTask()
+        }
+    }
+
+    /**
+     * If the Jetbrains KAPT plugin is applied, copy the properties from its kapt extension to the
+     * kotlinServices.factory.kaptExtension.
+     *
+     * TODO(b/341765853) - request a proper API for this from Jetbrains
+     * TODO(b/341765853) - remove this after AGP stops supporting the [KOTLIN_KAPT_PLUGIN_ID] plugin
+     */
+    private fun copyKaptExtensionProperties(kotlinServices: KotlinServices) {
+        project.pluginManager.withPlugin(KOTLIN_KAPT_PLUGIN_ID) {
+            project.afterEvaluate {
+                val jetbrainsKaptExtension =
+                    project.extensions.findByName("kapt") as? KaptExtensionConfig
+                        ?: return@afterEvaluate
+                kotlinServices.factory.kaptExtension.also {
+                    it.correctErrorTypes = jetbrainsKaptExtension.correctErrorTypes
+                    it.detectMemoryLeaks = jetbrainsKaptExtension.detectMemoryLeaks
+                    it.dumpDefaultParameterValues =
+                        jetbrainsKaptExtension.dumpDefaultParameterValues
+                    it.includeCompileClasspath =
+                        jetbrainsKaptExtension.includeCompileClasspath
+                    it.keepJavacAnnotationProcessors = jetbrainsKaptExtension.keepJavacAnnotationProcessors
+                    it.mapDiagnosticLocations = jetbrainsKaptExtension.mapDiagnosticLocations
+                    it.showProcessorStats = jetbrainsKaptExtension.showProcessorStats
+                    it.strictMode = jetbrainsKaptExtension.strictMode
+                    it.stripMetadata = jetbrainsKaptExtension.stripMetadata
+                    it.useBuildCache = jetbrainsKaptExtension.useBuildCache
+                    it.useLightAnalysis = jetbrainsKaptExtension.useLightAnalysis
+                }
+            }
         }
     }
 

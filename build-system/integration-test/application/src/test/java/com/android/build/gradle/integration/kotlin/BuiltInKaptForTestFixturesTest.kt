@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.kotlin
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.VERSION_CATALOG
 import com.android.build.gradle.integration.common.fixture.app.AnnotationProcessorLib
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -34,8 +35,17 @@ import com.android.testutils.apk.Aar
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class BuiltInKaptForTestFixturesTest {
+@RunWith(Parameterized::class)
+class BuiltInKaptForTestFixturesTest(private val kotlinVersion: String) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "kotlinVersion_{0}")
+        fun parameters() = listOf(TestUtils.KOTLIN_VERSION_FOR_TESTS, "1.9.22")
+    }
 
     @Rule
     @JvmField
@@ -54,6 +64,11 @@ class BuiltInKaptForTestFixturesTest {
 
     @Before
     fun setUp() {
+        TestFileUtils.searchAndReplace(
+            project.projectDir.parentFile.resolve(VERSION_CATALOG),
+            "version('kotlinVersion', '${TestUtils.KOTLIN_VERSION_FOR_TESTS}')",
+            "version('kotlinVersion', '$kotlinVersion' )"
+        )
         TestFileUtils.appendToFile(
             project.gradlePropertiesFile,
             "${BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT.propertyName}=true"
@@ -98,7 +113,15 @@ class BuiltInKaptForTestFixturesTest {
                 apply plugin: '$ANDROID_BUILT_IN_KAPT_PLUGIN_ID'
                 """.trimIndent(),
         )
-        project.executor().run("app:assembleDebugTestFixtures")
+        project.executor()
+            .withConfigurationCaching(
+                if (kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS) {
+                    BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION
+                } else {
+                    BaseGradleExecutor.ConfigurationCaching.ON
+                }
+            )
+            .run("app:assembleDebugTestFixtures")
         val aar = app.outputDir.resolve("aar").listFiles()!!.single()
         Aar(aar).use {
             assertThat(it).containsMainClass("Lcom/example/FooStringValue;")
@@ -124,11 +147,58 @@ class BuiltInKaptForTestFixturesTest {
         )
         project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            // Version 1.9.22 of the jetbrains KAPT plugin uses deprecated Gradle features
+            .withFailOnWarning(kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS)
             .run("app:assembleDebugTestFixtures")
         val aar = app.outputDir.resolve("aar").listFiles()!!.single()
         Aar(aar).use {
             assertThat(it).containsMainClass("Lcom/example/FooStringValue;")
             assertThat(it).containsMainClass("Lcom/example/Foo\$\$InnerClass;")
         }
+    }
+
+    @Test
+    fun testKaptDslWithJetbrainsKaptPlugin() {
+        val app = project.getSubproject(":app")
+        TestFileUtils.searchAndReplace(
+            app.buildFile,
+            "apply plugin: 'com.android.application'",
+            """
+                apply plugin: 'com.android.application'
+                apply plugin: '$KOTLIN_ANDROID_PLUGIN_ID'
+                apply plugin: '$KOTLIN_KAPT_PLUGIN_ID'
+
+                kotlin {
+                    jvmToolchain(17)
+                }
+
+                kapt {
+                    useBuildCache = true
+                }
+                """.trimIndent(),
+        )
+        TestFileUtils.appendToFile(project.gradlePropertiesFile, "org.gradle.caching=true")
+
+        val executor =
+            project.executor()
+                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+                // Version 1.9.22 of the jetbrains KAPT plugin uses deprecated Gradle features
+                .withFailOnWarning(kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS)
+        // test for caching when useBuildCache = true
+        executor.run("app:assembleDebugTestFixtures")
+        assertThat(project.buildResult.didWorkTasks).contains(":app:kaptDebugTestFixturesKotlin")
+        executor.run("clean", "app:assembleDebugTestFixtures")
+        assertThat(project.buildResult.fromCacheTasks).contains(":app:kaptDebugTestFixturesKotlin")
+
+        // test no caching when useBuildCache = false
+        TestFileUtils.searchAndReplace(
+            app.buildFile,
+            "useBuildCache = true",
+            "useBuildCache = false"
+        )
+        executor.run("app:assembleDebugTestFixtures")
+        executor.run("clean", "app:assembleDebugTestFixtures")
+        assertThat(project.buildResult.fromCacheTasks)
+            .doesNotContain(":app:kaptDebugTestFixturesKotlin")
     }
 }
