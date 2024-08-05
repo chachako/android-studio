@@ -30,12 +30,12 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public final class RemoteSystemImage implements ISystemImage {
-    private final RemotePackage myRemotePackage;
-    private final ImmutableList<IdDisplay> myTags;
-    private final IdDisplay myVendor;
-    private final List<String> myAbis;
-    private final List<String> myTranslatedAbis;
-    private final AndroidVersion myAndroidVersion;
+    private final RemotePackage remotePackage;
+    private final ImmutableList<IdDisplay> tags;
+    private final IdDisplay vendor;
+    private final List<String> abis;
+    private final List<String> translatedAbis;
+    private final AndroidVersion androidVersion;
 
     public RemoteSystemImage(RemotePackage p) {
         IdDisplay vendor = null;
@@ -48,12 +48,12 @@ public final class RemoteSystemImage implements ISystemImage {
             vendor = ((DetailsTypes.SysImgDetailsType) details).getVendor();
         }
 
-        myRemotePackage = p;
-        myTags = SystemImageTags.getTags(p);
-        myVendor = vendor;
-        myAbis = details.getAbis();
-        myTranslatedAbis = details.getTranslatedAbis();
-        myAndroidVersion = details.getAndroidVersion();
+        remotePackage = p;
+        tags = SystemImageTags.getTags(p);
+        this.vendor = vendor;
+        abis = details.getAbis();
+        translatedAbis = details.getTranslatedAbis();
+        androidVersion = details.getAndroidVersion();
     }
 
     @NonNull
@@ -66,31 +66,31 @@ public final class RemoteSystemImage implements ISystemImage {
     @NonNull
     @Override
     public List<IdDisplay> getTags() {
-        return myTags;
+        return tags;
     }
 
     @com.android.annotations.Nullable
     @Override
     public IdDisplay getAddonVendor() {
-        return myVendor;
+        return vendor;
     }
 
     @NonNull
     @Override
     public String getPrimaryAbiType() {
-        return myAbis.get(0);
+        return abis.get(0);
     }
 
     @NonNull
     @Override
     public List<String> getAbiTypes() {
-        return myAbis;
+        return abis;
     }
 
     @NonNull
     @Override
     public List<String> getTranslatedAbiTypes() {
-        return myTranslatedAbis;
+        return translatedAbis;
     }
 
     @NonNull
@@ -102,29 +102,29 @@ public final class RemoteSystemImage implements ISystemImage {
     @NonNull
     @Override
     public Revision getRevision() {
-        return myRemotePackage.getVersion();
+        return remotePackage.getVersion();
     }
 
     @NonNull
     @Override
     public AndroidVersion getAndroidVersion() {
-        return myAndroidVersion;
+        return androidVersion;
     }
 
     @NonNull
     @Override
     public RepoPackage getPackage() {
-        return myRemotePackage;
+        return remotePackage;
     }
 
     @Override
     public boolean obsolete() {
-        return myRemotePackage.obsolete();
+        return remotePackage.obsolete();
     }
 
     @Override
     public int hashCode() {
-        return myRemotePackage.hashCode();
+        return remotePackage.hashCode();
     }
 
     @Override
@@ -133,6 +133,6 @@ public final class RemoteSystemImage implements ISystemImage {
             return false;
         }
         RemoteSystemImage other = (RemoteSystemImage) o;
-        return myRemotePackage.equals(other.myRemotePackage);
+        return remotePackage.equals(other.remotePackage);
     }
 }
