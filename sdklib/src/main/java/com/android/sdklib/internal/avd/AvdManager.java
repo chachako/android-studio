@@ -103,13 +103,12 @@ public class AvdManager {
     }
 
     private static final Pattern INI_LINE_PATTERN =
-        Pattern.compile("^([a-zA-Z0-9._-]+)\\s*=\\s*(.*)\\s*$");        //$NON-NLS-1$
+            Pattern.compile("^([a-zA-Z0-9._-]+)\\s*=\\s*(.*)\\s*$");
 
-    public static final String AVD_FOLDER_EXTENSION = ".avd";           //$NON-NLS-1$
+    public static final String AVD_FOLDER_EXTENSION = ".avd";
 
     /** Pattern to match pixel-sized skin "names", e.g. "320x480". */
-    public static final Pattern NUMERIC_SKIN_SIZE =
-            Pattern.compile("([0-9]{2,})x([0-9]{2,})"); // $NON-NLS-1$
+    public static final Pattern NUMERIC_SKIN_SIZE = Pattern.compile("([0-9]{2,})x([0-9]{2,})");
 
     public static final String DATA_FOLDER = "data";
     public static final String USERDATA_IMG = "userdata.img";
@@ -117,27 +116,19 @@ public class AvdManager {
     public static final String SNAPSHOTS_DIRECTORY = "snapshots";
     public static final String USER_SETTINGS_INI = "user-settings.ini"; // $NON-NLS-1$
 
-    private static final String BOOT_PROP = "boot.prop"; //$NON-NLS-1$
-    static final String CONFIG_INI = "config.ini"; //$NON-NLS-1$
+    private static final String BOOT_PROP = "boot.prop";
+    static final String CONFIG_INI = "config.ini";
     private static final String HARDWARE_QEMU_INI = "hardware-qemu.ini";
-    private static final String SDCARD_IMG = "sdcard.img"; //$NON-NLS-1$
+    private static final String SDCARD_IMG = "sdcard.img";
 
-    static final String INI_EXTENSION = ".ini"; //$NON-NLS-1$
-    private static final Pattern INI_NAME_PATTERN = Pattern.compile("(.+)\\" + //$NON-NLS-1$
-            INI_EXTENSION + "$",                                               //$NON-NLS-1$
-            Pattern.CASE_INSENSITIVE);
+    static final String INI_EXTENSION = ".ini";
+    private static final Pattern INI_NAME_PATTERN =
+            Pattern.compile("(.+)\\" + INI_EXTENSION + "$", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern IMAGE_NAME_PATTERN = Pattern.compile("(.+)\\.img$", //$NON-NLS-1$
-            Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMAGE_NAME_PATTERN =
+            Pattern.compile("(.+)\\.img$", Pattern.CASE_INSENSITIVE);
 
-    /** The sdcard string represents a valid number but the size is outside of the allowed range. */
-    public static final int SDCARD_SIZE_NOT_IN_RANGE = 0;
-    /** The sdcard string looks like a size number+suffix but the number failed to decode. */
-    public static final int SDCARD_SIZE_INVALID = -1;
-    /** The sdcard string doesn't look like a size, it might be a path instead. */
-    public static final int SDCARD_NOT_SIZE_PATTERN = -2;
-
-    public static final String HARDWARE_INI = "hardware.ini"; //$NON-NLS-1$
+    public static final String HARDWARE_INI = "hardware.ini";
 
     private static class AvdMgrException extends Exception {}
 
