@@ -18,6 +18,7 @@ package com.android.backup.testing
 
 import ai.grazie.utils.dropPrefix
 import com.android.backup.AbstractAdbServices
+import com.android.backup.AdbServices.AdbOutput
 import com.android.backup.BackupException
 import com.android.backup.ErrorCode
 import com.android.tools.environment.log.NoopLogger
@@ -84,13 +85,13 @@ internal class FakeAdbServices(
 
   fun getProgress() = (progressListener as FakeProgressListener).getSteps()
 
-  override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
+  override suspend fun executeCommand(command: String, errorCode: ErrorCode): AdbOutput {
     commands.add(command)
     val result = commandOverrides[command]?.handle(errorCode)
     if (result != null) {
-      return result
+      return AdbOutput(result, "")
     }
-    return when {
+    val stdout = when {
       command == "bmgr enabled" -> handleBmgrEnabled()
       command.startsWith(BMGR_ENABLE) -> handleEnableBmgr(command)
       command.startsWith(SET_TEST_MODE) -> handleSetTestMode(command)
@@ -103,6 +104,7 @@ internal class FakeAdbServices(
       command == DUMPSYS_GMSCORE -> handleDumpsysGmsCore()
       else -> throw NotImplementedError("Command '$command' is not implemented")
     }
+    return AdbOutput(stdout, "")
   }
 
   @Suppress("BlockingMethodInNonBlockingContext")

@@ -51,7 +51,7 @@ interface AdbServices {
   suspend fun executeCommand(
     command: String,
     errorCode: ErrorCode = ErrorCode.UNEXPECTED_ERROR,
-  ): String
+  ): AdbOutput
 
   /**
    * Pulls a file from a device
@@ -79,4 +79,6 @@ interface AdbServices {
   suspend fun backupNow(applicationId: String)
 
   suspend fun restore(token: String, applicationId: String)
+
+  class AdbOutput(val stdout: String, val stderr: String)
 }

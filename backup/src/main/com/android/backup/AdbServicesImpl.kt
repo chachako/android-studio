@@ -22,6 +22,7 @@ import com.android.adblib.TextShellV2Collector
 import com.android.adblib.shellCommand
 import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
+import com.android.backup.AdbServices.AdbOutput
 import com.android.tools.environment.Logger
 import java.io.InputStream
 import java.io.OutputStream
@@ -37,7 +38,7 @@ internal class AdbServicesImpl(
   minGmsVersion: Int,
 ) : AbstractAdbServices(serialNumber, logger, progressListener, totalSteps, minGmsVersion) {
 
-  override suspend fun executeCommand(command: String, errorCode: ErrorCode): String {
+  override suspend fun executeCommand(command: String, errorCode: ErrorCode): AdbOutput {
     val output =
       adbSession.deviceServices
         .shellCommand(deviceSelector, command)
@@ -56,7 +57,7 @@ internal class AdbServicesImpl(
         "Failed to run '$command' on $serialNumber\n${output.describe()}",
       )
     }
-    return output.stdout.trimEnd('\n')
+    return AdbOutput(output.stdout.trimEnd('\n'), output.stderr.trimEnd('\n'))
   }
 
   override suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String) {
