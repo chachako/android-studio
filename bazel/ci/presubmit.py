@@ -62,17 +62,7 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
     return impacted_targets.read_text().splitlines()
 
 
-def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
-  """Generates and uploads the hash file for the current build to GCS."""
-  object_name = _HASH_FILE_NAME.format(
-      bid=build_env.build_number,
-      target=build_env.build_target_name,
-  )
-  hash_file_path = _generate_hash_file(build_env)
-  gce.upload_to_gcs(hash_file_path, _HASH_FILE_BUCKET, object_name)
-
-
-def find_impacted_test_targets(
+def _find_impacted_test_targets(
     build_env: bazel.BuildEnv,
     base_targets: Sequence[str],
     test_flag_filters: str,
@@ -123,3 +113,72 @@ def find_impacted_test_targets(
   result = bazel_cmd.query(query)
 
   return list(set(targets) & set(result.stdout.decode('utf-8').splitlines()))
+
+
+def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
+  """Generates and uploads the hash file for the current build to GCS."""
+  object_name = _HASH_FILE_NAME.format(
+      bid=build_env.build_number,
+      target=build_env.build_target_name,
+  )
+  hash_file_path = _generate_hash_file(build_env)
+  gce.upload_to_gcs(hash_file_path, _HASH_FILE_BUCKET, object_name)
+
+
+def find_test_targets(
+    build_env: bazel.BuildEnv,
+    base_targets: Sequence[str],
+    test_flag_filters: str,
+) -> List[str]:
+  """Returns the full list of test targets to run for the current build.
+
+  Tags in the CL description are used to customize the behavior of the
+  presubmit, e.g.:
+    - Presubmit-Test: default
+      - Tests all default targets regardless of whether they are impacted.
+    - Presubmit-Test: studio-linux:default
+      - Tests all default targets on studio-linux regardless of whether they are
+        impacted.
+    - Presubmit-Test: //tools/base:some_test
+      - Explicitly tests //tools/base:some_test on all platforms.
+    - Presubmit-Test: studio-win://tools/base:some_test
+      - Explicitly tests //tools/base:some_tests only on studio-win.
+
+  Tags can be repeated in one description and across multiple changes.
+  """
+  gerrit_changes = gce.get_gerrit_changes(build_env.build_number)
+  tags = []
+  for gerrit_change in gerrit_changes:
+    tags.extend(gerrit_change.tags)
+
+  # Parse Presubmit-Test tags.
+  use_base_targets = False
+  explicit_targets = []
+  for tag, value in tags:
+    if tag == 'Presubmit-Test':
+      # Filter AB target-specific test targets.
+      if ':' in value and not value.startswith('//'):
+        ab_target, test_target = value.split(':', 1)
+        if ab_target != build_env.build_target_name:
+          continue
+        value = test_target
+
+      # "default" is a special value that indicates that all default targets
+      # should be tested.
+      if value.lower() == 'default':
+        use_base_targets = True
+        continue
+
+      # Add any targets that are explicitly requested.
+      explicit_targets.append(value)
+
+  if use_base_targets:
+    impacted_targets = base_targets
+  else:
+    impacted_targets = _find_impacted_test_targets(
+        build_env,
+        base_targets,
+        test_flag_filters,
+    )
+
+  return impacted_targets + explicit_targets

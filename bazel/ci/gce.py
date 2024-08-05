@@ -1,7 +1,20 @@
+import dataclasses
 import json
+import re
 import subprocess
+from typing import List, Tuple
 import urllib.parse
 import urllib.request
+
+
+@dataclasses.dataclass
+class GerritChange:
+  """Gerrit change data for a build."""
+  change_id: str
+  change_number: str
+  owner: str
+  message: str
+  tags: List[Tuple[str,str]]
 
 
 def get_auth_header() -> str:
@@ -55,7 +68,6 @@ def download_from_gcs(bucket: str, name: str, dst: str) -> bool:
 def get_reference_build_id(bid: str, target: str) -> str:
   """Returns the reference build ID for the current build."""
   url = f'https://androidbuildinternal.googleapis.com/android/internal/build/v3/builds/{bid}/{target}'
-
   cmd = [
       'curl',
       url,
@@ -65,3 +77,42 @@ def get_reference_build_id(bid: str, target: str) -> str:
   result = subprocess.run(cmd, check=True, capture_output=True)
 
   return json.loads(result.stdout.decode('utf-8'))['referenceBuildIds'][0]
+
+
+def get_gerrit_changes(bid: str) -> List[GerritChange]:
+  """Returns the Gerrit change data for the current build."""
+  url = f'https://androidbuildinternal.googleapis.com/android/internal/build/v3/changes/{bid}'
+  cmd = [
+      'curl',
+      url,
+      '-H',
+      get_auth_header(),
+  ]
+  result = subprocess.run(cmd, check=True, capture_output=True)
+  data = json.loads(result.stdout.decode('utf-8'))
+
+  changes = []
+  for change in data['changes']:
+    # Strip @google.com from the owner email.
+    owner = change['owner']['email'].removesuffix('@google.com')
+
+    # Extract tags from the commit message.
+    revision = change['revisions'][0]
+    message = revision['commit']['commitMessage']
+    tags = []
+    for line in message.splitlines():
+      match = re.fullmatch(r'^([\w-]+):\s*(.+)$', line)
+      if not match:
+        continue
+      tags.append((match.group(1), match.group(2)))
+
+    gerrit_change = GerritChange(
+        change_id=change['changeId'],
+        change_number=change['changeNumber'],
+        owner=owner,
+        message=message,
+        tags=tags,
+    )
+    changes.append(gerrit_change)
+
+  return changes
