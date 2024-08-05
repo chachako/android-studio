@@ -226,6 +226,7 @@ dependencies {
     apiTestImplementation libs.com.android.tools.apkparser.apkanalyzer
     apiTestImplementation externalTestFixtures.apkanalyzer
     testCompileOnly project(':base:profile')
+    testCompileOnly project(':base:build-system:builder-r8')
 
     includeInJar(project(':base:build-system:shrinker')) {
         transitive = false
