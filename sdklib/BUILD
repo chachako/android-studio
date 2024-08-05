@@ -35,17 +35,18 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
-        "@intellij//:intellij-sdk",
+        "//tools/adt/idea/.idea/libraries:agp-version",
         "@intellij//:com.intellij.java",
+        "@intellij//:intellij-sdk",
+        "//tools/adt/idea/.idea/libraries:guava-testlib[test]",
+        "//tools/adt/idea/.idea/libraries:jimfs[test]",
+        "//tools/adt/idea/.idea/libraries:mockito[test]",
+        "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/base/device_validator:studio.android.sdktools.dvlib[module]",
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api[module]",
-        "//tools/adt/idea/.idea/libraries:truth[test]",
-        "//tools/adt/idea/.idea/libraries:guava-testlib[test]",
-        "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/base/repository:studio.android.sdktools.repository[module]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
-        "//tools/adt/idea/.idea/libraries:agp-version",
     ],
 )
 
@@ -134,6 +135,7 @@ kotlin_test(
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
         "@maven//:org.apache.httpcomponents.httpcore",
+        "@maven//:org.mockito.mockito-core",
     ],
 )
 
