@@ -136,6 +136,7 @@ class CacheabilityTest {
         return with(EmptyActivityProjectBuilder()) {
             this.projectName = projectName
             this.withUnitTest = true
+            withHeap("2048m")
             build()
         }
     }

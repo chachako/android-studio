@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.fixture.DEFAULT_MIN_SDK_VERSI
 import com.android.build.gradle.integration.common.fixture.EmptyGradleProject
 import com.android.build.gradle.integration.common.fixture.GradleProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_CONSTRAINT_LAYOUT_VERSION
 import com.android.build.gradle.options.BooleanOption
@@ -54,6 +55,7 @@ class EmptyActivityProjectBuilder {
     var gradleBuildCacheDir: File? = null
     var withConfigurationCaching: BaseGradleExecutor.ConfigurationCaching =
             BaseGradleExecutor.ConfigurationCaching.ON
+    var heapSize: String? = null
 
     /** The app subproject. */
     private lateinit var app: GradleProject
@@ -100,6 +102,9 @@ class EmptyActivityProjectBuilder {
 
         if (useGradleBuildCache) {
             rootProjectBuilder.withGradleBuildCacheDirectory(gradleBuildCacheDir!!)
+        }
+        if (heapSize != null) {
+            rootProjectBuilder.withHeap(heapSize)
         }
 
         return rootProjectBuilder.create()
@@ -342,6 +347,11 @@ class EmptyActivityProjectBuilder {
         if (useKotlin) {
             kotlinUsedInLibrarySubprojects = true
         }
+        return this
+    }
+
+    fun withHeap(heapSize: String): EmptyActivityProjectBuilder {
+        this.heapSize = heapSize
         return this
     }
 
