@@ -41,12 +41,12 @@ import com.intellij.psi.PsiTypeParameter
 import junit.framework.TestCase
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.symbol
-import org.jetbrains.kotlin.analysis.api.types.KtClassErrorType
-import org.jetbrains.kotlin.analysis.api.types.KtType
+import org.jetbrains.kotlin.analysis.api.types.KaClassErrorType
+import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.asJava.elements.KotlinLightTypeParameterBuilder
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -2757,8 +2757,8 @@ class UastTest : TestCase() {
   }
 
   @OptIn(KaExperimentalApi::class)
-  fun disabledTestFunInterfaceTypeForLambdaWithLabels() {
-    // TODO: https://youtrack.jetbrains.com/issue/KT-69453
+  fun testFunInterfaceTypeForLambdaWithLabels() {
+    // https://youtrack.jetbrains.com/issue/KT-69453
     // Regression test from b/347626696
     val source =
       kotlin(
@@ -2830,7 +2830,7 @@ class UastTest : TestCase() {
                   as? PsiModifierListOwner ?: ktExpression
               try {
                 samType.asPsiType(psiTypeParent, allowErrorTypes = true) as? PsiClassType
-              } catch (e: IllegalArgumentException) {
+              } catch (_: IllegalArgumentException) {
                 // E.g., kotlin/Array<out ft<kotlin/Any, kotlin/Any?>>?>
                 // non-simple array argument
                 null
@@ -2839,10 +2839,10 @@ class UastTest : TestCase() {
           }
 
           // Copied from google3 utils
-          private fun KtAnalysisSession.getSamType(ktExpression: KtExpression): KtType? {
+          private fun KaSession.getSamType(ktExpression: KtExpression): KaType? {
             // E.g. `FunInterface(::method)` or `call(..., ::method, ...)`
             return ktExpression.expectedType
-              ?.takeIf { it !is KtClassErrorType && it.isFunctionalInterface }
+              ?.takeIf { it !is KaClassErrorType && it.isFunctionalInterface }
               ?.lowerBoundIfFlexible()
           }
         }
