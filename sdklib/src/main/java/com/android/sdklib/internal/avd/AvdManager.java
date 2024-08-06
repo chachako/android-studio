@@ -498,8 +498,8 @@ public class AvdManager {
      * Creates a new AVD. It is expected that there is no existing AVD with this name already.
      *
      * @param avdFolder the data folder for the AVD. It will be created as needed. Unless you want
-     *     to locate it in a specific directory, the ideal default is {@code
-     *     AvdManager.AvdInfo.getAvdFolder}.
+     *     to locate it in a specific directory, the ideal default is {@link
+     *     AvdInfo#getDefaultAvdFolder}.
      * @param avdName the name of the AVD
      * @param systemImage the system image of the AVD
      * @param skin the skin to use, if specified. Can be null.
@@ -700,22 +700,24 @@ public class AvdManager {
      * Duplicates an existing AVD. Update the 'config.ini' and 'hardware-qemu.ini' files to
      * reference the new name and path.
      *
-     * @param origAvd the AVD to be duplicated
+     * @param avdFolder the data folder of the AVD to be duplicated
      * @param newAvdName name of the new copy
      * @param systemImage system image that the AVD uses
      */
     @Nullable
     private AvdInfo duplicateAvd(
-            @NonNull Path origAvd, @NonNull String newAvdName, @NonNull ISystemImage systemImage) {
+            @NonNull Path avdFolder,
+            @NonNull String newAvdName,
+            @NonNull ISystemImage systemImage) {
         try {
-            Path destAvdFolder = origAvd.getParent().resolve(newAvdName + AVD_FOLDER_EXTENSION);
+            Path destAvdFolder = avdFolder.getParent().resolve(newAvdName + AVD_FOLDER_EXTENSION);
             inhibitCopyOnWrite(destAvdFolder, mLog);
 
             ProgressIndicator progInd = new ConsoleProgressIndicator();
             progInd.setText("Copying files");
             progInd.setIndeterminate(true);
             FileOpUtils.recursiveCopy(
-                    origAvd,
+                    avdFolder,
                     destAvdFolder,
                     false,
                     path -> !path.toString().endsWith(".lock"), // Do not copy *.lock files
@@ -731,24 +733,25 @@ public class AvdManager {
             writeIniFile(configIni, configVals, true);
 
             // Update the AVD name and paths in the new copies of config.ini and hardware-qemu.ini
-            String origAvdName = origAvd.getFileName().toString().replace(".avd", "");
-            String origAvdPath = origAvd.toAbsolutePath().toString();
-            String newAvdPath = destAvdFolder.toAbsolutePath().toString();
+            String origAvdName = avdFolder.getFileName().toString().replace(".avd", "");
+            String origAvdFolder = avdFolder.toAbsolutePath().toString();
+            String newAvdFolder = destAvdFolder.toAbsolutePath().toString();
 
             configVals =
                     updateNameAndIniPaths(
-                            configIni, origAvdName, origAvdPath, newAvdName, newAvdPath);
+                            configIni, origAvdName, origAvdFolder, newAvdName, newAvdFolder);
 
             Path hwQemu = destAvdFolder.resolve(HARDWARE_QEMU_INI);
-            updateNameAndIniPaths(hwQemu, origAvdName, origAvdPath, newAvdName, newAvdPath);
+            updateNameAndIniPaths(hwQemu, origAvdName, origAvdFolder, newAvdName, newAvdFolder);
 
             // Create <AVD name>.ini
-            Path iniFile =
+            Path metadataIniFile =
                     createAvdIniFile(
                             newAvdName, destAvdFolder, false, systemImage.getAndroidVersion());
 
             // Create an AVD object from these files
-            return new AvdInfo(iniFile, destAvdFolder, systemImage, configVals, userSettingsVals);
+            return new AvdInfo(
+                    metadataIniFile, destAvdFolder, systemImage, configVals, userSettingsVals);
         } catch (AndroidLocationsException | IOException e) {
             mLog.warning("Exception while duplicating an AVD: %1$s", e);
             return null;
@@ -838,19 +841,19 @@ public class AvdManager {
     /**
      * Creates the metadata ini file for an AVD.
      *
-     * @param name the basename of the metadata ini file of the AVD.
+     * @param avdName the basename of the metadata ini file of the AVD.
      * @param avdFolder path for the data folder of the AVD.
      * @param removePrevious True if an existing ini file should be removed.
      * @throws AndroidLocationsException if there's a problem getting android root directory.
      * @throws IOException if {@link Files#delete(Path)} ()} fails.
      */
     private Path createAvdIniFile(
-            @NonNull String name,
+            @NonNull String avdName,
             @NonNull Path avdFolder,
             boolean removePrevious,
             @NonNull AndroidVersion version)
             throws AndroidLocationsException, IOException {
-        Path iniFile = AvdInfo.getDefaultIniFile(this, name);
+        Path iniFile = AvdInfo.getDefaultIniFile(this, avdName);
 
         if (removePrevious) {
             if (CancellableFileIo.isRegularFile(iniFile)) {
@@ -966,27 +969,26 @@ public class AvdManager {
      * actually different than current values.
      *
      * @param avdInfo the information on the AVD to move.
-     * @param newName the new name of the AVD if non null.
-     * @param paramFolderPath the new data folder if non null.
+     * @param newAvdName the new name of the AVD if non null.
+     * @param newAvdFolder the new data folder if non null.
      * @return True if the move succeeded or there was nothing to do. If false, this method will
      *     have had already output error in the log.
      */
     @Slow
     public boolean moveAvd(
-            @NonNull AvdInfo avdInfo, @Nullable String newName, @Nullable Path paramFolderPath) {
+            @NonNull AvdInfo avdInfo, @Nullable String newAvdName, @Nullable Path newAvdFolder) {
         try {
-            if (paramFolderPath != null) {
+            if (newAvdFolder != null) {
                 Path f = mBaseAvdFolder.resolve(avdInfo.getDataFolderPath());
-                mLog.info(
-                        "Moving '%1$s' to '%2$s'.\n", avdInfo.getDataFolderPath(), paramFolderPath);
+                mLog.info("Moving '%1$s' to '%2$s'.\n", avdInfo.getDataFolderPath(), newAvdFolder);
                 try {
-                    Files.move(f, mBaseAvdFolder.resolve(paramFolderPath));
+                    Files.move(f, mBaseAvdFolder.resolve(newAvdFolder));
                 } catch (IOException exception) {
                     mLog.error(
                             exception,
                             "Failed to move '%1$s' to '%2$s'.\n",
                             avdInfo.getDataFolderPath(),
-                            paramFolderPath);
+                            newAvdFolder);
                     return false;
                 }
 
@@ -994,7 +996,7 @@ public class AvdManager {
                 AvdInfo info =
                         new AvdInfo(
                                 avdInfo.getIniFile(),
-                                paramFolderPath,
+                                newAvdFolder,
                                 avdInfo.getSystemImage(),
                                 avdInfo.getProperties(),
                                 avdInfo.getUserSettings());
@@ -1004,15 +1006,19 @@ public class AvdManager {
                 createAvdIniFile(info);
             }
 
-            if (newName != null) {
-                Path oldIniFile = avdInfo.getIniFile();
-                Path newIniFile = AvdInfo.getDefaultIniFile(this, newName);
+            if (newAvdName != null) {
+                Path oldMetadataIniFile = avdInfo.getIniFile();
+                Path newMetadataIniFile = AvdInfo.getDefaultIniFile(this, newAvdName);
 
-                mLog.warning("Moving '%1$s' to '%2$s'.", oldIniFile, newIniFile);
+                mLog.warning("Moving '%1$s' to '%2$s'.", oldMetadataIniFile, newMetadataIniFile);
                 try {
-                    Files.move(oldIniFile, newIniFile);
+                    Files.move(oldMetadataIniFile, newMetadataIniFile);
                 } catch (IOException exception) {
-                    mLog.warning(null, "Failed to move '%1$s' to '%2$s'.", oldIniFile, newIniFile);
+                    mLog.warning(
+                            null,
+                            "Failed to move '%1$s' to '%2$s'.",
+                            oldMetadataIniFile,
+                            newMetadataIniFile);
                     return false;
                 }
 
@@ -1131,23 +1137,23 @@ public class AvdManager {
     /**
      * Parses an AVD .ini file to create an {@link AvdInfo}.
      *
-     * @param iniPath The path to the AVD .ini file
+     * @param metadataIniFile The path to the AVD .ini file
      * @return A new {@link AvdInfo} with an {@link AvdStatus} indicating whether this AVD is valid
      *     or not.
      */
     @VisibleForTesting
     @Slow
-    public AvdInfo parseAvdInfo(@NonNull Path iniPath) {
-        Map<String, String> map = parseIniFile(new PathFileWrapper(iniPath), mLog);
+    AvdInfo parseAvdInfo(@NonNull Path metadataIniFile) {
+        Map<String, String> metadata = parseIniFile(new PathFileWrapper(metadataIniFile), mLog);
 
-        Path avdPath = null;
-        if (map != null) {
-            String path = map.get(MetadataKey.ABS_PATH);
-            avdPath = path == null ? null : iniPath.resolve(path);
-            if (avdPath == null
-                    || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdPath)))) {
+        Path avdFolder = null;
+        if (metadata != null) {
+            String path = metadata.get(MetadataKey.ABS_PATH);
+            avdFolder = path == null ? null : metadataIniFile.resolve(path);
+            if (avdFolder == null
+                    || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdFolder)))) {
                 // Try to fallback on the relative path, if present.
-                String relPath = map.get(MetadataKey.REL_PATH);
+                String relPath = metadata.get(MetadataKey.REL_PATH);
                 if (relPath != null) {
                     Path androidFolder = mSdkHandler.getAndroidFolder();
                     Path f =
@@ -1155,14 +1161,21 @@ public class AvdManager {
                                     ? mSdkHandler.toCompatiblePath(relPath)
                                     : androidFolder.resolve(relPath);
                     if (CancellableFileIo.isDirectory(f)) {
-                        avdPath = f;
+                        avdFolder = f;
                     }
                 }
             }
         }
-        if (avdPath == null || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdPath)))) {
+        if (avdFolder == null
+                || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdFolder)))) {
             // Corrupted .ini file
-            return new AvdInfo(iniPath, iniPath, null, null, null, AvdStatus.ERROR_CORRUPTED_INI);
+            return new AvdInfo(
+                    metadataIniFile,
+                    metadataIniFile,
+                    null,
+                    null,
+                    null,
+                    AvdStatus.ERROR_CORRUPTED_INI);
         }
 
         PathFileWrapper configIniFile;
@@ -1176,7 +1189,7 @@ public class AvdManager {
                 };
 
         // load the AVD properties.
-        configIniFile = new PathFileWrapper(mBaseAvdFolder.resolve(avdPath).resolve(CONFIG_INI));
+        configIniFile = new PathFileWrapper(mBaseAvdFolder.resolve(avdFolder).resolve(CONFIG_INI));
 
         if (!configIniFile.exists()) {
             mLog.warning("Missing file '%1$s'.", configIniFile.getOsLocation());
@@ -1258,7 +1271,7 @@ public class AvdManager {
 
         if (!properties.containsKey(ConfigKey.ANDROID_API)
                 && !properties.containsKey(ConfigKey.ANDROID_CODENAME)) {
-            String targetHash = map.get(MetadataKey.TARGET);
+            String targetHash = metadata.get(MetadataKey.TARGET);
             if (targetHash != null) {
                 AndroidVersion version = AndroidTargetHash.getVersionFromHash(targetHash);
                 if (version != null) {
@@ -1290,9 +1303,10 @@ public class AvdManager {
             }
         }
 
-        Map<String, String> userSettings = AvdInfo.parseUserSettingsFile(avdPath, mLog);
+        Map<String, String> userSettings = AvdInfo.parseUserSettingsFile(avdFolder, mLog);
 
-        AvdInfo info = new AvdInfo(iniPath, avdPath, sysImage, properties, userSettings, status);
+        AvdInfo info =
+                new AvdInfo(metadataIniFile, avdFolder, sysImage, properties, userSettings, status);
 
         if (updateHashV2) {
             try {
@@ -1782,7 +1796,7 @@ public class AvdManager {
      * @param systemImage the system image of the AVD
      * @param removePrevious true if the existing AVD should be deleted
      * @param editExisting true if modifying an existing AVD
-     * @param iniFile the .ini file of this AVD
+     * @param metadataIniFile the .ini file of this AVD
      * @param avdFolder where the AVD resides
      * @param oldAvdInfo configuration of the old AVD
      * @param values a map of the AVD's info
@@ -1792,7 +1806,7 @@ public class AvdManager {
             @NonNull ISystemImage systemImage,
             boolean removePrevious,
             boolean editExisting,
-            @NonNull Path iniFile,
+            @NonNull Path metadataIniFile,
             @NonNull Path avdFolder,
             @Nullable AvdInfo oldAvdInfo,
             @Nullable Map<String, String> values,
@@ -1800,7 +1814,8 @@ public class AvdManager {
             throws AvdMgrException {
 
         // create the AvdInfo object, and add it to the list
-        AvdInfo theAvdInfo = new AvdInfo(iniFile, avdFolder, systemImage, values, userSettings);
+        AvdInfo theAvdInfo =
+                new AvdInfo(metadataIniFile, avdFolder, systemImage, values, userSettings);
 
         synchronized (mAllAvdList) {
             if (oldAvdInfo != null && (removePrevious || editExisting)) {

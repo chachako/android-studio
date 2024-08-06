@@ -76,8 +76,8 @@ object AvdNames {
  * Appends _n to the name if necessary to make the name unique, where n is the first number that
  * makes the filename unique (starting with 2).
  */
-fun AvdManager.uniquifyAvdName(displayName: String): String =
-  AvdNames.uniquify(displayName, "_") { getAvd(it, false) != null }
+fun AvdManager.uniquifyAvdName(avdName: String): String =
+  AvdNames.uniquify(avdName, "_") { getAvd(it, false) != null }
 
 /**
  * If the given display name is already present on an AVD, appends the first number that makes it
