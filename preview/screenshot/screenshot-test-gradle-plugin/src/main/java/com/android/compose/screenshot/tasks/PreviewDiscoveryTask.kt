@@ -16,6 +16,7 @@
 
 package com.android.compose.screenshot.tasks
 
+import com.android.compose.screenshot.discoverPreviews
 import com.android.compose.screenshot.findPreviewsAndSerialize
 import com.android.compose.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
@@ -78,16 +79,13 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
         Files.createDirectories(resultsDir.asFile.get().toPath())
-
-        val runtimeDeps = mutableListOf<String>()
-        runtimeDeps.addAll(dependencies.files.map { it.absolutePath })
-        runtimeDeps.addAll(testClassesDir.get().map { it.asFile.absolutePath })
-        runtimeDeps.addAll(testJars.get().map { it.asFile.absolutePath })
-        runtimeDeps.addAll(mainClassesDir.get().map { it.asFile.absolutePath })
-        runtimeDeps.addAll(mainJars.get().map { it.asFile.absolutePath })
-
         val outputFilePath = previewsOutputFile.get().asFile.toPath()
-
-        findPreviewsAndSerialize(runtimeDeps, outputFilePath, testClassesDir.get().map { it.asFile }, testJars.get().map { it.asFile })
+        discoverPreviews(
+            testClassesDir.get().map { it.asFile },
+            testJars.get().map { it.asFile },
+            mainClassesDir.get().map { it.asFile },
+            mainJars.get().map { it.asFile },
+            dependencies.files.toList(),
+            outputFilePath)
     }
 }

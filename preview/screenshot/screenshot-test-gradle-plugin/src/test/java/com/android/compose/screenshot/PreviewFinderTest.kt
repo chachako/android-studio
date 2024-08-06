@@ -42,6 +42,17 @@ class PreviewFinderTest {
     }
 
     // TODO(b/315048068): Add a unit test that finds previews on the classpath
+    @Test
+    fun testDiscoverPreviewsWithEmptyClassPath() {
+        val outputFile = tempDirRule.newFile("outputFile")
+        discoverPreviews(listOf(tempDirRule.root), listOf(File("empty/jar.jar")), listOf(), listOf(), listOf(), outputFile.toPath())
+
+        Truth.assertThat(outputFile.readText()).isEqualTo("""
+            {
+              "screenshots": []
+            }
+        """.trimIndent())
+    }
 
     @Test
     fun testConfigureInput() {

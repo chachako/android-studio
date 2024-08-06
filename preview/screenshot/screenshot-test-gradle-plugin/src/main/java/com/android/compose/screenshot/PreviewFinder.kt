@@ -18,8 +18,10 @@ package com.android.compose.screenshot
 
 import com.android.tools.preview.multipreview.BaseAnnotationRepresentation
 import com.android.tools.preview.multipreview.MethodRepresentation
+import com.android.tools.preview.multipreview.PreviewMethodFinder
 import com.android.tools.preview.multipreview.MultipreviewSettings
 import com.android.tools.preview.multipreview.ParameterRepresentation
+import com.android.tools.preview.multipreview.PreviewMethod
 import com.android.tools.preview.multipreview.buildMultipreview
 import com.android.tools.render.compose.ComposeRendering
 import com.android.tools.render.compose.ComposeScreenshot
@@ -113,6 +115,37 @@ private fun getClassName(fqcn: String): String {
         return fqcn.substring(0, fqcn.indexOf('$'))
     }
     return fqcn.substring(0, fqcn.lastIndexOf("."))
+}
+
+fun discoverPreviews(
+    testDirs: List<File>,
+    testJars: List<File>,
+    mainDirs: List<File>,
+    mainJars: List<File>,
+    deps: List<File>,
+    outputPath: Path) {
+    val previewFinder = PreviewMethodFinder(testDirs, testJars, mainDirs, mainJars, deps)
+    val previews = previewFinder.findAllPreviewMethods()
+    serializePreviewMethods(previews, outputPath)
+}
+
+private fun serializePreviewMethods(
+    previews: Set<PreviewMethod>,
+    outputFile: Path
+) {
+    Files.newBufferedWriter(outputFile).use { fileWriter ->
+        val composeScreenshots = previews.flatMap { (method, previewAnnotations) ->
+            previewAnnotations.map { annotation ->
+                ComposeScreenshot(
+                    method.methodFqn,
+                    convertListMap(method.parameters),
+                    convertMap(annotation.parameters),
+                    calcPreviewId(method, annotation)
+                )
+            }
+        }
+        writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.previewId })
+    }
 }
 
 private fun serializePreviews(
