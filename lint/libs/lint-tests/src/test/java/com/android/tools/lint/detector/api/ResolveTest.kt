@@ -101,6 +101,7 @@ class ResolveTest : TestCase() {
           .indented()
       )
 
+    val lcClassName = if (useFirUast()) "SymbolLightClassForClassOrObject" else "KtUltraLightClass"
     val pair = LintUtilsTest.parse(*tests)
     val file = pair.first.uastFile
     assertEquals(
@@ -112,7 +113,7 @@ class ResolveTest : TestCase() {
                         UBlockExpression [{...}]
                             UQualifiedReferenceExpression [KotlinTest.members] => PsiMethod:getMembers
                                 UClassLiteralExpression [KotlinTest]
-                                    UThisExpression (label = null) [this] => KtUltraLightClass:class KotlinTest {
+                                    UThisExpression (label = null) [this] => ${lcClassName}:class KotlinTest {
                 fun test() {
                     this::class.members
                     this::class.declaredMemberFunctions
@@ -121,7 +122,7 @@ class ResolveTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = members) [members] => PsiMethod:getMembers
                             UQualifiedReferenceExpression [KotlinTest.declaredMemberFunctions] => PsiMethod:getDeclaredMemberFunctions
                                 UClassLiteralExpression [KotlinTest]
-                                    UThisExpression (label = null) [this] => KtUltraLightClass:class KotlinTest {
+                                    UThisExpression (label = null) [this] => ${lcClassName}:class KotlinTest {
                 fun test() {
                     this::class.members
                     this::class.declaredMemberFunctions
@@ -429,7 +430,7 @@ class ResolveLogger : AbstractUastVisitor() {
         builder.append("<FAILED>")
       }
     }
-    builder.appendln()
+    builder.appendLine()
     level++
     return false
   }
