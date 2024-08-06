@@ -34,7 +34,6 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
     @Test
     fun testModelsWhenLibsArePublished() {
         project.publishLibs(
-            publishKmpFirstLib = false,
             configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON
         )
 
@@ -60,7 +59,7 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
         )
 
         moduleFilesComparator.fetchAndCompareModels(
-            projects = listOf(":kmpJvmOnly", ":kmpSecondLib")
+            projects = listOf(":kmpJvmOnly", ":kmpSecondLib", ":kmpLibraryPlugin", ":kmpFirstLib")
         )
 
         val sourceSetsComparator = KmpModelComparator(
