@@ -2,6 +2,7 @@
 
 import itertools
 import pathlib
+import logging
 import shutil
 import tempfile
 from typing import List, Sequence
@@ -105,6 +106,10 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
         _BASE_TARGETS,
         test_tag_filters,
     )
+    if set(_BASE_TARGETS).issubset(set(targets)):
+      logging.info('Not using selective presubmit')
+    else:
+      logging.info('Using selective presubmit')
   targets += _EXTRA_TARGETS
 
   flags = build_flags(

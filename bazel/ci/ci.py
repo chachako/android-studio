@@ -96,12 +96,20 @@ def main():
   parser.add_argument('target', help='The name of the CI target')
   args = parser.parse_args()
 
-  logging.basicConfig(level=logging.INFO)
-
   bazel_name = 'bazel.cmd' if platform.system() == 'Windows' else 'bazel'
   bazel_path = os.path.join(find_workspace(), f'tools/base/bazel/{bazel_name}')
   build_env = bazel.BuildEnv(bazel_path=bazel_path)
   ci = CI(build_env=build_env)
+
+  if build_env.dist_dir:
+    logs_dir = os.path.join(build_env.dist_dir, 'logs')
+    os.makedirs(logs_dir, exist_ok=True)
+    logging.basicConfig(
+        filename=os.path.join(logs_dir, 'ci.log'),
+        level=logging.INFO,
+      )
+  else:
+    logging.basicConfig(level=logging.INFO)
 
   match args.target:
     case 'studio-build-checks':

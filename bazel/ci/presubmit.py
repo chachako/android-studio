@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+import logging
 import tempfile
 from typing import List, Sequence
 
@@ -40,6 +41,7 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
         build_env.build_number,
         build_env.build_target_name,
     )
+    logging.info('Found reference build ID: %s', reference_bid)
     object_name = _HASH_FILE_NAME.format(
         bid=reference_bid,
         target=build_env.build_target_name,
@@ -50,7 +52,9 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
         str(base_hashes),
     )
     if not exists:
+      logging.info('Base hash file %s not found', object_name)
       return None
+    logging.info('Base hash file %s found', object_name)
 
     impacted_targets = temp_path / 'impacted-targets.txt'
     bazel_diff.get_impacted_targets(
@@ -83,6 +87,7 @@ def _find_impacted_test_targets(
   targets = _find_impacted_targets(build_env)
   if targets is None:
     # If impacted targets could not be generated, use the base targets.
+    logging.info('Using base targets')
     return base_targets
 
   filters = test_flag_filters.split(',') + ['-manual']
@@ -123,6 +128,7 @@ def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
   )
   hash_file_path = _generate_hash_file(build_env)
   gce.upload_to_gcs(hash_file_path, _HASH_FILE_BUCKET, object_name)
+  logging.info('Uploaded hash file to GCS with object name: %s', object_name)
 
 
 def find_test_targets(
@@ -156,6 +162,7 @@ def find_test_targets(
   explicit_targets = []
   for tag, value in tags:
     if tag == 'Presubmit-Test':
+      logging.info('Found Presubmit-Test tag: %s', value)
       # Filter AB target-specific test targets.
       if ':' in value and not value.startswith('//'):
         ab_target, test_target = value.split(':', 1)

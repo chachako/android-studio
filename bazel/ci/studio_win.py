@@ -1,5 +1,6 @@
 """Implements studio-win CI script."""
 
+import logging
 import pathlib
 import tempfile
 
@@ -15,7 +16,7 @@ def studio_win(build_env: bazel.BuildEnv):
     build_env.dist_dir = tempfile.mkdtemp('dist-dir')
   dist_path = pathlib.Path(build_env.dist_dir)
 
-  targets = [
+  base_targets = [
       '//prebuilts/studio/...',
       '//prebuilts/tools/...',
       '//tools/...',
@@ -35,12 +36,17 @@ def studio_win(build_env: bazel.BuildEnv):
   if build_type == studio.BuildType.POSTSUBMIT:
     presubmit.generate_and_upload_hash_file(build_env)
 
+  targets = base_targets
   if build_type == studio.BuildType.PRESUBMIT:
     targets = presubmit.find_test_targets(
         build_env,
-        targets,
+        base_targets,
         test_tag_filters,
     )
+    if set(base_targets).issubset(set(targets)):
+      logging.info('Not using selective presubmit')
+    else:
+      logging.info('Using selective presubmit')
   targets += extra_targets
 
   profile_path = dist_path / f'winprof{build_env.build_number}.json.gz'
