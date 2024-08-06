@@ -1,8 +1,9 @@
 """Implements shared functions for selective presubmit."""
 
+import dataclasses
 import os
-import pathlib
 import logging
+import pathlib
 import tempfile
 from typing import List, Sequence
 
@@ -13,6 +14,14 @@ from tools.base.bazel.ci import gce
 
 _HASH_FILE_BUCKET = 'adt-byob'
 _HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
+
+
+@dataclasses.dataclass
+class SelectivePresubmitResult:
+  """Represents the result of attempting a selective presubmit."""
+  found: bool
+  targets: List[str]
+  flags: List[str]
 
 
 def _generate_hash_file(build_env: bazel.BuildEnv) -> str:
@@ -135,8 +144,8 @@ def find_test_targets(
     build_env: bazel.BuildEnv,
     base_targets: Sequence[str],
     test_flag_filters: str,
-) -> List[str]:
-  """Returns the full list of test targets to run for the current build.
+) -> SelectivePresubmitResult:
+  """Returns the result of selecting test targets for the current build.
 
   Tags in the CL description are used to customize the behavior of the
   presubmit, e.g.:
@@ -188,4 +197,19 @@ def find_test_targets(
         test_flag_filters,
     )
 
-  return impacted_targets + explicit_targets
+  found = impacted_targets != base_targets
+  impacted_target_count = len(impacted_targets) if found else 0
+  targets = impacted_targets + explicit_targets
+  change = gerrit_changes[0]
+
+  return SelectivePresubmitResult(
+      found=found,
+      targets=targets,
+      flags=[
+          f'--build_metadata=selective_presubmit_found={found}',
+          f'--build_metadata=selective_presubmit_impacted_target_count={impacted_target_count}',
+          f'--build_metadata=gerrit_owner={change.owner}',
+          f'--build_metadata=gerrit_change_id={change.change_id}',
+          f'--build_metadata=gerrit_change_number={change.change_number}',
+      ],
+  )

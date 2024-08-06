@@ -16,7 +16,7 @@ def studio_win(build_env: bazel.BuildEnv):
     build_env.dist_dir = tempfile.mkdtemp('dist-dir')
   dist_path = pathlib.Path(build_env.dist_dir)
 
-  base_targets = [
+  targets = [
       '//prebuilts/studio/...',
       '//prebuilts/tools/...',
       '//tools/...',
@@ -32,25 +32,7 @@ def studio_win(build_env: bazel.BuildEnv):
   ]
   test_tag_filters = '-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release'
 
-  build_type = studio.BuildType.from_build_number(build_env.build_number)
-  if build_type == studio.BuildType.POSTSUBMIT:
-    presubmit.generate_and_upload_hash_file(build_env)
-
-  targets = base_targets
-  if build_type == studio.BuildType.PRESUBMIT:
-    targets = presubmit.find_test_targets(
-        build_env,
-        base_targets,
-        test_tag_filters,
-    )
-    if set(base_targets).issubset(set(targets)):
-      logging.info('Not using selective presubmit')
-    else:
-      logging.info('Using selective presubmit')
-  targets += extra_targets
-
   profile_path = dist_path / f'winprof{build_env.build_number}.json.gz'
-
   flags = [
       # TODO(b/173153395) Switch back to dynamic after Bazel issue is resolved.
       # See https://github.com/bazelbuild/bazel/issues/22482
@@ -61,6 +43,21 @@ def studio_win(build_env: bazel.BuildEnv):
 
       '--tool_tag=studio_win.cmd',
   ]
+
+  build_type = studio.BuildType.from_build_number(build_env.build_number)
+  if build_type == studio.BuildType.POSTSUBMIT:
+    presubmit.generate_and_upload_hash_file(build_env)
+
+  if build_type == studio.BuildType.PRESUBMIT:
+    result = presubmit.find_test_targets(
+        build_env,
+        targets,
+        test_tag_filters,
+    )
+    targets = result.targets
+    flags.extend(result.flags)
+    logging.info('Using selective presubmit: %s', str(result.found))
+  targets += extra_targets
 
   test_result = studio.run_bazel_test(build_env, flags, targets)
 

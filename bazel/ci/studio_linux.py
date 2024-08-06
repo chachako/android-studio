@@ -95,27 +95,27 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
   setup_environment(build_env)
   test_tag_filters = '-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release'
 
+  flags = build_flags(
+      build_env,
+      test_tag_filters=test_tag_filters,
+  )
+
   build_type = studio.BuildType.from_build_number(build_env.build_number)
   if build_type == studio.BuildType.POSTSUBMIT:
     presubmit.generate_and_upload_hash_file(build_env)
 
   targets = _BASE_TARGETS
   if build_type == studio.BuildType.PRESUBMIT:
-    targets = presubmit.find_test_targets(
+    result = presubmit.find_test_targets(
         build_env,
         _BASE_TARGETS,
         test_tag_filters,
     )
-    if set(_BASE_TARGETS).issubset(set(targets)):
-      logging.info('Not using selective presubmit')
-    else:
-      logging.info('Using selective presubmit')
+    targets = result.targets
+    flags.extend(result.flags)
+    logging.info('Using selective presubmit: %s', str(result.found))
   targets += _EXTRA_TARGETS
 
-  flags = build_flags(
-      build_env,
-      test_tag_filters=test_tag_filters,
-  )
   result = run_tests(build_env, flags, targets)
   copy_agp_supported_versions(build_env)
   if studio.is_build_successful(result):
