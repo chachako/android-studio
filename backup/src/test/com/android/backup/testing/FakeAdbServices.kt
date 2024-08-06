@@ -35,6 +35,7 @@ private const val BACKUP_NOW = "bmgr backupnow "
 private const val RESTORE = "bmgr restore "
 private const val DELETE_FILES = "rm -rf "
 private const val DUMPSYS_GMSCORE = "dumpsys package com.google.android.gms"
+private const val LAUNCH_PLAY_STORE = "am start market://details?id=com.google.android.gms"
 
 /** A fake [com.android.backup.AdbServices] */
 internal class FakeAdbServices(
@@ -51,19 +52,20 @@ internal class FakeAdbServices(
   ) {
 
   sealed class CommandOverride(val command: String) {
-    class Output(command: String, val output: String) : CommandOverride(command) {
+    class Output(command: String, private val stdout: String, private val stderr: String = "") :
+      CommandOverride(command) {
 
-      override fun handle(errorCode: ErrorCode) = output
+      override fun handle(errorCode: ErrorCode) = AdbOutput(stdout, stderr)
     }
 
     class Throw(command: String) : CommandOverride(command) {
 
-      override fun handle(errorCode: ErrorCode): String {
+      override fun handle(errorCode: ErrorCode): AdbOutput {
         throw BackupException(errorCode, "Fake failure")
       }
     }
 
-    abstract fun handle(errorCode: ErrorCode): String
+    abstract fun handle(errorCode: ErrorCode): AdbOutput
   }
 
   private val commandOverrides = mutableMapOf<String, CommandOverride>()
@@ -89,22 +91,24 @@ internal class FakeAdbServices(
     commands.add(command)
     val result = commandOverrides[command]?.handle(errorCode)
     if (result != null) {
-      return AdbOutput(result, "")
+      return result
     }
-    val stdout = when {
-      command == "bmgr enabled" -> handleBmgrEnabled()
-      command.startsWith(BMGR_ENABLE) -> handleEnableBmgr(command)
-      command.startsWith(SET_TEST_MODE) -> handleSetTestMode(command)
-      command.startsWith(SET_TRANSPORT) -> handleSetTransport(command)
-      command == LIST_TRANSPORT -> handleListTransports()
-      command.startsWith(INIT_TRANSPORT) -> handleInitTransport(command)
-      command.startsWith(BACKUP_NOW) -> handleBackupNow()
-      command.startsWith(RESTORE) -> handleRestore()
-      command.startsWith(DELETE_FILES) -> ""
-      command == DUMPSYS_GMSCORE -> handleDumpsysGmsCore()
-      else -> throw NotImplementedError("Command '$command' is not implemented")
-    }
-    return AdbOutput(stdout, "")
+    val out =
+      when {
+        command == "bmgr enabled" -> handleBmgrEnabled()
+        command.startsWith(BMGR_ENABLE) -> handleEnableBmgr(command)
+        command.startsWith(SET_TEST_MODE) -> handleSetTestMode(command)
+        command.startsWith(SET_TRANSPORT) -> handleSetTransport(command)
+        command == LIST_TRANSPORT -> handleListTransports()
+        command.startsWith(INIT_TRANSPORT) -> handleInitTransport(command)
+        command.startsWith(BACKUP_NOW) -> handleBackupNow()
+        command.startsWith(RESTORE) -> handleRestore()
+        command.startsWith(DELETE_FILES) -> "".asStdout()
+        command == DUMPSYS_GMSCORE -> handleDumpsysGmsCore()
+        command == LAUNCH_PLAY_STORE -> handleLaunchPlayStore()
+        else -> throw NotImplementedError("Command '$command' is not implemented")
+      }
+    return out
   }
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -130,47 +134,49 @@ internal class FakeAdbServices(
     return this
   }
 
-  private fun handleBmgrEnabled(): String {
+  private fun handleBmgrEnabled(): AdbOutput {
     return when (bmgrEnabled) {
       true -> "Backup Manager currently enabled"
       false -> "Backup Manager currently disabled"
-    }
+    }.asStdout()
   }
 
-  private fun handleEnableBmgr(command: String): String {
+  private fun handleEnableBmgr(command: String): AdbOutput {
     bmgrEnabled = command.dropPrefix(BMGR_ENABLE).toBoolean()
-    return ""
+    return "".asStdout()
   }
 
-  private fun handleSetTestMode(command: String): String {
+  private fun handleSetTestMode(command: String): AdbOutput {
     testMode = command.dropPrefix(SET_TEST_MODE).toInt()
-    return ""
+    return "".asStdout()
   }
 
-  private fun handleSetTransport(command: String): String {
+  private fun handleSetTransport(command: String): AdbOutput {
     val oldTransport = activeTransport
     activeTransport = command.dropPrefix(SET_TRANSPORT)
-    return "Selected transport $activeTransport (formerly $oldTransport)"
+    return "Selected transport $activeTransport (formerly $oldTransport)".asStdout()
   }
 
-  private fun handleListTransports(): String {
-    return transports.joinToString("\n") {
-      val active = if (it == activeTransport) "*" else " "
-      "  $active $it"
-    }
+  private fun handleListTransports(): AdbOutput {
+    return transports
+      .joinToString("\n") {
+        val active = if (it == activeTransport) "*" else " "
+        "  $active $it"
+      }
+      .asStdout()
   }
 
-  private fun handleInitTransport(command: String): String {
+  private fun handleInitTransport(command: String): AdbOutput {
     val transport = command.dropPrefix(INIT_TRANSPORT)
     // In production, even if the transport doesn't exist, the commends succeeds. We just use this
     // condition as an easy way to trigger an error.
     return when (transport in transports) {
       true -> "Initialization result: 0"
       false -> "Error: $transport not supported"
-    }
+    }.asStdout()
   }
 
-  private fun handleDumpsysGmsCore(): String {
+  private fun handleDumpsysGmsCore(): AdbOutput {
     // Small extract of actual command
     return """
       Packages:
@@ -181,13 +187,20 @@ internal class FakeAdbServices(
           versionName=24.23.35 (190400-646585959)
     """
       .trimIndent()
+      .asStdout()
   }
 
-  private fun handleBackupNow(): String {
-    return "Backup finished with result: Success"
+  private fun handleBackupNow(): AdbOutput {
+    return "Backup finished with result: Success".asStdout()
   }
 
-  private fun handleRestore(): String {
-    return "restoreFinished: 0\n"
+  private fun handleLaunchPlayStore(): AdbOutput {
+    return "Starting: Intent { act=android.intent.action.VIEW dat=market://details/... }".asStdout()
+  }
+
+  private fun handleRestore(): AdbOutput {
+    return "restoreFinished: 0\n".asStdout()
   }
 }
+
+private fun String.asStdout() = AdbOutput(this, "")

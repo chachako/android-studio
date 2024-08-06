@@ -40,6 +40,8 @@ interface BackupService {
     listener: BackupProgressListener?,
   ): BackupResult
 
+  suspend fun sendUpdateGmsIntent(serialNumber: String): BackupResult
+
   companion object {
 
     fun getInstance(adbSession: AdbSession, logger: Logger, minGmsVersion: Int): BackupService =

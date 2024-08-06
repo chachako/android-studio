@@ -17,6 +17,8 @@ package com.android.backup
 
 import com.android.backup.ErrorCode.GMSCORE_IS_TOO_OLD
 import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
+import com.android.backup.ErrorCode.PLAY_STORE_NOT_INSTALLED
+import com.android.backup.ErrorCode.UNEXPECTED_ERROR
 import com.android.backup.testing.FakeAdbServices
 import com.android.backup.testing.FakeAdbServices.CommandOverride.Output
 import com.google.common.truth.Truth.assertThat
@@ -25,6 +27,12 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 private const val DUMPSYS_GMSCORE_CMD = "dumpsys package com.google.android.gms"
+
+private const val LAUNCH_COMMAND = "am start market://details?id=com.google.android.gms"
+private const val LAUNCH_COMMAND_STDOUT_VALID =
+  "Starting: Intent { act=android.intent.action.VIEW dat=market://details/... }"
+private const val LAUNCH_COMMAND_STDERR_MISSING_STORE =
+  "Error: Activity not started, unable to resolve Intent"
 
 /** Tests for [AbstractAdbServices] */
 class AbstractAdbServicesTest {
@@ -79,5 +87,57 @@ class AbstractAdbServicesTest {
         runBlocking { backupServices.withSetup(transport) {} }
       }
     assertThat(exception.errorCode).isEqualTo(GMSCORE_IS_TOO_OLD)
+  }
+
+  @Test
+  fun sendUpdateGmsIntent_success(): Unit = runBlocking {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.sendUpdateGmsIntent()
+  }
+
+  @Test
+  fun sendUpdateGmsIntent_unexpectedStdout() {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.addCommandOverride(Output(LAUNCH_COMMAND, "unexpected"))
+
+    val exception =
+      assertThrows(BackupException::class.java) {
+        runBlocking { adbServices.sendUpdateGmsIntent() }
+      }
+    assertThat(exception.errorCode).isEqualTo(UNEXPECTED_ERROR)
+  }
+
+  @Test
+  fun sendUpdateGmsIntent_errorInStderr(): Unit = runBlocking {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.addCommandOverride(Output(LAUNCH_COMMAND, LAUNCH_COMMAND_STDOUT_VALID, "Warning"))
+
+    adbServices.sendUpdateGmsIntent()
+  }
+
+  @Test
+  fun sendUpdateGmsIntent_warningInStderr() {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.addCommandOverride(Output(LAUNCH_COMMAND, LAUNCH_COMMAND_STDOUT_VALID, "Error"))
+
+    val exception =
+      assertThrows(BackupException::class.java) {
+        runBlocking { adbServices.sendUpdateGmsIntent() }
+      }
+    assertThat(exception.errorCode).isEqualTo(UNEXPECTED_ERROR)
+  }
+
+  @Test
+  fun sendUpdateGmsIntent_missingPlayStore() {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.addCommandOverride(
+      Output(LAUNCH_COMMAND, LAUNCH_COMMAND_STDOUT_VALID, LAUNCH_COMMAND_STDERR_MISSING_STORE)
+    )
+
+    val exception =
+      assertThrows(BackupException::class.java) {
+        runBlocking { adbServices.sendUpdateGmsIntent() }
+      }
+    assertThat(exception.errorCode).isEqualTo(PLAY_STORE_NOT_INSTALLED)
   }
 }

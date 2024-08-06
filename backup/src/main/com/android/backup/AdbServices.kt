@@ -80,5 +80,7 @@ interface AdbServices {
 
   suspend fun restore(token: String, applicationId: String)
 
+  suspend fun sendUpdateGmsIntent()
+
   class AdbOutput(val stdout: String, val stderr: String)
 }

@@ -91,6 +91,15 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
     }
   }
 
+  override suspend fun sendUpdateGmsIntent(serialNumber: String): BackupResult {
+    return try {
+      factory.createAdbServices(serialNumber, null, 1).sendUpdateGmsIntent()
+      Success
+    } catch (e: Throwable) {
+      e.toBackupResult()
+    }
+  }
+
   private suspend fun pullBackup(
     adbServices: AdbServices,
     applicationId: String,

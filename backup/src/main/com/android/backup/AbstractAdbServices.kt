@@ -23,6 +23,7 @@ import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
 import com.android.backup.ErrorCode.GMSCORE_IS_TOO_OLD
 import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
+import com.android.backup.ErrorCode.PLAY_STORE_NOT_INSTALLED
 import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
 import com.android.backup.ErrorCode.TRANSPORT_NOT_SELECTED
 import com.android.backup.ErrorCode.UNEXPECTED_ERROR
@@ -80,6 +81,31 @@ abstract class AbstractAdbServices(
     val out = executeCommand("bmgr restore $token $applicationId", ErrorCode.RESTORE_FAILED)
     if (out.stdout.indexOf("restoreFinished: 0\n") < 0) {
       throw BackupException(ErrorCode.RESTORE_FAILED, "Error restoring app: ${out.stdout}")
+    }
+  }
+
+  override suspend fun sendUpdateGmsIntent() {
+    val out = executeCommand("am start market://details?id=com.google.android.gms")
+
+    // The 'am' command reports errors in stderr
+    val stdout = out.stdout
+    val stderr = out.stderr
+    if (
+      !stderr.contains("Error") &&
+        stdout == "Starting: Intent { act=android.intent.action.VIEW dat=market://details/... }"
+    ) {
+      return
+    }
+    if (stderr.contains("Error: Activity not started, unable to resolve Intent")) {
+      throw BackupException(
+        PLAY_STORE_NOT_INSTALLED,
+        "Failed to update GmsCore. Play Store not installed",
+      )
+    } else {
+      throw BackupException(
+        UNEXPECTED_ERROR,
+        "Failed to update GmsCore. Unexpected output: '$stdout\n$stderr'",
+      )
     }
   }
 
