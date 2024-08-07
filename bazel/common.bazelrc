@@ -229,6 +229,9 @@ build:ci --show_progress_rate_limit=60
 # Avoid incompatible targets when targets are set explicitly with selective
 # presubmit.
 build:ci --skip_incompatible_explicit_targets
+build:ci --strategy=Javac=worker
+build:ci --strategy=kotlinc=worker
+build:ci --strategy=Turbine=local
 
 ## Enables dynamic scheduling. This will run some actions locally
 ## as well as remotely, choosing whichever finishes first.
