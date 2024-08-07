@@ -43,7 +43,6 @@ maven_library(
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
         "@maven//:com.google.code.gson.gson",
-        "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
 )
@@ -490,7 +489,6 @@ maven_repository(
         "@maven//:javax.annotation.javax.annotation-api",
         "@maven//:net.java.dev.jna.jna-platform",
         "@maven//:net.sf.jopt-simple.jopt-simple",
-        "@maven//:net.sf.kxml.kxml2",
         "@maven//:net.sf.proguard.proguard-gradle",
         "@maven//:nl.jqno.equalsverifier.equalsverifier",
         "@maven//:org.apache.commons.commons-compress",

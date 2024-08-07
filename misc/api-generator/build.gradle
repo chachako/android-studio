@@ -12,7 +12,6 @@ java {
 
 dependencies {
     implementation libs.guava
-    implementation libs.kxml
     implementation libs.asm
     implementation libs.asm_tree
 }

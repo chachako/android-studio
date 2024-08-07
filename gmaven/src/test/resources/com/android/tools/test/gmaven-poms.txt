@@ -528,7 +528,6 @@ com.android.tools.build:gradle
     io.grpc:grpc-stub (runtime)
     com.google.crypto.tink:tink (runtime)
     com.google.testing.platform:core-proto (runtime)
-    net.sf.kxml:kxml2 (runtime)
     com.google.flatbuffers:flatbuffers-java (runtime)
     org.tensorflow:tensorflow-lite-metadata (runtime)
 
@@ -570,7 +569,6 @@ com.android.tools.build:manifest-merger
     com.android.tools:sdk-common (runtime)
     com.google.code.gson:gson (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
-    net.sf.kxml:kxml2 (runtime)
 
 com.android.tools.chunkio:chunkio
   pomName=ChunkIO
@@ -657,7 +655,6 @@ com.android.tools.lint:lint
     com.android.tools:sdk-common (runtime)
     com.android.tools:sdklib (runtime)
     com.google.guava:guava (runtime)
-    net.sf.kxml:kxml2 (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
 

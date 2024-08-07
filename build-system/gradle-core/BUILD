@@ -119,7 +119,6 @@ kotlin_library(
         "@maven//:io.grpc.grpc-protobuf",
         "@maven//:io.grpc.grpc-stub",
         "@maven//:net.sf.jopt-simple.jopt-simple",
-        "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.apache.httpcomponents.httpmime",
         "@maven//:org.bouncycastle.bcpkix-jdk18on",
         "@maven//:org.codehaus.groovy.groovy-all",  # TODO: Not in the pom, but required to compile (?)
