@@ -136,6 +136,116 @@
     </d:device>
 
     <d:device>
+        <d:name>Automotive (1408p landscape) with Google Play</d:name>
+        <d:id>automotive_1408p_landscape_with_play</d:id>
+        <d:manufacturer>Google</d:manufacturer>
+        <d:playstore-enabled>true</d:playstore-enabled>
+        <d:hardware>
+            <d:screen>
+                <d:screen-size>normal</d:screen-size>
+                <d:diagonal-length>10.0</d:diagonal-length>
+                <d:pixel-density>mdpi</d:pixel-density>
+                <d:screen-ratio>notlong</d:screen-ratio>
+                <d:dimensions>
+                    <d:x-dimension>1408</d:x-dimension>
+                    <d:y-dimension>792</d:y-dimension>
+                </d:dimensions>
+                <d:xdpi>160</d:xdpi>
+                <d:ydpi>160</d:ydpi>
+                <d:touch>
+                    <d:multitouch>basic</d:multitouch>
+                    <d:mechanism>finger</d:mechanism>
+                    <d:screen-type>capacitive</d:screen-type>
+                </d:touch>
+            </d:screen>
+            <d:networking>Bluetooth Wifi</d:networking>
+            <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
+            <d:mic>true</d:mic>
+            <d:keyboard>nokeys</d:keyboard>
+            <d:nav>nonav</d:nav>
+            <d:ram unit="GiB">6</d:ram>
+            <d:buttons>soft</d:buttons>
+            <d:internal-storage unit="GiB">10</d:internal-storage>
+            <d:removable-storage unit="MiB">0</d:removable-storage>
+            <d:cpu>Generic CPU</d:cpu>
+            <d:gpu>Generic GPU</d:gpu>
+            <d:abi>arm64-v8a x86_64</d:abi>
+            <d:dock/>
+            <d:power-type>plugged-in</d:power-type>
+        </d:hardware>
+        <d:software>
+            <d:api-level>33-</d:api-level>
+            <d:live-wallpaper-support>false</d:live-wallpaper-support>
+            <d:bluetooth-profiles/>
+            <d:gl-version>3.0</d:gl-version>
+            <d:gl-extensions/>
+            <d:status-bar>true</d:status-bar>
+        </d:software>
+        <d:state name="Landscape" default="true">
+            <d:description>The device in landscape orientation</d:description>
+            <d:screen-orientation>land</d:screen-orientation>
+            <d:keyboard-state>keyssoft</d:keyboard-state>
+            <d:nav-state>nonav</d:nav-state>
+        </d:state>
+        <d:tag-id>android-automotive</d:tag-id>
+    </d:device>
+
+    <d:device>
+        <d:name>Automotive (1408p landscape)</d:name>
+        <d:id>automotive_1408p_landscape_with_google_apis</d:id>
+        <d:manufacturer>Google</d:manufacturer>
+        <d:playstore-enabled>false</d:playstore-enabled>
+        <d:hardware>
+            <d:screen>
+                <d:screen-size>normal</d:screen-size>
+                <d:diagonal-length>10.0</d:diagonal-length>
+                <d:pixel-density>mdpi</d:pixel-density>
+                <d:screen-ratio>notlong</d:screen-ratio>
+                <d:dimensions>
+                    <d:x-dimension>1408</d:x-dimension>
+                    <d:y-dimension>792</d:y-dimension>
+                </d:dimensions>
+                <d:xdpi>160</d:xdpi>
+                <d:ydpi>160</d:ydpi>
+                <d:touch>
+                    <d:multitouch>basic</d:multitouch>
+                    <d:mechanism>finger</d:mechanism>
+                    <d:screen-type>capacitive</d:screen-type>
+                </d:touch>
+            </d:screen>
+            <d:networking>Bluetooth Wifi</d:networking>
+            <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
+            <d:mic>true</d:mic>
+            <d:keyboard>nokeys</d:keyboard>
+            <d:nav>nonav</d:nav>
+            <d:ram unit="GiB">6</d:ram>
+            <d:buttons>soft</d:buttons>
+            <d:internal-storage unit="GiB">10</d:internal-storage>
+            <d:removable-storage unit="MiB">0</d:removable-storage>
+            <d:cpu>Generic CPU</d:cpu>
+            <d:gpu>Generic GPU</d:gpu>
+            <d:abi>arm64-v8a x86_64</d:abi>
+            <d:dock/>
+            <d:power-type>plugged-in</d:power-type>
+        </d:hardware>
+        <d:software>
+            <d:api-level>33-</d:api-level>
+            <d:live-wallpaper-support>false</d:live-wallpaper-support>
+            <d:bluetooth-profiles/>
+            <d:gl-version>3.0</d:gl-version>
+            <d:gl-extensions/>
+            <d:status-bar>true</d:status-bar>
+        </d:software>
+        <d:state name="Landscape" default="true">
+            <d:description>The device in landscape orientation</d:description>
+            <d:screen-orientation>land</d:screen-orientation>
+            <d:keyboard-state>keyssoft</d:keyboard-state>
+            <d:nav-state>nonav</d:nav-state>
+        </d:state>
+        <d:tag-id>android-automotive</d:tag-id>
+    </d:device>
+
+    <d:device>
         <d:name>Automotive Portrait</d:name>
         <d:id>automotive_portrait</d:id>
         <d:manufacturer>Google</d:manufacturer>
