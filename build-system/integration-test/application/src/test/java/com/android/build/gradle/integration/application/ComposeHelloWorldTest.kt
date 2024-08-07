@@ -48,6 +48,8 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
     val project =
         GradleTestProject.builder()
             .fromTestProject("composeHelloWorld")
+            // increase max heap size to avoid OOMs (b/350788568)
+            .withHeap("2048m")
             .withBuiltInKotlinSupport(true)
             .create()
 
