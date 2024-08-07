@@ -36,6 +36,10 @@ import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.ManifestFilesImpl
+import com.android.build.gradle.internal.BuildTypeData
+import com.android.build.gradle.internal.ProductFlavorData
+import com.android.build.gradle.internal.VariantDimensionData
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.attributes.VariantAttr
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -118,7 +122,6 @@ import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentSelector
-import org.gradle.internal.resolve.ModuleVersionNotFoundException
 import org.gradle.internal.resolve.ModuleVersionResolveException
 import org.gradle.tooling.provider.model.ParameterizedToolingModelBuilder
 import java.io.File
@@ -129,6 +132,8 @@ import javax.xml.namespace.QName
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.EndElement
+import com.android.build.gradle.internal.dsl.BuildType as InternalBuildType
+import com.android.build.gradle.internal.dsl.ProductFlavor as InternalFlavor
 
 class ModelBuilder<
         BuildFeaturesT : BuildFeatures,
@@ -287,7 +292,7 @@ class ModelBuilder<
     /**
      * Indicates the dimensions used for a variant
      */
-    private data class DimensionInformation(
+    internal data class DimensionInformation(
         val buildTypes: Set<String>,
         val flavors: Set<Pair<String, String>>
     ) {
@@ -320,95 +325,22 @@ class ModelBuilder<
         }
 
         val variantInputs = variantModel.inputs
-
         val variants = variantModel.variants
-
-        // compute for each main, androidTest, unitTest and testFixtures which buildType and flavors
-        // they applied to. This will allow excluding from the model sourcesets that are not
-        // used by any of them.
-        // Not doing this is confusing to users as they see folders marked as source that aren't
-        // used by anything.
         val variantDimensionInfo = DimensionInformation.createFrom(variants)
-        val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<DeviceTestCreationConfig>())
-        val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filter {
-            it.componentType == ComponentTypeImpl.UNIT_TEST
-        })
-        val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
-        val screenshotTests = DimensionInformation.createFrom(variantModel.testComponents.filter {
-            it.componentType == ComponentTypeImpl.SCREENSHOT_TEST
-        })
 
         // for now grab the first buildFeatureValues as they cannot be different.
         val buildFeatures = variantModel.buildFeatures
 
         // gather the default config
-        val defaultConfigData = variantInputs.defaultConfigData
         val defaultConfig = if (variantDimensionInfo.isNotEmpty()) {
-
-            SourceSetContainerImpl(
-                sourceProvider = defaultConfigData.sourceSet.convert(buildFeatures),
-                deviceTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                    defaultConfigData.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
-                        ?.takeIf { androidTests.isNotEmpty() }
-                        ?.convert(buildFeatures)
-                        ?.let { this.put(ComponentTypeImpl.ANDROID_TEST.artifactName, it) }
-                },
-                hostTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                    defaultConfigData.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
-                        ?.takeIf { unitTests.isNotEmpty() }
-                        ?.convert(buildFeatures)
-                        ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
-                    defaultConfigData.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
-                        ?.takeIf { screenshotTests.isNotEmpty() }
-                        ?.convert(buildFeatures)
-                        ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
-                },
-                testFixturesSourceProvider = defaultConfigData.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
-                    ?.takeIf { testFixtures.isNotEmpty() }
-                    ?.convert(buildFeatures)
-            )
+            DefaultSourceSetContainerBuilder().build()
         } else null
 
         // gather all the build types
         val buildTypes = mutableListOf<SourceSetContainer>()
         for (buildType in variantInputs.buildTypes.values) {
-            val buildTypeName = buildType.buildType.name
-
-            if (variantDimensionInfo.buildTypes.contains(buildTypeName)) {
-                // Mixin works only when there are no flavours.
-                // When a flavour is there source provider will be initialized
-                // with variant sources.
-                val mixinVariantSources: VariantCreationConfig? =
-                    if (variantInputs.productFlavors.values.isEmpty()) {
-                        variants.find { it.name == buildTypeName }
-                    } else null
-                buildTypes.add(
-                    SourceSetContainerImpl(
-                        sourceProvider = buildType.sourceSet.convert(buildFeatures, mixinVariantSources),
-                        deviceTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                            buildType.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
-                                ?.takeIf { androidTests.buildTypes.contains(buildTypeName) }
-                                ?.convert(buildFeatures)
-                                ?.let {
-                                    this.put(ComponentTypeImpl.ANDROID_TEST.artifactName, it)
-                                }
-                        },
-                        hostTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                            buildType.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
-                                ?.takeIf { unitTests.buildTypes.contains(buildTypeName) }
-                                ?.convert(buildFeatures)
-                                ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
-                            buildType.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
-                                ?.takeIf { screenshotTests.buildTypes.contains(buildTypeName) }
-                                ?.convert(buildFeatures)
-                                ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
-                        },
-                        testFixturesSourceProvider =
-                        buildType.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
-                            ?.takeIf { testFixtures.buildTypes.contains(buildTypeName) }
-                            ?.convert(buildFeatures)
-                    )
-                )
+            if (variantDimensionInfo.buildTypes.contains(buildType.buildType.name)) {
+                buildTypes.add(BuildTypeSourceSetBuilder(buildType).build())
             }
         }
 
@@ -416,35 +348,8 @@ class ModelBuilder<
         val productFlavors = mutableListOf<SourceSetContainer>()
         for (flavor in variantInputs.productFlavors.values) {
             val flavorDimensionName = flavor.productFlavor.dimension to flavor.productFlavor.name
-
             if (variantDimensionInfo.flavors.contains(flavorDimensionName)) {
-                productFlavors.add(
-                    SourceSetContainerImpl(
-                        sourceProvider = flavor.sourceSet.convert(buildFeatures),
-                        deviceTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                            flavor.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
-                                ?.takeIf { androidTests.flavors.contains(flavorDimensionName)}
-                                ?.convert(buildFeatures)
-                                ?.let {
-                                    this.put(ComponentTypeImpl.ANDROID_TEST.artifactName, it)
-                                }
-                        },
-                        hostTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
-                            flavor.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
-                                ?.takeIf { unitTests.flavors.contains(flavorDimensionName) }
-                                ?.convert(buildFeatures)
-                                ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
-                            flavor.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
-                                ?.takeIf { screenshotTests.flavors.contains(flavorDimensionName) }
-                                ?.convert(buildFeatures)
-                                ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
-                        },
-                        testFixturesSourceProvider =
-                        flavor.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
-                            ?.takeIf { testFixtures.flavors.contains(flavorDimensionName) }
-                            ?.convert(buildFeatures)
-                    )
-                )
+                productFlavors.add(FlavorSourceSetContainerBuilder(flavor).build())
             }
         }
 
@@ -465,6 +370,166 @@ class ModelBuilder<
 
             bootClasspath = bootClasspath,
         )
+    }
+
+    /**
+     * Abstract class for building SourceSetContainer. It has logic to add sourceSets, deviceTestSource,
+     * hostTestSource and fixturesTesSources based on variantModel. This will allow excluding from the model
+     * sourceSets that are not used by any of them.
+     */
+    abstract inner class BaseSourceSetContainerBuilder {
+
+        val buildFeatures: BuildFeatureValues
+            get() = variantModel.buildFeatures
+
+        internal val androidTests =
+            DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<DeviceTestCreationConfig>())
+        internal val unitTests =
+            DimensionInformation.createFrom(variantModel.testComponents.filter {
+                it.componentType == ComponentTypeImpl.UNIT_TEST
+            })
+        internal val testFixtures =
+            DimensionInformation.createFrom(variantModel.variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
+        internal val screenshotTests =
+            DimensionInformation.createFrom(variantModel.testComponents.filter {
+                it.componentType == ComponentTypeImpl.SCREENSHOT_TEST
+            })
+
+        abstract val variantData: VariantDimensionData
+        abstract val defaultSourceSet: DefaultAndroidSourceSet
+
+        private fun getAndroidTestSourceSet() =
+            variantData.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
+        private fun getUnitSourceSet() =
+            variantData.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
+        private fun getScreenshotSourceSet() =
+            variantData.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
+        private fun getFixtureSourceSet() =
+            variantData.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
+
+        abstract fun shouldTakeAndroidTestSourceSet(): Boolean
+        abstract fun shouldTakeUnitSourceSet(): Boolean
+        abstract fun shouldTakeFixtureSourceSet(): Boolean
+        abstract fun shouldTakeScreenshotSourceSet(): Boolean
+
+        open fun additionalDefaultConfig(): List<ComponentCreationConfig> = listOf()
+        open fun additionalAndroidConfig(): List<ComponentCreationConfig> = listOf()
+        open fun additionalUnitConfig(): List<ComponentCreationConfig> = listOf()
+        open fun additionalScreenshotConfig(): List<ComponentCreationConfig> = listOf()
+        open fun additionalFixtureConfig(): List<ComponentCreationConfig> = listOf()
+
+        fun build() =
+            SourceSetContainerImpl(
+                sourceProvider = defaultSourceSet.convert(buildFeatures, additionalDefaultConfig()),
+                deviceTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
+                    getAndroidTestSourceSet()
+                        ?.takeIf { shouldTakeAndroidTestSourceSet() }
+                        ?.convert(buildFeatures, additionalAndroidConfig())
+                        ?.let { this[ComponentTypeImpl.ANDROID_TEST.artifactName] = it }
+                },
+                hostTestSourceProviders = mutableMapOf<String, SourceProvider>().apply {
+                    getUnitSourceSet()
+                        ?.takeIf { shouldTakeUnitSourceSet() }
+                        ?.convert(buildFeatures, additionalUnitConfig())
+                        ?.let { this[ComponentTypeImpl.UNIT_TEST.artifactName] = it }
+                    getScreenshotSourceSet()
+                        ?.takeIf { shouldTakeScreenshotSourceSet() }
+                        ?.convert(buildFeatures, additionalScreenshotConfig())
+                        ?.let { this[ComponentTypeImpl.SCREENSHOT_TEST.artifactName] = it }
+                },
+                testFixturesSourceProvider = getFixtureSourceSet()
+                    ?.takeIf { shouldTakeFixtureSourceSet() }
+                    ?.convert(buildFeatures, additionalFixtureConfig())
+            )
+    }
+
+    /**
+     * Build SourceSetContainer for particular build type.
+     *
+     * It also adds user defined static folders (added with variant api)
+     * in case there are no flavours.
+     */
+    inner class BuildTypeSourceSetBuilder(val buildType: BuildTypeData<InternalBuildType>) :
+        BaseSourceSetContainerBuilder() {
+
+        private val buildTypeName = buildType.buildType.name
+        override val defaultSourceSet = buildType.sourceSet
+
+        override fun shouldTakeAndroidTestSourceSet() =
+            androidTests.buildTypes.contains(buildTypeName)
+
+        override fun shouldTakeUnitSourceSet() = unitTests.buildTypes.contains(buildTypeName)
+        override fun shouldTakeFixtureSourceSet() = testFixtures.buildTypes.contains(buildTypeName)
+        override fun shouldTakeScreenshotSourceSet() =
+            screenshotTests.buildTypes.contains(buildTypeName)
+
+        override val variantData: VariantDimensionData = buildType
+
+        private fun isNoVariantProvider() = variantModel.inputs.productFlavors.values.isEmpty()
+
+        // if there is no flavours than variant source provider is empty and we need to add custom
+        // folders to build type
+        override fun additionalDefaultConfig() =
+            if (isNoVariantProvider()) variantModel.variants.filter { it.buildType == buildTypeName } else listOf()
+
+        override fun additionalAndroidConfig(): List<DeviceTestCreationConfig> =
+            additionalDefaultConfig()
+                .filterIsInstance<HasDeviceTestsCreationConfig>()
+                .flatMap { it.deviceTests.values.filterIsInstance<DeviceTestCreationConfig>() }
+
+        override fun additionalUnitConfig() =
+            additionalDefaultConfig()
+                .filterIsInstance<HasHostTestsCreationConfig>()
+                .flatMap { it.hostTests.values }
+                .filter { it.componentType == ComponentTypeImpl.UNIT_TEST }
+
+        override fun additionalScreenshotConfig() =
+            additionalDefaultConfig()
+                .filterIsInstance<HasHostTestsCreationConfig>()
+                .flatMap { it.hostTests.values }
+                .filter { it.componentType == ComponentTypeImpl.SCREENSHOT_TEST }
+
+        override fun additionalFixtureConfig() =
+            additionalDefaultConfig()
+                .filterIsInstance<HasTestFixtures>()
+                .mapNotNull { it.testFixtures }
+    }
+
+    /**
+     * Builds SourceSetContainer for variant defaultConfigData.
+     */
+    inner class DefaultSourceSetContainerBuilder : BaseSourceSetContainerBuilder() {
+
+        val defaultConfigData = variantModel.inputs.defaultConfigData
+        override val defaultSourceSet = defaultConfigData.sourceSet
+        override fun shouldTakeAndroidTestSourceSet() = androidTests.isNotEmpty()
+        override fun shouldTakeUnitSourceSet() = unitTests.isNotEmpty()
+        override fun shouldTakeFixtureSourceSet() = testFixtures.isNotEmpty()
+        override fun shouldTakeScreenshotSourceSet() = screenshotTests.isNotEmpty()
+        override val variantData: VariantDimensionData = defaultConfigData
+    }
+
+    /**
+     * Builds SourceSetContainer for particular flavor.
+     */
+    inner class FlavorSourceSetContainerBuilder(flavor: ProductFlavorData<InternalFlavor>) :
+        BaseSourceSetContainerBuilder() {
+
+        private val flavorDimensionName =
+            flavor.productFlavor.dimension to flavor.productFlavor.name
+
+        override val defaultSourceSet = flavor.sourceSet
+        override fun shouldTakeAndroidTestSourceSet() =
+            androidTests.flavors.contains(flavorDimensionName)
+
+        override fun shouldTakeUnitSourceSet() = unitTests.flavors.contains(flavorDimensionName)
+        override fun shouldTakeFixtureSourceSet() =
+            screenshotTests.flavors.contains(flavorDimensionName)
+
+        override fun shouldTakeScreenshotSourceSet() =
+            testFixtures.flavors.contains(flavorDimensionName)
+
+        override val variantData = flavor
     }
 
     private fun buildAndroidProjectModel(project: Project): AndroidProject {
@@ -845,7 +910,6 @@ class ModelBuilder<
         (variant as? HasHostTestsCreationConfig)?.hostTests?.values?.forEach { hostTest ->
             hostTestArtifacts[hostTest.componentType.artifactName] =
                 createJavaArtifact(hostTest)
-
         }
         return VariantImpl(
             name = variant.name,
