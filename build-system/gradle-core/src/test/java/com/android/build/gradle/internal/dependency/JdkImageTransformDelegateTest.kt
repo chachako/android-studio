@@ -60,6 +60,7 @@ class JdkImageTransformDelegateTest {
         Truth.assertThat(result).isEqualTo(
             """
             module java.base {
+                exports android.crypto.hpke;
                 exports android.icu.lang;
                 exports android.icu.math;
                 exports android.icu.number;
@@ -110,6 +111,7 @@ class JdkImageTransformDelegateTest {
                 exports java.util.jar;
                 exports java.util.logging;
                 exports java.util.prefs;
+                exports java.util.random;
                 exports java.util.regex;
                 exports java.util.stream;
                 exports java.util.zip;
