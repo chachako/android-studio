@@ -190,6 +190,12 @@ public class SystemImage implements ISystemImage {
 
     @NonNull
     @Override
+    public String toString() {
+        return mPackage.getDisplayName();
+    }
+
+    @NonNull
+    @Override
     public Revision getRevision() {
         return mPackage.getVersion();
     }

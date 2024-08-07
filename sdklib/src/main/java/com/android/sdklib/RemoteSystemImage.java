@@ -19,6 +19,8 @@ import com.android.annotations.NonNull;
 import com.android.repository.Revision;
 import com.android.repository.api.RemotePackage;
 import com.android.repository.api.RepoPackage;
+import com.android.repository.impl.meta.Archive;
+import com.android.sdklib.devices.Storage;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.meta.DetailsTypes.ApiDetailsType;
@@ -134,5 +136,20 @@ public final class RemoteSystemImage implements ISystemImage {
         }
         RemoteSystemImage other = (RemoteSystemImage) o;
         return remotePackage.equals(other.remotePackage);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        Archive archive = remotePackage.getArchive();
+
+        if (archive == null) {
+            return remotePackage.getDisplayName();
+        }
+
+        return remotePackage.getDisplayName()
+                + " ("
+                + new Storage(archive.getComplete().getSize()).toUiString()
+                + ')';
     }
 }
