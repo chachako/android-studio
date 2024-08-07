@@ -1,8 +1,8 @@
 """Implements shared functions for selective presubmit."""
 
 import dataclasses
-import os
 import logging
+import os
 import pathlib
 import tempfile
 from typing import List, Sequence
@@ -108,7 +108,7 @@ def _find_impacted_test_targets(
       target = target[1:]
       exclude_query.append(target)
     else:
-      include_query.append(f'tests({target})')
+      include_query.append(target)
 
     for test_filter in filters:
       if test_filter[0] == '-':
