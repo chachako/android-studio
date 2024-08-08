@@ -212,9 +212,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
         }
     }
 
-    // Disabled for Gradle 8.9 upgrade
-    // Fix needed: b/356881462
-    //@Test
+    @Test
     fun publicationMetadataDoesNotIncludeNativeLib() {
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
@@ -236,8 +234,9 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        executor().run(":kmpFirstLib:publish")
-
+        // TODO: investigate the root cause of the Gradle warning "Mutating the artifacts of
+        //       configuration ':kmpJvmOnly:archives' after it has been resolved or consumed"
+        executor().withFailOnWarning(false).run(":kmpFirstLib:publish")
 
         // Assert that maven metadata and gradle module metadata files have no mention of the native
         // lib dependency.
