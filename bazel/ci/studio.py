@@ -23,6 +23,17 @@ class BazelTestError(errors.CIError):
     return f'Bazel test exited with code {self.exit_code}'
 
 
+@dataclasses.dataclass(frozen=True,kw_only=True)
+class CopyArtifactsError(errors.CIError):
+  """Represents an error copying artifacts."""
+
+  artifact: str
+  exit_code: int = 1
+
+  def __str__(self) -> str:
+    return f'Failed to copy artifact: {self.artifact}'
+
+
 class BuildType(enum.Enum):
   """Represents the type of build being run."""
   LOCAL      = 1
@@ -130,13 +141,18 @@ def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
   bazel_cmd.run(*args)
 
 
-def copy_artifacts(build_env: bazel.BuildEnv, files: Iterable[Tuple[str,str]]) -> None:
+def copy_artifacts(
+    build_env: bazel.BuildEnv,
+    files: Iterable[Tuple[str,str]],
+    missing_ok: bool = False,
+) -> None:
   """Copies artifacts to the dist dir.
 
   Args:
     files: Iterable of tuples consisting of (src, dest).
            src is relative to the bazel-bin output and can be a glob.
            dest is relative to dist_dir and can be either a file or directory.
+    missing_ok: If true, missing files will be ignored.
   """
   dist_path = pathlib.Path(build_env.dist_dir)
   bazel_cmd = bazel.BazelCmd(build_env)
@@ -145,7 +161,10 @@ def copy_artifacts(build_env: bazel.BuildEnv, files: Iterable[Tuple[str,str]]) -
 
   binary_sizes = {}
   for src_glob, dest in files:
-    for src in bin_path.glob(src_glob):
+    src_files = list(bin_path.glob(src_glob))
+    if not src_files and not missing_ok:
+      raise CopyArtifactsError(artifact=src_glob)
+    for src in src_files:
       shutil.copy2(src, dist_path / dest)
       binary_sizes[f'{src}[bytes]'] = os.stat(src).st_size
   with open(dist_path / 'bloatbuster_report.binary_sizes.json', 'w') as f:

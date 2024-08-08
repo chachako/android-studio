@@ -25,7 +25,6 @@ def studio_win(build_env: bazel.BuildEnv):
       '-//tools/adt/idea/aswb/...',
   ]
   extra_targets = [
-      '//tools/base/bazel/ci:ci_test',  # Always run some test.
       '//tools/base/profiler/native/trace_processor_daemon',
       '//tools/adt/idea/studio:android-studio',
       '//tools/vendor/google/skia:skiaparser.zip',
@@ -48,6 +47,7 @@ def studio_win(build_env: bazel.BuildEnv):
   build_type = studio.BuildType.from_build_number(build_env.build_number)
   if build_type == studio.BuildType.POSTSUBMIT:
     presubmit.generate_and_upload_hash_file(build_env)
+    targets += extra_targets
 
   if build_type == studio.BuildType.PRESUBMIT:
     result = presubmit.find_test_targets(
@@ -55,10 +55,10 @@ def studio_win(build_env: bazel.BuildEnv):
         targets,
         test_tag_filters,
     )
-    targets = result.targets
+    # ci_test is included so that there is always a test target to run.
+    targets = result.targets + ['//tools/base/bazel/ci:ci_test']
     flags.extend(result.flags)
     flags.extend(presubmit.generate_runs_per_test_flags(build_env))
-  targets += extra_targets
 
   test_result = studio.run_bazel_test(build_env, flags, targets)
 
@@ -69,6 +69,7 @@ def studio_win(build_env: bazel.BuildEnv):
           ('tools/vendor/google/skia/skia_test_support.zip', ''),
           ('tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon.exe', ''),
       ],
+      missing_ok=(build_type == studio.BuildType.PRESUBMIT),
   )
   studio.collect_logs(build_env, test_result.bes_path)
 
