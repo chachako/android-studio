@@ -35,7 +35,8 @@ call %BASEDIR%\tools\base\bazel\bazel.cmd ^
   -- ^
  //tools/... ^
  -//tools/vendor/google3/aswb/... ^
- -//tools/vendor/google/aswb/...
+ -//tools/vendor/google/aswb/... ^
+ -//tools/adt/idea/aswb/...
 
 set /a EXITCODE=%ERRORLEVEL%
 

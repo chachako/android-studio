@@ -24,6 +24,7 @@ def studio_mac(build_env: bazel.BuildEnv) -> None:
       '-//tools/idea/...',
       '-//tools/vendor/google/aswb/...',
       '-//tools/vendor/google3/aswb/...',
+      '-//tools/adt/idea/aswb/...',
       '//tools/base/profiler/native/trace_processor_daemon',
   ]
   result = studio.run_bazel_test(build_env, flags, targets)

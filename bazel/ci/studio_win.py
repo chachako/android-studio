@@ -22,6 +22,7 @@ def studio_win(build_env: bazel.BuildEnv):
       '//tools/...',
       '-//tools/vendor/google3/aswb/...',
       '-//tools/vendor/google/aswb/...',
+      '-//tools/adt/idea/aswb/...',
   ]
   extra_targets = [
       '//tools/base/bazel/ci:ci_test',  # Always run some test.
