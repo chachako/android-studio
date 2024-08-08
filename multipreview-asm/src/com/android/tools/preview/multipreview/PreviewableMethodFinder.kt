@@ -126,7 +126,7 @@ class PreviewableMethodFinder(
                     }
 
                     override fun visitEnd() {
-                        if (hasComposableAnnotation) {
+                        if (hasComposableAnnotation && previewAnnotations.isNotEmpty()) {
                             previewMethods += PreviewMethod(
                                 MethodRepresentation(
                                     "${classToProcess.className.classPathToName}.$methodName",

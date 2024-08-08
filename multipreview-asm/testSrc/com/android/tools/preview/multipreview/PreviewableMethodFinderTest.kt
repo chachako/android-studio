@@ -58,7 +58,8 @@ class PreviewableMethodFinderTest {
 
     @Test
     fun findPreviewableFunctions() {
-        assertThat(finder.findAllPreviewableMethods().flatMap { it.toDebugString() }.sorted()
+        val previewMethods = finder.findAllPreviewableMethods()
+        assertThat(previewMethods.flatMap { it.toDebugString() }.sorted()
             .joinToString("----\n").trim()).isEqualTo("""
                 com.example.myprecompiledtestclasses.PreviewableMethodsFromStaticLibraryKt.GreetingPreview1
                 showBackground: true
@@ -108,6 +109,7 @@ class PreviewableMethodFinderTest {
                 provider: Lcom/example/mylibrary/MyPreviewParameterProvider;
                 limit: 2
                 """.trimIndent())
+        assertThat(previewMethods).hasSize(10)
     }
 
     private fun PreviewMethod.toDebugString(): List<String> {

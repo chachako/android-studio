@@ -26,5 +26,9 @@ import java.lang.StringBuilder
  */
 data class PreviewMethod(
     val method: MethodRepresentation,
-    val previewAnnotations: Set<BaseAnnotationRepresentation>
-)
+    val previewAnnotations: Set<BaseAnnotationRepresentation>,
+) {
+    init {
+        require(previewAnnotations.isNotEmpty()) { "previewAnnotations must not be empty" }
+    }
+}
