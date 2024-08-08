@@ -26,6 +26,67 @@ intellij_platform_transition = transition(
     outputs = ["//tools/base/intellij-bazel:intellij_platform"],
 )
 
+def _stamp(ctx, args, srcs, src, out):
+    args.add("--stamp")
+    args.add(src)
+    args.add(out)
+    ctx.actions.run(
+        inputs = srcs + [src],
+        outputs = [out],
+        executable = ctx.executable._stamper,
+        arguments = [args],
+        progress_message = "Stamping %s" % src.basename,
+        mnemonic = "stamper",
+    )
+
+def _platform_intellij_plugin_impl(ctx):
+    info = ctx.attr.plugin[PluginInfo]
+    files = LINUX.get(info.plugin_files)
+    new_files = {}
+    for path, file in files.items():
+        new_files[path] = file
+        if path.endswith(".jar"):
+            stamped_jar = ctx.actions.declare_file(ctx.attr.name + ".stamped." + path.replace("/", "_"))
+            args = ctx.actions.args()
+
+            args.add("--entry", "META-INF/plugin.xml")
+            args.add("--optional_entry")
+            args.add("--build_txt", ctx.file._build_txt)
+            args.add("--overwrite_since_until_builds")
+            _stamp(ctx, args, [ctx.file._build_txt], file, stamped_jar)
+
+            new_files[path] = stamped_jar
+    return [PluginInfo(
+        directory = info.directory,
+        plugin_files = struct(
+            linux = new_files,
+        ),
+        plugin_metadata = info.plugin_metadata,
+        module_deps = info.module_deps,
+        lib_deps = info.lib_deps,
+        licenses = info.licenses,
+        overwrite_plugin_version = info.overwrite_plugin_version,
+        platform = info.platform,
+    )]
+
+_platform_intellij_plugin = rule(
+    attrs = {
+        "plugin": attr.label(
+            providers = [PluginInfo],
+        ),
+        "_stamper": attr.label(
+            default = Label("//tools/adt/idea/studio:stamper"),
+            cfg = "exec",
+            executable = True,
+        ),
+        "_build_txt": attr.label(
+            default = Label("@intellij//:build-txt"),
+            allow_single_file = True,
+        ),
+    },
+    implementation = _platform_intellij_plugin_impl,
+)
+
 def _intellij_plugin_impl(ctx):
     default_files = []
     for platform_plugin in ctx.attr.plugin:
@@ -41,6 +102,7 @@ def _intellij_plugin_impl(ctx):
                 error = "File %s, expected to be in the plugins directory." % path
                 fail(error)
             path = path[len("plugins/"):]
+
             map.append((path, file))
             inputs.append(file)
 
@@ -80,9 +142,13 @@ def intellij_plugin(name, plugin_id, platforms, **kwargs):
         name = plugin_id,
         **kwargs
     )
+    _platform_intellij_plugin(
+        name = "%s.platform" % plugin_id,
+        plugin = plugin_id,
+    )
     _intellij_plugin(
         name = name,
-        plugin = ":%s" % plugin_id,
+        plugin = ":%s.platform" % plugin_id,
         platforms = select({
             "@platforms//os:windows": ["studio-sdk"],
             "//conditions:default": platforms,
@@ -110,6 +176,7 @@ def setup_intellij_platforms(specs):
 
         api = {
             "intellij-sdk": "",
+            "build-txt": "-build-txt",
             "product-info": "-product-info",
             "test-framework": "-test-framework",
             "vm-options": "-vm-options",
