@@ -21,8 +21,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.lang.StringBuilder
 import java.nio.file.Files
-import java.util.stream.Collectors
 import java.util.zip.ZipInputStream
 
 class PreviewableMethodFinderTest {
@@ -58,19 +58,71 @@ class PreviewableMethodFinderTest {
 
     @Test
     fun findPreviewableFunctions() {
-        val discoveredPreviews = finder.findAllPreviewableMethods()
-        val uniqueMethods = discoveredPreviews.stream().map { it.method.methodFqn }.collect(Collectors.toSet())
-        assertThat(discoveredPreviews.size).isEqualTo(11)
-        assertThat(uniqueMethods.size).isEqualTo(8)
-        assertThat(uniqueMethods).containsExactly(
-            "com.example.myprecompiledtestclasses.PreviewableMethodsFromStaticLibraryKt.GreetingPreview1",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTest.GreetingPreview2",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CustomMultipreviewAnnotationTest",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CyclicPreviewableAnnotationTest",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreview1",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreviewWithRepeatedAnnotation",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromLibrary",
-            "com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromMain",
-        )
+        assertThat(finder.findAllPreviewableMethods().flatMap { it.toDebugString() }.sorted()
+            .joinToString("----\n").trim()).isEqualTo("""
+                com.example.myprecompiledtestclasses.PreviewableMethodsFromStaticLibraryKt.GreetingPreview1
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTest.GreetingPreview2
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CustomMultipreviewAnnotationTest
+                showBackground: false
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CustomMultipreviewAnnotationTest
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CyclicPreviewableAnnotationTest
+                showBackground: false
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.CyclicPreviewableAnnotationTest
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreview1
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreviewWithRepeatedAnnotation
+                showBackground: false
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.GreetingPreviewWithRepeatedAnnotation
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.MultiPreviewWithMultipleCustomAnnotations
+                apiLevel: 29
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.MultiPreviewWithMultipleCustomAnnotations
+                apiLevel: 30
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.MultiPreviewWithMultipleCustomAnnotations
+                showBackground: false
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.MultiPreviewWithMultipleCustomAnnotations
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromLibrary
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewAnnotationFromMain
+                showBackground: true
+                ----
+                com.example.myscreenshottestexample.screenshottest.ExampleScreenshotTestKt.PreviewWithParameterProvider
+                provider: Lcom/example/mylibrary/MyPreviewParameterProvider;
+                limit: 2
+                """.trimIndent())
+    }
+
+    private fun PreviewMethod.toDebugString(): List<String> {
+        return previewAnnotations.map { previewAnnotation ->
+            StringBuilder().apply {
+                appendLine(method.methodFqn)
+                previewAnnotation.parameters.entries.forEach { (key, value) ->
+                    appendLine("$key: $value")
+                }
+                method.parameters.forEach {
+                    it.annotationParameters.entries.forEach { (key, value) ->
+                        appendLine("$key: $value")
+                    }
+                }
+            }.toString()
+        }
     }
 }

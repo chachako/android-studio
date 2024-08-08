@@ -21,6 +21,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.lang.StringBuilder
 import java.nio.file.Files
 import java.util.zip.ZipInputStream
 
@@ -55,62 +56,72 @@ class MultipreviewAnnotationResolverTest {
         )
     }
 
-    @Test
-    fun basePreviewAnnotationsShouldBeResolvedToFalse() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Landroidx/compose/ui/tooling/preview/Preview;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Landroidx/compose/ui/tooling/preview/Preview\$Container;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
-    }
+    private fun getPreviewAnnotationsForClass(annotationClassDescriptor: String): String {
+        val previewAnnotations = mutableSetOf<BaseAnnotationRepresentation>()
+        resolver.findAllPreviewAnnotations(annotationClassDescriptor, previewAnnotations::addAll)
 
-    @Test
-    fun nonMultipreviewAnnotationsShouldBeResolvedToFalse() {
-        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Rule;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
-        assertThat(resolver.isMultipreviewAnnotation("Lorg/junit/Test;") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
-    }
-
-    @Test
-    fun invalidInputShouldBeResolvedToFalse() {
-        assertThat(resolver.isMultipreviewAnnotation("")is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
-        assertThat(resolver.isMultipreviewAnnotation("invalid input") is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).isFalse()
+        val debugString = StringBuilder()
+        debugString.appendLine("size = ${previewAnnotations.size}")
+        previewAnnotations.forEach {
+            it.parameters.entries.forEach { (key, value) ->
+                debugString.appendLine("$key: $value")
+            }
+            debugString.appendLine("----")
+        }
+        return debugString.toString().trim()
     }
 
     @Test
     fun multipreviewIsDefinedInTestSource() {
-        val annotation = resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/MyCustomMultipreviewAnnotation;")
-        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
-            .isEqualTo(2)
+        assertThat(getPreviewAnnotationsForClass(
+            "Lcom/example/myscreenshottestexample/screenshottest/MyCustomMultipreviewAnnotation;"))
+            .isEqualTo("""
+                size = 2
+                showBackground: true
+                ----
+                showBackground: false
+                ----
+            """.trimIndent())
     }
 
     @Test
     fun multipreviewIsDefinedInMainSource() {
-        val annotation = resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/MyCustomMultipreviewAnnotationInMain;")
-        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
-            .isEqualTo(1)
+        assertThat(getPreviewAnnotationsForClass(
+            "Lcom/example/myscreenshottestexample/MyCustomMultipreviewAnnotationInMain;"))
+            .isEqualTo("""
+                size = 1
+                showBackground: true
+                ----
+            """.trimIndent())
     }
 
     @Test
     fun multipreviewIsDefinedInDependency() {
-        val annotation = resolver.isMultipreviewAnnotation(
-            "Lcom/example/mylibrary/MyCustomPreviewAnnotationInLibrary;")
-        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
-            .isEqualTo(1)
+        assertThat(getPreviewAnnotationsForClass(
+            "Lcom/example/mylibrary/MyCustomPreviewAnnotationInLibrary;"))
+            .isEqualTo("""
+                size = 1
+                ----
+            """.trimIndent())
     }
 
     @Test
     fun cyclicPreviewableAnnotation() {
-        val annotation = resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/CyclicPreviewableAnnotation;")
-        assertThat((annotation as MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation).previewList.size)
-            .isEqualTo(2)
+        assertThat(getPreviewAnnotationsForClass(
+            "Lcom/example/myscreenshottestexample/screenshottest/CyclicPreviewableAnnotation;"))
+            .isEqualTo("""
+                size = 2
+                showBackground: true
+                ----
+                showBackground: false
+                ----
+            """.trimIndent())
     }
 
     @Test
     fun cyclicNonPreviewableAnnotation() {
-        assertThat(resolver.isMultipreviewAnnotation(
-            "Lcom/example/myscreenshottestexample/screenshottest/CyclicNonPreviewableAnnotation;")is MultipreviewAnnotationResolver.AnnotationDetails.MultiPreviewAnnotation)
-            .isFalse()
+        assertThat(getPreviewAnnotationsForClass(
+            "Lcom/example/myscreenshottestexample/screenshottest/CyclicNonPreviewableAnnotation;"))
+            .isEqualTo("size = 0")
     }
 }
