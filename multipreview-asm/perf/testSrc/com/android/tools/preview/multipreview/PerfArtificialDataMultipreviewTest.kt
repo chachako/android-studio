@@ -17,26 +17,89 @@
 package com.android.tools.preview.multipreview
 
 import com.android.testutils.TestClassesGenerator
+import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
+import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 private const val ROOT_PKG = "com/example/test"
-private const val BASE_ANNOTATION = "$ROOT_PKG/base/annotations/BaseAnnotation"
+private const val BASE_ANNOTATION = "androidx/compose/ui/tooling/preview/Preview"
+private const val COMPOSABLE_ANNOTATION = "androidx/compose/runtime/Composable"
 
 class PerfArtificialDataMultipreviewTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
     private val settings = MultipreviewSettings(
-        "com.example.test.base.annotations.BaseAnnotation",
-        "com.example.test.param.PreviewParam", //  not used atm
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.tooling.preview.PreviewParameter", //  not used atm
     )
+
+    @Test
+    fun newAndOldMultipreviewFinderAlgorithmYieldsTheSameOutput() {
+        val paths = prepareClassPath()
+        val files = paths.map { File(it) }
+
+        val oldImpl = buildMultipreview(settings, paths).run {
+            methods.map {
+                PreviewMethod(it, getAnnotations(it))
+            }
+        }
+
+        val newImpl = PreviewableMethodFinder(listOf(), files, listOf(), listOf(), listOf())
+            .findAllPreviewableMethods()
+
+        assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
+        assertThat(oldImpl.size).isEqualTo(newImpl.size)
+    }
+
+    @Test
+    fun newAndOldMultipreviewFinderAlgorithmYieldsTheSameOutput_withMainFilter() {
+        val paths = prepareClassPath()
+        val files = paths.map { File(it) }
+
+        val oldImpl = buildMultipreview(settings, paths) {
+            it.startsWith("com.example.test.main")
+        }.run {
+            methods.map {
+                PreviewMethod(it, getAnnotations(it))
+            }
+        }
+
+        val newImpl = PreviewableMethodFinder(
+            listOf(), files.subList(0, 1), listOf(), listOf(), files.subList(1, files.size))
+            .findAllPreviewableMethods()
+
+        assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
+        assertThat(oldImpl.size).isEqualTo(newImpl.size)
+    }
+
+    private fun Collection<PreviewMethod>.toDebugString(): String {
+        return flatMap { it.toDebugString() }.sorted().joinToString("----\n").trim()
+    }
+
+    private fun PreviewMethod.toDebugString(): List<String> {
+        return previewAnnotations.map { previewAnnotation ->
+            StringBuilder().apply {
+                appendLine(method.methodFqn)
+                previewAnnotation.parameters.entries.forEach { (key, value) ->
+                    appendLine("$key: $value")
+                }
+                method.parameters.forEach {
+                    it.annotationParameters.entries.forEach { (key, value) ->
+                        appendLine("$key: $value")
+                    }
+                }
+            }.toString()
+        }
+    }
 
     @Test
     fun testFullProject() {
@@ -51,6 +114,25 @@ class PerfArtificialDataMultipreviewTest {
             metric.afterTest()
             // Validity check
             assertEquals(1400, multipreview.methods.size)
+            metric
+        }
+    }
+
+    @Test
+    fun testFullProject_newFinderImpl() {
+        val files = prepareClassPath().map { File(it) }
+        computeAndRecordMetric(
+            "multipreview_time_artificial_data_new_impl_no_filter",
+            "multipreview_memory_artificial_data_new_impl_no_filter"
+        ) {
+            val metric = MultipreviewMetric()
+            metric.beforeTest()
+            val multipreview =
+                PreviewableMethodFinder(listOf(), files, listOf(), listOf(), listOf())
+                .findAllPreviewableMethods()
+            metric.afterTest()
+            // Validity check
+            assertEquals(1400, multipreview.size)
             metric
         }
     }
@@ -74,6 +156,27 @@ class PerfArtificialDataMultipreviewTest {
         }
     }
 
+    @Test
+    fun testFullProject_withMainFilter_newFinderImpl() {
+        val files = prepareClassPath().map { File(it) }
+        val mainJars = files.subList(0, 1)
+        val depsJars = files.subList(1, files.size)
+        computeAndRecordMetric(
+            "multipreview_time_artificial_data_new_impl_package_filter",
+            "multipreview_memory_artificial_data_new_impl_package_filter"
+        ) {
+            val metric = MultipreviewMetric()
+            metric.beforeTest()
+            val multipreview =
+                PreviewableMethodFinder(listOf(), mainJars, listOf(), listOf(), depsJars)
+                    .findAllPreviewableMethods()
+            metric.afterTest()
+            // Validity check
+            assertEquals(300, multipreview.size)
+            metric
+        }
+    }
+
     /**
      * This roughly tries to mimic the structure of the real android project that uses Compose:
      *
@@ -88,19 +191,6 @@ class PerfArtificialDataMultipreviewTest {
         val multiMultiLibId = 4
         val multiMultiFolderId = 4
         return listOf(
-            // 1 + 100 classes
-            createJar(rootFolder.toPath().resolve("base.jar"), sequence {
-                yield(BASE_ANNOTATION to TestClassesGenerator.annotationClass(BASE_ANNOTATION, listOf("param1", "param2")))
-                (0 until 100).map { "$ROOT_PKG/base/SimpleClass$it" }.forEach { name ->
-                    yield(
-                        name to TestClassesGenerator.classWithFieldsAndMethods(
-                            name,
-                            (0 until 20).map { "field$it" },
-                            (0 until 20).map { "method$it:()V" },
-                        )
-                    )
-                }
-            }),
             // 100 + 20 + 10 + 40 + 10 + 4 + 100 + 10 + 40 = 334 classes
             createJar(
                 jarPath = rootFolder.toPath().resolve("main.jar"),
@@ -121,12 +211,15 @@ class PerfArtificialDataMultipreviewTest {
                         ),
                         AnnotatedClasses(
                             10,
-                            listOf(TestClassesGenerator.Annotation("$ROOT_PKG/main/Multi4Annotation0")),
+                            listOf(
+                                TestClassesGenerator.Annotation(COMPOSABLE_ANNOTATION),
+                                TestClassesGenerator.Annotation("$ROOT_PKG/main/Multi4Annotation0")),
                             10
                         ),
                         AnnotatedClasses(
                             5,
                             listOf(
+                                TestClassesGenerator.Annotation(COMPOSABLE_ANNOTATION),
                                 TestClassesGenerator.Annotation(BASE_ANNOTATION, listOf("foo", "bar")),
                                 TestClassesGenerator.Annotation(BASE_ANNOTATION, listOf("qwe", "asd"))
                             ),
@@ -135,6 +228,19 @@ class PerfArtificialDataMultipreviewTest {
                     )
                 )
             ),
+            // 1 + 100 classes
+            createJar(rootFolder.toPath().resolve("base.jar"), sequence {
+                yield(BASE_ANNOTATION to TestClassesGenerator.annotationClass(BASE_ANNOTATION, listOf("param1", "param2")))
+                (0 until 100).map { "$ROOT_PKG/base/SimpleClass$it" }.forEach { name ->
+                    yield(
+                        name to TestClassesGenerator.classWithFieldsAndMethods(
+                            name,
+                            (0 until 20).map { "field$it" },
+                            (0 until 20).map { "method$it:()V" },
+                        )
+                    )
+                }
+            }),
             // 20 * (100 + 20 + 10 + 4 + 10 + 100 + 5 + 10) = 5180 classes
             *(0 until 20).map { moduleId ->
                 createJar(
@@ -156,12 +262,15 @@ class PerfArtificialDataMultipreviewTest {
                             ),
                             AnnotatedClasses(
                                 5,
-                                listOf(TestClassesGenerator.Annotation("$ROOT_PKG/module$moduleId/Multi4Annotation0")),
+                                listOf(
+                                    TestClassesGenerator.Annotation(COMPOSABLE_ANNOTATION),
+                                    TestClassesGenerator.Annotation("$ROOT_PKG/module$moduleId/Multi4Annotation0")),
                                 5
                             ),
                             AnnotatedClasses(
                                 3,
                                 listOf(
+                                    TestClassesGenerator.Annotation(COMPOSABLE_ANNOTATION),
                                     TestClassesGenerator.Annotation(BASE_ANNOTATION, listOf("foo$moduleId", "bar$moduleId")),
                                     TestClassesGenerator.Annotation(BASE_ANNOTATION, listOf("qwe$moduleId", "asd$moduleId"))
                                 ),
