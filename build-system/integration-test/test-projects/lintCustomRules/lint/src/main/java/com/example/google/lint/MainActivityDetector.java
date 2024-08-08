@@ -24,9 +24,11 @@ import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.android.tools.lint.detector.api.XmlScanner;
+
+import org.w3c.dom.Element;
+
 import java.util.Collection;
 import java.util.Collections;
-import org.w3c.dom.Element;
 
 public class MainActivityDetector extends ResourceXmlDetector implements XmlScanner {
     public static final Issue ISSUE =
@@ -58,5 +60,6 @@ public class MainActivityDetector extends ResourceXmlDetector implements XmlScan
                 context.getLocation(activityElement),
                 "Should not specify <activity>.",
                 null);
+        // placeholder
     }
 }
