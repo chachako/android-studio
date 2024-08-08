@@ -4,8 +4,9 @@ import dataclasses
 import logging
 import os
 import pathlib
+import re
 import tempfile
-from typing import List, Sequence
+from typing import Iterator, List, Sequence
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import bazel_diff
@@ -14,6 +15,7 @@ from tools.base.bazel.ci import gce
 
 _HASH_FILE_BUCKET = 'adt-byob'
 _HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
+_MAX_RUNS_PER_TEST = 200
 
 
 @dataclasses.dataclass
@@ -129,6 +131,37 @@ def _find_impacted_test_targets(
   return list(set(targets) & set(result.stdout.decode('utf-8').splitlines()))
 
 
+def _parse_gerrit_tags(
+    build_env: bazel.BuildEnv,
+    filter_tag: str,
+) -> Iterator[str]:
+  """Yields tag values from Gerrit change tags.
+
+  Tag values are expected to be in one of two formats:
+    - <ab_target>:<value>
+    - <value>
+
+  Args:
+    bazel_env: The build environment.
+    filter_tag: The tag to look for.
+
+  Yields:
+    The tag values from the targeted Gerrit changes.
+  """
+  for gerrit_change in gce.get_gerrit_changes(build_env.build_number):
+    for tag, value in gerrit_change.tags:
+      if tag.lower() != filter_tag.lower():
+        continue
+      logging.info('Found %s tag: %s', tag, value)
+      # AB target names only contain word characters and hyphens.
+      match = re.fullmatch(r'^([\w-]+):(.+)$', value)
+      if match:
+        ab_target, value = match.group(1), match.group(2)
+        if ab_target != build_env.build_target_name:
+          continue
+      yield value
+
+
 def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
   """Generates and uploads the hash file for the current build to GCS."""
   object_name = _HASH_FILE_NAME.format(
@@ -161,32 +194,18 @@ def find_test_targets(
 
   Tags can be repeated in one description and across multiple changes.
   """
-  gerrit_changes = gce.get_gerrit_changes(build_env.build_number)
-  tags = []
-  for gerrit_change in gerrit_changes:
-    tags.extend(gerrit_change.tags)
-
   # Parse Presubmit-Test tags.
   use_base_targets = False
   explicit_targets = []
-  for tag, value in tags:
-    if tag == 'Presubmit-Test':
-      logging.info('Found Presubmit-Test tag: %s', value)
-      # Filter AB target-specific test targets.
-      if ':' in value and not value.startswith('//'):
-        ab_target, test_target = value.split(':', 1)
-        if ab_target != build_env.build_target_name:
-          continue
-        value = test_target
+  for value in _parse_gerrit_tags(build_env, 'Presubmit-Test'):
+    # "default" is a special value that indicates that all default targets
+    # should be tested.
+    if value.lower() == 'default':
+      use_base_targets = True
+      continue
 
-      # "default" is a special value that indicates that all default targets
-      # should be tested.
-      if value.lower() == 'default':
-        use_base_targets = True
-        continue
-
-      # Add any targets that are explicitly requested.
-      explicit_targets.append(value)
+    # Add any targets that are explicitly requested.
+    explicit_targets.append(value)
 
   if use_base_targets:
     impacted_targets = base_targets
@@ -200,7 +219,12 @@ def find_test_targets(
   found = impacted_targets != base_targets
   impacted_target_count = len(impacted_targets) if found else 0
   targets = impacted_targets + explicit_targets
-  change = gerrit_changes[0]
+  change = gce.get_gerrit_changes(build_env.build_number)[0]
+
+  if found:
+    logging.info('Found %d impacted targets', impacted_target_count)
+  else:
+    logging.info('Not using selective presubmit')
 
   return SelectivePresubmitResult(
       found=found,
@@ -214,3 +238,24 @@ def find_test_targets(
           f'--build_metadata=gerrit_change_patchset={change.patchset}',
       ],
   )
+
+
+def generate_runs_per_test_flags(build_env: bazel.BuildEnv) -> List[str]:
+  """Returns the flags used to specify the number of runs per test."""
+  flags = []
+  for value in _parse_gerrit_tags(build_env, 'Presubmit-Runs-Per-Test'):
+    target, runs = value.split('@')
+    runs = int(runs)
+
+    # Limit the number of runs per test.
+    if runs > _MAX_RUNS_PER_TEST:
+      raise ValueError(f'Exceeded maximum runs per test: {runs} > {_MAX_RUNS_PER_TEST}')
+
+    # Prevent wildcards.
+    if target.endswith('...') or target.endswith(':all'):
+      raise ValueError(f'Wildcard target not allowed: {target}')
+
+    logging.info('Running %s with %d runs per test', target, runs)
+    flags.append(f'--runs_per_test={value}')
+
+  return flags

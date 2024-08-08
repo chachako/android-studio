@@ -113,7 +113,7 @@ def studio_linux(build_env: bazel.BuildEnv) -> None:
     )
     targets = result.targets
     flags.extend(result.flags)
-    logging.info('Using selective presubmit: %s', str(result.found))
+    flags.extend(presubmit.generate_runs_per_test_flags(build_env))
   targets += _EXTRA_TARGETS
 
   result = run_tests(build_env, flags, targets)

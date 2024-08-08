@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import json
 import re
 import subprocess
@@ -66,6 +67,7 @@ def download_from_gcs(bucket: str, name: str, dst: str) -> bool:
   return result.returncode == 0
 
 
+@functools.cache
 def get_reference_build_id(bid: str, target: str) -> str:
   """Returns the reference build ID for the current build."""
   url = f'https://androidbuildinternal.googleapis.com/android/internal/build/v3/builds/{bid}/{target}'
@@ -80,6 +82,7 @@ def get_reference_build_id(bid: str, target: str) -> str:
   return json.loads(result.stdout.decode('utf-8'))['referenceBuildIds'][0]
 
 
+@functools.cache
 def get_gerrit_changes(bid: str) -> List[GerritChange]:
   """Returns the Gerrit change data for the current build."""
   url = f'https://androidbuildinternal.googleapis.com/android/internal/build/v3/changes/{bid}'
