@@ -66,10 +66,6 @@ def studio_mac_arm(build_env: bazel.BuildEnv) -> None:
           build_env,
           [
               (
-                  'tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon',
-                  '',
-              ),
-              (
                   'tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/libjni_object_tagger.dylib',
                   '',
               ),
