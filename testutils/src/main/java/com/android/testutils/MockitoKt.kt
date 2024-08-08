@@ -57,7 +57,7 @@ object MockitoKt {
   /**
    * Convenience wrapper around [Mockito.mock] that allows the type to be inferred.
    */
-  @Deprecated("Use org.mockito.kotlin.mock()")
+  @Deprecated("Use org.mockito.kotlin.mock(mockSettings)", ReplaceWith("org.mockito.kotlin.mock(mockSettings)"))
   inline fun <reified T> mock(mockSettings: MockSettings = withSettings()): T = Mockito.mock(T::class.java, mockSettings)
 
   /**
@@ -65,12 +65,14 @@ object MockitoKt {
    *
    * Mocks static method invocations within **the current thread only**.
    */
+  @Deprecated("Use com.android.mockito.kotlin.mockStatic(mockSettings)", ReplaceWith("com.android.mockito.kotlin.mockStatic(mockSettings)"))
   inline fun <reified T> mockStatic(mockSettings: MockSettings = withSettings()): MockedStatic<T> =
       Mockito.mockStatic(T::class.java, mockSettings)
 
   /**
    * Convenience wrapper around [InvocationOnMock.getArgument] that allows the type to be inferred.
    */
+  @Deprecated("Use com.android.mockito.kotlin.getTypedArgument(i)", ReplaceWith("com.android.mockito.kotlin.getTypedArgument(i)"))
   inline fun <reified T> InvocationOnMock.getTypedArgument(i: Int): T = getArgument(i, T::class.java)
 
   /**
@@ -88,8 +90,8 @@ object MockitoKt {
    */
   @Deprecated("Use org.mockito.kotlin.eq(arg)", ReplaceWith("org.mockito.kotlin.eq(arg)"))
   fun <T> eq(arg: T): T {
-      Mockito.eq(arg)
-      return arg
+    Mockito.eq(arg)
+    return arg
   }
 
   /**
@@ -110,7 +112,7 @@ object MockitoKt {
    * @see ArgumentCaptor.capture
    */
   @Deprecated("Use org.mockito.kotlin.capture(argumentCaptor)", ReplaceWith("org.mockito.kotlin.capture(argumentCaptor)"))
-   fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+  fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   /**
    * Wrapper around [Mockito.same] that doesn't return null.
@@ -120,34 +122,35 @@ object MockitoKt {
    * @see Mockito.same
    */
   @Deprecated("Use org.mockito.kotlin.same(value)", ReplaceWith("org.mockito.kotlin.same(value)"))
-   fun <T> same(value: T): T = Mockito.same(value)
+  fun <T> same(value: T): T = Mockito.same(value)
 
-   /**
-    * Wrapper around [Mockito.when] that isn't called "when", which is a reserved word in Kotlin.
-    *
-    * @see Mockito.when
-    */
-   @Deprecated("Use org.mockito.kotlin.whenever(methodCall)", ReplaceWith("org.mockito.kotlin.whenever(methodCall)"))
-   fun <T> whenever(methodCall: T): OngoingStubbing<T> = Mockito.`when`(methodCall)!!
+  /**
+   * Wrapper around [Mockito.when] that isn't called "when", which is a reserved word in Kotlin.
+   *
+   * @see Mockito.when
+   */
+  @Deprecated("Use org.mockito.kotlin.whenever(methodCall)", ReplaceWith("org.mockito.kotlin.whenever(methodCall)"))
+  fun <T> whenever(methodCall: T): OngoingStubbing<T> = Mockito.`when`(methodCall)!!
 
-   /**
-    * Wrapper around [Stubber.when] that isn't called "when", which is a reserved word in Kotlin.
-    *
-    * @See Stubber.when
-    */
-   @Deprecated("Use org.mockito.kotlin.whenever(mock)")
-    fun <T> Stubber.whenever(mock: T): T = `when`(mock)
+  /**
+   * Wrapper around [Stubber.when] that isn't called "when", which is a reserved word in Kotlin.
+   *
+   * @See Stubber.when
+   */
+  @Deprecated("Use org.mockito.kotlin.whenever(mock)", ReplaceWith("org.mockito.kotlin.whenever(mock)"))
+  fun <T> Stubber.whenever(mock: T): T = `when`(mock)
 
-   /**
-    * Wrapper around [MockedStatic.when] that isn't called "when", which is a reserved word in Kotlin.
-    *
-    * @See MockedStatic.when
-    */
-    fun <T> MockedStatic<*>.whenever(verification: Verification): OngoingStubbing<T> = `when`(verification)
+  /**
+   * Wrapper around [MockedStatic.when] that isn't called "when", which is a reserved word in Kotlin.
+   *
+   * @See MockedStatic.when
+   */
+  @Deprecated("Use com.android.mockito.kotlin.whenever(verification)", ReplaceWith("com.android.mockito.kotlin.whenever(verification)"))
+  fun <T> MockedStatic<*>.whenever(verification: Verification): OngoingStubbing<T> = `when`(verification)
 
-    /** Wrapper around [Mockito.inOrder] that can take a block. */
-    @Deprecated("Use org.mockito.kotlin.inOrder(mocks, block)")
-    inline fun inOrder(vararg mocks: Any, block: InOrder.() -> Unit) {
-        with(Mockito.inOrder(*mocks), block)
-    }
+  /** Wrapper around [Mockito.inOrder] that can take a block. */
+  @Deprecated("Use org.mockito.kotlin.inOrder(mocks, block)", ReplaceWith("org.mockito.kotlin.inOrder(mocks, block)"))
+  inline fun inOrder(vararg mocks: Any, block: InOrder.() -> Unit) {
+    with(Mockito.inOrder(*mocks), block)
+  }
 }

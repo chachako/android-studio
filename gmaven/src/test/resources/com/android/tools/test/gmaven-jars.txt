@@ -4047,6 +4047,8 @@ com/android/tools/testutils
   NOTICE
   com/
   com/android/
+  com/android/mockito/
+  com/android/mockito/kotlin/
   com/android/testutils/
   com/android/testutils/apk/
   com/android/testutils/classloader/
