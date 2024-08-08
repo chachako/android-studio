@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.builder.core.LibraryRequest
 import com.android.repository.Revision
+import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.NamedDomainObjectContainer
 
 /** The `android` extension for base feature module (application plugin).  */
@@ -36,14 +37,16 @@ open class BaseAppModuleExtension(
     buildOutputs: NamedDomainObjectContainer<BaseVariantOutput>,
     sourceSetManager: SourceSetManager,
     extraModelInfo: ExtraModelInfo,
-    private val publicExtensionImpl: ApplicationExtensionImpl
+    private val publicExtensionImpl: ApplicationExtensionImpl,
+    stats: GradleBuildProject.Builder?
 ) : AppExtension(
     dslServices,
     bootClasspathConfig,
     buildOutputs,
     sourceSetManager,
     extraModelInfo,
-    true
+    true,
+    stats
 ), InternalApplicationExtension by publicExtensionImpl {
 
     // Overrides to make the parameterized types match, due to BaseExtension being part of

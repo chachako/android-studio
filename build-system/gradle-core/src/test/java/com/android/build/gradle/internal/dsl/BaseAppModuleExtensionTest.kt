@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.variant.LegacyVariantInputManager
 import com.android.builder.core.ComponentTypeImpl
 import com.google.common.truth.Truth.assertThat
+import com.google.wireless.android.sdk.stats.GradleBuildProject
 import groovy.util.Eval
 import org.gradle.api.NamedDomainObjectContainer
 import org.junit.Before
@@ -42,6 +43,7 @@ import org.mockito.Mockito
  */
 class BaseAppModuleExtensionTest {
     private lateinit var appExtension: BaseAppModuleExtension
+    private lateinit var statsBuilder: GradleBuildProject.Builder
     @Suppress("UNCHECKED_CAST")
     @Before
     fun setUp() {
@@ -62,14 +64,15 @@ class BaseAppModuleExtensionTest {
         val extension = androidPluginDslDecorator.decorate(ApplicationExtensionImpl::class)
             .getDeclaredConstructor(DslServices::class.java, DslContainerProvider::class.java)
             .newInstance(dslServices, variantInputModel)
-
+        statsBuilder = GradleBuildProject.newBuilder()
         appExtension = BaseAppModuleExtension(
             dslServices,
             Mockito.mock(BootClasspathConfig::class.java),
             Mockito.mock(NamedDomainObjectContainer::class.java) as NamedDomainObjectContainer<BaseVariantOutput>,
             variantInputModel.sourceSetManager,
             Mockito.mock(ExtraModelInfo::class.java),
-            extension
+            extension,
+            statsBuilder
         )
     }
 
@@ -87,5 +90,12 @@ class BaseAppModuleExtensionTest {
         assertThat(appExtension.assetPacks).containsExactly(":ap")
         Eval.me("android", appExtension, "android.assetPacks = [':other']")
         assertThat(appExtension.assetPacks).containsExactly(":other")
+    }
+
+    @Test
+    fun `check old variant api tracking`() {
+        assertThat(statsBuilder.hasOldVariantApiInUse()).isFalse()
+        Eval.me("android", appExtension, "android.applicationVariants.all { }")
+        assertThat(statsBuilder.oldVariantApiInUse).isTrue()
     }
 }

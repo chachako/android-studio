@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.builder.core.LibraryRequest
 import com.android.repository.Revision
+import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
@@ -48,14 +49,16 @@ open class LibraryExtension(
     buildOutputs: NamedDomainObjectContainer<BaseVariantOutput>,
     sourceSetManager: SourceSetManager,
     extraModelInfo: ExtraModelInfo,
-    private val publicExtensionImpl: LibraryExtensionImpl
+    private val publicExtensionImpl: LibraryExtensionImpl,
+    stats: GradleBuildProject.Builder?
 ) : TestedExtension(
     dslServices,
     bootClasspathConfig,
     buildOutputs,
     sourceSetManager,
     extraModelInfo,
-    false
+    false,
+    stats
 ),
    InternalLibraryExtension by publicExtensionImpl {
 
@@ -96,7 +99,10 @@ open class LibraryExtension(
      * ```
      */
     val libraryVariants: DefaultDomainObjectSet<LibraryVariant>
-        get() = libraryVariantList as DefaultDomainObjectSet<LibraryVariant>
+        get() {
+            recordOldVariantApiUsage()
+            return libraryVariantList as DefaultDomainObjectSet<LibraryVariant>
+        }
 
     override fun addVariant(variant: BaseVariant) {
         libraryVariantList.add(variant as LibraryVariant)

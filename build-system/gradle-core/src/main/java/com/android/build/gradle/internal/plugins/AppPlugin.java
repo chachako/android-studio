@@ -57,8 +57,9 @@ import com.android.build.gradle.internal.variant.ApplicationVariantFactory;
 import com.android.build.gradle.internal.variant.ComponentInfo;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.ProjectType;
-import java.util.Collection;
-import javax.inject.Inject;
+
+import com.google.wireless.android.sdk.stats.GradleBuildProject;
+
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.component.SoftwareComponentFactory;
@@ -66,6 +67,10 @@ import org.gradle.api.configuration.BuildFeatures;
 import org.gradle.api.reflect.TypeOf;
 import org.gradle.build.event.BuildEventsListenerRegistry;
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry;
+
+import java.util.Collection;
+
+import javax.inject.Inject;
 
 /** Gradle plugin class for 'application' projects, applied on the base application module */
 public class AppPlugin
@@ -120,6 +125,8 @@ public class AppPlugin
         // detects whether we are running the plugin under unit test mode
         boolean forUnitTesting =
                 project.getProviders().gradleProperty("_agp_internal_test_mode_").isPresent();
+        GradleBuildProject.Builder stats =
+                getConfiguratorService().getProjectBuilder(project.getPath());
 
         BootClasspathConfigImpl bootClasspathConfig =
                 new BootClasspathConfigImpl(
@@ -132,6 +139,7 @@ public class AppPlugin
         if (getProjectServices().getProjectOptions().get(BooleanOption.USE_NEW_DSL_INTERFACES)) {
             // noinspection unchecked,rawtypes: Hacks to make the parameterized types make sense
             Class<ApplicationExtension> instanceType = (Class) BaseAppModuleExtension.class;
+
             BaseAppModuleExtension android =
                     (BaseAppModuleExtension)
                             project.getExtensions()
@@ -144,7 +152,8 @@ public class AppPlugin
                                             buildOutputs,
                                             dslContainers.getSourceSetManager(),
                                             extraModelInfo,
-                                            applicationExtension);
+                                            applicationExtension,
+                                            stats);
             project.getExtensions()
                     .add(
                             BaseAppModuleExtension.class,
@@ -166,7 +175,8 @@ public class AppPlugin
                                 buildOutputs,
                                 dslContainers.getSourceSetManager(),
                                 extraModelInfo,
-                                applicationExtension);
+                                applicationExtension,
+                                stats);
         initExtensionFromSettings(android);
         return new ExtensionData<>(android, applicationExtension, bootClasspathConfig);
     }
