@@ -211,5 +211,6 @@ def find_test_targets(
           f'--build_metadata=gerrit_owner={change.owner}',
           f'--build_metadata=gerrit_change_id={change.change_id}',
           f'--build_metadata=gerrit_change_number={change.change_number}',
+          f'--build_metadata=gerrit_change_patchset={change.patchset}',
       ],
   )
