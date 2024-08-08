@@ -60,24 +60,6 @@ public class EmulatedProperties {
     public static final Storage MAX_DEFAULT_RAM_SIZE = new Storage(1536, Storage.Unit.MiB);
 
     /**
-     * Return the default RAM size. This is a function of the screen size.
-     * (See external/qemu/android/android-emu/android/main-common.c)
-     */
-    @NonNull
-    public static Storage defaultRamStorage(int numPixels) {
-        int ramInMb;
-
-        if (numPixels <= 250_000) {
-            ramInMb = 96;
-        } else if (numPixels <= 500_000) {
-            ramInMb = 128;
-        } else {
-            ramInMb = 256;
-        }
-        return new Storage(ramInMb, Storage.Unit.MiB);
-    }
-
-    /**
      * Limit the RAM size to MAX_DEFAULT_RAM_SIZE
      */
     public static void restrictDefaultRamSize(@NonNull Map<String, String>deviceConfig) {
