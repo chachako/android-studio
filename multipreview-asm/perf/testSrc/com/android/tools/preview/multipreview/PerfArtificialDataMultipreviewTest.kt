@@ -53,8 +53,8 @@ class PerfArtificialDataMultipreviewTest {
             }
         }
 
-        val newImpl = PreviewableMethodFinder(listOf(), files, listOf(), listOf(), listOf())
-            .findAllPreviewableMethods()
+        val newImpl = PreviewMethodFinder(listOf(), files, listOf(), listOf(), listOf())
+            .findAllPreviewMethods()
 
         assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
         assertThat(oldImpl.size).isEqualTo(newImpl.size)
@@ -73,9 +73,9 @@ class PerfArtificialDataMultipreviewTest {
             }
         }
 
-        val newImpl = PreviewableMethodFinder(
+        val newImpl = PreviewMethodFinder(
             listOf(), files.subList(0, 1), listOf(), listOf(), files.subList(1, files.size))
-            .findAllPreviewableMethods()
+            .findAllPreviewMethods()
 
         assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
         assertThat(oldImpl.size).isEqualTo(newImpl.size)
@@ -128,8 +128,8 @@ class PerfArtificialDataMultipreviewTest {
             val metric = MultipreviewMetric()
             metric.beforeTest()
             val multipreview =
-                PreviewableMethodFinder(listOf(), files, listOf(), listOf(), listOf())
-                .findAllPreviewableMethods()
+                PreviewMethodFinder(listOf(), files, listOf(), listOf(), listOf())
+                .findAllPreviewMethods()
             metric.afterTest()
             // Validity check
             assertEquals(1400, multipreview.size)
@@ -168,8 +168,8 @@ class PerfArtificialDataMultipreviewTest {
             val metric = MultipreviewMetric()
             metric.beforeTest()
             val multipreview =
-                PreviewableMethodFinder(listOf(), mainJars, listOf(), listOf(), depsJars)
-                    .findAllPreviewableMethods()
+                PreviewMethodFinder(listOf(), mainJars, listOf(), listOf(), depsJars)
+                    .findAllPreviewMethods()
             metric.afterTest()
             // Validity check
             assertEquals(300, multipreview.size)

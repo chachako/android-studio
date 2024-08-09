@@ -25,12 +25,12 @@ import java.lang.StringBuilder
 import java.nio.file.Files
 import java.util.zip.ZipInputStream
 
-class PreviewableMethodFinderTest {
+class PreviewMethodFinderTest {
 
     @get:Rule
     val tempDir = TemporaryFolder()
 
-    private val finder: PreviewableMethodFinder by lazy {
+    private val finder: PreviewMethodFinder by lazy {
         val testClassesDir = tempDir.newFolder()
         ZipInputStream(requireNotNull(
             this::class.java.classLoader.getResourceAsStream(
@@ -47,7 +47,7 @@ class PreviewableMethodFinderTest {
         }
 
         val rootDir = File(testClassesDir, "testJarsAndClasses")
-        PreviewableMethodFinder(
+        PreviewMethodFinder(
             listOf(File(rootDir, "screenshotTestDirs/dir1")),
             listOf(File(rootDir, "screenshotTestJars/precompiledTestClasses.jar")),
             listOf(File(rootDir, "mainDirs/dir1")),
@@ -57,8 +57,8 @@ class PreviewableMethodFinderTest {
     }
 
     @Test
-    fun findPreviewableFunctions() {
-        val previewMethods = finder.findAllPreviewableMethods()
+    fun testFindPreviewMethods() {
+        val previewMethods = finder.findAllPreviewMethods()
         assertThat(previewMethods.flatMap { it.toDebugString() }.sorted()
             .joinToString("----\n").trim()).isEqualTo("""
                 com.example.myprecompiledtestclasses.PreviewableMethodsFromStaticLibraryKt.GreetingPreview1

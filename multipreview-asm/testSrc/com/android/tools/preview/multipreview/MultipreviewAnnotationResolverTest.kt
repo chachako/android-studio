@@ -106,7 +106,7 @@ class MultipreviewAnnotationResolverTest {
     }
 
     @Test
-    fun cyclicPreviewableAnnotation() {
+    fun cyclicPreviewAnnotation() {
         assertThat(getPreviewAnnotationsForClass(
             "Lcom/example/myscreenshottestexample/screenshottest/CyclicPreviewableAnnotation;"))
             .isEqualTo("""
@@ -119,7 +119,7 @@ class MultipreviewAnnotationResolverTest {
     }
 
     @Test
-    fun cyclicNonPreviewableAnnotation() {
+    fun cyclicNonPreviewAnnotation() {
         assertThat(getPreviewAnnotationsForClass(
             "Lcom/example/myscreenshottestexample/screenshottest/CyclicNonPreviewableAnnotation;"))
             .isEqualTo("size = 0")

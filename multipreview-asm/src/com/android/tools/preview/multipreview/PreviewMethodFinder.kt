@@ -26,9 +26,9 @@ import java.io.File
 import java.util.zip.ZipFile
 
 /**
- * Provides functions to find all preview-able methods for a given class paths.
+ * Provides functions to find all methods with Preview annotations for a given class paths.
  */
-class PreviewableMethodFinder(
+class PreviewMethodFinder(
     private val screenshotTestDirectory: List<File>,
     private val screenshotTestJars: List<File>,
     mainDirectory: List<File>,
@@ -41,9 +41,9 @@ class PreviewableMethodFinder(
     private val previewMethods: MutableSet<PreviewMethod> = mutableSetOf()
 
     /**
-     * Finds all preview-able methods.
+     * Finds all methods with Preview annotations.
      */
-    fun findAllPreviewableMethods(): Set<PreviewMethod> {
+    fun findAllPreviewMethods(): Set<PreviewMethod> {
         for (dir in screenshotTestDirectory) {
             if (!dir.exists() || !dir.isDirectory) {
                 continue
