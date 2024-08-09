@@ -24,6 +24,7 @@ import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.android.tools.lint.useFirUast
 import com.intellij.codeInsight.AnnotationTargetUtil
+import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiAnnotation.TargetType
@@ -1400,7 +1401,7 @@ class UastTest : TestCase() {
   fun testReifiedTypes() {
     // Regression test for
     // https://youtrack.jetbrains.com/issue/KT-35610:
-    // UAST: Some reified methods nave null returnType
+    // UAST: Some reified methods have null returnType
     val source =
       kotlin(
           """
@@ -1475,7 +1476,7 @@ class UastTest : TestCase() {
   fun testModifiers() {
     // Regression test for
     // https://youtrack.jetbrains.com/issue/KT-35610:
-    // UAST: Some reified methods nave null returnType
+    // UAST: Some reified methods have null returnType
     val moduleName = if (useFirUast()) "app" else "lint_module"
     val source =
       kotlin(
@@ -2933,9 +2934,11 @@ class UastTest : TestCase() {
             assertEquals("mock", resolved!!.name)
             if (first) {
               assertEquals("Mock", resolved.containingClass?.name)
+              assertFalse(resolved.hasModifier(JvmModifier.STATIC))
               first = false
             } else {
               assertEquals("MockingKt", resolved.containingClass?.name)
+              assertTrue(resolved.hasModifier(JvmModifier.STATIC))
             }
 
             return super.visitCallExpression(node)
