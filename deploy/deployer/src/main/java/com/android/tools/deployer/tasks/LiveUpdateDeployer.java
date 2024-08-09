@@ -393,6 +393,12 @@ public class LiveUpdateDeployer {
         List<Integer> pids = adb.getPids(appId);
         Deploy.Arch arch = adb.getArch(pids);
 
+        // This can happen if there are no PIDs because the app is not running. In this case, there
+        // are no Compose exceptions, so just return an empty list.
+        if (arch == Deploy.Arch.ARCH_UNKNOWN) {
+            return new ArrayList<>();
+        }
+
         Deploy.ComposeStatusRequest.Builder requestBuilder =
                 Deploy.ComposeStatusRequest.newBuilder();
         requestBuilder.setApplicationId(appId);
