@@ -1,8 +1,7 @@
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
 load("//tools/base/bazel:maven/artifacts.bzl", "ARTIFACTS", "DATA", "REMOTE_REPOS")
-load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION")
+load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "java_jarjar")
 
 exports_files(["jarjar_rules.txt"])
@@ -561,4 +560,11 @@ java_binary(
     name = "bazel-diff",
     main_class = "com.bazel_diff.Main",
     runtime_deps = ["@bazel_diff//jar"],
+)
+
+java_proto_library(
+    name = "grpc-common-java_proto",
+    srcs = ["@grpc-common-protos//:files"],
+    strip_prefix = "external/grpc-common-protos",
+    visibility = ["//visibility:public"],
 )

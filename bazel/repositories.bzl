@@ -113,6 +113,17 @@ _archives = [
         },
     },
     {
+        "name": "grpc-common-protos",
+        "build_file_content": """
+filegroup(
+    name = "files",
+    srcs = glob(["**/*.proto"]),
+    visibility = ["//visibility:public"],
+)
+""",
+        "archive": "//prebuilts/tools/common/m2:repository/com/google/api/grpc/proto-google-common-protos/2.17.0/proto-google-common-protos-2.17.0.jar",
+    },
+    {
         "name": "com_google_absl",
         "archive": "//prebuilts/tools/common/external-src-archives/google_absl/LTS_2021_11_02:20211102.0.zip",
         "strip_prefix": "abseil-cpp-20211102.0",
@@ -179,7 +190,7 @@ def _local_archive_impl(ctx):
 
     # Extract archive to the root of the repository.
     path = ctx.path(ctx.attr.archive)
-    download_info = ctx.extract(path, "", ctx.attr.strip_prefix)
+    ctx.extract(path, "", ctx.attr.strip_prefix)
 
     # Set up WORKSPACE to create @{name}// repository:
     ctx.file("WORKSPACE", 'workspace(name = "{}")\n'.format(ctx.name))
@@ -188,6 +199,11 @@ def _local_archive_impl(ctx):
     if ctx.attr.build_file:
         ctx.delete("BUILD.bazel")
         ctx.symlink(ctx.attr.build_file, "BUILD.bazel")
+    elif ctx.attr.build_file_content:
+        ctx.file(
+            "BUILD.bazel",
+            content = ctx.attr.build_file_content,
+        )
 
 # We're using a custom repository_rule instead of a regular macro (calling
 # http_archive for example) because we need access to the repository_ctx object
@@ -209,6 +225,7 @@ local_archive = repository_rule(
             allow_single_file = True,
             doc = "Optional label for a BUILD file to be used when setting the repository.",
         ),
+        "build_file_content": attr.string(),
     },
 )
 

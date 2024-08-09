@@ -17,7 +17,7 @@ INTELLIJ_PLATFORM_PROTO_VERSION = "3.19.6"
 PROTOC_VERSION = "3.22.3"
 PROTOC_GRPC_VERSION = "1.57.0"
 
-ProtoPackageInfo = provider(fields = ["proto_src", "proto_path"])
+ProtoPackageInfo = provider(fields = ["proto_src", "proto_paths"])
 
 def _gen_proto_impl(ctx):
     inputs = []
@@ -25,9 +25,14 @@ def _gen_proto_impl(ctx):
 
     args = []
     needs_label_path = False
+    proto_paths = []
+    if ctx.attr.extra_proto_path:
+        proto_paths.append(ctx.attr.extra_proto_path)
+
     for src_target in ctx.attr.srcs:
         if ProtoPackageInfo in src_target:
-            args.append("--proto_path=" + workspace_path(src_target[ProtoPackageInfo].proto_path))
+            for path in src_target[ProtoPackageInfo].proto_paths:
+                proto_paths.append(path)
         else:
             # if src_target doesn't have ProtoPackageInfo provider that should be used to look up proto files
             # then we're going to path where BUILD is placed.
@@ -36,19 +41,23 @@ def _gen_proto_impl(ctx):
 
     label_dir = label_workspace_path(ctx.label)
     if needs_label_path:
-        args.append("--proto_path=" + label_dir)
+        proto_paths.append(label_dir)
 
+    # TODO: replace with mechanism added in Id03d3e802
     args.append(
         "--proto_path=" + workspace_path("prebuilts/tools/common/m2/repository/com/google/protobuf/protobuf-java/" + ctx.attr.proto_include_version + "/include"),
     )
 
     for dep in ctx.attr.deps:
-        if dep[ProtoPackageInfo].proto_path:
-            args.append("--proto_path=" + workspace_path(dep[ProtoPackageInfo].proto_path))
+        if dep[ProtoPackageInfo].proto_paths:
+            for path in dep[ProtoPackageInfo].proto_paths:
+                proto_paths.append(path)
         else:
-            args.append("--proto_path=" + label_workspace_path(dep.label))
+            proto_paths.append(label_workspace_path(dep.label))
+
         inputs += dep[ProtoPackageInfo].proto_src
 
+    args += ["--proto_path=" + p for p in proto_paths]
     args += [s.path for s in ctx.files.srcs]
 
     # Try to generate cc protos first.
@@ -103,15 +112,15 @@ def _gen_proto_impl(ctx):
         )
 
     return ProtoPackageInfo(
-        proto_src = ctx.files.srcs,
-        proto_path = ctx.label.package,
+        proto_src = inputs,
+        proto_paths = proto_paths,
     )
 
 _gen_proto_rule = rule(
     attrs = {
         "srcs": attr.label_list(
             allow_files = [".proto"],
-            providers = [ProtoPackageInfo],
+            providers = [[ProtoPackageInfo], ["files"]],
         ),
         "deps": attr.label_list(
             allow_files = False,
@@ -133,6 +142,7 @@ _gen_proto_rule = rule(
             allow_single_file = True,
         ),
         "target_language": attr.int(),
+        "extra_proto_path": attr.string(default = ""),
         "outs": attr.output_list(),
     },
     output_to_genfiles = True,
@@ -149,6 +159,7 @@ def java_proto_library(
         protoc_version = PROTOC_VERSION,
         protoc_grpc_version = PROTOC_GRPC_VERSION,
         proto_java_runtime_library = ["@maven//:com.google.protobuf.protobuf-java"],
+        strip_prefix = "",
         **kwargs):
     """Compiles protobuf into a .jar file and optionally creates a maven artifact.
 
@@ -165,6 +176,13 @@ def java_proto_library(
       protoc_version: The protoc version to use.
       protoc_grpc_version: A version of the grpc protoc plugin to use.
       proto_java_runtime_library: A label of java_library to be loaded at runtime.
+      strip_prefix: A directory prefix to remove from source files when compiling protos,
+                    so they can be properly found when included from other protos.
+                    E.g. if the proto you want to include is build at my/target/path/foo.proto,
+                    but it's included as just "path/foo.proto", you can specify
+                    strip_prefix="my/target". (In terms of the protoc command run, this means that
+                    it will get "--proto_path=my/target" as an extra argument).
+
       **kwargs: other arguments accepted by bazel rule `java_library` are passed untouched.
     """
 
@@ -186,6 +204,7 @@ def java_proto_library(
             "@//prebuilts/tools/common/m2:io.grpc.protoc-gen-grpc-java." + protoc_grpc_version + "_exe" if grpc_support else None,
         target_language = proto_languages.JAVA,
         visibility = visibility,
+        extra_proto_path = strip_prefix,
     )
 
     grpc_extra_deps = ["@//prebuilts/tools/common/m2:javax.annotation.javax.annotation-api.1.3.2"]

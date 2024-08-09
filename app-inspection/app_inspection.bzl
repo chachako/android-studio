@@ -1,7 +1,5 @@
-load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/bazel:android.bzl", "dex_library")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
-load("//tools/base/bazel:maven.bzl", "maven_import")
 load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
 load("//tools/base/bazel:proto.bzl", "ProtoPackageInfo", "android_java_proto_library", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "java_jarjar")
@@ -19,7 +17,7 @@ def _impl(ctx):
     )
     return ProtoPackageInfo(
         proto_src = [ctx.outputs.out],
-        proto_path = ctx.outputs.out.dirname,
+        proto_paths = [ctx.outputs.out.dirname],
     )
 
 _unpack_app_inspection_proto = rule(
