@@ -140,7 +140,8 @@ internal constructor(
 
     suspend fun createAvd(): AvdInfo?
 
-    suspend fun editAvd(avdInfo: AvdInfo): AvdInfo?
+    /** Prompts the user to edit the given AVD. Returns true if the AVD was changed. */
+    suspend fun editAvd(avdInfo: AvdInfo): Boolean
 
     suspend fun startAvd(avdInfo: AvdInfo)
 
@@ -653,7 +654,9 @@ internal constructor(
       override val presentation = MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
 
       override suspend fun edit() {
-        avdManager.editAvd(onDiskAvdInfo)?.let { refreshDevices() }
+        if (avdManager.editAvd(onDiskAvdInfo)) {
+          refreshDevices()
+        }
       }
     }
 

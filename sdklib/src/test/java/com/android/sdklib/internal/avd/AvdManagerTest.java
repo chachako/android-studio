@@ -19,7 +19,9 @@ package com.android.sdklib.internal.avd;
 import static com.android.sdklib.internal.avd.ConfigKey.ENCODING;
 import static com.android.sdklib.internal.avd.SdCards.SDCARD_MIN_BYTE_SIZE;
 import static com.android.sdklib.internal.avd.UserSettingsKey.PREFERRED_ABI;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,8 +41,17 @@ import com.android.testutils.file.InMemoryFileSystems;
 import com.android.testutils.truth.PathSubject;
 import com.android.utils.NullLogger;
 import com.android.utils.PathUtils;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -54,12 +65,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.TreeMap;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class AvdManagerTest {
@@ -537,7 +542,8 @@ public final class AvdManagerTest {
                 .isEqualTo(newAvdFolder.getParent().getParent().relativize(newAvdFolder).toString());
 
         Map<String, String> movedBootProps =
-                AvdManager.parseIniFile(new PathFileWrapper(newAvdFolder.resolve("boot.prop")), null);
+                AvdManager.parseIniFile(
+                        new PathFileWrapper(newAvdFolder.resolve("boot.prop")), null);
         movedBootProps.remove(ENCODING);
         assertThat(movedBootProps).isEqualTo(bootProps);
 
@@ -629,6 +635,34 @@ public final class AvdManagerTest {
         assertFalse(
                 "Expected NO " + AvdManager.USERDATA_QEMU_IMG + " in " + mAvdFolder,
                 Files.exists(mAvdFolder.resolve(AvdManager.USERDATA_QEMU_IMG)));
+    }
+
+    @Test
+    public void editAvdViaBuilder() {
+        MockLog log = new MockLog();
+        DeviceManager deviceManager = DeviceManager.createInstance(mAndroidSdkHandler, log);
+        Device device = deviceManager.getDevice("medium_phone", "Generic");
+
+        AvdBuilder builder = mAvdManager.createAvdBuilder(device);
+        builder.setSystemImage(systemImages.getApi33ext4().getImage());
+        AvdInfo initialAvdInfo = mAvdManager.createAvd(builder);
+
+        assertThat(initialAvdInfo.getName()).isEqualTo("Medium_Phone");
+        assertThat(initialAvdInfo).isNotNull();
+
+        Path initialMetadataPath = builder.getMetadataIniPath();
+        assertThat(Files.exists(initialMetadataPath)).isTrue();
+
+        builder.setAvdName("My_Phone");
+        builder.setBootMode(ColdBoot.INSTANCE);
+
+        AvdInfo editedAvdInfo = mAvdManager.editAvd(initialAvdInfo, builder);
+
+        assertThat(editedAvdInfo.getName()).isEqualTo("My_Phone");
+        assertThat(editedAvdInfo.getProperties())
+                .containsEntry(ConfigKey.FORCE_COLD_BOOT_MODE, "yes");
+        assertThat((Object) builder.getMetadataIniPath()).isNotEqualTo(initialMetadataPath);
+        assertThat(Files.exists(builder.getMetadataIniPath())).isTrue();
     }
 
     @Test

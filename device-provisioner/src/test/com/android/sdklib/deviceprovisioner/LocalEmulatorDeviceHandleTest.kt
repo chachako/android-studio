@@ -80,7 +80,7 @@ open class StubAvdManager : LocalEmulatorProvisionerPlugin.AvdManager {
 
   override suspend fun createAvd(): AvdInfo? = unsupportedOperation()
 
-  override suspend fun editAvd(avdInfo: AvdInfo): AvdInfo? = unsupportedOperation()
+  override suspend fun editAvd(avdInfo: AvdInfo): Boolean = unsupportedOperation()
 
   override suspend fun startAvd(avdInfo: AvdInfo): Unit = unsupportedOperation()
 

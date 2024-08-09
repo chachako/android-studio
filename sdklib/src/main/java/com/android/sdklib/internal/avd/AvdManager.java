@@ -500,7 +500,8 @@ public class AvdManager {
      * Initializes an AvdBuilder based on a Device. This is used to set defaults for a device that
      * is under construction for the first time.
      */
-    public AvdBuilder createAvdBuilder(Device device) {
+    @NonNull
+    public AvdBuilder createAvdBuilder(@NonNull Device device) {
         String avdName =
                 AvdNamesKt.uniquifyAvdName(this, AvdNames.cleanAvdName(device.getDisplayName()));
         Path avdFolder = AvdInfo.getDefaultAvdFolder(this, avdName, true);
@@ -511,21 +512,54 @@ public class AvdManager {
         return builder;
     }
 
-    @Nullable
+    /**
+     * Creates an AVD from the given AvdBuilder.
+     *
+     * @return the resulting AvdInfo, or null if the creation failed.
+     */
     @Slow
+    @Nullable
     public AvdInfo createAvd(@NonNull AvdBuilder builder) {
         checkArgument(Files.notExists(builder.getAvdFolder()), "AVD already exists");
-        Device device = checkNotNull(builder.getDevice(), "device is required");
+        return createOrEditAvd(builder);
+    }
+
+    /**
+     * Edits an existing AVD (passed as AvdInfo) using the definition from the given AvdBuilder. If
+     * the AVD name or data folder path have changed, move the existing AVD to the new location
+     * before applying the edits.
+     *
+     * @return the resulting AvdInfo, or null if the editing failed.
+     */
+    @Slow
+    @Nullable
+    public AvdInfo editAvd(@NonNull AvdInfo avdInfo, @NonNull AvdBuilder builder) {
+        if (!avdInfo.getName().equals(builder.getAvdName())
+                || !avdInfo.getDataFolderPath().equals(builder.getAvdFolder())) {
+            if (!moveAvd(avdInfo, builder.getAvdName(), builder.getAvdFolder())) {
+                return null;
+            }
+        }
+        return createOrEditAvd(builder);
+    }
+
+    @Nullable
+    private AvdInfo createOrEditAvd(@NonNull AvdBuilder builder) {
+        String avdName = checkNotNull(builder.getAvdName(), "avdName is required");
+        if (!avdName.equals(AvdNames.cleanAvdName(avdName))) {
+            throw new IllegalArgumentException(
+                    "AVD name \"" + avdName + "\" contains invalid characters");
+        }
         return createAvd(
                 checkNotNull(builder.getAvdFolder(), "avdFolder is required"),
-                checkNotNull(builder.getAvdName(), "avdName is required"),
+                avdName,
                 checkNotNull(builder.getSystemImage(), "systemImage is required"),
                 builder.getSkin(),
                 builder.getSdCard(),
                 builder.configProperties(),
                 builder.getUserSettings(),
-                device.getBootProps(),
-                device.hasPlayStore(),
+                builder.getDevice().getBootProps(),
+                builder.getDevice().hasPlayStore(),
                 true,
                 true);
     }

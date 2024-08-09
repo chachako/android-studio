@@ -60,12 +60,12 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     synchronized(avds) { avds += avdInfo }
   }
 
-  override suspend fun editAvd(avdInfo: AvdInfo): AvdInfo? =
+  override suspend fun editAvd(avdInfo: AvdInfo): Boolean =
     synchronized(avds) {
       avds.remove(avdInfo)
       val newAvdInfo = avdEditor(avdInfo)
       avds += newAvdInfo
-      return newAvdInfo
+      return true
     }
 
   override suspend fun startAvd(avdInfo: AvdInfo) = boot(avdInfo, false, null)
