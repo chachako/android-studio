@@ -45,7 +45,7 @@ _EXTRA_TARGETS = [
     '//tools/vendor/google/asfp/studio:asfp.deb',
     '//tools/vendor/intel:android-studio-intel-haxm.zip',
     '//tools/vendor/google/ml:aiplugin',
-    '//tools/vendor/google3/aswb/third_party/intellij/bazel/plugin/aswb:aswb_bazel_zip',
+    '//tools/adt/idea/aswb/aswb:aswb_bazel_zip',
 ]
 
 
