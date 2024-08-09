@@ -25,11 +25,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.pom.java.LanguageLevel
+import com.intellij.psi.ClassTypePointerFactory
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartTypePointerManager
 import com.intellij.psi.impl.PsiNameHelperImpl
+import com.intellij.psi.impl.smartPointers.PsiClassReferenceTypePointerFactory
 import com.intellij.psi.impl.smartPointers.SmartPointerManagerImpl
 import com.intellij.psi.impl.smartPointers.SmartTypePointerManagerImpl
 import java.io.File
@@ -405,6 +407,16 @@ private object AnalysisApiFe10ServiceRegistrar : AnalysisApiSimpleServiceRegistr
       KtFe10ReferenceResolutionHelper::class.java,
       DummyKtFe10ReferenceResolutionHelper,
     )
+    val applicationArea = application.extensionArea
+    if (!applicationArea.hasExtensionPoint(ClassTypePointerFactory.EP_NAME)) {
+      CoreApplicationEnvironment.registerApplicationExtensionPoint(
+        ClassTypePointerFactory.EP_NAME,
+        ClassTypePointerFactory::class.java,
+      )
+      applicationArea
+        .getExtensionPoint(ClassTypePointerFactory.EP_NAME)
+        .registerExtension(PsiClassReferenceTypePointerFactory(), application)
+    }
   }
 
   override fun registerProjectExtensionPoints(project: MockProject) {
