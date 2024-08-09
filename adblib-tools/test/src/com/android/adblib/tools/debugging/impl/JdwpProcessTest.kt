@@ -27,11 +27,13 @@ import com.android.adblib.testingutils.TestingAdbUsageTracker
 import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.flow
+import com.android.adblib.tools.debugging.jdwpProcessFlow
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.properties
+import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
@@ -423,6 +425,20 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
             ), loggedEvents[1].jdwpProcessPropertiesCollector
         )
         assertEquals(device, loggedEvents[1].device)
+    }
+
+    @Test
+    fun sendDdmsExit() = runBlockingWithTimeout {
+        // Prepare
+        val (_, device, process) = createJdwpProcess()
+
+        // Act
+        device.jdwpProcessFlow.first { processes -> processes.isNotEmpty() }
+        process.sendDdmsExit(1)
+
+        // Assert
+        device.jdwpProcessFlow.first { processes -> processes.isEmpty() }
+        Unit
     }
 
     private suspend fun createJdwpProcess(

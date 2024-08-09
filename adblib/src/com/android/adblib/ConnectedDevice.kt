@@ -256,6 +256,17 @@ val ConnectedDevice.shell: ShellManager
         }
     }
 
+private val ActivityManagerKey = CoroutineScopeCache.Key<ActivityManager>("ActivityManager")
+
+/**
+ * The [ActivityManager] instance for managing activities on this [ConnectedDevice]
+ */
+val ConnectedDevice.activityManager: ActivityManager
+    get() {
+        return cache.getOrPut(ActivityManagerKey) {
+            ActivityManager(this)
+        }
+    }
 
 private val FileSystemManagerKey = CoroutineScopeCache.Key<FileSystemManager>("FileSystemManager")
 
@@ -356,6 +367,34 @@ class ReverseForwardManager(val device: ConnectedDevice) {
      */
     suspend fun killAll() {
         device.session.deviceServices.reverseKillForwardAll(device.selector)
+    }
+}
+
+/**
+ * Access to various `am` services for a given [ConnectedDevice].
+ *
+ * See https://developer.android.com/tools/adb#am
+ */
+class ActivityManager(val device: ConnectedDevice) {
+
+    /**
+     * Uses `adb shell am crash` to crash an app.
+     *
+     * Note that `am crash` command is available on API level > 26.
+     *
+     * @see AdbActivityManagerServices.crash
+     */
+    suspend fun crash(packageName: String) {
+        device.session.activityManagerServices.crash(device.selector, packageName)
+    }
+
+    /**
+     * Uses `adb shell am force-stop` to terminate an app.
+     *
+     * @see AdbActivityManagerServices.forceStop
+     */
+    suspend fun forceStop(packageName: String) {
+        device.session.activityManagerServices.forceStop(device.selector, packageName)
     }
 }
 

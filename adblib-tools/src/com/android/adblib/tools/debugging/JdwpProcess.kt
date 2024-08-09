@@ -84,6 +84,17 @@ interface JdwpProcess {
 internal fun JdwpProcess.toJdwpProcessInfo() = JdwpProcessInfo(device, propertiesFlow.value)
 
 /**
+ * Kills a debuggable process by sending a DDMS EXIT packet to the VM.
+ *
+ * If the process has already exited on the device, this method will throw an exception.
+ */
+suspend fun JdwpProcess.sendDdmsExit(status: Int) {
+    withJdwpSession {
+        sendDdmsExit(status)
+    }
+}
+
+/**
  * Returns a snapshot of the current [JdwpProcessProperties] for this process.
  *
  * Note: This is a shortcut for [processPropertiesFlow.value][JdwpProcess.propertiesFlow].

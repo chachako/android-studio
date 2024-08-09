@@ -18,6 +18,7 @@ package com.android.adblib
 import com.android.adblib.AdbLibProperties.TRACK_DEVICES_RETRY_DELAY
 import com.android.adblib.AdbSession.Companion.create
 import com.android.adblib.CoroutineScopeCache.Key
+import com.android.adblib.impl.AdbActivityManagerServicesImpl
 import com.android.adblib.impl.AdbSessionImpl
 import com.android.adblib.impl.ConnectedDevicesDeviceCacheProvider
 import com.android.adblib.impl.ConnectedDevicesTrackerImpl
@@ -392,3 +393,18 @@ val AdbSession.deviceCacheProvider: DeviceCacheProvider
  * The [Key] used to identify the [DeviceCacheProvider] in [AdbSession.cache].
  */
 private object DeviceCacheProviderKey : Key<DeviceCacheProvider>(DeviceCacheProvider::class.java.simpleName)
+
+/**
+ * Returns the [AdbActivityManagerServices] associated to this session
+ */
+val AdbSession.activityManagerServices: AdbActivityManagerServices
+    get() {
+        return this.cache.getOrPut(AdbActivityManagerServicesKey) {
+            AdbActivityManagerServicesImpl(this)
+        }
+    }
+
+/**
+ * The [Key] used to identify the [AdbActivityManagerServices] in [AdbSession.cache].
+ */
+private object AdbActivityManagerServicesKey : Key<AdbActivityManagerServices>(AdbActivityManagerServices::class.java.simpleName)

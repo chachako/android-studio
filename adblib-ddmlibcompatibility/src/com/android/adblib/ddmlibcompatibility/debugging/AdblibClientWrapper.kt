@@ -30,11 +30,11 @@ import com.android.adblib.tools.debugging.executeGarbageCollector
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsDumpViewHierarchy
 import com.android.adblib.tools.debugging.handleDdmsListViewRoots
+import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.profiler
 import com.android.adblib.tools.debugging.properties
-import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.utils.createChildScope
@@ -211,9 +211,7 @@ internal class AdblibClientWrapper(
     override fun kill() {
         // Sends a DDMS EXIT packet to the VM
         runBlockingLegacy {
-            jdwpProcess.withJdwpSession {
-                sendDdmsExit(1)
-            }
+            jdwpProcess.sendDdmsExit(1)
         }
     }
 
