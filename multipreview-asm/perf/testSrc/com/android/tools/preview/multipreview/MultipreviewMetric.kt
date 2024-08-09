@@ -17,6 +17,7 @@
 package com.android.tools.preview.multipreview
 
 import com.android.tools.perflogger.Metric
+import java.lang.management.ManagementFactory
 import java.time.Instant
 
 class MultipreviewMetric {
@@ -34,14 +35,19 @@ class MultipreviewMetric {
         get() = Metric.MetricSample(mTimestamp, mMemoryUsage)
 
     fun beforeTest() {
-        mPrevUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+        mPrevUsedMem = getCurrentMemoryUsage()
         mStartTime = System.currentTimeMillis()
     }
 
     fun afterTest() {
         mElapsedTime = System.currentTimeMillis() - mStartTime
-        mMemoryUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - mPrevUsedMem
+        mMemoryUsage = getCurrentMemoryUsage() - mPrevUsedMem
 
         mTimestamp = Instant.now().toEpochMilli()
+    }
+
+    private fun getCurrentMemoryUsage(): Long {
+        System.gc()
+        return ManagementFactory.getMemoryMXBean().heapMemoryUsage.used
     }
 }
