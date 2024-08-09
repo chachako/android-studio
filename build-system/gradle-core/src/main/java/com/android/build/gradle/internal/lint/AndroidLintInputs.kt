@@ -684,18 +684,14 @@ abstract class SystemPropertyInputs {
         javaVersion.setDisallowChanges(providerFactory.systemProperty("java.version"))
         lintApiDatabase.fileProvider(
             providerFactory.systemProperty("LINT_API_DATABASE").map {
-                // Suppress the warning because the Gradle docs say "May return null"
-                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-                File(it).takeIf { file -> file.isFile }
-            }
+                File(it)
+            }.filter { it.isFile }
         )
         lintApiDatabase.disallowChanges()
         lintConfigurationOverride.fileProvider(
             providerFactory.systemProperty("lint.configuration.override").map {
-                // Suppress the warning because the Gradle docs say "May return null"
-                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-                File(it).takeIf { file -> file.isFile }
-            }
+                File(it)
+            }.filter { it.isFile }
         )
         lintConfigurationOverride.disallowChanges()
         lintNullnessIgnoreDeprecated.setDisallowChanges(
@@ -771,18 +767,14 @@ abstract class EnvironmentVariableInputs {
         )
         lintApiDatabase.fileProvider(
             providerFactory.environmentVariable("LINT_API_DATABASE").map {
-                // Suppress the warning because the Gradle docs say "May return null"
-                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-                File(it).takeIf { file -> file.isFile }
-            }
+                File(it)
+            }.filter { it.isFile }
         )
         lintApiDatabase.disallowChanges()
         lintOverrideConfiguration.fileProvider(
             providerFactory.environmentVariable("LINT_OVERRIDE_CONFIGURATION").map {
-                // Suppress the warning because the Gradle docs say "May return null"
-                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-                File(it).takeIf { file -> file.isFile }
-            }
+                File(it)
+            }.filter { it.isFile }
         )
         lintOverrideConfiguration.disallowChanges()
     }
@@ -2663,8 +2655,12 @@ abstract class UastInputs  {
         this.compilerOptionsKotlinLanguageVersion.disallowChanges()
         // Ignore the type mismatch warning because the Gradle docs say "May return null"
         this.kotlinOptionsKotlinLanguageVersion.set(
-            kotlinCompileTaskProvider.map { kotlinCompileTask ->
-                runCatching { kotlinCompileTask.kotlinOptions.languageVersion }.getOrNull()
+            kotlinCompileTaskProvider.flatMap { kotlinCompileTask ->
+                // languageVersion is defined as a String? so it's ok to wrap it in a Provider
+                // as no task dependency needs to be carried over.
+                runCatching { kotlinCompileTask.kotlinOptions.languageVersion }.getOrNull()?.let {
+                    project.provider { it }
+                } ?: project.provider { null }
             }
         )
         this.kotlinOptionsKotlinLanguageVersion.disallowChanges()

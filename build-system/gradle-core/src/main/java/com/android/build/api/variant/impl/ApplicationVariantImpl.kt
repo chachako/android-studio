@@ -242,14 +242,14 @@ open class ApplicationVariantImpl @Inject constructor(
     override val consumesFeatureJars: Boolean
         get() = optimizationCreationConfig.minifiedEnabled && global.hasDynamicFeatures
 
-    private fun createVersionNameProperty(): Property<String?> =
-        internalServices.newNullablePropertyBackingDeprecatedApi(
+    private fun createVersionNameProperty(): Property<String> =
+        internalServices.newPropertyBackingDeprecatedApi(
             String::class.java,
             dslInfo.versionName,
         )
 
-    private fun createVersionCodeProperty() : Property<Int?> =
-        internalServices.newNullablePropertyBackingDeprecatedApi(
+    private fun createVersionCodeProperty() : Property<Int> =
+        internalServices.newPropertyBackingDeprecatedApi(
             Int::class.java,
             dslInfo.versionCode,
         )

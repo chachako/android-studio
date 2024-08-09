@@ -54,7 +54,7 @@ class ApkMetadataTest {
                   "type": "SINGLE",
                   "filters": [],
                   "attributes": [],
-                  "versionCode": 0,
+                  "versionCode": -1,
                   "versionName": "",
                   "outputFile": "app-debug.apk"
                 }

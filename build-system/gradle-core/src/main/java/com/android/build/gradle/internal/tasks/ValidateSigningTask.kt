@@ -147,7 +147,7 @@ abstract class ValidateSigningTask : NonIncrementalTask() {
      */
     @VisibleForTesting
     fun forceRerun(): Boolean {
-        val storeFile: File? = signingConfigData.map { it.storeFile }.orNull
+        val storeFile: File? = signingConfigData.get().storeFile
         return storeFile == null || !storeFile.isFile
     }
 

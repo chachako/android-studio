@@ -109,8 +109,8 @@ open class TestVariantImpl @Inject constructor(
     override val functionalTest: Property<Boolean> =
         internalServices.propertyOf(Boolean::class.java, dslInfo.functionalTest)
 
-    override val testLabel: Property<String?> =
-        internalServices.nullablePropertyOf(String::class.java, dslInfo.testLabel)
+    override val testLabel: Property<String> =
+        internalServices.propertyOf(String::class.java, dslInfo.testLabel)
 
     override val packaging: ApkPackaging by lazy {
         ApkPackagingImpl(

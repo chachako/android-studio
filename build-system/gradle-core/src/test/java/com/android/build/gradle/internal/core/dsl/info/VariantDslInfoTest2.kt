@@ -767,8 +767,8 @@ class VariantDslInfoTest2(
             if (convertAction != null) {
                 convertAction?.invoke(it, dslInfo)
             } else {
-                it.versionCode = (dslInfo as? ApplicationVariantDslInfo)?.versionCode?.orNull
-                it.versionName = (dslInfo as? ApplicationVariantDslInfo)?.versionName?.orNull
+                it.versionCode = (dslInfo as? ApplicationVariantDslInfo)?.versionCode?.orNull ?: -1
+                it.versionName = (dslInfo as? ApplicationVariantDslInfo)?.versionName?.orNull ?: ""
                 // only query these if this is not a test.
                 if (dslInfo is AndroidTestComponentDslInfo) {
                     it.instrumentationRunner = dslInfo.getInstrumentationRunner(given.dexingType).orNull
@@ -862,8 +862,8 @@ class VariantDslInfoTest2(
     }
 
     class ResultData(
-        var versionCode: Int? = null,
-        var versionName: String? = null,
+        var versionCode: Int = -1,
+        var versionName: String = "",
         var instrumentationRunner: String? = null,
         var handleProfiling: Boolean? = null,
         var functionalTest: Boolean? = null,
