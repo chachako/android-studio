@@ -198,7 +198,7 @@ class MultipreviewAnnotationResolver(
                 descriptor: String,
                 visible: Boolean
             ): AnnotationVisitor? = findAllPreviewAnnotations(descriptor, previewAnnotations::addAll)
-        }, /*parsingOptions=*/0)
+        }, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
 
         return previewAnnotations
     }

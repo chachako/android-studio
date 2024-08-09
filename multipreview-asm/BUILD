@@ -12,6 +12,7 @@ kotlin_library(
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:org.ow2.asm.asm",
+        "@maven//:org.ow2.asm.asm-tree",
     ],
 )
 
@@ -71,5 +72,6 @@ maven_library(
     deps = [
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.ow2.asm.asm",
+        "@maven//:org.ow2.asm.asm-tree",
     ],
 )

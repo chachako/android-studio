@@ -582,6 +582,7 @@ com.android.tools.compose:compose-preview-detector
   dependencies:
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     org.ow2.asm:asm (runtime)
+    org.ow2.asm:asm-tree (runtime)
 
 com.android.tools.ddms:ddmlib
   pomName=Android Tools ddmlib
