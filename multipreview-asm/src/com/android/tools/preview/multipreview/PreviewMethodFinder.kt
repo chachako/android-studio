@@ -38,12 +38,12 @@ class PreviewMethodFinder(
     private val annotationResolver = MultipreviewAnnotationResolver(
         screenshotTestDirectory, screenshotTestJars, mainDirectory, mainJars, dependencyJars)
 
-    private val previewMethods: MutableSet<PreviewMethod> = mutableSetOf()
-
     /**
      * Finds all methods with Preview annotations.
      */
     fun findAllPreviewMethods(): Set<PreviewMethod> {
+        val previewMethods: MutableSet<PreviewMethod> = mutableSetOf()
+
         for (dir in screenshotTestDirectory) {
             if (!dir.exists() || !dir.isDirectory) {
                 continue
@@ -52,7 +52,7 @@ class PreviewMethodFinder(
                 if (classFile.isFile &&
                     classFile.exists() &&
                     classFile.name.endsWith(".class", ignoreCase = true)) {
-                    processTestClass(ClassReader(classFile.readBytes()))
+                    processTestClass(ClassReader(classFile.readBytes()), previewMethods::add)
                 }
             }
         }
@@ -62,9 +62,9 @@ class PreviewMethodFinder(
                 continue
             }
             ZipFile(jar).use { zipFile ->
-                zipFile.stream().filter { it.name.endsWith(".class") }.forEach {
+                zipFile.stream().filter { it.name.endsWith(".class", ignoreCase = true) }.forEach {
                     zipFile.getInputStream(it).use { stream ->
-                        processTestClass(ClassReader(stream.readAllBytes()))
+                        processTestClass(ClassReader(stream.readAllBytes()), previewMethods::add)
                     }
                 }
             }
@@ -73,9 +73,9 @@ class PreviewMethodFinder(
         return previewMethods
     }
 
-    private fun processTestClass(classToProcess: ClassReader) {
+    private fun processTestClass(
+        classToProcess: ClassReader, onPreviewMethodFound: (PreviewMethod) -> Unit) {
         classToProcess.accept(object: ClassVisitor(Opcodes.ASM9) {
-            val methodNodes = mutableListOf<MethodNode>()
             override fun visitMethod(
                 access: Int,
                 methodName: String,
@@ -83,77 +83,81 @@ class PreviewMethodFinder(
                 signature: String?,
                 exceptions: Array<out String>?,
             ): MethodVisitor {
-                return MethodNode(Opcodes.ASM9,
-                    access, methodName, methodDescriptor, signature, exceptions).also {
-                    methodNodes += it
-                }
-            }
-
-            override fun visitEnd() {
-                for (methodNode in methodNodes) {
-                    var isComposableMethod = false
-
-                    methodNode.accept(object: MethodVisitor(Opcodes.ASM9) {
-                        override fun visitAnnotation(
-                            descriptor: String,
-                            visible: Boolean
-                        ): AnnotationVisitor? {
-                            isComposableMethod = isComposableMethod ||
-                                (descriptor == "Landroidx/compose/runtime/Composable;")
-                            return null
+                val methodNode = MethodNode(Opcodes.ASM9,
+                    access, methodName, methodDescriptor, signature, exceptions)
+                return object: MethodVisitor(Opcodes.ASM9, methodNode) {
+                    override fun visitEnd() {
+                        super.visitEnd()
+                        processMethod(methodNode) { previewAnnotations, methodPreviewParameters ->
+                            onPreviewMethodFound(PreviewMethod(
+                                MethodRepresentation(
+                                    "${classToProcess.className.classPathToName}.${methodNode.name}",
+                                    methodPreviewParameters),
+                                previewAnnotations
+                            ))
                         }
-                    })
-                    if (!isComposableMethod) {
-                        continue
                     }
-
-                    methodNode.accept(object: MethodVisitor(Opcodes.ASM9) {
-                        val previewAnnotations = mutableSetOf<BaseAnnotationRepresentation>()
-                        val methodPreviewParameters = mutableListOf<ParameterRepresentation>()
-
-                        override fun visitAnnotation(
-                            descriptor: String,
-                            visible: Boolean
-                        ): AnnotationVisitor? = annotationResolver.findAllPreviewAnnotations(
-                            descriptor, previewAnnotations::addAll)
-
-                        override fun visitParameterAnnotation(
-                            parameter: Int,
-                            descriptor: String,
-                            visible: Boolean,
-                        ): AnnotationVisitor? {
-                            return when(descriptor) {
-                                "Landroidx/compose/ui/tooling/preview/PreviewParameter;" -> {
-                                    object: AnnotationVisitor(Opcodes.ASM9) {
-                                        val annotationParams = mutableMapOf<String, Any>()
-
-                                        override fun visit(name: String, value: Any) {
-                                            annotationParams[name] = value
-                                        }
-
-                                        override fun visitEnd() {
-                                            methodPreviewParameters.add(
-                                                ParameterRepresentation(annotationParams))
-                                        }
-                                    }
-                                }
-                                else -> null
-                            }
-                        }
-
-                        override fun visitEnd() {
-                            if (previewAnnotations.isNotEmpty()) {
-                                previewMethods += PreviewMethod(
-                                    MethodRepresentation(
-                                        "${classToProcess.className.classPathToName}.${methodNode.name}",
-                                        methodPreviewParameters),
-                                    previewAnnotations
-                                )
-                            }
-                        }
-                    })
                 }
             }
         }, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+    }
+
+    private fun processMethod(
+        methodNodeToProcess: MethodNode,
+        onPreviewFound: (Set<BaseAnnotationRepresentation>, List<ParameterRepresentation>) -> Unit) {
+        var isComposableMethod = false
+        methodNodeToProcess.accept(object : MethodVisitor(Opcodes.ASM9) {
+            override fun visitAnnotation(
+                descriptor: String,
+                visible: Boolean
+            ): AnnotationVisitor? {
+                isComposableMethod = isComposableMethod ||
+                        (descriptor == "Landroidx/compose/runtime/Composable;")
+                return null
+            }
+        })
+        if (!isComposableMethod) {
+            return
+        }
+
+        val previewAnnotations = mutableSetOf<BaseAnnotationRepresentation>()
+        val methodPreviewParameters = mutableListOf<ParameterRepresentation>()
+
+        methodNodeToProcess.accept(object : MethodVisitor(Opcodes.ASM9) {
+            override fun visitAnnotation(
+                descriptor: String,
+                visible: Boolean
+            ): AnnotationVisitor? = annotationResolver.findAllPreviewAnnotations(
+                descriptor, previewAnnotations::addAll
+            )
+
+            override fun visitParameterAnnotation(
+                parameter: Int,
+                descriptor: String,
+                visible: Boolean,
+            ): AnnotationVisitor? = when (descriptor) {
+                "Landroidx/compose/ui/tooling/preview/PreviewParameter;" -> {
+                    object : AnnotationVisitor(Opcodes.ASM9) {
+                        val annotationParams = mutableMapOf<String, Any>()
+
+                        override fun visit(name: String, value: Any) {
+                            annotationParams[name] = value
+                        }
+
+                        override fun visitEnd() {
+                            methodPreviewParameters.add(
+                                ParameterRepresentation(annotationParams)
+                            )
+                        }
+                    }
+                }
+
+                else -> null
+            }
+        })
+
+        if (previewAnnotations.isNotEmpty()) {
+            onPreviewFound(previewAnnotations, methodPreviewParameters)
+        }
     }
 }

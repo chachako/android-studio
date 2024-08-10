@@ -73,18 +73,8 @@ class MultipreviewAnnotationResolver(
 
                     override fun visitArray(name: String): AnnotationVisitor {
                         return object: AnnotationVisitor(Opcodes.ASM9) {
-                            override fun visitAnnotation(name: String?, descriptor: String): AnnotationVisitor {
-                                return object: AnnotationVisitor(Opcodes.ASM9) {
-                                    private val parameters = mutableMapOf<String, Any>()
-
-                                    override fun visit(name: String, value: Any) {
-                                        parameters[name] = value
-                                    }
-
-                                    override fun visitEnd() {
-                                        previewAnnotations += BaseAnnotationRepresentation(parameters)
-                                    }
-                                }
+                            override fun visitAnnotation(name: String?, descriptor: String): AnnotationVisitor? {
+                                return findAllPreviewAnnotations(descriptor, previewAnnotations::addAll)
                             }
                         }
                     }
