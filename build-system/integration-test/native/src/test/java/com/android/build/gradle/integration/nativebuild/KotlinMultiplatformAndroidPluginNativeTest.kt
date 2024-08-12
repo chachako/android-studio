@@ -219,7 +219,16 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             "plugins {",
             "plugins {\n  id(\"maven-publish\")"
         )
-
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpSecondLib").ktsBuildFile,
+            "plugins {",
+            "plugins {\n  id(\"maven-publish\")"
+        )
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            "plugins {",
+            "plugins {\n  id(\"maven-publish\")"
+        )
         TestFileUtils.appendToFile(project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 group = "com.example"
@@ -234,9 +243,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        // TODO: investigate the root cause of the Gradle warning "Mutating the artifacts of
-        //       configuration ':kmpJvmOnly:archives' after it has been resolved or consumed"
-        executor().withFailOnWarning(false).run(":kmpFirstLib:publish")
+        executor().run(":kmpFirstLib:publish")
 
         // Assert that maven metadata and gradle module metadata files have no mention of the native
         // lib dependency.
