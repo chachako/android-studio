@@ -15,21 +15,17 @@
  */
 package com.android.fakeadbserver.services
 
+import com.android.fakeadbserver.DeviceState
 import java.util.Collections
 
-class ServiceManager {
-
-    companion object {
-
-        val ACTIVITY_MANAGER_SERVICE_NAME = "activity"
-    }
+class ServiceManager(deviceState: DeviceState) {
 
     private val packageManager = PackageManager()
-    private var activityManager: Service? = null
+    private var activityManager: Service = ActivityManager(deviceState)
     private val log = Collections.synchronizedList(mutableListOf<List<String>>())
 
     private val services: MutableMap<String, Service?> = mutableMapOf(
-        ACTIVITY_MANAGER_SERVICE_NAME to activityManager,
+        ActivityManager.SERVICE_NAME to activityManager,
         PackageManager.SERVICE_NAME to packageManager
     )
 
@@ -55,9 +51,10 @@ class ServiceManager {
         service.process(args.slice(1 until args.size), output)
     }
 
+    /** Override the default [com.android.fakeadbserver.services.ActivityManager] */
     fun setActivityManager(newActivityManager: Service) {
         activityManager = newActivityManager
-        setService(ACTIVITY_MANAGER_SERVICE_NAME, newActivityManager)
+        setService(ActivityManager.SERVICE_NAME, newActivityManager)
     }
 
     fun setService(name: String, service: Service) {

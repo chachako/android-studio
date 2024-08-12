@@ -18,7 +18,6 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceManager
 import com.android.fakeadbserver.services.ShellCommandOutput
 
 class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
@@ -39,8 +38,11 @@ class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : Simp
 
         statusWriter.writeOk()
 
+        // Save command to logs so tests can consult them.
+        device.addAmLog(shellCommandArgs)
+
         // Create a service request
-        val params = mutableListOf(ServiceManager.ACTIVITY_MANAGER_SERVICE_NAME)
+        val params = mutableListOf("activity")
         params.addAll(shellCommandArgs.split(" "))
         device.serviceManager.processCommand(params, shellCommandOutput)
     }

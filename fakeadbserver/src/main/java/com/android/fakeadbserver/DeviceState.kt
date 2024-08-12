@@ -61,6 +61,9 @@ class DeviceState internal constructor(
     var acceptsSyncServiceRequests = true
     val serviceManager: ServiceManager
 
+    // Keep track of all AM commands invocation
+    private val mAmLogs = Vector<String>()
+
     // Keep track of all PM commands invocation
     private val mPmLogs = Vector<String>()
 
@@ -83,7 +86,7 @@ class DeviceState internal constructor(
                 properties
             )
         mDeviceStatus = DeviceStatus.OFFLINE
-        serviceManager = ServiceManager()
+        serviceManager = ServiceManager(this)
     }
 
     internal constructor(server: FakeAdbServer, transportId: Int, config: DeviceStateConfig) : this(
@@ -243,6 +246,17 @@ class DeviceState internal constructor(
         }
     }
 
+    fun stopClients(packageName: String) {
+        synchronized(mProcessStates) {
+            for (processState in mProcessStates.values) {
+                val client = processState as? ClientState
+                if (client != null && client.packageName == packageName) {
+                    stopClient(client.pid)
+                }
+            }
+        }
+    }
+
     val allPortForwarders: ImmutableMap<Int, PortForwarder?>
         get() {
             synchronized(mPortForwarders) { return ImmutableMap.copyOf(mPortForwarders) }
@@ -335,6 +349,13 @@ class DeviceState internal constructor(
     fun setActivityManager(newActivityManager: Service?) {
         serviceManager.setActivityManager(newActivityManager!!)
     }
+
+    fun addAmLog(cmd: String) {
+        mAmLogs.add(cmd)
+    }
+
+    val amLogs: List<String>
+        get() = mAmLogs.clone() as List<String>
 
     fun addPmLog(cmd: String) {
         mPmLogs.add(cmd)
