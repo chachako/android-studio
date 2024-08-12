@@ -334,6 +334,7 @@ DATA = [
     "androidx.core:core-ktx:1.11.0-beta01",  # Necessary for Compose for TV.
     "androidx.core:core-ktx:1.12.0",
     "androidx.core:core-ktx:1.12.0-alpha05",
+    "androidx.core:core-ktx:1.13.0",
     "androidx.core:core-ktx:1.13.1",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.core:core-ktx:1.2.0",
     "androidx.core:core-ktx:1.3.0",
@@ -458,9 +459,9 @@ DATA = [
     "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha09",
     "androidx.privacysandbox.tools:tools-apipackager:1.0.0-alpha09",
     "androidx.privacysandbox.tools:tools-core:1.0.0-alpha09",
-    "androidx.privacysandbox.ui:ui-client:1.0.0-alpha07",
-    "androidx.privacysandbox.ui:ui-core:1.0.0-alpha07",
-    "androidx.privacysandbox.ui:ui-provider:1.0.0-alpha07",
+    "androidx.privacysandbox.ui:ui-client:1.0.0-alpha09",
+    "androidx.privacysandbox.ui:ui-core:1.0.0-alpha09",
+    "androidx.privacysandbox.ui:ui-provider:1.0.0-alpha09",
     "androidx.profileinstaller:profileinstaller:1.3.1",
     "androidx.recyclerview:recyclerview:1.2.1",
     "androidx.recyclerview:recyclerview:1.3.0",

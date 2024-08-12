@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.privacysandbox.ui>
-  <ui-client versions="1.0.0-alpha07"/>
-  <ui-core versions="1.0.0-alpha07"/>
-  <ui-provider versions="1.0.0-alpha07"/>
+  <ui-client versions="1.0.0-alpha09"/>
+  <ui-core versions="1.0.0-alpha09"/>
+  <ui-provider versions="1.0.0-alpha09"/>
 </androidx.privacysandbox.ui>
 
