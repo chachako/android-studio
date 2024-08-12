@@ -51,6 +51,7 @@ internal class ConnectedDeviceImpl(
     }
 
     fun updateDeviceInfo(deviceInfo: DeviceInfo) {
+        assert(deviceInfo.serialNumber == deviceInfoStateFlow.value.serialNumber)
         deviceInfoStateFlow.value = deviceInfo
     }
 }
