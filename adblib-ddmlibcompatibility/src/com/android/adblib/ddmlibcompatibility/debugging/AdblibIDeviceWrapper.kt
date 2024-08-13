@@ -26,7 +26,6 @@ import com.android.adblib.SocketSpec
 import com.android.adblib.adbLogger
 import com.android.adblib.availableFeatures
 import com.android.adblib.ddmlibcompatibility.AdbLibIDeviceManager
-import com.android.adblib.ddmlibcompatibility.IDeviceUsageTrackerImpl
 import com.android.adblib.rootAndWait
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
@@ -106,8 +105,7 @@ internal class AdblibIDeviceWrapper(
 
     private val logger = adbLogger(connectedDevice.session)
 
-    private val iDeviceUsageTracker =
-        IDeviceUsageTrackerImpl.forAdblibIDeviceWrapper(connectedDevice.session)
+    private val iDeviceUsageTracker = bridge.getiDeviceUsageTracker()
 
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)
@@ -1005,15 +1003,15 @@ internal class AdblibIDeviceWrapper(
         crossinline block: () -> R
     ): R {
         return try {
-            block().also { iDeviceUsageTracker.logUsage(method, false) }
+            block().also { iDeviceUsageTracker?.logUsage(method, false) }
         } catch (t: Throwable) {
-            iDeviceUsageTracker.logUsage(method, true)
+            iDeviceUsageTracker?.logUsage(method, true)
             throw t
         }
     }
 
     private fun unsupportedMethod(): Nothing {
-        iDeviceUsageTracker.logUsage(IDeviceUsageTracker.Method.UNSUPPORTED_METHOD, false)
+        iDeviceUsageTracker?.logUsage(IDeviceUsageTracker.Method.UNSUPPORTED_METHOD, false)
         throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 

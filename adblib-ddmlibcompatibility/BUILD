@@ -16,8 +16,6 @@ iml_module(
         "//tools/base/adblib:studio.android.sdktools.adblib[module]",
         "//tools/base/adblib-tools:studio.android.sdktools.adblib.tools[module]",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",
-        "//tools/analytics-library/tracker:analytics-tracker[module]",
-        "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
     ],
 )
 
@@ -26,6 +24,7 @@ iml_module(
 # Build with: bazel build //tools/base/adblib-ddmlibcompatibility:adblib.ddmlibcompatibility
 kotlin_library(
     name = "adblib.ddmlibcompatibility",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/**/*.kt",
         "src/**/*.java",
@@ -38,8 +37,6 @@ kotlin_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/adt/idea/.idea/libraries:kotlinx-coroutines-guava",
-        "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
-        "//tools/analytics-library/tracker:tools.analytics-tracker",
         "//tools/base/adblib",
         "//tools/base/adblib-tools:adblib.tools",
         "//tools/base/ddmlib:ddmlib-base",
@@ -54,6 +51,7 @@ kotlin_library(
 # bazel test //tools/base/adblib-ddmlibcompatibility:adblib.ddmlibcompatibility.tests.test
 kotlin_test(
     name = "adblib.ddmlibcompatibility.tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "test/src/**/*.kt",
         "test/src/**/*.java",
