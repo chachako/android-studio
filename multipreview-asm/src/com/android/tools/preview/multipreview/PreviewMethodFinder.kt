@@ -21,6 +21,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
 import java.io.File
 import java.util.zip.ZipFile
@@ -35,6 +36,12 @@ class PreviewMethodFinder(
     mainJars: List<File>,
     dependencyJars: List<File>,
 ) {
+
+    companion object {
+        private const val COMPOSABLE_ANNOTATION = "Landroidx/compose/runtime/Composable;"
+        private const val PREV_PARAMS_ANNOTATION = "Landroidx/compose/ui/tooling/preview/PreviewParameter;"
+    }
+
     private val annotationResolver = MultipreviewAnnotationResolver(
         screenshotTestDirectory, screenshotTestJars, mainDirectory, mainJars, dependencyJars)
 
@@ -58,7 +65,7 @@ class PreviewMethodFinder(
         }
 
         for (jar in screenshotTestJars) {
-            if (!jar.exists() || !jar.isFile || !jar.name.endsWith(".jar")) {
+            if (!jar.exists() || !jar.isFile || !jar.name.endsWith(".jar", ignoreCase = true)) {
                 continue
             }
             ZipFile(jar).use { zipFile ->
@@ -105,59 +112,70 @@ class PreviewMethodFinder(
     private fun processMethod(
         methodNodeToProcess: MethodNode,
         onPreviewFound: (Set<BaseAnnotationRepresentation>, List<ParameterRepresentation>) -> Unit) {
-        var isComposableMethod = false
-        methodNodeToProcess.accept(object : MethodVisitor(Opcodes.ASM9) {
-            override fun visitAnnotation(
-                descriptor: String,
-                visible: Boolean
-            ): AnnotationVisitor? {
-                isComposableMethod = isComposableMethod ||
-                        (descriptor == "Landroidx/compose/runtime/Composable;")
-                return null
-            }
-        })
-        if (!isComposableMethod) {
+        // First, we check if a method has a composable annotation.
+        // This test runs very fast and the majority of methods don't have composable annotation.
+        // If a method doesn't have composable annotation, no need to check further.
+        if (!isComposableMethod(methodNodeToProcess)) {
             return
         }
 
+        // This test is a bit expensive, so you should run it only for methods with composable
+        // annotations.
+        val previewAnnotations = findAllPreviewAnnotations(methodNodeToProcess)
+        if (previewAnnotations.isEmpty()) {
+            return
+        }
+
+        val methodPreviewParameters = findAllPreviewParameters(methodNodeToProcess)
+        onPreviewFound(previewAnnotations, methodPreviewParameters)
+    }
+
+    private fun isComposableMethod(method: MethodNode): Boolean {
+        return method.invisibleAnnotations.containsComposableAnnotation()
+                || method.visibleAnnotations.containsComposableAnnotation()
+    }
+
+    private fun List<AnnotationNode>?.containsComposableAnnotation(): Boolean {
+        return this?.find { it.desc == COMPOSABLE_ANNOTATION } != null
+    }
+
+    private fun findAllPreviewAnnotations(method: MethodNode): Set<BaseAnnotationRepresentation> {
         val previewAnnotations = mutableSetOf<BaseAnnotationRepresentation>()
+        method.invisibleAnnotations.findAllPreviewAnnotations(previewAnnotations::addAll)
+        method.visibleAnnotations.findAllPreviewAnnotations(previewAnnotations::addAll)
+        return previewAnnotations
+    }
+
+    private fun List<AnnotationNode>?.findAllPreviewAnnotations(
+        onFound: (Set<BaseAnnotationRepresentation>) -> Unit) {
+        this?.forEach {
+            annotationResolver.findAllPreviewAnnotations(it.desc, onFound)?.let { visitor ->
+                it.accept(visitor)
+            }
+        }
+    }
+
+    private fun findAllPreviewParameters(method: MethodNode): List<ParameterRepresentation> {
         val methodPreviewParameters = mutableListOf<ParameterRepresentation>()
+        method.invisibleParameterAnnotations.findAllPreviewParameters(methodPreviewParameters::add)
+        method.visibleParameterAnnotations.findAllPreviewParameters(methodPreviewParameters::add)
+        return methodPreviewParameters
+    }
 
-        methodNodeToProcess.accept(object : MethodVisitor(Opcodes.ASM9) {
-            override fun visitAnnotation(
-                descriptor: String,
-                visible: Boolean
-            ): AnnotationVisitor? = annotationResolver.findAllPreviewAnnotations(
-                descriptor, previewAnnotations::addAll
-            )
-
-            override fun visitParameterAnnotation(
-                parameter: Int,
-                descriptor: String,
-                visible: Boolean,
-            ): AnnotationVisitor? = when (descriptor) {
-                "Landroidx/compose/ui/tooling/preview/PreviewParameter;" -> {
-                    object : AnnotationVisitor(Opcodes.ASM9) {
-                        val annotationParams = mutableMapOf<String, Any>()
-
+    private fun Array<List<AnnotationNode>?>?.findAllPreviewParameters(
+        onFound: (ParameterRepresentation) -> Unit) {
+        this?.forEach {
+            it?.forEach {
+                if (it.desc == PREV_PARAMS_ANNOTATION) {
+                    val annotationParams = mutableMapOf<String, Any>()
+                    it.accept(object : AnnotationVisitor(Opcodes.ASM9) {
                         override fun visit(name: String, value: Any) {
                             annotationParams[name] = value
                         }
-
-                        override fun visitEnd() {
-                            methodPreviewParameters.add(
-                                ParameterRepresentation(annotationParams)
-                            )
-                        }
-                    }
+                    })
+                    onFound(ParameterRepresentation(annotationParams))
                 }
-
-                else -> null
             }
-        })
-
-        if (previewAnnotations.isNotEmpty()) {
-            onPreviewFound(previewAnnotations, methodPreviewParameters)
         }
     }
 }
