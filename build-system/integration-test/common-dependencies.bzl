@@ -5,10 +5,10 @@ and can be combined together
 
 # KGP version used in AGP tests
 # when editing this consider making a copy below so that our recipe tests can use any versions of Kotlin
-KGP_VERSION_FOR_TESTS = "2.0.20-Beta2"
+KGP_VERSION_FOR_TESTS = "2.0.20-RC2"
 
 # KSP version used in AGP tests
-KSP_VERSION_FOR_TESTS = "2.0.20-Beta2-1.0.23"
+KSP_VERSION_FOR_TESTS = "2.0.20-RC2-1.0.24"
 
 # KGP dependencies used in AGP tests
 KGP_FOR_TESTS = [
