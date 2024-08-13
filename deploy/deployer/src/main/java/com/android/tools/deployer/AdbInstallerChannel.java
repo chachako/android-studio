@@ -20,16 +20,16 @@ import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.idea.protobuf.CodedInputStream;
 import com.android.tools.idea.protobuf.CodedOutputStream;
 import com.android.utils.ILogger;
+
 import com.google.common.base.Charsets;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.ClosedSelectorException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantLock;
 
 /** An abstraction layer over SocketChannel with timeout on both read and write. */
 class AdbInstallerChannel implements AutoCloseable {
@@ -47,8 +47,6 @@ class AdbInstallerChannel implements AutoCloseable {
     };
 
     private final SimpleConnectedSocket channel;
-
-    private final ReentrantLock lock = new ReentrantLock(true);
 
     private final ILogger logger;
 
@@ -141,16 +139,21 @@ class AdbInstallerChannel implements AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
-        channel.close();
+    public void close() {
+        try {
+            channel.close();
+        } catch (IOException ignored) {
+        }
     }
 
     boolean writeRequest(Deploy.InstallerRequest request, long timeOutMs) throws TimeoutException {
         ByteBuffer bytes = wrap(request);
         try {
             write(bytes, timeOutMs);
-        } catch (IOException | ClosedSelectorException e) {
+        } catch (IOException e) {
             // If the connection has been broken an IOException 'broken pipe' will be received here.
+            logger.warning("Error while writing InstallerChannel");
+            close();
             return false;
         }
         return bytes.remaining() == 0;
@@ -181,6 +184,7 @@ class AdbInstallerChannel implements AutoCloseable {
         } catch (IOException e) {
             // If the connection has been broken an IOException 'broken pipe' will be received here.
             logger.warning("Error while reading InstallerChannel");
+            close();
             return null;
         }
     }

@@ -79,8 +79,6 @@ public class SocketInstaller extends Installer implements AutoCloseable {
     public void close() {
         try (AdbInstallerChannel c = channel; ) {
             System.out.println("Closing AdbInstallerChannel");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }
