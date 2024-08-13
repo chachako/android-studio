@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.connected.application
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
+import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.connected.utils.getEmulator
@@ -27,6 +28,9 @@ import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.perflogger.Benchmark
 import com.google.common.truth.Truth.assertThat
+import com.google.wireless.android.sdk.stats.AndroidStudioEvent
+import com.google.wireless.android.sdk.stats.DeviceTestSpanProfile
+import com.google.wireless.android.sdk.stats.TestRun;
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
@@ -182,6 +186,52 @@ class UtpConnectedTest : UtpTestBase() {
 
         assertThat(utpLogFile).exists()
         assertThat(utpLogFile).doesNotContain("Uninstalling com.example.android.kotlin.library.test")
+    }
+
+    @Test
+    fun connectedAndroidTestUtpPerformance() {
+        val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestUtpPerformance").setProject("Android Studio Gradle").build()
+        val capturer = ProfileCapturer(project, ".trk") // captures AndroidStudioEvents
+
+        selectModule("app", false)
+
+        var testExecutionStartTime: Long = System.currentTimeMillis()
+        val firstRunEvents = capturer.captureAndroidEvent {
+            executor().run(testTaskName)
+        }
+        logTestRun("firstRun", firstRunEvents, benchmark)
+
+
+
+        val secondRunEvents = capturer.captureAndroidEvent {
+            executor().run(testTaskName)
+        }
+        logTestRun("secondRun", secondRunEvents, benchmark)
+    }
+
+    private fun logTestRun(
+        prefix: String,
+        events: Collection<AndroidStudioEvent>,
+        benchmark: Benchmark
+    ) {
+        events.first { it.testRun != null }.testRun.also { testRun ->
+            assertThat(testRun.testInvocationType).isEqualTo(
+                TestRun.TestInvocationType.GRADLE_TEST
+            )
+            assertThat(testRun.testKind).isEqualTo(TestRun.TestKind.INSTRUMENTATION_TEST)
+            assertThat(testRun.deviceTestSpanProfilesCount).isEqualTo(1)
+            testRun.deviceTestSpanProfilesList.first().also { deviceSpan ->
+                assertThat(deviceSpan.deviceType)
+                    .isEqualTo(DeviceTestSpanProfile.DeviceType.CONNECTED_DEVICE_EMULATOR)
+                assertThat(deviceSpan.progressResult)
+                    .isEqualTo(DeviceTestSpanProfile.TestProgressResult.TESTS_COMPLETED)
+                benchmark.log("${prefix}_setup_time", deviceSpan.utpSetupDurationMs)
+                benchmark.log("${prefix}_provideDevice_time", deviceSpan.utpProvideDeviceDurationMs)
+                benchmark.log("${prefix}_testSetup_time", deviceSpan.utpTestSetupDurationMs)
+                benchmark.log("${prefix}_testRun_time", deviceSpan.utpTestRunDurationMs)
+                benchmark.log("${prefix}_tearDown_time", deviceSpan.utpTearDownDurationMs)
+            }
+        }
     }
 
     @Test

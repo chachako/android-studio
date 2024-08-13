@@ -52,6 +52,7 @@ abstract class UtpTestBase {
     @get:Rule
     var project = GradleTestProject.builder()
         .fromTestProject("utp")
+        .enableProfileOutput()
         .create()
 
     open val executor: GradleTaskExecutor
