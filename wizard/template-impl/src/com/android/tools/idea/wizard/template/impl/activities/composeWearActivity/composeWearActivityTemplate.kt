@@ -186,7 +186,7 @@ val composeWearActivityWithTileAndComplicationTemplate
         }
         val tilePreview = stringParameter {
             name = "Tile Default Preview function name"
-            default = "TilePreview"
+            default = "tilePreview"
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)

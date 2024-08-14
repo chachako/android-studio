@@ -508,6 +508,7 @@ DATA = [
     "androidx.wear.tiles:tiles:1.4.0",
     "androidx.wear.tiles:tiles-material:1.4.0",
     "androidx.wear.tiles:tiles-renderer:1.4.0",
+    "androidx.wear.tiles:tiles-tooling:1.4.0",
     "androidx.wear.tiles:tiles-tooling-preview:1.4.0",
     "androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1",
     "androidx.wear.watchface:watchface-guava:1.1.0",  # Dependency of wearWatchFace
