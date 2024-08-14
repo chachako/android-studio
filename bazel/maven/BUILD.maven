@@ -51867,6 +51867,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.brotli.dec_0.1.2",
+    pom = "repository/org/brotli/dec/0.1.2/dec-0.1.2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/brotli/dec/0.1.2",
+    parent = "org.brotli.parent_0.1.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.bytedeco.ffmpeg-platform_6.0-1.5.9",
     pom = "repository/org/bytedeco/ffmpeg-platform/6.0-1.5.9/ffmpeg-platform-6.0-1.5.9.pom",
     repo_root_path = "repository",
@@ -65876,6 +65885,13 @@ maven_artifact(
     pom = "repository/org/apache/apache/9/apache-9.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/apache/9",
+)
+
+maven_artifact(
+    name = "org.brotli.parent_0.1.2",
+    pom = "repository/org/brotli/parent/0.1.2/parent-0.1.2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/brotli/parent/0.1.2",
 )
 
 maven_artifact(
