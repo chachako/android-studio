@@ -239,8 +239,7 @@ def run_tests(
 
 def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
   """Copies worker logs into output."""
-  bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.info('output_base')
+  result = build_env.bazel_info('output_base')
   src_path = pathlib.Path(result.stdout.decode('utf-8').strip())
   dest_path = pathlib.Path(build_env.dist_dir) / 'bazel_logs'
   dest_path.mkdir(parents=True, exist_ok=True)

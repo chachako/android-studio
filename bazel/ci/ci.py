@@ -69,7 +69,7 @@ def studio_build_checks(ci: CI):
 
   def validate_coverage_graph(env: bazel.BuildEnv):
     inv_id = uuid.uuid4()
-    result = bazel.BazelCmd(env).build(
+    result = env.bazel_build(
         '--config=ci',
         '--nobuild',
         f'--invocation_id={inv_id}',

@@ -8,8 +8,7 @@ from tools.base.bazel.ci import bazel
 
 def generate_hash_file(build_env: bazel.BuildEnv, output_path: pathlib.Path):
   """Generates the hash file for the current build."""
-  bazel_cmd = bazel.BazelCmd(build_env)
-  bazel_cmd.run(
+  build_env.bazel_run(
       '//tools/base/bazel:bazel-diff',
       '--',
       'generate-hashes',
@@ -28,8 +27,7 @@ def get_impacted_targets(
     output_path: pathlib.Path,
 ) -> List[str]:
   """Returns the list of impacted targets given base and current hash file paths."""
-  bazel_cmd = bazel.BazelCmd(build_env)
-  bazel_cmd.run(
+  build_env.bazel_run(
       '//tools/base/bazel:bazel-diff',
       '--',
       'get-impacted-targets',

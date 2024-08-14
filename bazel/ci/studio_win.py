@@ -1,6 +1,5 @@
 """Implements studio-win CI script."""
 
-import logging
 import pathlib
 import tempfile
 
@@ -73,7 +72,7 @@ def studio_win(build_env: bazel.BuildEnv):
   )
   studio.collect_logs(build_env, test_result.bes_path)
 
-  bazel.BazelCmd(build_env).shutdown()
+  build_env.bazel_shutdown()
 
   if test_result.exit_code in {
       bazel.EXITCODE_SUCCESS,

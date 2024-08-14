@@ -30,8 +30,7 @@ def no_local_genrules(build_env: bazel.BuildEnv):
   Raises:
     BuildGraphException: If build targets are using local=True.
   """
-  bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.query('attr("local", "1", //tools/...)')
+  result = build_env.bazel_query('attr("local", "1", //tools/...)')
   query_targets = result.stdout.decode('utf8').splitlines(keepends=True)
   with open('tools/base/bazel/ci/data/allowlist-targets-local-strategy.txt', encoding='utf8') as f:
     golden_targets = f.readlines()
@@ -47,8 +46,7 @@ def no_local_genrules(build_env: bazel.BuildEnv):
 
 def require_cpu_tags(build_env: bazel.BuildEnv):
   """Require certain targets have cpu:N tags."""
-  bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.query(
+  result = build_env.bazel_query(
     'attr(tags, "ci:studio-mac", //tools/...) except attr(tags, "cpu:[0-9]+", //tools/...)')
   if not result.stdout:
     return
@@ -62,12 +60,11 @@ def require_cpu_tags(build_env: bazel.BuildEnv):
 
 def gradle_requires_cpu4_or_more(build_env: bazel.BuildEnv):
   """Tests running on MacOS using Gradle must declare cpu:4 or higher."""
-  bazel_cmd = bazel.BazelCmd(build_env)
   studio_mac_tags = 'attr(tags, "ci:studio-mac", //tools/...)'
   high_cpu_tags = 'attr(tags, "cpu:([4-9]|[1-9][1-9])", //tools/...)'
   paths_to_gradle = f'allpaths({studio_mac_tags} except {high_cpu_tags}, //tools/base/build-system:gradle-distrib)'
 
-  result = bazel_cmd.query(paths_to_gradle, '--output=minrank')
+  result = build_env.bazel_query(paths_to_gradle, '--output=minrank')
   if not result.stdout:
     return
   query_targets = result.stdout.decode('utf8').splitlines()

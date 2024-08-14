@@ -77,8 +77,6 @@ def run_bazel_test(
         '--nocache_test_results',
     ])
 
-  # TODO(b/342237310): Implement --very_flaky.
-
   if dist_path.exists():
     sponge_redirect_path = dist_path / 'upsalite_test_results.html'
     sponge_redirect_path.write_text(f'<head><meta http-equiv="refresh" content="0; url=\'https://fusion2.corp.google.com/invocations/{invocation_id}\'" /></head>')
@@ -106,8 +104,7 @@ def run_bazel_test(
 
   target_file = dist_path / 'targets.txt'
   target_file.write_text('\n'.join(targets))
-  bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.test(*flags, '--target_pattern_file', str(target_file))
+  result = build_env.bazel_test(*flags, '--target_pattern_file', str(target_file))
 
   return BazelTestResult(
       exit_code=result.returncode,
@@ -137,8 +134,7 @@ def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
     args.append('-perfzip')
     args.append(perfgate_data_path)
 
-  bazel_cmd = bazel.BazelCmd(build_env)
-  bazel_cmd.run(*args)
+  build_env.bazel_run(*args)
 
 
 def copy_artifacts(
@@ -155,8 +151,7 @@ def copy_artifacts(
     missing_ok: If true, missing files will be ignored.
   """
   dist_path = pathlib.Path(build_env.dist_dir)
-  bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.info('--config=ci', 'bazel-bin')
+  result = build_env.bazel_info('--config=ci', 'bazel-bin')
   bin_path = pathlib.Path(result.stdout.decode('utf-8').strip())
 
   binary_sizes = {}

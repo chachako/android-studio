@@ -21,76 +21,72 @@ class BuildEnv:
   dist_dir: str
   tmp_dir: str
   bazel_path: str
+  user: str
 
-  def __init__(self, bazel_path: str):
+  # Startup options for Bazel commands.
+  _startup_options: List[str]
+
+  def __init__(self, bazel_path: str, user: str = getpass.getuser()):
     self.build_number = os.environ.get("BUILD_NUMBER", "SNAPSHOT")
     self.build_target_name = os.environ.get("BUILD_TARGET_NAME", "")
     self.workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", "")
     self.dist_dir = os.environ.get("DIST_DIR", "")
     self.tmp_dir = os.environ.get("TMPDIR", "")
     self.bazel_path = os.path.normpath(bazel_path)
+    self.user = user
+
+    self._startup_options = ["--max_idle_secs=60"]
+    if self.is_ab_environment():
+      self._startup_options.extend([
+          f"--output_base={os.path.join(self.tmp_dir, 'bazel_out')}",
+          f"--install_base={os.path.join(self.tmp_dir, 'bazel_install')}",
+      ])
 
   def is_ab_environment(self) -> bool:
     """Returns true if on an Android Build machine."""
-    return self.build_target_name and getpass.getuser() == "android-build"
+    return self.build_target_name and self.user == "android-build"
 
-
-class BazelCmd:
-  """Represents a Bazel command and arguments."""
-
-  build_env: BuildEnv
-  _startup_options: List[str]
-
-  def __init__(self, build_env: BuildEnv):
-    self.build_env = build_env
-    self._startup_options = ["--max_idle_secs=60"]
-    if self.build_env.is_ab_environment():
-      self._startup_options.extend([
-          f"--output_base={os.path.join(build_env.tmp_dir, 'bazel_out')}",
-          f"--install_base={os.path.join(build_env.tmp_dir, 'bazel_install')}",
-      ])
-
-  def build(self, *build_args) -> subprocess.CompletedProcess:
+  def bazel_build(self, *build_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel build' command."""
-    return self._run(True, False, "build", *build_args)
+    return self._bazel(True, False, "build", *build_args)
 
-  def test(self, *test_args) -> subprocess.CompletedProcess:
+  def bazel_test(self, *test_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel test' command."""
-    return self._run(False, False, "test", *test_args)
+    return self._bazel(False, False, "test", *test_args)
 
-  def run(self, *run_args) -> subprocess.CompletedProcess:
+  def bazel_run(self, *run_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel run' command.
 
     Raises:
       CalledProcessError: If the command fails.
     """
-    return self._run(False, True, "run", *run_args)
+    return self._bazel(False, True, "run", *run_args)
 
-  def query(self, *query_args) -> subprocess.CompletedProcess:
+  def bazel_query(self, *query_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel query' command.
 
     Raises:
       CalledProcessError: If the query fails.
     """
-    return self._run(True, True, "query", *query_args)
+    return self._bazel(True, True, "query", *query_args)
 
-  def info(self, *info_args) -> subprocess.CompletedProcess:
+  def bazel_info(self, *info_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel info' command.
 
     Raises:
       CalledProcessError: If the command fails.
     """
-    return self._run(True, True, "info", *info_args)
+    return self._bazel(True, True, "info", *info_args)
 
-  def shutdown(self) -> subprocess.CompletedProcess:
+  def bazel_shutdown(self) -> subprocess.CompletedProcess:
     """Runs a 'bazel shutdown' command."""
-    return self._run(False, False, "shutdown")
+    return self._bazel(False, False, "shutdown")
 
-  def _run(
+  def _bazel(
       self, capture_output: bool, check: bool, *args: List[str]
   ) -> subprocess.CompletedProcess:
     """Runs a Bazel command with the given args."""
-    cmd = [self.build_env.bazel_path]
+    cmd = [self.bazel_path]
     cmd.extend(self._startup_options)
     cmd.extend(args)
     logging.info("Running command: %s", cmd)
@@ -98,5 +94,5 @@ class BazelCmd:
         cmd,
         capture_output=capture_output,
         check=check,
-        cwd=os.environ.get("BUILD_WORKSPACE_DIRECTORY"),
+        cwd=self.workspace_dir,
     )
