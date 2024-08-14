@@ -219,7 +219,14 @@ interface RecipeExecutor {
    * Sets sourceCompatibility and targetCompatibility in compileOptions and (if needed) jvmTarget in
    * kotlinOptions.
    */
+  @Deprecated("Use setJavaKotlinCompileOptions instead")
   fun requireJavaVersion(version: String, kotlinSupport: Boolean = false)
+
+  /**
+   * Sets sourceCompatibility and targetCompatibility in compileOptions and (if needed) jvmTarget in
+   * kotlinOptions, choosing the version from a centralized place
+   */
+  fun setJavaKotlinCompileOptions(isKotlin: Boolean = false)
 
   /**
    * Adds a dynamic feature [name] to [toModule]'s build.gradle[.kts].
