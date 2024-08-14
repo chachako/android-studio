@@ -37,10 +37,15 @@ internal class OkHttp2 : AbstractHttpClient<Request.Builder>() {
 
   override suspend fun doRequest(
     url: String,
+    encoding: String?,
     configure: Request.Builder.() -> Request.Builder,
   ): Result {
     return withContext(Dispatchers.IO) {
-      val request = Request.Builder().header("Accept-Encoding", "gzip").url(url).configure().build()
+      val requestBuilder = Request.Builder()
+      if (encoding != null) {
+        requestBuilder.header("Accept-Encoding", encoding)
+      }
+      val request = requestBuilder.url(url).configure().build()
       val response: Response = client.newCall(request).execute()
       return@withContext Result(response.code(), response.body().string())
     }

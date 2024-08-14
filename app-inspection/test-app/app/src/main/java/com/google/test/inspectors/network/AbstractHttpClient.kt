@@ -19,15 +19,15 @@ package com.google.test.inspectors.network
 import com.google.test.inspectors.network.HttpClient.Result
 
 internal abstract class AbstractHttpClient<T> : HttpClient {
-  final override suspend fun doGet(url: String): Result {
-    return doRequest(url)
+  final override suspend fun doGet(url: String, encoding: String): Result {
+    return doRequest(url, encoding)
   }
 
   final override suspend fun doPost(url: String, data: ByteArray, type: String): Result {
     return doRequest(url) { configurePost(data, type) }
   }
 
-  abstract suspend fun doRequest(url: String, configure: T.() -> T = { this }): Result
+  abstract suspend fun doRequest(url: String, encoding: String? = null, configure: T.() -> T = { this }): Result
 
   abstract fun T.configurePost(data: ByteArray, type: String): T
 }

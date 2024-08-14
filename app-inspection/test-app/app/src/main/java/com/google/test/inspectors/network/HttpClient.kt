@@ -19,7 +19,7 @@ package com.google.test.inspectors.network
 internal interface HttpClient {
   val name: String
 
-  suspend fun doGet(url: String): Result
+  suspend fun doGet(url: String, encoding: String): Result
 
   suspend fun doPost(url: String, data: ByteArray, type: String): Result
 

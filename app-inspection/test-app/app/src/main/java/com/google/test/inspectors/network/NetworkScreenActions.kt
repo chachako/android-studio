@@ -18,7 +18,7 @@ package com.google.test.inspectors.network
 
 internal interface NetworkScreenActions {
 
-  fun doGet(client: HttpClient, url: String) {}
+  fun doGet(client: HttpClient, url: String, encoding: String) {}
 
   fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {}
 

@@ -42,9 +42,9 @@ internal class NetworkViewModel @Inject constructor(private val settingsDao: Set
 
   private val scope = CoroutineScope(viewModelScope.coroutineContext + exceptionHandler)
 
-  override fun doGet(client: HttpClient, url: String) {
+  override fun doGet(client: HttpClient, url: String, encoding: String) {
     scope.launch {
-      val result = client.doGet(url)
+      val result = client.doGet(url, encoding)
       setSnack("${client.name} Result: ${result.rc}")
     }
   }

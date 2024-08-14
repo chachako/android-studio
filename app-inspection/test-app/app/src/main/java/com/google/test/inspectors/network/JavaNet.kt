@@ -37,11 +37,14 @@ internal object JavaNet : AbstractHttpClient<HttpURLConnection>() {
 
   override suspend fun doRequest(
     url: String,
+    encoding: String?,
     configure: HttpURLConnection.() -> HttpURLConnection,
   ): Result {
     return withContext(Dispatchers.IO) {
       val connection = URL(url).openConnection() as HttpURLConnection
-      connection.setRequestProperty("Accept-Encoding", "gzip")
+        if (encoding != null) {
+            connection.setRequestProperty("Accept-Encoding", encoding)
+        }
       connection.configure()
 
       Log.i("NetworkApp", "Content Encoding: ${connection.contentEncoding}")

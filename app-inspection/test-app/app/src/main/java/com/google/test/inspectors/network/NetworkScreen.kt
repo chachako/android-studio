@@ -71,7 +71,8 @@ private fun NetworkScreen(actions: NetworkScreenActions) {
   ButtonGrid {
     val okHttp3 = OkHttp3()
     listOf(JavaNet, OkHttp2(), okHttp3).forEach { client ->
-      button("${client.name} GET") { actions.doGet(client, "https://reqres.in/api/users") }
+      button("${client.name} GET (gz)") { actions.doGet(client, "https://reqres.in/api/users", "gzip") }
+      button("${client.name} GET (br)") { actions.doGet(client, "https://reqres.in/api/users", "br") }
       button("${client.name} POST") {
         actions.doPost(client, "https://reqres.in/api/users", POST_DATA, JSON_TYPE)
       }

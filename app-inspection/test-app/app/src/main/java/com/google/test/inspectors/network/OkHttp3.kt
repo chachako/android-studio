@@ -38,10 +38,15 @@ internal class OkHttp3 : AbstractHttpClient<Request.Builder>() {
 
   override suspend fun doRequest(
     url: String,
+    encoding: String?,
     configure: Request.Builder.() -> Request.Builder,
   ): Result {
     return withContext(Dispatchers.IO) {
-      val request = Request.Builder().header("Accept-Encoding", "gzip").url(url).configure().build()
+      val requestBuilder = Request.Builder()
+      if (encoding != null) {
+        requestBuilder.header("Accept-Encoding", encoding)
+      }
+      val request = requestBuilder.url(url).configure().build()
       client.newCall(request).execute().use { response ->
         return@withContext Result(response.code, response.body?.string() ?: "null")
       }
@@ -49,7 +54,7 @@ internal class OkHttp3 : AbstractHttpClient<Request.Builder>() {
   }
 
   suspend fun doPostOneShot(url: String, data: ByteArray, type: String): Result {
-    return doRequest(url) {
+    return doRequest(url, "gzip") {
       val body =
         object : DelegatingRequestBody(data.toRequestBody(type.toMediaType())) {
           override fun isOneShot() = true
@@ -59,7 +64,7 @@ internal class OkHttp3 : AbstractHttpClient<Request.Builder>() {
   }
 
   suspend fun doPostDuplex(url: String, data: ByteArray, type: String): Result {
-    return doRequest(url) {
+    return doRequest(url, "gzip") {
       val body =
         object : DelegatingRequestBody(data.toRequestBody(type.toMediaType())) {
           override fun isDuplex() = true
