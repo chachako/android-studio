@@ -163,7 +163,7 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
 
     val wearTilesVersionVarName =
         getDependencyVarName("androidx.wear.tiles:tiles", "wear_tiles_version")
-    val wearTilesVersion = getExtVar(wearTilesVersionVarName, "1.1.0")
+    val wearTilesVersion = getExtVar(wearTilesVersionVarName, "1.4.0")
     addDependency(mavenCoordinate = "androidx.wear.tiles:tiles:$wearTilesVersion")
     addDependency(mavenCoordinate = "androidx.wear.tiles:tiles-material:$wearTilesVersion")
 
@@ -172,11 +172,11 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
             "com.google.android.horologist:horologist-compose-tools",
             "horologist_version"
         )
-    val horologistVersion = getExtVar(horologistVersionVarName, "0.4.8")
+    val horologistVersion = getExtVar(horologistVersionVarName, "0.6.17")
     addDependency(mavenCoordinate = "com.google.android.horologist:horologist-compose-tools:$horologistVersion")
     addDependency(mavenCoordinate = "com.google.android.horologist:horologist-tiles:$horologistVersion")
 
-    addDependency(mavenCoordinate = "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1")
+    addDependency(mavenCoordinate = "androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
 
     val (_, srcOut, resOut, manifestOut) = moduleData
     save(

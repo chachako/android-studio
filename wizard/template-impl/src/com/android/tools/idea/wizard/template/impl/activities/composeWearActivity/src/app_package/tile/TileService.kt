@@ -75,6 +75,7 @@ class $tileServiceClass : SuspendingTileService() {
 
 private fun tileLayout(context: Context): LayoutElementBuilders.LayoutElement {
     return PrimaryLayout.Builder(buildDeviceParameters(context.resources))
+        .setResponsiveContentInsetEnabled(true)
         .setContent(
             Text.Builder(context, "Hello World!")
                 .setColor(argb(Colors.DEFAULT.onSurface))
