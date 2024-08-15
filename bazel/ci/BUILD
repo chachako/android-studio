@@ -25,6 +25,23 @@ py_library(
 )
 
 py_library(
+    name = "fake_build_env",
+    testonly = 1,
+    srcs = ["fake_build_env.py"],
+    deps = [":bazel"],
+)
+
+py_library(
+    name = "fake_gce",
+    testonly = 1,
+    srcs = ["fake_gce.py"],
+    deps = [
+        ":fake_build_env",
+        ":gce",
+    ],
+)
+
+py_library(
     name = "gce",
     srcs = ["gce.py"],
 )
@@ -116,6 +133,17 @@ py_test(
     srcs = ["ci_test.py"],
     deps = [
         ":ci_lib",
+        "@absl-py//absl/testing:absltest",
+    ],
+)
+
+py_test(
+    name = "gce_test",
+    srcs = ["gce_test.py"],
+    deps = [
+        ":fake_build_env",
+        ":fake_gce",
+        ":gce",
         "@absl-py//absl/testing:absltest",
     ],
 )
