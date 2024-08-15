@@ -258,32 +258,36 @@ data class ServerStatus(
      * The version of the ADB server. Format: "Major"."Minor"."Patch". e.g.: "34.0.1"
      * This is the first part (before dash) of what is retrieved with `adb --version`
      */
-    val version: String = "unknown",
+    val version: String = UNKNOWN,
 
     /**
      * The build of the ADB server.
      * This is the second part (after the dash) of what is retrieved with `adb --version`
      */
-    val build: String = "unknown",
+    val build: String = UNKNOWN,
 
     /**
      * The path to the log of the ADB server (if enabled).
      */
-    val absoluteLogPath: String = "unknown",
+    val absoluteLogPath: String = UNKNOWN,
 
     /**
      * The path to the ADB server executable.
      */
-    val absoluteExecutablePath: String = "unknown",
+    val absoluteExecutablePath: String = UNKNOWN,
 
     /**
      * The operating system ADB server is running on.
      */
-    val os: String = "unknown",
+    val os: String = UNKNOWN,
 
 ) {
     enum class UsbBackend{UNKNOWN, LIBUSB, NATIVE}
     enum class MdnsBackend{UNKNOWN, BONJOUR, OPENSCREEN}
+
+    companion object {
+        const val UNKNOWN = "unknown"
+    }
 }
 
 /**
