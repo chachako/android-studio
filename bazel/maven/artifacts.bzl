@@ -841,6 +841,7 @@ DATA = [
     "com.squareup.okio:okio:3.4.0",
     "commons-codec:commons-codec:1.9",
     "commons-lang:commons-lang:2.4",
+    "io.grpc:grpc-inprocess:1.63.0",
     "io.ktor:ktor-client-content-negotiation-jvm:2.3.2",
     "io.ktor:ktor-client-core-jvm:2.3.2",
     "io.ktor:ktor-client-logging-jvm:2.3.2",

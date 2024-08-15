@@ -1,4 +1,5 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 
 kotlin_library(
@@ -42,11 +43,9 @@ kotlin_library(
     ],
 )
 
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
-
 # managed by go/iml_to_build
 jvm_import(
     name = "adb_proxy_proto",
-    jars = ["//tools/base/adb-proxy/proto:adb_proxy_studio_proto.jar"],
+    jars = ["//tools/base/adb-proxy/proto:libadb_proxy_java_proto.jar"],
     visibility = ["//visibility:public"],
 )
