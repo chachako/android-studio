@@ -26,16 +26,19 @@ import com.android.build.gradle.integration.common.fixture.TestProjectPaths;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.testutils.AssumeUtil;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
+
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Test case that executes "standard" gradle tasks in all our tests projects.
@@ -84,10 +87,17 @@ public class CheckAll {
     @Rule public GradleTestProject project;
 
     public CheckAll(String projectName) {
-        GradleTestProjectBuilder builder = GradleTestProject.builder().fromTestProject(projectName);
-        this.project = builder.withConfigurationCaching(ConfigurationCaching.ON)
-                .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
-                .create();
+        GradleTestProjectBuilder builder =
+                GradleTestProject.builder()
+                        .fromTestProject(projectName)
+                        .withConfigurationCaching(ConfigurationCaching.ON)
+                        .addGradleProperties(
+                                BooleanOption.USE_ANDROID_X.getPropertyName() + "=true");
+        if (FLAKY_OOM_TESTS.contains(projectName)) {
+            this.project = builder.withHeap("2048m").create();
+        } else {
+            this.project = builder.create();
+        }
     }
 
     @Test
@@ -154,6 +164,21 @@ public class CheckAll {
                     "simpleCompositeBuild", // broken composite build project.
                     "multiCompositeBuild", // too complex composite build project to setup
                     "sourceDependency", // not set up fully, just used for sync tests
-                    "kotlinMultiplatform" // kotlin multiplatform project has its own assemble tests.
+                    "kotlinMultiplatform" // kotlin multiplatform project has its own assemble
+                    // tests.
                     );
+
+    // These tests have flaky OOM errors and need larger max heap (b/359524825)
+    private static final ImmutableSet<String> FLAKY_OOM_TESTS =
+            ImmutableSet.of(
+                    "lintDeps",
+                    "testFixturesKotlinApp",
+                    "composeHelloWorld",
+                    "lintLibrarySkipDeps",
+                    "testFixturesApp",
+                    "lintLibraryModel",
+                    "BasicRenderScript",
+                    "navigation",
+                    "compileRClasses",
+                    "kotlinApp");
 }
