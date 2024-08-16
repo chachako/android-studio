@@ -22,7 +22,9 @@ import static com.android.resources.Density.NODPI;
 import com.android.annotations.NonNull;
 import com.android.resources.Density;
 import com.android.resources.ScreenSize;
+import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.Storage;
+
 import java.util.Map;
 
 public class EmulatedProperties {
@@ -69,22 +71,31 @@ public class EmulatedProperties {
         }
     }
 
+    /** Returns the default VM heap size for the given device. */
+    public static Storage defaultVmHeapSize(@NonNull Device device) {
+        return minimumVmHeapSize(
+                ScreenSize.getScreenSize(
+                        device.getDefaultHardware().getScreen().getDiagonalLength()),
+                device.getDefaultHardware().getScreen().getPixelDensity(),
+                Device.isWear(device));
+    }
+
     /**
-     * Set the default VM heap size.
-     * This is based on the Android CDD minimums for each screen size and density.
+     * Returns the "minimum application memory" as defined by the Android 14 Compatibility
+     * Definition Document, section 3.7, "Runtime Compatibility."
      */
     @NonNull
-    public static Storage calculateDefaultVmHeapSize(@NonNull ScreenSize screenSize, @NonNull Density screenDensity, boolean isWear) {
+    public static Storage minimumVmHeapSize(
+            @NonNull ScreenSize screenSize, @NonNull Density screenDensity, boolean isWear) {
         int vmHeapSize;
 
-        // These values are taken from Android 8.1 Compatibility Definition,
-        // dated December 5, 2017, section 3.7, "Runtime Compatibility."
-        // (Here I treat ANYDPI and NODPI as MEDIUM.)
+        // Treat ANYDPI and NODPI as Density.MEDIUM (160 dpi).
+        if (screenDensity == ANYDPI || screenDensity == NODPI) {
+            screenDensity = Density.MEDIUM;
+        }
 
         if (isWear) {
-            if (screenDensity == ANYDPI || screenDensity == NODPI) {
-                vmHeapSize = 32;
-            } else if (screenDensity.getDpiValue() <= 220) {
+            if (screenDensity.getDpiValue() <= 220) {
                 vmHeapSize = 32;
             } else if (screenDensity.getDpiValue() <= 280) {
                 vmHeapSize = 36;
@@ -106,9 +117,7 @@ public class EmulatedProperties {
                 default:
                 case SMALL:
                 case NORMAL:
-                    if (screenDensity == ANYDPI || screenDensity == NODPI) {
-                        vmHeapSize = 32;
-                    } else if (screenDensity.getDpiValue() <= 160) {
+                    if (screenDensity.getDpiValue() <= 160) {
                         vmHeapSize = 32;
                     } else if (screenDensity.getDpiValue() <= 280) {
                         vmHeapSize = 48;
@@ -116,7 +125,7 @@ public class EmulatedProperties {
                         vmHeapSize = 80;
                     } else if (screenDensity.getDpiValue() <= 400) {
                         vmHeapSize = 96;
-                    } else if (screenDensity.getDpiValue() <= 440) {
+                    } else if (screenDensity.getDpiValue() <= 420) {
                         vmHeapSize = 112;
                     } else if (screenDensity.getDpiValue() <= 480) {
                         vmHeapSize = 128;
@@ -127,9 +136,7 @@ public class EmulatedProperties {
                     }
                     break;
                 case LARGE:
-                    if (screenDensity == ANYDPI || screenDensity == NODPI) {
-                        vmHeapSize = 48;
-                    } else if (screenDensity.getDpiValue() <= 120) {
+                    if (screenDensity.getDpiValue() <= 120) {
                         vmHeapSize = 32;
                     } else if (screenDensity.getDpiValue() <= 160) {
                         vmHeapSize = 48;
@@ -143,6 +150,8 @@ public class EmulatedProperties {
                         vmHeapSize = 160;
                     } else if (screenDensity.getDpiValue() <= 400) {
                         vmHeapSize = 192;
+                    } else if (screenDensity.getDpiValue() <= 420) {
+                        vmHeapSize = 228;
                     } else if (screenDensity.getDpiValue() <= 480) {
                         vmHeapSize = 256;
                     } else if (screenDensity.getDpiValue() <= 560) {
@@ -152,9 +161,7 @@ public class EmulatedProperties {
                     }
                     break;
                 case XLARGE:
-                    if (screenDensity == ANYDPI || screenDensity == NODPI) {
-                        vmHeapSize = 80;
-                    } else if (screenDensity.getDpiValue() <= 120) {
+                    if (screenDensity.getDpiValue() <= 120) {
                         vmHeapSize = 48;
                     } else if (screenDensity.getDpiValue() <= 160) {
                         vmHeapSize = 80;
@@ -168,7 +175,7 @@ public class EmulatedProperties {
                         vmHeapSize = 240;
                     } else if (screenDensity.getDpiValue() <= 400) {
                         vmHeapSize = 288;
-                    } else if (screenDensity.getDpiValue() <= 440) {
+                    } else if (screenDensity.getDpiValue() <= 420) {
                         vmHeapSize = 336;
                     } else if (screenDensity.getDpiValue() <= 480) {
                         vmHeapSize = 384;

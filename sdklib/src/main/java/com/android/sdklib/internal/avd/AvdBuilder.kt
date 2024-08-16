@@ -103,9 +103,7 @@ class AvdBuilder(var metadataIniPath: Path, var avdFolder: Path, var device: Dev
     if (ram.size == 0L || ram.size > EmulatedProperties.MAX_DEFAULT_RAM_SIZE.size) {
       ram = EmulatedProperties.MAX_DEFAULT_RAM_SIZE
     }
-    val size = ScreenSize.getScreenSize(device.defaultHardware.screen.diagonalLength)
-    val density = device.defaultHardware.screen.pixelDensity
-    vmHeap = EmulatedProperties.calculateDefaultVmHeapSize(size, density, Device.isWear(device))
+    vmHeap = EmulatedProperties.defaultVmHeapSize(device);
   }
 
   /** Returns a Map representing the contents of config.ini. */

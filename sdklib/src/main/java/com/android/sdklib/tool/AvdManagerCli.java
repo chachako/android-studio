@@ -1332,7 +1332,7 @@ class AvdManagerCli extends CommandLineParser {
 
             boolean isWear = (screenDiagonalInches <= 2.5); // CDD 2.2.1 "Screen Size"
 
-            Storage heapSize = EmulatedProperties.calculateDefaultVmHeapSize(screenSize, density, isWear);
+            Storage heapSize = EmulatedProperties.minimumVmHeapSize(screenSize, density, isWear);
 
             hwConfig.put(EmulatedProperties.VM_HEAP_STORAGE_KEY, heapSize.toIniString());
         }
