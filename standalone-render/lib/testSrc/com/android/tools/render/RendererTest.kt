@@ -92,12 +92,14 @@ class RendererTest {
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         var outputImage: BufferedImage? = null
-        Renderer.createTestRenderer(
+        Renderer(
             null,
             null,
             "",
             emptyList(),
+            emptyList(),
             layoutlibPath.absolutePathString(),
+            isForTest = true,
         ).use {
             it.render(sequenceOf(request)) { _, _, _, result, _ ->
                 assertNull("A single RenderResult is expected", outputImage)
@@ -128,12 +130,14 @@ class RendererTest {
     @Test
     fun testIncorrectLayoutlibPath() {
         val renderResults = mutableListOf<RenderResult>()
-        Renderer.createTestRenderer(
+        Renderer(
             null,
             null,
             "",
             emptyList(),
+            emptyList(),
             "",
+            isForTest = true,
         ).use {
             it.render(sequenceOf(RenderRequest({}) { sequenceOf("") })) { _, _, _, result, _ ->
                 renderResults.add(result)
@@ -166,12 +170,14 @@ class RendererTest {
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         val renderResults = mutableListOf<RenderResult>()
-        Renderer.createTestRenderer(
+        Renderer(
             null,
             null,
             "",
             emptyList(),
+            emptyList(),
             layoutlibPath.absolutePathString(),
+            isForTest = true,
         ).use {
             it.render(sequenceOf(RenderRequest({}) { sequenceOf(layout) })) { _, _, _, result, _ ->
                 renderResults.add(result)

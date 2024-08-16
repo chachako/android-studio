@@ -22,52 +22,25 @@ import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.extensions.ExtensionPoint
-import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.util.concurrency.AppExecutorUtil
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
-
-/**
- * IJ Framework wrapper, providing root [Disposable], [Project] and a way to register services and
- * extension points.
- * TODO(): Move away from this and use other IJ-independent solution.
- */
-internal interface IJFramework : Closeable {
-    val disposable: Disposable
-
-    val project: Project
-
-    fun <T : Any> registerService(serviceInterface: Class<T>, serviceImplementation: T)
-}
 
 /** [IJFramework] implementation for the standalone rendering. */
-internal class StandaloneFramework(stopExecutor: Boolean) : IJFramework {
-    override val disposable = Disposer.newDisposable()
-    private val app = MockApplication(disposable)
+object IJFramework {
+    private val application = MockApplication(Disposer.newDisposable())
 
     init {
-        ApplicationManager.setApplication(app, disposable)
-        PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet()).createPluginSetWithEnabledModulesMap())
-        if (stopExecutor) {
-            Disposer.register(disposable) {
-                // Make sure the queue is empty
-                AppExecutorUtil.getAppScheduledExecutorService().submit { }.get(60, TimeUnit.SECONDS)
-                AppExecutorUtil.shutdownApplicationScheduledExecutorService()
-            }
-        }
+        ApplicationManager.setApplication(application, Disposer.newDisposable())
+        PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet())
+            .createPluginSetWithEnabledModulesMap())
     }
 
-    override val project: Project = MockProject(null, disposable)
-
-    override fun <T : Any> registerService(serviceInterface: Class<T>, serviceImplementation: T) {
-        app.registerService(serviceInterface, serviceImplementation)
+    fun createProject(): Project {
+        return MockProject(null, application)
     }
 
-    override fun close() {
-        Disposer.dispose(disposable)
+    fun <T : Any> registerService(
+        serviceInterface: Class<T>, serviceImplementation: T, disposable: Disposable) {
+        application.registerService(serviceInterface, serviceImplementation, disposable)
     }
 }

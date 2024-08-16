@@ -16,7 +16,6 @@
 
 package com.android.tools.render
 
-import com.android.annotations.TestOnly
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -29,7 +28,6 @@ import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
 import com.android.tools.render.environment.StandaloneEnvironmentContext
 import com.android.tools.render.framework.IJFramework
-import com.android.tools.render.framework.StandaloneFramework
 import com.android.tools.rendering.RenderLogger
 import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
@@ -43,6 +41,7 @@ import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import java.io.Closeable
 import java.io.File
@@ -51,16 +50,17 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 /** The main entry point to invoke rendering. */
-class Renderer private constructor(
+class Renderer(
     fontsPath: String?,
     resourceApkPath: String?,
     namespace: String,
     classPath: List<String>,
     projectClassPath: List<String>,
     layoutlibPath: String,
-    private val isForTest: Boolean,
+    private val isForTest: Boolean = false,
 ) : Closeable {
-    private val framework: IJFramework
+
+    private val project: Project = IJFramework.createProject()
     private val configuration: Configuration
     private val module: RenderModelModule
 
@@ -68,8 +68,6 @@ class Renderer private constructor(
         TimeZone.getDefault()
 
         val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath, projectClassPath)
-
-        framework = StandaloneFramework(!isForTest)
 
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
@@ -92,11 +90,12 @@ class Renderer private constructor(
 
         val resourceRepositoryManager = SingleRepoResourceRepositoryManager(resourcesRepo)
 
-        framework.registerService(ModuleClassLoaderManager::class.java, moduleClassLoaderManager)
+        IJFramework.registerService(
+            ModuleClassLoaderManager::class.java, moduleClassLoaderManager, project)
 
         val environment =
             StandaloneEnvironmentContext(
-                framework.project,
+                project,
                 moduleClassLoaderManager,
                 StandaloneFontCacheService(fontsPath)
             )
@@ -128,7 +127,7 @@ class Renderer private constructor(
             androidPlatform,
             moduleKey,
             moduleDependencies,
-            framework.project,
+            project,
             namespace,
             environment,
             resourceIdManager,
@@ -175,7 +174,7 @@ class Renderer private constructor(
 
                     val xmlFile =
                         RenderXmlFileSnapshot(
-                            framework.project,
+                            project,
                             "layout.xml",
                             ResourceFolderType.LAYOUT,
                             layout
@@ -211,34 +210,6 @@ class Renderer private constructor(
     }
 
     override fun close() {
-        try {
-            RenderService.shutdownRenderExecutor()
-        } catch (t: Throwable) {
-            t.printStackTrace()
-        } finally {
-            framework.close()
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        fun createRenderer(
-            fontsPath: String?,
-            resourceApkPath: String?,
-            namespace: String,
-            classPath: List<String>,
-            projectClassPath: List<String>,
-            layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, projectClassPath, layoutlibPath, false)
-
-        @TestOnly
-        @JvmStatic
-        fun createTestRenderer(
-            fontsPath: String?,
-            resourceApkPath: String?,
-            namespace: String,
-            classPath: List<String>,
-            layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, emptyList(), layoutlibPath, true)
+        Disposer.dispose(project)
     }
 }

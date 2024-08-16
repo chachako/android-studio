@@ -25,12 +25,11 @@ import com.android.tools.rendering.RenderResult
 import java.awt.AlphaComposite
 import java.awt.Dimension
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-import kotlin.io.path.Path
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.io.path.exists
+import javax.imageio.ImageIO
+import kotlin.io.path.Path
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -49,14 +48,6 @@ fun main(args: Array<String>) {
 }
 
 fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = try {
-    val r = Renderer.createRenderer(
-        composeRendering.fontsPath,
-        composeRendering.resourceApkPath,
-        composeRendering.namespace,
-        composeRendering.classPath,
-        composeRendering.projectClassPath,
-        composeRendering.layoutlibPath,
-    )
     val screenshotResults = mutableListOf<ComposeScreenshotResult>()
     val requestToScreenshotInfo = composeRendering.screenshots.mapNotNull { screenshot ->
         screenshot.toPreviewElement()?.let { previewElement ->
@@ -66,20 +57,30 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
         }
     }.toMap()
 
-    r.use { renderer ->
+    Renderer(
+        composeRendering.fontsPath,
+        composeRendering.resourceApkPath,
+        composeRendering.namespace,
+        composeRendering.classPath,
+        composeRendering.projectClassPath,
+        composeRendering.layoutlibPath,
+    ).use { renderer ->
         renderer.render(requestToScreenshotInfo.keys.asSequence()) { request, config, i, result, usedPaths ->
             val requestToScreenshotInfoValue = requestToScreenshotInfo[request]!!
             val previewId = requestToScreenshotInfoValue.previewId
             val resultId = "${previewId.substringAfterLast(".")}_$i"
             val imageName = "$resultId.png"
             val methodFQN = requestToScreenshotInfoValue.methodFQN
-            val relativeImagePath = (methodFQN.substringBeforeLast(".").replace(".", File.separator)) + File.separator + imageName
+            val relativeImagePath = (methodFQN.substringBeforeLast(".")
+                .replace(".", File.separator)) + File.separator + imageName
             val screenshotResult = try {
                 val imageRendered = result.renderedImage.copy
                 imageRendered?.let { image ->
-                    val screenShape = config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
+                    val screenShape =
+                        config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
                     val shapedImage = screenShape?.let { shape ->
-                        val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
+                        val newImage =
+                            BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
                         val g = newImage.createGraphics()
                         try {
                             g.composite = AlphaComposite.Clear
@@ -99,13 +100,15 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                     imgFile.createNewFile()
                     ImageIO.write(shapedImage, "png", imgFile)
                 }
-                val screenshotError = extractError(result, imageRendered, composeRendering.outputFolder)
+                val screenshotError =
+                    extractError(result, imageRendered, composeRendering.outputFolder)
                 ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, screenshotError)
             } catch (t: Throwable) {
                 ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, ScreenshotError(t))
             }
             screenshotResults.add(screenshotResult)
-            val classesUsed = Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
+            val classesUsed =
+                Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
             classesUsed.writer().use { writer ->
                 usedPaths.forEach { path ->
                     writer.write("$path\n")
@@ -113,6 +116,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
             }
         }
     }
+
     ComposeRenderingResult(null, screenshotResults.sortedBy {it.imagePath})
 } catch (t: Throwable) {
     ComposeRenderingResult(t.stackTraceToString(), emptyList())

@@ -19,16 +19,12 @@ package com.android.compose.screenshot.tasks
 import com.android.tools.render.compose.readComposeRenderingJson
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import org.gradle.api.GradleException
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.ListProperty
-import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import java.nio.file.Paths
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.inject.Inject
 import kotlin.io.path.exists
 
 abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.RenderWorkActionParameters> {
@@ -37,15 +33,9 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         private val logger: Logger = Logger.getLogger(PreviewRenderWorkAction::class.qualifiedName)
     }
     abstract class RenderWorkActionParameters : WorkParameters {
-        abstract val jvmArgs: ListProperty<String>
-        abstract val layoutlibJar: ConfigurableFileCollection
         abstract val cliToolArgumentsFile: RegularFileProperty
-        abstract val toolJarPath: ConfigurableFileCollection
         abstract val resultsFile: RegularFileProperty
     }
-
-    @get:Inject
-    abstract val execOperations: ExecOperations
 
     override fun execute() {
         render()
@@ -53,35 +43,35 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun render() {
-        execOperations.javaexec { spec ->
-            spec.mainClass.set(MAIN_CLASS)
-            spec.classpath = parameters.layoutlibJar + parameters.toolJarPath
-            spec.jvmArgs = parameters.jvmArgs.get()
-            spec.args = listOf(parameters.cliToolArgumentsFile.asFile.get().absolutePath)
-        }.rethrowFailure().assertNormalExitValue()
+        Class.forName(MAIN_CLASS).getMethod("main", Array<String>::class.java)(
+            null, arrayOf(parameters.cliToolArgumentsFile.asFile.get().absolutePath))
     }
 
     private fun verifyRender() {
         val resultFile = parameters.resultsFile.get().asFile
         if (!resultFile.exists()) {
-            throw GradleException("There was an error with the rendering process.")
+            throw GradleException(
+                "There was an error with the rendering process. " +
+                    "Unable to open the rendering result file from ${resultFile.absolutePath}")
         }
+
         val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
         val outputFolder = readComposeRenderingJson(parameters.cliToolArgumentsFile.get().asFile.reader()).outputFolder
 
-        val renderingErrors =
-            composeRenderingResult.screenshotResults.count {
-                !Paths.get(outputFolder, it.imagePath).exists() || (it.error != null && it.error!!.status != "SUCCESS")
-            }
-        //fail task if there are globalErrors causing rendering failures. If not individual rendering errors will be included in html report
-        if (composeRenderingResult.globalError != null && renderingErrors > 0) {
-            throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
+        val hasAtLeastOneRendering = composeRenderingResult.screenshotResults.any {
+            Paths.get(outputFolder, it.imagePath).exists()
         }
-        val renderWarnings = composeRenderingResult.screenshotResults.count { it.error != null }
-        if (renderWarnings > 0) {
+        if (!hasAtLeastOneRendering) {
+            throw GradleException(
+                "Rendering failed. For more details, check ${resultFile.absolutePath}")
+        }
+
+        val hasRenderingErrors = composeRenderingResult.screenshotResults.any { it.error != null }
+        if (hasRenderingErrors || composeRenderingResult.globalError != null) {
             logger.log(
                 Level.WARNING,
-                "There were some issues with rendering one or more previews. For more details, check ${resultFile.absolutePath}"
+                "There were some issues with rendering one or more previews. " +
+                    "For more details, check ${resultFile.absolutePath}"
             )
         }
     }
