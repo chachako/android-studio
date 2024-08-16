@@ -29,7 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.components.KtDiagnosticCheckerFilter
+import org.jetbrains.kotlin.analysis.api.components.KaDiagnosticCheckerFilter
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
@@ -50,7 +50,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
 
         analyze(ktFile) {
           val diagnostics =
-            ktFile.collectDiagnostics(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
+            ktFile.collectDiagnostics(KaDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
           assertEquals(
             1,
             diagnostics.size,
@@ -76,7 +76,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
         val withReceiver = ktSource.parent as? KtDotQualifiedExpression ?: return
         analyze(withReceiver) {
           val diagnostics =
-            withReceiver.diagnostics(KtDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
+            withReceiver.diagnostics(KaDiagnosticCheckerFilter.EXTENDED_AND_COMMON_CHECKERS)
           assertEquals(
             1,
             diagnostics.size,

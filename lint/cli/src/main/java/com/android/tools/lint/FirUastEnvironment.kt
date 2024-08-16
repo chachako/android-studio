@@ -33,7 +33,7 @@ import java.nio.file.Path
 import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
-import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
+import org.jetbrains.kotlin.analysis.api.resolve.extensions.KaResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.decompiled.light.classes.ClsJavaStubByVirtualFileCache
@@ -149,8 +149,8 @@ private fun createAnalysisSession(
     ) {
       CoreApplicationEnvironment.registerExtensionPoint(
         project.extensionArea,
-        KtResolveExtensionProvider.EP_NAME.name,
-        KtResolveExtensionProvider::class.java,
+        KaResolveExtensionProvider.EP_NAME.name,
+        KaResolveExtensionProvider::class.java,
       )
       registerProjectService(
         ClsJavaStubByVirtualFileCache::class.java,
