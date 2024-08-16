@@ -34,7 +34,7 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     // TODO: receiver type comparison?
     if (!returnTypesMatch(psi, symbol)) return false
     if (!typeParametersMatch(psi, symbol)) return false
-    if (symbol is KaFunctionLikeSymbol && !valueParametersMatch(psi, symbol)) return false
+    if (symbol is KaFunctionSymbol && !valueParametersMatch(psi, symbol)) return false
     return true
   }
 
@@ -62,7 +62,7 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
 
   private fun KaSession.valueParametersMatch(
     psi: PsiMethod,
-    symbol: KaFunctionLikeSymbol,
+    symbol: KaFunctionSymbol,
   ): Boolean {
     val isExtension =
       when (symbol) {

@@ -30,9 +30,9 @@ internal object DecompiledPsiDeclarationProvider : FirKotlinUastLibraryPsiProvid
     val project = symbol.containingModule.project
     return when (symbol) {
       is KaConstructorSymbol -> providePsiForConstructor(symbol, project)
-      is KaFunctionLikeSymbol -> providePsiForFunction(symbol, project)
+      is KaFunctionSymbol -> providePsiForFunction(symbol, project)
       is KaEnumEntrySymbol -> providePsiForEnumEntry(symbol, project)
-      is KaVariableLikeSymbol -> providePsiForProperty(symbol, project)
+      is KaVariableSymbol -> providePsiForProperty(symbol, project)
       is KaClassLikeSymbol -> providePsiForClass(symbol, project)
       else -> null
     }
@@ -56,7 +56,7 @@ internal object DecompiledPsiDeclarationProvider : FirKotlinUastLibraryPsiProvid
   }
 
   private fun KaSession.providePsiForFunction(
-    functionLikeSymbol: KaFunctionLikeSymbol,
+    functionLikeSymbol: KaFunctionSymbol,
     project: Project,
   ): PsiElement? {
     val candidates =
@@ -69,7 +69,7 @@ internal object DecompiledPsiDeclarationProvider : FirKotlinUastLibraryPsiProvid
   }
 
   private fun KaSession.providePsiForProperty(
-    variableLikeSymbol: KaVariableLikeSymbol,
+    variableLikeSymbol: KaVariableSymbol,
     project: Project,
   ): PsiElement? {
     val candidates =

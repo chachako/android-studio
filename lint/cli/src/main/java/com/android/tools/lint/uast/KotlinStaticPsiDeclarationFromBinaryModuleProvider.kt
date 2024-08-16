@@ -82,7 +82,7 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
     return listOfNotNull(javaFileManager.findClass(classId.asFqNameString(), scope))
   }
 
-  override fun getProperties(variableLikeSymbol: KaVariableLikeSymbol): Collection<PsiMember> {
+  override fun getProperties(variableLikeSymbol: KaVariableSymbol): Collection<PsiMember> {
     val callableId = variableLikeSymbol.callableId ?: return emptyList()
     val classes =
       callableId.classId?.let { classId ->
@@ -94,7 +94,7 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
       } ?: getClassesInPackage(callableId.packageName)
     if (classes.isEmpty()) return emptyList()
 
-    val propertySymbol = variableLikeSymbol as? KtPropertySymbol
+    val propertySymbol = variableLikeSymbol as? KaPropertySymbol
     val getterJvmName =
       propertySymbol?.getter?.getJvmNameFromAnnotation(PROPERTY_GETTER.toOptionalFilter())
         ?: propertySymbol?.getJvmNameFromAnnotation(PROPERTY_GETTER.toFilter())
@@ -134,7 +134,7 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
         else -> null
       }
 
-  override fun getFunctions(functionLikeSymbol: KaFunctionLikeSymbol): Collection<PsiMethod> {
+  override fun getFunctions(functionLikeSymbol: KaFunctionSymbol): Collection<PsiMethod> {
     val callableId = functionLikeSymbol.callableId ?: return emptyList()
     val classes =
       callableId.classId?.let { classId -> getClassesByClassId(classId) }
@@ -143,10 +143,10 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
 
     val jvmName =
       when (functionLikeSymbol) {
-        is KtPropertyGetterSymbol -> {
+        is KaPropertyGetterSymbol -> {
           functionLikeSymbol.getJvmNameFromAnnotation(PROPERTY_GETTER.toOptionalFilter())
         }
-        is KtPropertySetterSymbol -> {
+        is KaPropertySetterSymbol -> {
           functionLikeSymbol.getJvmNameFromAnnotation(PROPERTY_SETTER.toOptionalFilter())
         }
         else -> {

@@ -1075,10 +1075,10 @@ fun callNeverReturns(call: UCallExpression): Boolean {
   val sourcePsi = call.sourcePsi
   if (sourcePsi is KtCallExpression) {
     analyze(sourcePsi) {
-      val callInfo = sourcePsi.resolveCall()
+      val callInfo = sourcePsi.resolveToCall()
       if (callInfo != null) {
         val returnType = callInfo.singleFunctionCallOrNull()?.symbol?.returnType
-        if (returnType != null && returnType.isNothing) {
+        if (returnType != null && returnType.isNothingType) {
           return true
         }
       }

@@ -24,8 +24,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
+import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinProjectStructureProvider
 import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
@@ -33,7 +33,7 @@ import org.jetbrains.kotlin.analysis.api.resolution.symbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolVisibility
 import org.jetbrains.kotlin.analysis.api.symbols.typeParameters
 import org.jetbrains.kotlin.analysis.api.types.KaDynamicType
-import org.jetbrains.kotlin.analysis.api.types.KaFunctionalType
+import org.jetbrains.kotlin.analysis.api.types.KaFunctionType
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
@@ -68,7 +68,7 @@ abstract class AnalysisApiServicesTestBase {
                   ?: return super.visitMethod(node)
 
               analyze(returnTypeReference) {
-                val ktType = returnTypeReference.getKtType()
+                val ktType = returnTypeReference.type
                 assertTrue(ktType is KaDynamicType)
               }
 
@@ -163,7 +163,7 @@ abstract class AnalysisApiServicesTestBase {
 
               analyze(ktLambdaExpression) {
                 val lambdaType = ktLambdaExpression.expressionType
-                assertTrue(lambdaType is KaFunctionalType && lambdaType.hasReceiver)
+                assertTrue(lambdaType is KaFunctionType && lambdaType.hasReceiver)
               }
 
               return super.visitLambdaExpression(node)
@@ -270,7 +270,7 @@ abstract class AnalysisApiServicesTestBase {
       }
   }
 
-  @OptIn(KaAnalysisApiInternals::class)
+  @OptIn(KaImplementationDetail::class)
   protected fun checkAnalysisAPIOnPsiElement(isK2: Boolean) {
     listOf(
         kotlin(
