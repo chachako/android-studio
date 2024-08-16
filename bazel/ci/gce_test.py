@@ -1,5 +1,7 @@
 """Tests for gce."""
 
+import pathlib
+
 from absl.testing import absltest
 
 from tools.base.bazel.ci import fake_build_env
@@ -13,7 +15,7 @@ class GceTest(absltest.TestCase):
   def setUp(self):
     super().setUp()
     self.build_env = self.enter_context(fake_build_env.make_fake_build_env())
-    self.gce = self.enter_context(fake_gce.make_fake_gce(self.build_env))
+    self.gce = self.enter_context(fake_gce.make_fake_gce(self, self.build_env))
 
   def test_get_auth_header(self):
     self.gce.auth_token = 'fake-token-2'
@@ -24,6 +26,18 @@ class GceTest(absltest.TestCase):
     self.build_env.build_number = 'P456'
     self.gce.reference_build_id = '789'
     self.assertEqual(gce.get_reference_build_id('P456', 'studio-test'), '789')
+
+  def test_upload_download(self):
+    src = self.build_env.tmp_path / 'src.txt'
+    src.write_text('hello')
+    gce.upload_to_gcs(str(src), 'bucket', 'name.txt')
+    dst = self.build_env.tmp_path / 'dst.txt'
+    self.assertTrue(gce.download_from_gcs('bucket', 'name.txt', str(dst)))
+    self.assertEqual(dst.read_text(), 'hello')
+
+  def test_download_from_gcs_not_found(self):
+    dst = self.build_env.tmp_path / 'dst.txt'
+    self.assertFalse(gce.download_from_gcs('bucket', 'name.txt', str(dst)))
 
 
 if __name__ == '__main__':

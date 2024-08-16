@@ -38,6 +38,7 @@ py_library(
     deps = [
         ":fake_build_env",
         ":gce",
+        "@absl-py//absl/testing:absltest",
     ],
 )
 

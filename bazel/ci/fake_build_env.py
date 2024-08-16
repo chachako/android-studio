@@ -16,8 +16,14 @@ class FakeBuildEnv(bazel.BuildEnv):
     self.build_number = 'P123'
     self.build_target_name = 'studio-test'
     self.workspace_dir = str(root_dir / 'workspace')
-    self.dist_dir = str(root_dir / 'dist')
-    self.tmp_dir = str(root_dir / 'tmp')
+
+    self.dist_path = root_dir / 'dist'
+    self.dist_path.mkdir()
+    self.tmp_path = root_dir / 'tmp'
+    self.tmp_path.mkdir()
+
+    self.dist_dir = str(self.dist_path)
+    self.tmp_dir = str(self.tmp_path)
 
 
 @contextlib.contextmanager
