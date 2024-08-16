@@ -104,8 +104,10 @@ class DynamicAppTest {
 
     private val releaseUnsignedContent: Array<String> = bundleContent.toList().plus(
         listOf(
-            // Only the release variant is shrunk, so only it will contain a proguard mapping file.
+            // Only the release variant is shrunk, so only it will contain a proguard mapping file
+            // and R8 metadata file
             "/BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map",
+            "/BUNDLE-METADATA/com.android.tools/r8.json",
             // Only the release variant would have the dependencies file.
             "/BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb",
             // Only the release variant includes the VCS info by default
