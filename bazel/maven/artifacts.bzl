@@ -746,6 +746,7 @@ DATA = [
     "com.google.code.gson:gson:2.6.2",
     "com.google.crypto.tink:tink:1.3.0-rc2",
     "com.google.dagger:dagger-compiler:2.28.3",
+    "com.google.dagger:dagger-compiler:2.52",
     "com.google.dagger:dagger-compiler:2.6",
     "com.google.dagger.hilt.android:com.google.dagger.hilt.android.gradle.plugin:pom:2.44.2",  # Dependency of architecture-samples
     "com.google.dagger:hilt-android:2.40.1",

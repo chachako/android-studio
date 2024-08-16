@@ -47279,6 +47279,30 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.dagger.dagger-compiler_2.52",
+    pom = "repository/com/google/dagger/dagger-compiler/2.52/dagger-compiler-2.52.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/dagger/dagger-compiler/2.52",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.dagger.dagger_2.52",
+        "com.google.dagger.dagger-spi_2.52",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "com.google.devtools.ksp.symbol-processing-api_1.9.24-1.0.20",
+        "com.google.googlejavaformat.google-java-format_1.5",
+        "com.google.guava.failureaccess_1.0.2",
+        "com.google.guava.guava_33.0.0-jre",
+        "com.squareup.javapoet_1.13.0",
+        "com.squareup.kotlinpoet_1.11.0",
+        "javax.inject.javax.inject_1",
+        "net.ltgt.gradle.incap.incap_0.2",
+        "org.checkerframework.checker-compat-qual_2.5.5",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.24",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.dagger.dagger-compiler_2.6",
     pom = "repository/com/google/dagger/dagger-compiler/2.6/dagger-compiler-2.6.pom",
     repo_root_path = "repository",
@@ -47393,6 +47417,24 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.dagger.dagger-spi_2.52",
+    pom = "repository/com/google/dagger/dagger-spi/2.52/dagger-spi-2.52.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/dagger/dagger-spi/2.52",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.dagger.dagger_2.52",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "com.google.devtools.ksp.symbol-processing-api_1.9.24-1.0.20",
+        "com.google.guava.failureaccess_1.0.2",
+        "com.google.guava.guava_33.0.0-jre",
+        "com.squareup.javapoet_1.13.0",
+        "javax.inject.javax.inject_1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.dagger.dagger_2.40.1",
     pom = "repository/com/google/dagger/dagger/2.40.1/dagger-2.40.1.pom",
     repo_root_path = "repository",
@@ -47411,6 +47453,19 @@ maven_artifact(
     repo_path = "com/google/dagger/dagger/2.44.2",
     parent = "org.sonatype.oss.oss-parent_7",
     deps = [
+        "javax.inject.javax.inject_1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.dagger.dagger_2.52",
+    pom = "repository/com/google/dagger/dagger/2.52/dagger-2.52.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/dagger/dagger/2.52",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "jakarta.inject.jakarta.inject-api_2.0.1",
         "javax.inject.javax.inject_1",
     ],
     visibility = ["//visibility:public"],
@@ -48573,6 +48628,23 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.guava.guava_33.0.0-jre",
+    pom = "repository/com/google/guava/guava/33.0.0-jre/guava-33.0.0-jre.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava/33.0.0-jre",
+    parent = "com.google.guava.guava-parent_33.0.0-jre",
+    deps = [
+        "com.google.guava.failureaccess_1.0.2",
+        "com.google.guava.listenablefuture_9999.0-empty-to-avoid-conflict-with-guava",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "org.checkerframework.checker-qual_3.41.0",
+        "com.google.errorprone.error_prone_annotations_2.23.0",
+        "com.google.j2objc.j2objc-annotations_2.8",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.guava.guava_33.2.1-android",
     pom = "repository/com/google/guava/guava/33.2.1-android/guava-33.2.1-android.pom",
     repo_root_path = "repository",
@@ -49603,6 +49675,18 @@ maven_artifact(
         "com.squareup.kotlinpoet_1.12.0",
         "com.squareup.javapoet_1.13.0",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.squareup.kotlinpoet_1.11.0",
+    pom = "repository/com/squareup/kotlinpoet/1.11.0/kotlinpoet-1.11.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/kotlinpoet/1.11.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.6.10",
+        "org.jetbrains.kotlin.kotlin-reflect_1.6.10",
     ],
     visibility = ["//visibility:public"],
 )
@@ -51224,6 +51308,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "jakarta.inject.jakarta.inject-api_2.0.1",
+    pom = "repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "jakarta/inject/jakarta.inject-api/2.0.1",
+    parent = "org.eclipse.ee4j.project_1.0.6",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "javax.annotation.javax.annotation-api_1.2",
     pom = "repository/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.pom",
     repo_root_path = "repository",
@@ -51992,6 +52085,14 @@ maven_artifact(
     pom = "repository/org/checkerframework/checker-qual/3.21.2/checker-qual-3.21.2.pom",
     repo_root_path = "repository",
     repo_path = "org/checkerframework/checker-qual/3.21.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.checkerframework.checker-qual_3.41.0",
+    pom = "repository/org/checkerframework/checker-qual/3.41.0/checker-qual-3.41.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/checkerframework/checker-qual/3.41.0",
     visibility = ["//visibility:public"],
 )
 
@@ -64774,6 +64875,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.guava.guava-parent_33.0.0-jre",
+    pom = "repository/com/google/guava/guava-parent/33.0.0-jre/guava-parent-33.0.0-jre.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava-parent/33.0.0-jre",
+)
+
+maven_artifact(
     name = "com.google.guava.guava-parent_33.2.1-android",
     pom = "repository/com/google/guava/guava-parent/33.2.1-android/guava-parent-33.2.1-android.pom",
     repo_root_path = "repository",
@@ -66049,6 +66157,13 @@ maven_artifact(
     pom = "repository/org/eclipse/ee4j/project/1.0.5/project-1.0.5.pom",
     repo_root_path = "repository",
     repo_path = "org/eclipse/ee4j/project/1.0.5",
+)
+
+maven_artifact(
+    name = "org.eclipse.ee4j.project_1.0.6",
+    pom = "repository/org/eclipse/ee4j/project/1.0.6/project-1.0.6.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/ee4j/project/1.0.6",
 )
 
 maven_artifact(
