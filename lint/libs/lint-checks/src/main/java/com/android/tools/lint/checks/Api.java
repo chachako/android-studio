@@ -19,8 +19,8 @@ import com.android.annotations.NonNull;
 import com.android.sdklib.SdkVersionInfo;
 import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.android.utils.XmlUtils;
-import gnu.trove.THashMap;
-import gnu.trove.TObjectHashingStrategy;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -186,11 +186,12 @@ class Api<C extends ApiClassBase> {
     }
 
     /** The hash map that doesn't distinguish between '.', '/', and '$' in the key string. */
-    private static class MyHashMap<V> extends THashMap<String, V> {
-        private static final TObjectHashingStrategy<String> myHashingStrategy =
-                new TObjectHashingStrategy<String>() {
+    private static class MyHashMap<V> extends Object2ObjectOpenCustomHashMap<String, V> {
+        private static final Hash.Strategy<String> myHashingStrategy =
+                new Hash.Strategy<>() {
                     @Override
-                    public int computeHashCode(String str) {
+                    public int hashCode(String str) {
+                        if (str == null) return 0;
                         int h = 0;
                         for (int i = 0; i < str.length(); i++) {
                             char c = str.charAt(i);
@@ -202,9 +203,10 @@ class Api<C extends ApiClassBase> {
 
                     @Override
                     public boolean equals(String s1, String s2) {
-                        if (s1.length() != s2.length()) {
-                            return false;
-                        }
+                        if (s1 == null) return s2 == null;
+                        if (s2 == null) return false;
+                        if (s1.length() != s2.length()) return false;
+
                         for (int i = 0; i < s1.length(); i++) {
                             if (normalizeSeparator(s1.charAt(i))
                                     != normalizeSeparator(s2.charAt(i))) {
