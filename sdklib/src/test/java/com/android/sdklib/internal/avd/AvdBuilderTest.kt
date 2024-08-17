@@ -63,7 +63,7 @@ class AvdBuilderTest {
       assertThat(cpuCoreCount).isEqualTo(1)
       assertThat(ram).isEqualTo(EmulatedProperties.MAX_DEFAULT_RAM_SIZE)
       assertThat(vmHeap.size).isGreaterThan(0)
-      assertThat(internalStorage.size).isEqualTo(0)
+      assertThat(internalStorage).isEqualTo(EmulatedProperties.DEFAULT_INTERNAL_STORAGE)
 
       assertThat(frontCamera).isEqualTo(AvdCamera.NONE)
       assertThat(backCamera).isEqualTo(AvdCamera.NONE)

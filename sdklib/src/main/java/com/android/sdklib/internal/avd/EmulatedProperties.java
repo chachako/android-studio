@@ -189,4 +189,8 @@ public class EmulatedProperties {
         }
         return new Storage(vmHeapSize, Storage.Unit.MiB);
     }
+
+    public static Storage defaultInternalStorage(@NonNull Device device) {
+        return DEFAULT_INTERNAL_STORAGE;
+    }
 }

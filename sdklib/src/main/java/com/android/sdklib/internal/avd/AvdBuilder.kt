@@ -16,7 +16,6 @@
 package com.android.sdklib.internal.avd
 
 import com.android.resources.ScreenOrientation
-import com.android.resources.ScreenSize
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.ISystemImage
 import com.android.sdklib.devices.Device
@@ -103,7 +102,8 @@ class AvdBuilder(var metadataIniPath: Path, var avdFolder: Path, var device: Dev
     if (ram.size == 0L || ram.size > EmulatedProperties.MAX_DEFAULT_RAM_SIZE.size) {
       ram = EmulatedProperties.MAX_DEFAULT_RAM_SIZE
     }
-    vmHeap = EmulatedProperties.defaultVmHeapSize(device);
+    vmHeap = EmulatedProperties.defaultVmHeapSize(device)
+    internalStorage = EmulatedProperties.defaultInternalStorage(device)
   }
 
   /** Returns a Map representing the contents of config.ini. */
