@@ -17,13 +17,11 @@
 package com.android.tools.preview.multipreview
 
 import com.android.testutils.TestClassesGenerator
-import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
-import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
@@ -36,87 +34,6 @@ private const val COMPOSABLE_ANNOTATION = "androidx/compose/runtime/Composable"
 class PerfArtificialDataMultipreviewTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
-
-    private val settings = MultipreviewSettings(
-        "androidx.compose.ui.tooling.preview.Preview",
-        "androidx.compose.ui.tooling.preview.PreviewParameter", //  not used atm
-    )
-
-    @Test
-    fun newAndOldMultipreviewFinderAlgorithmYieldsTheSameOutput() {
-        val paths = prepareClassPath()
-        val files = paths.map { File(it) }
-
-        val oldImpl = buildMultipreview(settings, paths).run {
-            methods.map {
-                PreviewMethod(it, getAnnotations(it))
-            }
-        }
-
-        val newImpl = PreviewMethodFinder(listOf(), files, listOf(), listOf(), listOf())
-            .findAllPreviewMethods()
-
-        assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
-        assertThat(oldImpl.size).isEqualTo(newImpl.size)
-    }
-
-    @Test
-    fun newAndOldMultipreviewFinderAlgorithmYieldsTheSameOutput_withMainFilter() {
-        val paths = prepareClassPath()
-        val files = paths.map { File(it) }
-
-        val oldImpl = buildMultipreview(settings, paths) {
-            it.startsWith("com.example.test.main")
-        }.run {
-            methods.map {
-                PreviewMethod(it, getAnnotations(it))
-            }
-        }
-
-        val newImpl = PreviewMethodFinder(
-            listOf(), files.subList(0, 1), listOf(), listOf(), files.subList(1, files.size))
-            .findAllPreviewMethods()
-
-        assertThat(oldImpl.toDebugString()).isEqualTo(newImpl.toDebugString())
-        assertThat(oldImpl.size).isEqualTo(newImpl.size)
-    }
-
-    private fun Collection<PreviewMethod>.toDebugString(): String {
-        return flatMap { it.toDebugString() }.sorted().joinToString("----\n").trim()
-    }
-
-    private fun PreviewMethod.toDebugString(): List<String> {
-        return previewAnnotations.map { previewAnnotation ->
-            StringBuilder().apply {
-                appendLine(method.methodFqn)
-                previewAnnotation.parameters.entries.forEach { (key, value) ->
-                    appendLine("$key: $value")
-                }
-                method.parameters.forEach {
-                    it.annotationParameters.entries.forEach { (key, value) ->
-                        appendLine("$key: $value")
-                    }
-                }
-            }.toString()
-        }
-    }
-
-    @Test
-    fun testFullProject() {
-        val paths = prepareClassPath()
-        computeAndRecordMetric(
-            "multipreview_time_artificial_data_no_filter",
-            "multipreview_memory_artificial_data_no_filter"
-        ) {
-            val metric = MultipreviewMetric()
-            metric.beforeTest()
-            val multipreview = buildMultipreview(settings, paths)
-            metric.afterTest()
-            // Validity check
-            assertEquals(1400, multipreview.methods.size)
-            metric
-        }
-    }
 
     @Test
     fun testFullProject_newFinderImpl() {
@@ -133,25 +50,6 @@ class PerfArtificialDataMultipreviewTest {
             metric.afterTest()
             // Validity check
             assertEquals(1400, multipreview.size)
-            metric
-        }
-    }
-
-    @Test
-    fun testFullProject_withMainFilter() {
-        val paths = prepareClassPath()
-        computeAndRecordMetric(
-            "multipreview_time_artificial_data_package_filter",
-            "multipreview_memory_artificial_data_package_filter"
-        ) {
-            val metric = MultipreviewMetric()
-            metric.beforeTest()
-            val multipreview = buildMultipreview(settings, paths) {
-                it.startsWith("com.example.test.main")
-            }
-            metric.afterTest()
-            // Validity check
-            assertEquals(300, multipreview.methods.size)
             metric
         }
     }

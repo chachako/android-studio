@@ -710,7 +710,6 @@ com/android/tools/compose/compose-preview-detector
   com/android/tools/
   com/android/tools/preview/
   com/android/tools/preview/multipreview/
-  com/android/tools/preview/multipreview/visitors/
 
 com/android/tools/ddms/ddmlib
   META-INF/

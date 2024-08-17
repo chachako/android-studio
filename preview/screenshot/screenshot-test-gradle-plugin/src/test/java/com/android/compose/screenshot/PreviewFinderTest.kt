@@ -17,29 +17,15 @@
 package com.android.compose.screenshot
 
 import com.google.common.truth.Truth
-import kotlin.test.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import com.android.testutils.TestInputsGenerator
 import java.io.File
-import java.io.FileOutputStream
+import kotlin.test.assertEquals
 
 class PreviewFinderTest {
     @get:Rule
     val tempDirRule = TemporaryFolder()
-
-    @Test
-    fun testFindPreviewsAndSerializeWithEmptyClassPath() {
-        val outputFile = tempDirRule.newFile("outputFile")
-        findPreviewsAndSerialize(listOf(), outputFile.toPath(), listOf(tempDirRule.root), listOf(File("empty/jar.jar")))
-
-        Truth.assertThat(outputFile.readText()).isEqualTo("""
-            {
-              "screenshots": []
-            }
-        """.trimIndent())
-    }
 
     // TODO(b/315048068): Add a unit test that finds previews on the classpath
     @Test
@@ -115,49 +101,6 @@ class PreviewFinderTest {
             }
         """.trimIndent(),
                 cliToolArgumentsFile.readText())
-    }
-
-    @Test
-    fun testClassExistsInDirs() {
-        val subFolder = tempDirRule.newFolder("com", "example")
-        val targetFile = File(subFolder, "MyClass.class")
-        val dummyContent = byteArrayOf()
-        FileOutputStream(targetFile.absolutePath).use {
-            it.write(dummyContent)
-        }
-        val className = "com.example.MyClass"
-        val dirs = listOf(tempDirRule.root)
-        val jars = emptyList<File>()
-
-        val result = classExistsIn(className, dirs, jars)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun testClassExistsInJars() {
-        val jarFile = tempDirRule.newFile("test.jar")
-        val className = "com.example.MyClass"
-        val classPath = "com/example/MyClass"
-        TestInputsGenerator.jarWithEmptyClasses(jarFile.toPath(), listOf(classPath))
-
-        val dirs = emptyList<File>()
-        val jars = listOf(jarFile)
-
-        val result = classExistsIn(className, dirs, jars)
-        assertEquals(true, result)
-    }
-
-    @Test
-    fun testClassExistsInNotFound() {
-        val className = "com.example.MyClass"
-        val dirs = listOf(tempDirRule.root)
-
-        val jarFile = tempDirRule.newFile("test.jar")
-        TestInputsGenerator.jarWithEmptyClasses(jarFile.toPath(), listOf())
-        val jars = listOf(jarFile)
-
-        val result = classExistsIn(className, dirs, jars)
-        assertEquals(false, result)
     }
 
     @Test

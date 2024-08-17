@@ -16,8 +16,6 @@
 
 package com.android.tools.preview.multipreview
 
-import java.lang.StringBuilder
-
 /**
  * Represents a preview method.
  *

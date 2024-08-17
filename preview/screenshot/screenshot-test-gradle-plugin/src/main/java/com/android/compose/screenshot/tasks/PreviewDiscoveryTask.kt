@@ -17,7 +17,6 @@
 package com.android.compose.screenshot.tasks
 
 import com.android.compose.screenshot.discoverPreviews
-import com.android.compose.screenshot.findPreviewsAndSerialize
 import com.android.compose.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -32,7 +31,6 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.nio.file.Files
 
 abstract class PreviewDiscoveryTask: DefaultTask() {

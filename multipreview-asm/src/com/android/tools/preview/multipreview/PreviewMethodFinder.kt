@@ -98,7 +98,7 @@ class PreviewMethodFinder(
                         processMethod(methodNode) { previewAnnotations, methodPreviewParameters ->
                             onPreviewMethodFound(PreviewMethod(
                                 MethodRepresentation(
-                                    "${classToProcess.className.classPathToName}.${methodNode.name}",
+                                    "${classToProcess.className.replace('/', '.')}.${methodNode.name}",
                                     methodPreviewParameters),
                                 previewAnnotations
                             ))

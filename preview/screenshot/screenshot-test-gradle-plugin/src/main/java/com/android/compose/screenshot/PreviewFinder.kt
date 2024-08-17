@@ -19,10 +19,8 @@ package com.android.compose.screenshot
 import com.android.tools.preview.multipreview.BaseAnnotationRepresentation
 import com.android.tools.preview.multipreview.MethodRepresentation
 import com.android.tools.preview.multipreview.PreviewMethodFinder
-import com.android.tools.preview.multipreview.MultipreviewSettings
 import com.android.tools.preview.multipreview.ParameterRepresentation
 import com.android.tools.preview.multipreview.PreviewMethod
-import com.android.tools.preview.multipreview.buildMultipreview
 import com.android.tools.render.compose.ComposeRendering
 import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.readComposeScreenshotsJson
@@ -36,7 +34,6 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import org.objectweb.asm.Type
 import java.util.SortedMap
-import java.util.jar.JarFile
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -74,49 +71,6 @@ fun configureInput (
     writeComposeRenderingToJson(cliToolArgumentsFile.writer(), composeRendering)
 }
 
-fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path, testDirectories: List<File>, testJars: List<File>) {
-    val settings = MultipreviewSettings(
-        "androidx.compose.ui.tooling.preview.Preview",
-        "androidx.compose.ui.tooling.preview.PreviewParameter"
-    )
-    val multipreview = buildMultipreview(settings, classPath) {
-        val className = getClassName(it)
-        classExistsIn(className, testDirectories, testJars)
-    }
-    val previews =  multipreview.methods.flatMap { method ->
-        multipreview.getAnnotations(method).map { baseAnnotation ->
-            method to baseAnnotation
-        }
-    }
-    serializePreviews(previews, outputFile)
-}
-
-// TODO: move this check to MethodFilter interface b/330334806
-fun classExistsIn(className: String, dirs: List<File>, jars: List<File>): Boolean {
-    val classFilePath = className.replace('.', '/') + ".class"
-    for (dir in dirs) {
-        val potentialClassFile = File(dir, classFilePath)
-        if (potentialClassFile.exists()) {
-            return true
-        }
-    }
-    for (jar in jars) {
-        JarFile(jar).use {
-            if (it.getJarEntry(classFilePath) != null) {
-                return true
-            }
-        }
-    }
-    return false
-}
-
-private fun getClassName(fqcn: String): String {
-    if (fqcn.contains("$")) {
-        return fqcn.substring(0, fqcn.indexOf('$'))
-    }
-    return fqcn.substring(0, fqcn.lastIndexOf("."))
-}
-
 fun discoverPreviews(
     testDirs: List<File>,
     testJars: List<File>,
@@ -146,22 +100,6 @@ private fun serializePreviewMethods(
         }
         writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.previewId })
     }
-}
-
-private fun serializePreviews(
-    previews: List<Pair<MethodRepresentation, BaseAnnotationRepresentation>>,
-    outputFile: Path
-) {
-    val fileWriter = Files.newBufferedWriter(outputFile)
-    val composeScreenshots = previews.map { (method, annotation) ->
-        ComposeScreenshot(
-            method.methodFqn,
-            convertListMap(method.parameters),
-            convertMap(annotation.parameters),
-            calcPreviewId(method, annotation)
-        )
-    }
-    writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.previewId })
 }
 
 /**
