@@ -1050,19 +1050,13 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testSchemeAndHostMissing() {
     val expected =
       """
-      AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
-                  <intent-filter android:label="@string/title_activity_fullscreen">
-                  ^
       AndroidManifest.xml:16: Error: At least one host must be specified [AppLinkUrlError]
                       <data android:pathPrefix="/gizmos" />
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       AndroidManifest.xml:16: Error: At least one scheme must be specified [AppLinkUrlError]
                       <data android:pathPrefix="/gizmos" />
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      AndroidManifest.xml:16: Error: Missing URL for the intent filter [AppLinkUrlError]
-                      <data android:pathPrefix="/gizmos" />
-                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      4 errors, 0 warnings
+      2 errors, 0 warnings
       """
     lint()
       .files(
@@ -1089,9 +1083,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
-                        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
                     </application>
-
                 </manifest>
                 """,
           )
@@ -1103,14 +1095,6 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .window(1)
       .expectFixDiffs(
         """
-                Fix for AndroidManifest.xml line 14: Set scheme="http":
-                @@ -15 +15
-                              android:theme="@style/FullscreenTheme" >
-                -             <intent-filter android:label="@string/title_activity_fullscreen" >
-                +             <intent-filter
-                +                 android:label="@string/title_activity_fullscreen"
-                +                 android:scheme="http" >
-                                  <action android:name="android.intent.action.VIEW" />
                 Fix for AndroidManifest.xml line 16: Set host:
                 @@ -18 +18
 
@@ -1118,14 +1102,72 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 +                 <data
                 +                     android:host="[TODO]|"
                 +                     android:pathPrefix="/gizmos" />
-                Fix for AndroidManifest.xml line 16: Set scheme="http":
+                Fix for AndroidManifest.xml line 16: Set scheme:
                 @@ -18 +18
 
                 -                 <data android:pathPrefix="/gizmos" />
                 +                 <data
                 +                     android:pathPrefix="/gizmos"
-                +                     android:scheme="http" />
+                +                     android:scheme="[TODO]|" />
                 """
+      )
+  }
+
+  fun testHostAndPathWithNoScheme() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+                            <intent-filter android:label="@string/title_activity_fullscreen">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:18: Error: At least one scheme must be specified [AppLinkUrlError]
+                        <data android:host="example.com" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Fix for AndroidManifest.xml line 18: Set scheme:
+        @@ -21 +21
+
+        -                 <data android:host="example.com" />
+        +                 <data
+        +                     android:host="example.com"
+        +                     android:scheme="http[TODO]|" />
+                          <data android:path="/gizmos" />
+        """
       )
   }
 
@@ -1449,17 +1491,25 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
-  fun testNoUrl() {
-    val expected =
+  fun testNoUri() {
+    val expectedCheckMessages =
       """
-            AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
-                        <intent-filter android:label="@string/title_activity_fullscreen">
-                        ^
-            AndroidManifest.xml:16: Error: Missing URL for the intent filter [AppLinkUrlError]
-                            <data />
-                            ~~~~~~~~
-            2 errors, 0 warnings
-            """
+      AndroidManifest.xml:16: Error: VIEW actions require a URI [AppLinkUrlError]
+                      <data />
+                      ~~~~~~~~
+      1 errors, 0 warnings
+      """
+    val expectedFixDiff =
+      """
+      Fix for AndroidManifest.xml line 16: Set scheme:
+      @@ -18 +18
+      -                 <data />
+      +                 <data android:scheme="[TODO]|" />
+      Fix for AndroidManifest.xml line 16: Set mimeType:
+      @@ -18 +18
+      -                 <data />
+      +                 <data android:mimeType="[TODO]|" />
+      """
     lint()
       .files(
         xml(
@@ -1481,20 +1531,17 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             <intent-filter android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data />
-                                <category android:name="android.intent.category.DEFAULT" />
-                                <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
-                        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
                     </application>
-
                 </manifest>
                 """,
           )
           .indented()
       )
       .run()
-      .expect(expected)
+      .expect(expectedCheckMessages)
+      .expectFixDiffs(expectedFixDiff)
   }
 
   fun testImplicitSchemeBecauseOfMimeType() {
@@ -1533,13 +1580,6 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   }
 
   fun testViewWithMimeType() {
-    val expected =
-      """
-            AndroidManifest.xml:14: Error: Missing URL [AppLinkUrlError]
-                        <intent-filter android:label="@string/title_activity_fullscreen">
-                        ^
-            1 errors, 0 warnings
-            """
     lint()
       .files(
         xml(
@@ -1565,16 +1605,14 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
-                        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
-                    </application>
-
+                  </application>
                 </manifest>
                 """,
           )
           .indented()
       )
       .run()
-      .expect(expected)
+      .expectClean()
   }
 
   fun testDataMissing() {

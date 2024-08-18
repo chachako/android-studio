@@ -405,16 +405,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       paths = addMatcher(context, ATTR_PATH_SUFFIX, PATTERN_SUFFIX, paths, data)
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
-    if (actionView && browsable && schemes == null && !hasMimeType) {
-      // --- Check "missing URL" (This intent filter has a view action and browsable category, but
-      // has neither a URL nor mimeType.) ---
-      reportUrlError(
-        context,
-        firstData,
-        context.getLocation(firstData),
-        "Missing URL for the intent filter",
-      )
-    }
     var isHttp = false
     var implicitSchemes = false
     var hasSubstitutedScheme = false
@@ -437,6 +427,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         }
       }
     }
+
+    val hasExplicitScheme = schemes != null && !implicitSchemes
 
     // Validation
     // autoVerify means this is an Android App Link:
@@ -471,21 +463,49 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
     }
 
-    val hasExplicitScheme = schemes != null && !implicitSchemes
-    // --- Check "missing scheme" (If there are hosts, paths, or ports, then there should be a
-    // scheme.) ---
+    val showMissingSchemeCheck = !hasExplicitScheme && (paths != null || hostPortPairs.isNotEmpty())
+
+    // --- Check "missing scheme" ---
+    // If there are hosts, paths, or ports, then there should be a scheme.
     // We insist on this because hosts, paths, and ports will be ignored if there is no explicit
     // scheme, which makes the intent filter very misleading.
-    if (!hasExplicitScheme && (paths != null || hostPortPairs.isNotEmpty())) {
-      val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
+    if (showMissingSchemeCheck) {
+      val fix =
+        if (hostPortPairs.isEmpty()) {
+          // If there are no hosts, ask the user to specify the scheme.
+          fix().set().todo(ANDROID_URI, ATTR_SCHEME)
+        } else {
+          // If there's at least one host, it's likely they want http(s), so we can prompt them with
+          // http.
+          fix().set().todo(ANDROID_URI, ATTR_SCHEME, "http")
+        }
       reportUrlError(
         context,
         firstData,
         context.getLocation(firstData),
         "At least one `scheme` must be specified",
-        fix,
+        fix.build(),
       )
     }
+
+    // --- Check "missing URI" (This intent filter has a view action but no URI) ---
+    // We only show this check if the "missing scheme check" isn't already showing, because they're
+    // very similar.
+    val showMissingUriCheck = schemes == null && actionView
+    if (!showMissingSchemeCheck && showMissingUriCheck) {
+      reportUrlError(
+        context,
+        firstData,
+        context.getLocation(firstData),
+        "VIEW actions require a URI",
+        fix()
+          .alternatives(
+            fix().set().todo(ANDROID_URI, ATTR_SCHEME).build(),
+            fix().set().todo(ANDROID_URI, ATTR_MIME_TYPE).build(),
+          ),
+      )
+    }
+
     // --- Check "missing host" (Hosts are required when a web scheme or path is used.) ---
     if (
       (schemes?.any { it == "http" || it == "https" } == true || paths != null) &&
@@ -501,8 +521,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       )
     }
 
-    // --- Check "view + browsable" ( If this intent filter has an ACTION_VIEW action, and it has a
-    // http URL but doesn't have BROWSABLE, it may be a mistake and we will report warning. ---
+    // --- Check "view + browsable" (If this intent filter has an ACTION_VIEW action, and it has a
+    // http URL but doesn't have BROWSABLE, it may be a mistake and we will report a warning.) ---
     if (actionView && isHttp && !browsable) {
       reportUrlError(
         context,
@@ -510,13 +530,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         context.getLocation(intentFilter),
         "Activity supporting ACTION_VIEW is not set as BROWSABLE",
       )
-    }
-
-    // --- Check "missing scheme" (We have ACTION_VIEW but the scheme is not explicitly specified)
-    // ---
-    if (actionView && !hasExplicitScheme) {
-      val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
-      reportUrlError(context, intentFilter, context.getLocation(intentFilter), "Missing URL", fix)
     }
     return UriInfo(schemes, hostPortPairs, paths)
   }
