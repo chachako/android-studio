@@ -568,3 +568,12 @@ java_proto_library(
     strip_prefix = "external/grpc-common-protos",
     visibility = ["//visibility:public"],
 )
+
+# automatically included, shouldn't be needed to be added manually
+java_proto_library(
+    name = "common-java_proto",
+    srcs = ["@com_google_protobuf//:well_known_protos"],
+    skip_default_includes = True,
+    strip_prefix = "external/com_google_protobuf/src",
+    visibility = ["//visibility:public"],
+)

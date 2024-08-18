@@ -43,11 +43,6 @@ def _gen_proto_impl(ctx):
     if needs_label_path:
         proto_paths.append(label_dir)
 
-    # TODO: replace with mechanism added in Id03d3e802
-    args.append(
-        "--proto_path=" + workspace_path("prebuilts/tools/common/m2/repository/com/google/protobuf/protobuf-java/" + ctx.attr.proto_include_version + "/include"),
-    )
-
     for dep in ctx.attr.deps:
         if dep[ProtoPackageInfo].proto_paths:
             for path in dep[ProtoPackageInfo].proto_paths:
@@ -160,6 +155,7 @@ def java_proto_library(
         protoc_grpc_version = PROTOC_GRPC_VERSION,
         proto_java_runtime_library = ["@maven//:com.google.protobuf.protobuf-java"],
         strip_prefix = "",
+        skip_default_includes = False,
         **kwargs):
     """Compiles protobuf into a .jar file and optionally creates a maven artifact.
 
@@ -182,7 +178,9 @@ def java_proto_library(
                     but it's included as just "path/foo.proto", you can specify
                     strip_prefix="my/target". (In terms of the protoc command run, this means that
                     it will get "--proto_path=my/target" as an extra argument).
-
+      skip_default_includes: don't add //tools/base/bazel:common-java_proto as a dependency.
+                             This should probably only be used by
+                             //tools/base/bazel:common-java_proto itself.
       **kwargs: other arguments accepted by bazel rule `java_library` are passed untouched.
     """
 
@@ -195,8 +193,7 @@ def java_proto_library(
     _gen_proto_rule(
         name = srcs_name,
         srcs = srcs,
-        deps = proto_deps,
-        include = "@//prebuilts/tools/common/m2:com.google.protobuf.protobuf-java." + protoc_version + ".include_include",
+        deps = proto_deps + ([] if skip_default_includes else ["@//tools/base/bazel:common-java_proto_srcs"]),
         outs = outs,
         proto_include_version = protoc_version,
         protoc = "@//prebuilts/tools/common/m2:com.google.protobuf.protoc." + protoc_version + "_exe",
@@ -292,13 +289,13 @@ def cc_grpc_proto_library(
             hdrs.append(p_name + ".grpc.pb.h")
     for dep in deps:
         proto_deps.append(dep + "_srcs")
+    proto_deps.append("@//tools/base/bazel:common-java_proto_srcs")
 
     _gen_proto_rule(
         name = name + "_srcs",
         srcs = srcs,
         deps = proto_deps,
         outs = outs + hdrs,
-        include = "@//prebuilts/tools/common/m2:com.google.protobuf.protobuf-java." + protoc_version + ".include_include",
         proto_include_version = protoc_version,
         protoc = "//external:protoc",
         grpc_plugin = "//external:grpc_cpp_plugin" if grpc_support else None,
@@ -342,8 +339,7 @@ def maven_proto_library(
     _gen_proto_rule(
         name = srcs_name,
         srcs = srcs,
-        deps = proto_deps,
-        include = "@//prebuilts/tools/common/m2:com.google.protobuf.protobuf-java." + protoc_version + ".include_include",
+        deps = proto_deps + ["//tools/base/bazel:common-java_proto_srcs"],
         outs = outs,
         proto_include_version = protoc_version,
         protoc = "@//prebuilts/tools/common/m2:com.google.protobuf.protoc." + protoc_version + "_exe",
