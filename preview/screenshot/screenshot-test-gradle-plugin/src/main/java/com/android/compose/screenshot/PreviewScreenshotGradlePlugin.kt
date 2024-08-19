@@ -22,11 +22,13 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.api.AndroidBasePlugin
+import com.android.compose.screenshot.gradle.ScreenshotTestOptionsImpl
 import com.android.compose.screenshot.layoutlibExtractor.LayoutlibDataFromMaven
 import com.android.compose.screenshot.services.AnalyticsService
 import com.android.compose.screenshot.tasks.PreviewDiscoveryTask
@@ -123,6 +125,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     """.trimIndent()
                 )
             }
+
             val validationEngineVersionOverride = project.findProperty(VALIDATION_ENGINE_VERSION_OVERRIDE)
             val validationEngineVersion = if (validationEngineVersionOverride != null && validationEngineVersionOverride.toString().isNotEmpty()) {
                 // Changes to the image naming format make versions 0.0.1-alpha02 and below of the
@@ -137,6 +140,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 }
                 validationEngineOverrideString
             } else SCREENSHOT_TEST_PLUGIN_VERSION
+            val screenshotExtension = project.extensions.create("screenshotTests", ScreenshotTestOptionsImpl::class.java)
+
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
                 getBuildServiceName(AnalyticsService::class.java),
@@ -178,6 +183,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     } ?: bt
                 } ?: flavorName ?: ""
             }
+
 
             componentsExtension.beforeVariants {
                 val extension = project.extensions.getByType(CommonExtension::class.java)
@@ -369,6 +375,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.diffImageDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/diffs"))
                         task.diffImageDir.disallowChanges()
                         task.analyticsService.set(analyticsServiceProvider)
+                        task.threshold.set(screenshotExtension.imageDifferenceThreshold)
                         task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP

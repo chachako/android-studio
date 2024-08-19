@@ -67,7 +67,6 @@ abstract class PreviewScreenshotValidationTask : Test() {
     abstract val analyticsService: Property<AnalyticsService>
 
     @get:Input
-    @get:Optional
     abstract val threshold: Property<Float>
 
     @TaskAction
@@ -97,7 +96,7 @@ abstract class PreviewScreenshotValidationTask : Test() {
     }
 
     private fun validateFloat(value: Float) {
-        if (value < 0 || value > 1 || value == Float.NaN) {
+        if (value < 0 || value > 1) {
             throw GradleException("Invalid threshold provided. Please provide a float value between 0.0 and 1.0")
         }
     }

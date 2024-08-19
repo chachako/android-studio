@@ -305,6 +305,36 @@ class ScreenshotTest {
             .withLoggingLevel(LoggingLevel.LIFECYCLE)
 
     @Test
+    fun runPreviewScreenshotTestWithThreshold() {
+        getExecutor().run(":app:updateScreenshotTest")
+        //update the preview - tests fail
+        val testFile = appProject.projectDir.resolve("src/main/java/com/Example.kt")
+        TestFileUtils.searchAndReplace(testFile, "Hello World", "Hello Worid")
+        val result = getExecutor().expectFailure().run(":app:validateScreenshotTest")
+        result.assertErrorContains("There were failing tests. See the results at: ")
+
+        //set high threshold - tests pass
+        TestFileUtils.appendToFile(
+            appProject.buildFile,
+            """
+            android {
+                testOptions {
+                    screenshotTests {
+                        imageDifferenceThreshold = 0.5f
+                    }
+                }
+            }
+            """.trimIndent()
+        )
+        getExecutor().run(":app:validateScreenshotTest")
+
+        //reduce threshold - tests fail
+        TestFileUtils.searchAndReplace(appProject.buildFile, "imageDifferenceThreshold = 0.5f", "imageDifferenceThreshold = 0.001f")
+        val resultLowThreshold = getExecutor().expectFailure().run(":app:validateScreenshotTest")
+        resultLowThreshold.assertErrorContains("There were failing tests. See the results at: ")
+    }
+
+    @Test
     fun discoverPreviews() {
         getExecutor().run(":app:debugPreviewDiscovery")
         val previewsDiscoveredFile  = appProject.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
