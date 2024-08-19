@@ -40,6 +40,7 @@ import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo;
 import com.android.build.gradle.internal.dsl.ApplicationExtensionImpl;
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension;
+import com.android.build.gradle.internal.dsl.BaseAppModuleExtensionInternal;
 import com.android.build.gradle.internal.dsl.BuildType;
 import com.android.build.gradle.internal.dsl.DefaultConfig;
 import com.android.build.gradle.internal.dsl.ProductFlavor;
@@ -102,10 +103,10 @@ public class AppPlugin
     protected void pluginSpecificApply(@NonNull Project project) {
     }
 
-    @SoftwareType(name = "androidApp", modelPublicType = BaseAppModuleExtension.class)
-    public BaseAppModuleExtension getAndroidApp() {
-        return ((BaseAppModuleExtension)
-                Objects.requireNonNull(project).getExtensions().getByName("android"));
+    @SoftwareType(name = "androidApp", modelPublicType = BaseAppModuleExtensionInternal.class)
+    public BaseAppModuleExtensionInternal getAndroidApp() {
+        return (BaseAppModuleExtensionInternal)
+                Objects.requireNonNull(project).getExtensions().getByName("android");
     }
 
     @NonNull
@@ -144,6 +145,33 @@ public class AppPlugin
                         applicationExtension,
                         forUnitTesting);
 
+        if (getProjectServices()
+                .getProjectOptions()
+                .get(BooleanOption.USE_DECLARATIVE_INTERFACES)) {
+
+            // noinspection unchecked,rawtypes: Hacks to make the parameterized types make sense
+            Class<ApplicationExtension> instanceType = (Class) BaseAppModuleExtensionInternal.class;
+
+            BaseAppModuleExtensionInternal android =
+                    (BaseAppModuleExtensionInternal)
+                            project.getExtensions()
+                                    .create(
+                                            new TypeOf<>() {},
+                                            "android",
+                                            instanceType,
+                                            dslServices,
+                                            bootClasspathConfig,
+                                            buildOutputs,
+                                            dslContainers.getSourceSetManager(),
+                                            extraModelInfo,
+                                            applicationExtension,
+                                            stats);
+
+            initExtensionFromSettings(applicationExtension);
+            setupDependencies(android);
+            return new ExtensionData<>(android, applicationExtension, bootClasspathConfig);
+        }
+
         if (getProjectServices().getProjectOptions().get(BooleanOption.USE_NEW_DSL_INTERFACES)) {
             // noinspection unchecked,rawtypes: Hacks to make the parameterized types make sense
             Class<ApplicationExtension> instanceType = (Class) BaseAppModuleExtension.class;
@@ -152,7 +180,7 @@ public class AppPlugin
                     (BaseAppModuleExtension)
                             project.getExtensions()
                                     .create(
-                                            new TypeOf<ApplicationExtension>() {},
+                                            new TypeOf<>() {},
                                             "android",
                                             instanceType,
                                             dslServices,
@@ -169,7 +197,6 @@ public class AppPlugin
                             android);
 
             initExtensionFromSettings(applicationExtension);
-
             return new ExtensionData<>(android, applicationExtension, bootClasspathConfig);
         }
 
@@ -187,6 +214,24 @@ public class AppPlugin
                                 stats);
         initExtensionFromSettings(android);
         return new ExtensionData<>(android, applicationExtension, bootClasspathConfig);
+    }
+
+    private void setupDependencies(BaseAppModuleExtensionInternal android) {
+        project.getConfigurations()
+                .getByName("api")
+                .fromDependencyCollector(android.getDependenciesDcl().getApi());
+        project.getConfigurations()
+                .getByName("implementation")
+                .fromDependencyCollector(android.getDependenciesDcl().getImplementation());
+
+        project.getConfigurations()
+                .getByName("testImplementation")
+                .fromDependencyCollector(android.getDependenciesDcl().getTestImplementation());
+
+        project.getConfigurations()
+                .getByName("androidTestImplementation")
+                .fromDependencyCollector(
+                        android.getDependenciesDcl().getAndroidTestImplementation());
     }
 
     /**

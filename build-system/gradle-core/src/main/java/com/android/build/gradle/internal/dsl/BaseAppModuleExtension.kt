@@ -17,11 +17,15 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.ApplicationAndroidResources
+import com.android.build.api.dsl.ApplicationBuildFeatures
 import com.android.build.api.dsl.ApplicationDefaultConfig
 import com.android.build.api.dsl.ComposeOptions
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.BaseVariantOutput
+import com.android.build.gradle.internal.ApplicationBuildTypeContainer
+import com.android.build.gradle.internal.CompileOptionsInternal
+import com.android.build.gradle.internal.DependenciesExtension
 import com.android.build.gradle.internal.ExtraModelInfo
 import com.android.build.gradle.internal.dependency.SourceSetManager
 import com.android.build.gradle.internal.services.DslServices
@@ -31,6 +35,51 @@ import com.android.repository.Revision
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.declarative.dsl.model.annotations.Configuring
+
+open class BaseAppModuleExtensionInternal(
+    dslServices: DslServices,
+    bootClasspathConfig: BootClasspathConfig,
+    buildOutputs: NamedDomainObjectContainer<BaseVariantOutput>,
+    sourceSetManager: SourceSetManager,
+    extraModelInfo: ExtraModelInfo,
+    private val publicExtensionImpl: ApplicationExtensionImpl,
+    stats: GradleBuildProject.Builder?
+) : BaseAppModuleExtension (
+    dslServices,
+    bootClasspathConfig,
+    buildOutputs,
+    sourceSetManager,
+    extraModelInfo,
+    publicExtensionImpl,
+    stats
+) {
+    @Configuring
+    fun compileOptionsDcl(action: CompileOptionsInternal.() -> Unit) {
+        super.compileOptions(action)
+    }
+
+    @Configuring
+    fun buildFeaturesDcl(action: ApplicationBuildFeatures.() -> Unit) {
+        super.buildFeatures(action)
+    }
+
+    private val appBuildTypes: ApplicationBuildTypeContainer
+        get() = ApplicationBuildTypeContainer(publicExtensionImpl.buildTypes)
+
+    @Configuring
+    fun appBuildTypes(action: ApplicationBuildTypeContainer.() -> Unit) {
+        action.invoke(appBuildTypes)
+    }
+
+    val dependenciesDcl: DependenciesExtension by lazy {
+        dslServices.newInstance(DependenciesExtension::class.java)
+    }
+
+    @Configuring
+    fun dependenciesDcl(configure: DependenciesExtension.() -> Unit) {
+        configure.invoke(dependenciesDcl)
+    }
+}
 
 /** The `android` extension for base feature module (application plugin).  */
 open class BaseAppModuleExtension(

@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.plugins
+package com.android.build.gradle.internal
 
-import org.gradle.api.Incubating
-import org.gradle.api.Plugin
-import org.gradle.api.initialization.Settings
-import org.gradle.api.internal.plugins.software.RegistersSoftwareTypes
+import org.gradle.api.artifacts.dsl.DependencyCollector
+import org.gradle.api.artifacts.dsl.GradleDependencies
+import org.gradle.declarative.dsl.model.annotations.Restricted
 
-@Incubating
-@RegistersSoftwareTypes(AppPlugin::class, LibraryPlugin::class)
-class AndroidEcosystemPlugin : Plugin<Settings> {
+@Restricted
+interface DependenciesExtension : GradleDependencies {
+    // main configurations
+    val api: DependencyCollector
+    val implementation: DependencyCollector
 
-    override fun apply(target: Settings) {
-        target.dependencyResolutionManagement.repositories.mavenCentral();
-        target.dependencyResolutionManagement.repositories.google()
-    }
+    // test configurations
+    val testImplementation: DependencyCollector
+
+    // android test configurations
+    val androidTestImplementation: DependencyCollector
 }

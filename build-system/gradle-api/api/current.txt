@@ -460,11 +460,11 @@ package com.android.build.api.dsl {
   }
 
   public interface ApplicationBuildFeatures extends com.android.build.api.dsl.BuildFeatures {
-    method public Boolean? getDataBinding();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getDataBinding();
     method public Boolean? getMlModelBinding();
     method public void setDataBinding(Boolean?);
     method public void setMlModelBinding(Boolean?);
-    property public abstract Boolean? dataBinding;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? dataBinding;
     property public abstract Boolean? mlModelBinding;
   }
 
@@ -655,14 +655,14 @@ package com.android.build.api.dsl {
   }
 
   public interface BuildFeatures extends org.gradle.api.plugins.ExtensionAware {
-    method public Boolean? getAidl();
-    method public Boolean? getBuildConfig();
-    method public Boolean? getCompose();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getAidl();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getBuildConfig();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getCompose();
     method public Boolean? getPrefab();
     method public Boolean? getRenderScript();
-    method public Boolean? getResValues();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getResValues();
     method public Boolean? getShaders();
-    method public Boolean? getViewBinding();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getViewBinding();
     method public void setAidl(Boolean?);
     method public void setBuildConfig(Boolean?);
     method public void setCompose(Boolean?);
@@ -671,14 +671,14 @@ package com.android.build.api.dsl {
     method public void setResValues(Boolean?);
     method public void setShaders(Boolean?);
     method public void setViewBinding(Boolean?);
-    property public abstract Boolean? aidl;
-    property public abstract Boolean? buildConfig;
-    property public abstract Boolean? compose;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? aidl;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? buildConfig;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? compose;
     property public abstract Boolean? prefab;
     property public abstract Boolean? renderScript;
-    property public abstract Boolean? resValues;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? resValues;
     property public abstract Boolean? shaders;
-    property public abstract Boolean? viewBinding;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? viewBinding;
   }
 
   public interface BuildType extends org.gradle.api.Named org.gradle.api.plugins.ExtensionAware com.android.build.api.dsl.VariantDimension {
@@ -690,7 +690,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public com.android.build.api.dsl.VcsInfo getVcsInfo();
     method public void initWith(com.android.build.api.dsl.BuildType that);
     method public boolean isJniDebuggable();
-    method public boolean isMinifyEnabled();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public boolean isMinifyEnabled();
     method public boolean isPseudoLocalesEnabled();
     method @Deprecated public boolean isRenderscriptDebuggable();
     method public boolean isShrinkResources();
@@ -713,7 +713,7 @@ package com.android.build.api.dsl {
     property public abstract boolean enableAndroidTestCoverage;
     property public abstract boolean enableUnitTestCoverage;
     property public abstract boolean isJniDebuggable;
-    property public abstract boolean isMinifyEnabled;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract boolean isMinifyEnabled;
     property public abstract boolean isPseudoLocalesEnabled;
     property @Deprecated public abstract boolean isRenderscriptDebuggable;
     property public abstract boolean isShrinkResources;
@@ -862,7 +862,7 @@ package com.android.build.api.dsl {
     method public void buildFeatures(kotlin.jvm.functions.Function1<? super BuildFeaturesT,kotlin.Unit> action);
     method @Deprecated public void buildToolsVersion(String buildToolsVersion);
     method public void buildTypes(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<BuildTypeT>,kotlin.Unit> action);
-    method public void compileOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.CompileOptions,kotlin.Unit> action);
+    method @org.gradle.declarative.dsl.model.annotations.Configuring public void compileOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.CompileOptions,kotlin.Unit> action);
     method public void compileSdkAddon(String vendor, String name, int version);
     method @Deprecated public void compileSdkVersion(int apiLevel);
     method @Deprecated public void compileSdkVersion(String version);
@@ -885,7 +885,7 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.ComposeOptions getComposeOptions();
     method public com.android.build.api.dsl.DataBinding getDataBinding();
     method public DefaultConfigT getDefaultConfig();
-    method public java.io.File getDefaultProguardFile(String name);
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public java.io.File getDefaultProguardFile(String name);
     method @org.gradle.api.Incubating public java.util.Map<java.lang.String,java.lang.Object> getExperimentalProperties();
     method public com.android.build.api.dsl.ExternalNativeBuild getExternalNativeBuild();
     method public java.util.List<java.lang.String> getFlavorDimensions();
@@ -909,7 +909,7 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.ViewBinding getViewBinding();
     method public void installation(kotlin.jvm.functions.Function1<? super InstallationT,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void jacoco(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JacocoOptions,kotlin.Unit> action);
-    method public void lint(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint,kotlin.Unit> action);
+    method @org.gradle.declarative.dsl.model.annotations.Configuring public void lint(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void lintOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LintOptions,kotlin.Unit> action);
     method public void packaging(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging,kotlin.Unit> action);
     method @Deprecated public void packagingOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging,kotlin.Unit> action);
@@ -968,20 +968,20 @@ package com.android.build.api.dsl {
   }
 
   public interface CompileOptions {
-    method public String getEncoding();
-    method public org.gradle.api.JavaVersion getSourceCompatibility();
-    method public org.gradle.api.JavaVersion getTargetCompatibility();
-    method public boolean isCoreLibraryDesugaringEnabled();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String getEncoding();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public org.gradle.api.JavaVersion getSourceCompatibility();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public org.gradle.api.JavaVersion getTargetCompatibility();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public boolean isCoreLibraryDesugaringEnabled();
     method public void setCoreLibraryDesugaringEnabled(boolean);
     method public void setEncoding(String);
     method public void setSourceCompatibility(org.gradle.api.JavaVersion);
     method public void setTargetCompatibility(org.gradle.api.JavaVersion);
     method public void sourceCompatibility(Object sourceCompatibility);
     method public void targetCompatibility(Object targetCompatibility);
-    property public abstract String encoding;
-    property public abstract boolean isCoreLibraryDesugaringEnabled;
-    property public abstract org.gradle.api.JavaVersion sourceCompatibility;
-    property public abstract org.gradle.api.JavaVersion targetCompatibility;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String encoding;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract boolean isCoreLibraryDesugaringEnabled;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract org.gradle.api.JavaVersion sourceCompatibility;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract org.gradle.api.JavaVersion targetCompatibility;
   }
 
   public interface ComposeOptions {
@@ -1495,14 +1495,14 @@ package com.android.build.api.dsl {
   }
 
   public interface Lint {
-    method public boolean getAbortOnError();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public boolean getAbortOnError();
     method public boolean getAbsolutePaths();
     method public java.io.File? getBaseline();
     method public boolean getCheckAllWarnings();
     method public boolean getCheckDependencies();
     method public boolean getCheckGeneratedSources();
     method public java.util.Set<java.lang.String> getCheckOnly();
-    method public boolean getCheckReleaseBuilds();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public boolean getCheckReleaseBuilds();
     method public boolean getCheckTestSources();
     method public java.util.Set<java.lang.String> getDisable();
     method public java.util.Set<java.lang.String> getEnable();
@@ -1557,14 +1557,14 @@ package com.android.build.api.dsl {
     method public void setWarningsAsErrors(boolean);
     method public void setXmlOutput(java.io.File?);
     method public void setXmlReport(boolean);
-    property public abstract boolean abortOnError;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract boolean abortOnError;
     property public abstract boolean absolutePaths;
     property public abstract java.io.File? baseline;
     property public abstract boolean checkAllWarnings;
     property public abstract boolean checkDependencies;
     property public abstract boolean checkGeneratedSources;
     property public abstract java.util.Set<java.lang.String> checkOnly;
-    property public abstract boolean checkReleaseBuilds;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract boolean checkReleaseBuilds;
     property public abstract boolean checkTestSources;
     property public abstract java.util.Set<java.lang.String> disable;
     property public abstract java.util.Set<java.lang.String> enable;
@@ -2178,7 +2178,7 @@ package com.android.build.api.dsl {
 
   public interface VariantDimension {
     method public void addManifestPlaceholders(java.util.Map<java.lang.String,?> manifestPlaceholders);
-    method public void buildConfigField(String type, String name, String value);
+    method @org.gradle.declarative.dsl.model.annotations.Adding public void buildConfigField(String type, String name, String value);
     method @org.gradle.api.Incubating public void externalNativeBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeBuildFlags,kotlin.Unit> action);
     method @org.gradle.api.Incubating public com.android.build.api.dsl.ExternalNativeBuildFlags getExternalNativeBuild();
     method public com.android.build.api.dsl.JavaCompileOptions getJavaCompileOptions();
