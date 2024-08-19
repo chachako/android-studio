@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle
 
+import com.android.build.api.dsl.LibraryDefaultConfig
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.BaseVariantOutput
@@ -34,6 +35,7 @@ import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
+import org.gradle.declarative.dsl.model.annotations.Configuring
 import java.util.Collections
 
 /**
@@ -126,4 +128,9 @@ open class LibraryExtension(
 
     override val libraryRequests: MutableCollection<LibraryRequest>
         get() = publicExtensionImpl.libraryRequests
+
+    @Configuring
+    override fun defaultConfig(action: LibraryDefaultConfig.() -> Unit) {
+        action.invoke(defaultConfig)
+    }
 }

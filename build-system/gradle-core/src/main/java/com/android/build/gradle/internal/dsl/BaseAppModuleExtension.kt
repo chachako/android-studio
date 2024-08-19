@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.ApplicationAndroidResources
+import com.android.build.api.dsl.ApplicationDefaultConfig
 import com.android.build.api.dsl.ComposeOptions
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.AndroidSourceSet
@@ -29,6 +30,7 @@ import com.android.builder.core.LibraryRequest
 import com.android.repository.Revision
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.declarative.dsl.model.annotations.Configuring
 
 /** The `android` extension for base feature module (application plugin).  */
 open class BaseAppModuleExtension(
@@ -75,4 +77,9 @@ open class BaseAppModuleExtension(
 
     override val androidResources: ApplicationAndroidResources
         get() = publicExtensionImpl.androidResources
+
+    @Configuring
+    override fun defaultConfig(action: ApplicationDefaultConfig.() -> Unit) {
+        action.invoke(defaultConfig)
+    }
 }

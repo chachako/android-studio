@@ -435,12 +435,12 @@ package com.android.build.api.dsl {
   }
 
   public interface ApplicationBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.ApplicationVariantDimension {
-    method public String? getApplicationId();
-    method public Integer? getMaxSdk();
-    method public Integer? getTargetSdk();
-    method public String? getTargetSdkPreview();
-    method public Integer? getVersionCode();
-    method public String? getVersionName();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getApplicationId();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Integer? getMaxSdk();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Integer? getTargetSdk();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getTargetSdkPreview();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Integer? getVersionCode();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getVersionName();
     method @Deprecated public void maxSdkVersion(int maxSdkVersion);
     method public void setApplicationId(String?);
     method public void setMaxSdk(Integer?);
@@ -451,12 +451,12 @@ package com.android.build.api.dsl {
     method public void setVersionName(String?);
     method @Deprecated public void targetSdkVersion(int targetSdkVersion);
     method @Deprecated public void targetSdkVersion(String? targetSdkVersion);
-    property public abstract String? applicationId;
-    property public abstract Integer? maxSdk;
-    property public abstract Integer? targetSdk;
-    property public abstract String? targetSdkPreview;
-    property public abstract Integer? versionCode;
-    property public abstract String? versionName;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? applicationId;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Integer? maxSdk;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Integer? targetSdk;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? targetSdkPreview;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Integer? versionCode;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? versionName;
   }
 
   public interface ApplicationBuildFeatures extends com.android.build.api.dsl.BuildFeatures {
@@ -533,18 +533,18 @@ package com.android.build.api.dsl {
   }
 
   public interface ApplicationVariantDimension extends com.android.build.api.dsl.VariantDimension {
-    method public String? getApplicationIdSuffix();
-    method public Boolean? getMultiDexEnabled();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getApplicationIdSuffix();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
-    method public String? getVersionNameSuffix();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getVersionNameSuffix();
     method public void setApplicationIdSuffix(String?);
     method public void setMultiDexEnabled(Boolean?);
     method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig?);
     method public void setVersionNameSuffix(String?);
-    property public abstract String? applicationIdSuffix;
-    property public abstract Boolean? multiDexEnabled;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? applicationIdSuffix;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? multiDexEnabled;
     property public abstract com.android.build.api.dsl.ApkSigningConfig? signingConfig;
-    property public abstract String? versionNameSuffix;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? versionNameSuffix;
   }
 
   public interface AssetPackBundleExtension {
@@ -587,8 +587,8 @@ package com.android.build.api.dsl {
   }
 
   public interface BaseFlavor extends com.android.build.api.dsl.VariantDimension {
-    method public Integer? getMinSdk();
-    method public String? getMinSdkPreview();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Integer? getMinSdk();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getMinSdkPreview();
     method public String getName();
     method public Boolean? getRenderscriptNdkModeEnabled();
     method public Boolean? getRenderscriptSupportModeBlasEnabled();
@@ -598,7 +598,7 @@ package com.android.build.api.dsl {
     method public String? getTestApplicationId();
     method public Boolean? getTestFunctionalTest();
     method public Boolean? getTestHandleProfiling();
-    method public String? getTestInstrumentationRunner();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public String? getTestInstrumentationRunner();
     method public java.util.Map<java.lang.String,java.lang.String> getTestInstrumentationRunnerArguments();
     method public com.android.build.api.dsl.VectorDrawables getVectorDrawables();
     method public Boolean? getWearAppUnbundled();
@@ -630,8 +630,8 @@ package com.android.build.api.dsl {
     method @Deprecated public void testInstrumentationRunnerArgument(String key, String value);
     method @Deprecated public void testInstrumentationRunnerArguments(java.util.Map<java.lang.String,java.lang.String> args);
     method public void vectorDrawables(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.VectorDrawables,kotlin.Unit> action);
-    property public abstract Integer? minSdk;
-    property public abstract String? minSdkPreview;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Integer? minSdk;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? minSdkPreview;
     property public abstract Boolean? renderscriptNdkModeEnabled;
     property public abstract Boolean? renderscriptSupportModeBlasEnabled;
     property public abstract Boolean? renderscriptSupportModeEnabled;
@@ -640,7 +640,7 @@ package com.android.build.api.dsl {
     property public abstract String? testApplicationId;
     property public abstract Boolean? testFunctionalTest;
     property public abstract Boolean? testHandleProfiling;
-    property public abstract String? testInstrumentationRunner;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract String? testInstrumentationRunner;
     property public abstract java.util.Map<java.lang.String,java.lang.String> testInstrumentationRunnerArguments;
     property public abstract com.android.build.api.dsl.VectorDrawables vectorDrawables;
     property public abstract Boolean? wearAppUnbundled;
@@ -1484,13 +1484,13 @@ package com.android.build.api.dsl {
     method public Object consumerProguardFiles(java.lang.Object... proguardFiles);
     method public com.android.build.api.dsl.AarMetadata getAarMetadata();
     method public java.util.List<java.io.File> getConsumerProguardFiles();
-    method public Boolean? getMultiDexEnabled();
+    method @org.gradle.declarative.dsl.model.annotations.Restricted public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
     method public void setMultiDexEnabled(Boolean?);
     method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig?);
     property public abstract com.android.build.api.dsl.AarMetadata aarMetadata;
     property public abstract java.util.List<java.io.File> consumerProguardFiles;
-    property public abstract Boolean? multiDexEnabled;
+    property @org.gradle.declarative.dsl.model.annotations.Restricted public abstract Boolean? multiDexEnabled;
     property public abstract com.android.build.api.dsl.ApkSigningConfig? signingConfig;
   }
 
