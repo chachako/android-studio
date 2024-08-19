@@ -21,8 +21,11 @@ import com.android.tools.perflib.captures.DataBuffer;
 import com.android.tools.proguard.ProguardMap;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TLongObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
 import java.io.EOFException;
 import java.io.IOException;
 
@@ -133,14 +136,11 @@ class HprofParser {
      * These are only needed while parsing so are not kept as part of the
      * heap data.
      */
-    @NonNull
-    TLongObjectHashMap<String> mStrings = new TLongObjectHashMap<String>();
+    @NonNull Long2ObjectMap<String> mStrings =new Long2ObjectOpenHashMap<>();
 
-    @NonNull
-    TLongObjectHashMap<String> mClassNamesById = new TLongObjectHashMap<String>();
+    @NonNull Long2ObjectMap<String> mClassNamesById = new Long2ObjectOpenHashMap<>();
 
-    @NonNull
-    TIntObjectHashMap<String> mClassNamesBySerial = new TIntObjectHashMap<String>();
+    @NonNull Int2ObjectMap<String> mClassNamesBySerial = new Int2ObjectOpenHashMap<>();
 
     static void parseBuffer(@NonNull Snapshot snapshot, @NonNull DataBuffer buffer, @NonNull ProguardMap map) {
         new HprofParser(snapshot, buffer, map).parse();

@@ -23,9 +23,9 @@ import com.android.tools.perflib.heap.analysis.ShortestDistanceVisitor
 import com.android.tools.perflib.heap.ext.NativeRegistryPostProcessor
 import com.android.tools.perflib.heap.ext.SnapshotPostProcessor
 import com.android.tools.proguard.ProguardMap
-import gnu.trove.THashSet
-import gnu.trove.TIntObjectHashMap
-import gnu.trove.TLongObjectHashMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import kotlin.streams.asStream
 
 /*
@@ -43,14 +43,14 @@ class Snapshot @VisibleForTesting constructor(val buffer: DataBuffer) : Capture(
     private var roots = ArrayList<RootObj>()
 
     //  List stack traces, which are lists of stack frames
-    private var traces = TIntObjectHashMap<StackTrace>()
+    private var traces = Int2ObjectOpenHashMap<StackTrace>()
 
     //  List of individual stack frames
-    private var frames = TLongObjectHashMap<StackFrame>()
+    private var frames = Long2ObjectOpenHashMap<StackFrame>()
     private var areRetainedSizesComputed = false
 
     //  The set of all classes that are (sub)class(es) of java.lang.ref.Reference.
-    private val referenceClasses = THashSet<ClassObj>()
+    private val referenceClasses = ObjectOpenHashSet<ClassObj>()
     private var typeSizes: IntArray? = null
     var idSizeMask = 0x00000000ffffffffL
         private set

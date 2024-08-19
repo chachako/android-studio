@@ -18,13 +18,15 @@ package com.android.tools.perflib.heap;
 
 import com.android.annotations.NonNull;
 
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
 import java.util.Collection;
+import java.util.function.Function;
 
 import com.google.common.collect.*;
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TLongObjectHashMap;
-import gnu.trove.TObjectProcedure;
 
 public class Heap {
 
@@ -35,16 +37,16 @@ public class Heap {
 
     //  List of threads
     @NonNull
-    TIntObjectHashMap<ThreadObj> mThreads = new TIntObjectHashMap<ThreadObj>();
+    Int2ObjectMap<ThreadObj> mThreads = new Int2ObjectOpenHashMap<>();
 
     //  Class definitions
     @NonNull
-    TLongObjectHashMap<ClassObj> mClassesById = new TLongObjectHashMap<ClassObj>();
+    Long2ObjectMap<ClassObj> mClassesById = new Long2ObjectOpenHashMap<>();
 
     @NonNull Multimap<String, ClassObj> mClassesByName = ArrayListMultimap.create();
 
     //  List of instances of above class definitions
-    private final TLongObjectHashMap<Instance> mInstances = new TLongObjectHashMap<Instance>();
+    private final Long2ObjectMap<Instance> mInstances = new Long2ObjectOpenHashMap<>();
 
     //  The snapshot that this heap is part of
     Snapshot mSnapshot;
@@ -101,8 +103,7 @@ public class Heap {
     }
 
     public final void dumpInstanceCounts() {
-        for (Object value : mClassesById.getValues()) {
-            ClassObj theClass = (ClassObj) value;
+        for (ClassObj theClass : mClassesById.values()) {
             int count = theClass.getInstanceCount();
 
             if (count > 0) {
@@ -112,8 +113,7 @@ public class Heap {
     }
 
     public final void dumpSubclasses() {
-        for (Object value : mClassesById.getValues()) {
-            ClassObj theClass = (ClassObj) value;
+        for (ClassObj theClass : mClassesById.values()) {
             int count = theClass.getSubclasses().size();
 
             if (count > 0) {
@@ -124,9 +124,7 @@ public class Heap {
     }
 
     public final void dumpSizes() {
-        for (Object value : mClassesById.getValues()) {
-            ClassObj theClass = (ClassObj) value;
-
+        for (ClassObj theClass : mClassesById.values()) {
             int size = 0;
 
             for (Instance instance : theClass.getHeapInstances(getId())) {
@@ -145,8 +143,12 @@ public class Heap {
         return mClassesByName.values();
     }
 
-    public void forEachInstance(@NonNull TObjectProcedure<Instance> procedure) {
-        mInstances.forEachValue(procedure);
+    public void forEachInstance(@NonNull Function<Instance, Boolean> procedure) {
+        for (Instance instance : mInstances.values()) {
+            if (!procedure.apply(instance)) {
+                return;
+            }
+        }
     }
 
     public int getInstancesCount() {

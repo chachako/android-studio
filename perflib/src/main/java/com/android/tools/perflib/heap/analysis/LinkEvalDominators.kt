@@ -15,7 +15,7 @@
  */
 package com.android.tools.perflib.heap.analysis
 
-import gnu.trove.TIntArrayList
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import java.util.IdentityHashMap
 import java.util.Stack
 import java.util.stream.Stream
@@ -40,7 +40,7 @@ object LinkEvalDominators {
         // Also gather predecessors and initialize semi-dominators in the same pass.
         val (instances, parents, preds) = computeIndicesAndParents(roots, next)
         val semis = IntArray(instances.size) { it }
-        val buckets = Array(instances.size) { TIntArrayList() }
+        val buckets = Array(instances.size) { IntArrayList() }
         val doms = IntArray(instances.size)
         val ancestors = IntArray(instances.size) { INVALID_ANCESTOR }
         val labels = IntArray(instances.size) { it }
@@ -59,8 +59,8 @@ object LinkEvalDominators {
 
             // Step 3 of paper.
             // Implicitly define each node's immediate dominator by Corollary 1
-            for (i in 0 until buckets[parents[currentNode]].size()) {
-                val node = buckets[parents[currentNode]][i]
+            for (i in 0 until buckets[parents[currentNode]].size) {
+                val node = buckets[parents[currentNode]].getInt(i)
                 val nodeEvaled = eval(ancestors, labels, semis, node)
                 doms[node] =
                     if (semis[nodeEvaled] < semis[node]) nodeEvaled else parents[currentNode]
@@ -111,7 +111,7 @@ object LinkEvalDominators {
         for (i in 1 until instances.size) { // omit auxiliary root at [0]
             val instance = instances[i]!!
             parentIndices[i] = instance.parent
-            predIndices[i] = instance.predecessors.toNativeArray()
+            predIndices[i] = instance.predecessors.toIntArray()
         }
         return DFSResult(instances.map { it?.content }, parentIndices, predIndices)
     }
@@ -134,15 +134,15 @@ private fun eval(ancestors: IntArray, labels: IntArray, semis: IntArray, node: I
  *  @return a node's evaluation after compression
  */
 private fun compress(ancestors: IntArray, labels: IntArray, semis: IntArray, node: Int): Int {
-    val compressArray = TIntArrayList()
+    val compressArray = IntArrayList()
     assert(ancestors[node] != INVALID_ANCESTOR)
     var n = node
     while (ancestors[ancestors[n]] != INVALID_ANCESTOR) {
         compressArray.add(n)
         n = ancestors[n]
     }
-    for (i in compressArray.size() - 1 downTo 0) {
-        val toCompress = compressArray[i]
+    for (i in compressArray.size - 1 downTo 0) {
+        val toCompress = compressArray.getInt(i)
         val ancestor = ancestors[toCompress]
         assert(ancestor != INVALID_ANCESTOR)
         if (semis[labels[ancestor]] < semis[labels[toCompress]]) {
@@ -163,7 +163,7 @@ private class Node<T> private constructor(val content: T, next: (T) -> Stream<T>
     val successors: List<Node<T>> by lazy { next(content).map(wrap).toList() }
     var topoOrder = -1 // topological order from our particular traversal, also used as id
     var parent = -1
-    var predecessors = TIntArrayList()
+    var predecessors = IntArrayList()
 
     companion object {
         fun<T> newFactory(next: (T) -> Stream<T>): (T) -> Node<T> =

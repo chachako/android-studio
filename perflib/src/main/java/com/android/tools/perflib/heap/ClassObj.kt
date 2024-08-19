@@ -16,7 +16,7 @@
 package com.android.tools.perflib.heap
 
 import com.google.common.annotations.VisibleForTesting
-import gnu.trove.TIntObjectHashMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 
 open class ClassObj(
     id: Long, stack: StackTrace?, val className: String,
@@ -33,7 +33,7 @@ open class ClassObj(
     var staticFields: Array<Field> = Array(0) { throw IllegalStateException() }
     var instanceSize = 0
     override var isSoftReference = false
-    var heapData = TIntObjectHashMap<HeapData>()
+    var heapData = Int2ObjectOpenHashMap<HeapData>()
 
     fun addSubclass(subclass: ClassObj) = subclasses.add(subclass)
 
@@ -115,7 +115,7 @@ open class ClassObj(
 
     open val superClassObj: ClassObj? get() = heap!!.mSnapshot.findClass(superClassId)
     val classLoader: Instance? get() = heap!!.mSnapshot.findInstance(classLoaderId)
-    val instancesList: List<Instance> get() = heapData.keys().flatMap(::getHeapInstances)
+    val instancesList: List<Instance> get() = heapData.keys.flatMap(::getHeapInstances)
 
     fun getHeapInstances(heapId: Int): List<Instance> = heapData[heapId]?.instances ?: listOf()
     fun getHeapInstancesCount(heapId: Int): Int = heapData[heapId]?.instances?.size ?: 0
