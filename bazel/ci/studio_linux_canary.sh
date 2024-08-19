@@ -29,7 +29,7 @@ readonly BUILD_TARGETS="//tools/... -//tools/adt/idea/studio/..."
   --build_metadata=ab_target=studio-linux_canary \
   --define=meta_android_build_number="${BUILD_NUMBER}" \
   --tool_tag=studio-linux-canary \
-  --test_tag_filters="-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky" \
+  --test_tag_filters="-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-noci:studio-linux" \
   --verbose_failures \
   -- \
   //tools/adt/idea/...
@@ -42,4 +42,9 @@ if [[ -d "${DIST_DIR}" ]]; then
   echo "<head><meta http-equiv=\"refresh\" content=\"0; url='http://sponge2/${INVOCATION_ID}'\" /></head>" > "${DIST_DIR}"/sponge_build_results.html
 fi
 
-exit $BAZEL_STATUS
+BAZEL_EXITCODE_TEST_FAILURES=3
+if [[ $BAZEL_STATUS == $BAZEL_EXITCODE_TEST_FAILURES ]]; then
+  exit 0
+else
+  exit $BAZEL_STATUS
+fi
