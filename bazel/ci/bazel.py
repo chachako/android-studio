@@ -70,6 +70,14 @@ class BuildEnv:
     """
     return self._bazel(True, True, "query", *query_args)
 
+  def bazel_cquery(self, *query_args) -> subprocess.CompletedProcess:
+    """Runs a 'bazel cquery' command.
+
+    Raises:
+      CalledProcessError: If the query fails.
+    """
+    return self._bazel(True, True, "cquery", *query_args)
+
   def bazel_info(self, *info_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel info' command.
 

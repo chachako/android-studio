@@ -21,6 +21,11 @@ class BuildGraphException(errors.CIError):
 """
 
 
+def cquery_all(build_env: bazel.BuildEnv):
+  """Run cquery and validate default target configurations."""
+  build_env.bazel_cquery('//tools/...')
+
+
 def no_local_genrules(build_env: bazel.BuildEnv):
   """Verify targets are not using local=True.
 
