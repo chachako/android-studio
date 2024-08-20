@@ -225,17 +225,20 @@ def find_test_targets(
   else:
     logging.info('Not using selective presubmit')
 
+  flags = [
+      f'--build_metadata=selective_presubmit_found={found}',
+      f'--build_metadata=selective_presubmit_impacted_target_count={impacted_target_count}',
+      f'--build_metadata=gerrit_owner={change.owner}',
+      f'--build_metadata=gerrit_change_id={change.change_id}',
+      f'--build_metadata=gerrit_change_number={change.change_number}',
+      f'--build_metadata=gerrit_change_patchset={change.patchset}',
+  ]
+  if change.topic:
+    flags.append(f'--build_metadata=gerrit_topic={change.topic}')
   return SelectivePresubmitResult(
       found=found,
       targets=targets,
-      flags=[
-          f'--build_metadata=selective_presubmit_found={found}',
-          f'--build_metadata=selective_presubmit_impacted_target_count={impacted_target_count}',
-          f'--build_metadata=gerrit_owner={change.owner}',
-          f'--build_metadata=gerrit_change_id={change.change_id}',
-          f'--build_metadata=gerrit_change_number={change.change_number}',
-          f'--build_metadata=gerrit_change_patchset={change.patchset}',
-      ],
+      flags=flags,
   )
 
 

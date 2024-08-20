@@ -16,6 +16,7 @@ class GerritChange:
   patchset: str
   owner: str
   message: str
+  topic: str
   tags: List[Tuple[str,str]]
 
 
@@ -116,6 +117,7 @@ def get_gerrit_changes(bid: str) -> List[GerritChange]:
         patchset=change['revisions'][0]['patchSet'],
         owner=owner,
         message=message,
+        topic=change.get('topic', ''),
         tags=tags,
     )
     changes.append(gerrit_change)
