@@ -186,6 +186,7 @@ public class DeviceListMonitorTask implements Runnable {
             mMonitoring = false;
             if (mAdbConnection != null) {
                 closeConnection();
+                mAdbConnection = null;
                 errorHandler.accept(e);
             }
         }
