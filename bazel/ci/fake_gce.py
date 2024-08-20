@@ -5,7 +5,7 @@ import json
 import pathlib
 import re
 import subprocess
-from typing import Iterator, Dict, List
+from typing import Iterator, Dict, List, Tuple
 from unittest import mock
 
 from absl.testing import absltest
@@ -71,8 +71,51 @@ class FakeGCE:
       pathlib.Path(args[1]).write_bytes(self.files[file_key])
       return '{}'
 
-    # TODO(b/353307795): Implement other GCE calls.
+    # Gerrit changes.
+    if method_url == f'GET https://androidbuildinternal.googleapis.com/android/internal/build/v3/changes/{bid}':
+      json_changes = []
+      for change in self.changes:
+        json_changes.append({
+            'changeId': change.change_id,
+            'changeNumber': change.change_number,
+            'revisions': [{
+                'patchSet': change.patchset,
+                'commit': {
+                    'commitMessage': change.message,
+                },
+            }],
+            'owner': {
+                'email': f'{change.owner}@google.com',
+            },
+            'topic': change.topic,
+        })
+      return json.dumps({'changes': json_changes})
+
     raise NotImplementedError(f'Unsupported curl call: {method_url}')
+
+  def add_change(self, owner: str, message: str, tags: List[Tuple[str, str]]) -> gce.GerritChange:
+    """Adds and returns a new fake Gerrit change.
+
+    The change ID, change number, and patchset are automatically generated. All
+    fields can be altered after creation.
+
+    Args:
+      owner: The owner of the change.
+      message: The commit message of the change without tags.
+      tags: The tags of the change.
+    """
+    index = len(self.changes)
+    change = gce.GerritChange(
+        change_id=f'changeid{index}',
+        change_number=str(index),
+        patchset=index,
+        owner=f'{owner}@google.com',
+        message=f'{message}\n\n' + '\n'.join(f'{k}: {v}' for k, v in tags),
+        topic='',
+        tags=tags,
+    )
+    self.changes.append(change)
+    return change
 
 
 @contextlib.contextmanager

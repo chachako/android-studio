@@ -39,6 +39,25 @@ class GceTest(absltest.TestCase):
     dst = self.build_env.tmp_path / 'dst.txt'
     self.assertFalse(gce.download_from_gcs('bucket', 'name.txt', str(dst)))
 
+  def test_gerrit_changes(self):
+    changes = [
+        self.gce.add_change(
+            'owner1',
+            'commit message 1',
+            [('Tag1', 'Value1'), ('Tag2', 'Value2')],
+        ),
+        self.gce.add_change(
+            'owner2',
+            'commit message 2',
+            [('Tag3', 'Value3'), ('Tag4', 'Value4')],
+        ),
+    ]
+    changes[0].topic = 'topic'
+
+    fetched_changes = gce.get_gerrit_changes(self.build_env.build_number)
+    self.assertEqual(fetched_changes, changes)
+    self.assertEqual(fetched_changes[0].topic, 'topic')
+
 
 if __name__ == '__main__':
   absltest.main()
