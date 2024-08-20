@@ -64,16 +64,12 @@ class EmptySuperDetector : Detector(), SourceCodeScanner {
      * Checks whether the given method overrides a method annotated with `@EmptySuper`, and if so,
      * returns it (otherwise returns null)
      */
-    private fun getEmptySuperMethod(evaluator: JavaEvaluator, method: UMethod): PsiMethod? {
-      val directSuper = evaluator.getSuperMethod(method) ?: return null
-      return if (
+    private fun getEmptySuperMethods(evaluator: JavaEvaluator, method: UMethod): List<PsiMethod> =
+      method.javaPsi.findSuperMethods().filter { directSuper ->
         evaluator.getAnnotations(directSuper, false).any {
           it.qualifiedName == EMPTY_SUPER_ANNOTATION
         }
-      )
-        directSuper
-      else null
-    }
+      }
   }
 
   override fun getApplicableUastTypes(): List<Class<out UElement>> = listOf(UMethod::class.java)
@@ -82,15 +78,20 @@ class EmptySuperDetector : Detector(), SourceCodeScanner {
     object : UElementHandler() {
       override fun visitMethod(node: UMethod) {
         val evaluator = context.evaluator
-        val superMethod = getEmptySuperMethod(evaluator, node) ?: return
+        val superMethods = getEmptySuperMethods(evaluator, node)
+        if (superMethods.isEmpty()) return
         node.accept(
           object : AbstractUastVisitor() {
             override fun visitCallExpression(node: UCallExpression): Boolean {
-              if (node.receiver is USuperExpression && superMethod.isEquivalentTo(node.resolve())) {
-                val message =
-                  "No need to call `super.${superMethod.name}`; the super method is defined to be empty"
-                val location = context.getNameLocation(node)
-                context.report(ISSUE, node, location, message)
+              if (node.receiver is USuperExpression) {
+                val resolved = node.resolve()
+                val superMethod = superMethods.find { it.isEquivalentTo(resolved) }
+                if (superMethod != null) {
+                  val message =
+                    "No need to call `super.${superMethod.name}`; the super method is defined to be empty"
+                  val location = context.getNameLocation(node)
+                  context.report(ISSUE, node, location, message)
+                }
               }
               return super.visitCallExpression(node)
             }

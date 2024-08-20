@@ -69,6 +69,73 @@ class EmptySuperDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  fun testMultipleOverridesOk() {
+    lint()
+      .files(
+        kotlin(
+            """
+            import androidx.annotation.EmptySuper
+
+            interface Super1 {
+                fun f() {}
+            }
+
+            interface Super2 {
+                @EmptySuper
+                fun f() {}
+            }
+
+            object Impl: Super1, Super2 {
+                override fun f() {
+                    super<Super1>.f()
+                }
+            }
+          """
+          )
+          .indented(),
+        emptySuperStub,
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testMultipleOverridesWarned() {
+    lint()
+      .files(
+        kotlin(
+            """
+            import androidx.annotation.EmptySuper
+
+            interface Super1 {
+                fun f() {}
+            }
+
+            interface Super2 {
+                @EmptySuper
+                fun f() {}
+            }
+
+            object Impl: Super1, Super2 {
+                override fun f() {
+                    super<Super2>.f()
+                }
+            }
+          """
+          )
+          .indented(),
+        emptySuperStub,
+      )
+      .run()
+      .expect(
+        """
+          src/Super1.kt:14: Warning: No need to call super.f; the super method is defined to be empty [EmptySuperCall]
+                  super<Super2>.f()
+                                ~
+          0 errors, 1 warnings
+        """
+      )
+  }
 }
 
 val emptySuperStub: TestFile =
