@@ -37,6 +37,7 @@ import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.internal.avd.EmulatedProperties;
 import com.android.sdklib.internal.avd.HardwareProperties;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.IdDisplay;
@@ -196,7 +197,7 @@ public class AvdManagerCliTest {
         assertEquals("full", config.get("runtime.network.speed"));
         assertEquals("false", config.get("PlayStore.enabled"));
         assertEquals(
-                new Storage(1536, Storage.Unit.MiB),
+                EmulatedProperties.MAX_DEFAULT_RAM_SIZE,
                 Storage.getStorageFromString(config.get("hw.ramSize")));
         assertEquals(
                 new Storage(512, Storage.Unit.MiB),
@@ -256,7 +257,7 @@ public class AvdManagerCliTest {
         assertEquals("full", config.get("runtime.network.speed"));
         assertEquals("true", config.get("PlayStore.enabled"));
         assertEquals(
-                new Storage(1536, Storage.Unit.MiB),
+                EmulatedProperties.MAX_DEFAULT_RAM_SIZE,
                 Storage.getStorageFromString(config.get("hw.ramSize")));
         assertEquals(
                 new Storage(512, Storage.Unit.MiB),

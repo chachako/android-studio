@@ -99,9 +99,7 @@ class AvdBuilder(var metadataIniPath: Path, var avdFolder: Path, var device: Dev
         GenericSkin(it.width, it.height)
       }
 
-    if (ram.size == 0L || ram.size > EmulatedProperties.MAX_DEFAULT_RAM_SIZE.size) {
-      ram = EmulatedProperties.MAX_DEFAULT_RAM_SIZE
-    }
+    ram = EmulatedProperties.defaultRamSize(device)
     vmHeap = EmulatedProperties.defaultVmHeapSize(device)
     internalStorage = EmulatedProperties.defaultInternalStorage(device)
   }

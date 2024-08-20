@@ -19,6 +19,10 @@ package com.android.sdklib.internal.avd;
 import static com.android.resources.Density.ANYDPI;
 import static com.android.resources.Density.NODPI;
 
+import static com.google.common.collect.Comparators.min;
+
+import static java.util.Comparator.comparing;
+
 import com.android.annotations.NonNull;
 import com.android.resources.Density;
 import com.android.resources.ScreenSize;
@@ -55,20 +59,31 @@ public class EmulatedProperties {
     public static final AvdNetworkLatency DEFAULT_NETWORK_LATENCY = AvdNetworkLatency.NONE;
     public static final Storage DEFAULT_SDCARD_SIZE = new Storage(512, Storage.Unit.MiB);
 
-    // Limit the default RAM size. Although the physical device probably has more RAM than this,
-    // using more than this amount is usually detrimental to development system performance and
-    // most likely is not needed by the emulated app. The value here is intended to let the
-    // hardware run smoothly with lots of services and apps running simultaneously.
-    public static final Storage MAX_DEFAULT_RAM_SIZE = new Storage(1536, Storage.Unit.MiB);
+    // The maximum default RAM size; see #defaultRamSize().
+    public static final Storage MAX_DEFAULT_RAM_SIZE = new Storage(2, Storage.Unit.GiB);
 
-    /**
-     * Limit the RAM size to MAX_DEFAULT_RAM_SIZE
-     */
-    public static void restrictDefaultRamSize(@NonNull Map<String, String>deviceConfig) {
+    /** Limit the RAM size to MAX_DEFAULT_RAM_SIZE */
+    public static void restrictDefaultRamSize(@NonNull Map<String, String> deviceConfig) {
         Storage ramSize = Storage.getStorageFromString(deviceConfig.get(RAM_STORAGE_KEY));
         if (ramSize != null && MAX_DEFAULT_RAM_SIZE.lessThan(ramSize)) {
             deviceConfig.put(RAM_STORAGE_KEY, MAX_DEFAULT_RAM_SIZE.toIniString());
         }
+    }
+
+    /**
+     * Get the default amount of ram to use for an AVD based on the given Device. The user may set a
+     * higher amount of RAM if warranted.
+     *
+     * <p>With modern devices, this is typically a lower limit than the physical hardware, since
+     * more than that is usually detrimental to development system performance and most likely not
+     * needed by the emulated app (e.g. it's intended to let the hardware run smoothly with lots of
+     * services and apps running simultaneously)
+     */
+    public static Storage defaultRamSize(@NonNull Device device) {
+        return min(
+                device.getDefaultHardware().getRam(),
+                MAX_DEFAULT_RAM_SIZE,
+                comparing(Storage::getSize));
     }
 
     /** Returns the default VM heap size for the given device. */
