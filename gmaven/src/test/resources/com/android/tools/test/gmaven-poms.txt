@@ -497,6 +497,7 @@ com.android.tools.build:gradle
     com.android.tools.layoutlib:layoutlib-api (runtime)
     com.android.tools.utp:android-device-provider-ddmlib-proto (runtime)
     com.android.tools.utp:android-device-provider-gradle-proto (runtime)
+    com.android.tools.utp:android-device-provider-profile-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-additional-test-output-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-coverage-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-emulator-control-proto (runtime)
