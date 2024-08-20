@@ -569,6 +569,10 @@ abstract class R8Task @Inject constructor(
     }
 
     override fun doTaskAction() {
+        println("R8 TASK STARTING")
+        configurationFiles.files.forEach {
+            println(it.toPath())
+        }
 
         val output: Property<out FileSystemLocation> =
             when {
