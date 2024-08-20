@@ -188,12 +188,13 @@ class ProcessTestManifestTest {
             "http://schemas.android.com/apk/res/android:debuggable(0x0101000f)=true"
         )
 
-        // The manifest shouldn't contain android:debuggable if we set the testBuildType to release.
+        // Since the tested module is a library, the manifest must contain android:debuggable
+        // even if we set the testBuildType to release.
         project.buildFile.appendText("\n\nandroid.testBuildType \"release\"\n\n")
         project.executor().run("assembleReleaseAndroidTest")
         val releaseManifestContent =
             getManifestContent(project.getApk(GradleTestProject.ApkType.ANDROIDTEST_RELEASE).file)
-        assertManifestContentDoesNotContainString(releaseManifestContent, "android:debuggable")
+        assertManifestContentContainsString(releaseManifestContent, "android:debuggable")
     }
 
     @Test
