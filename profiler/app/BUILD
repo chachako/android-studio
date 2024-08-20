@@ -1,30 +1,36 @@
 load("//tools/base/bazel:android.bzl", "dex_library")
-load("//tools/base/bazel:utils.bzl", "java_jarjar")
 load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
+load("//tools/base/bazel:utils.bzl", "java_jarjar")
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "supportlib-srcs",
-    srcs = glob(["supportlib/src/main/**/*.java"]),
+    srcs = glob(["supportlib/src/main/java/com/android/tools/profiler/support/*.java"]),
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "echo-sample-srcs",
-    srcs = glob(["echo-sample/src/main/**/*.java"]),
+    srcs = glob(["echo-sample/src/main/java/com/android/tools/agent/echo/*.java"]),
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "common-srcs",
-    srcs = glob(["common/src/main/**/*.java"]),
+    srcs = glob([
+        "common/src/main/java/com/android/tools/profiler/support/cpu/*.java",
+        "common/src/main/java/com/android/tools/profiler/support/event/*.java",
+        "common/src/main/java/com/android/tools/profiler/support/memory/*.java",
+        "common/src/main/java/com/android/tools/profiler/support/profilers/*.java",
+        "common/src/main/java/com/android/tools/profiler/support/util/*.java",
+    ]),
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "perfa-srcs",
-    srcs = glob(["perfa/src/main/**/*.java"]),
+    srcs = glob(["perfa/src/main/java/com/android/tools/profiler/support/*.java"]),
     visibility = ["//visibility:private"],
 )
 
@@ -59,8 +65,6 @@ java_library(
     ],
     deps = [
         "//prebuilts/studio/sdk:platforms/latest_jar",
-        # TODO(b/77923456): Track version changes and revisit.
-        "//prebuilts/tools/common/m2:com.google.android.gms.play-services-location.11.8.0",
         "@maven//:androidx.annotation.annotation",
     ],
 )

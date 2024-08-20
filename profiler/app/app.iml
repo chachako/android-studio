@@ -32,15 +32,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="PROVIDED">
-      <library name="gms">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/m2/repository/com/google/android/gms/play-services-location/11.8.0/play-services-location-11.8.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
       <library name="app-inspection">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../../../bazel-bin/prebuilts/tools/common/m2/repository/androidx/inspection/inspection/1.0.0/jar_unpacked_classes.jar!/" />

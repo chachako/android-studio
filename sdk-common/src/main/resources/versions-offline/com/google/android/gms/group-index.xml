@@ -72,7 +72,7 @@
   <play-services-instantapps versions="17.0.1,18.0.1"/>
   <play-services-instantapps-license versions="11.8.0,12.0.1"/>
   <play-services-location versions="20.0.0,21.0.1"/>
-  <play-services-location-license versions="11.8.0,12.0.1"/>
+  <play-services-location-license versions="12.0.1"/>
   <play-services-maps versions="17.0.1,18.1.0"/>
   <play-services-maps-license versions="11.8.0,12.0.1"/>
   <play-services-measurement versions="20.1.2,21.2.1"/>
