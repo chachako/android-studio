@@ -1575,7 +1575,7 @@ abstract class SourceProviderInput {
         instrumentationTestOnly: Boolean = false,
         testFixtureOnly: Boolean = false
     ): SourceProviderInput {
-        this.manifestFilePath.fileProvider(sources.manifestFile)
+        this.manifestFilePath.set(sources.manifestFile)
         this.manifestFilePath.disallowChanges()
         this.manifestOverlayFilePaths.setDisallowChanges(sources.manifestOverlayFiles)
 

@@ -146,7 +146,7 @@ abstract class MergeArtProfileTask: MergeFileTask() {
 
             // for backwards compat we need to keep reading the old location for baseline profile
             creationConfig.sources.artProfile?.let { artProfile ->
-                task.profileSource.fileProvider(artProfile)
+                task.profileSource.set(artProfile)
             }
 
             task.profileSource.disallowChanges()

@@ -327,9 +327,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             res?.let(action)
         }
 
-        override val manifestFile: Provider<File> = variantServices.provider {
-            manifestFile
-        }
+        override val manifestFile = manifestFile
 
         private val extras by lazy(LazyThreadSafetyMode.NONE) {
             variantServices.domainObjectContainer(
@@ -360,7 +358,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         override fun mlModels(action: (LayeredSourceDirectoriesImpl) -> Unit) {}
         override fun baselineProfiles(action: (FlatSourceDirectoriesImpl) -> Unit) {}
 
-        override val artProfile: Provider<File>? = null
+        override val artProfile: File? = null
         override val sourceProviderNames: List<String> = emptyList()
         override val multiFlavorSourceProvider: DefaultAndroidSourceSet? = null
         override val variantSourceProvider: DefaultAndroidSourceSet? = null

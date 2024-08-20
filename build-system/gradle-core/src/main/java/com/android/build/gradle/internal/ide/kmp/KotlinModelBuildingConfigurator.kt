@@ -113,7 +113,7 @@ object KotlinModelBuildingConfigurator {
                 AndroidSourceSet.newBuilder()
                     .setSourceProvider(
                         SourceProvider.newBuilder()
-                            .setManifestFile(component.sources.manifestFile.get().convert())
+                            .setManifestFile(component.sources.manifestFile.convert())
                     )
                     .build()
         }
