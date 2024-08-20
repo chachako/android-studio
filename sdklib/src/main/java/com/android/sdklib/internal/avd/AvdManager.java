@@ -1745,12 +1745,7 @@ public class AvdManager {
             throw new AvdMgrException();
         }
 
-        // If the skin path is in the sdk, use the relative path
-        if (path.startsWith(mSdkHandler.getLocation())) {
-            skinPath = mSdkHandler.getLocation().relativize(path).toString();
-        } else {
-            skinPath = path.toString();
-        }
+        skinPath = path.toString();
 
         // If the skin contains a hardware.ini, add its contents to the AVD config.
         PathFileWrapper skinHardwareFile = new PathFileWrapper(path.resolve(HARDWARE_INI));

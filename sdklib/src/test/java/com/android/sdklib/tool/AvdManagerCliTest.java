@@ -227,7 +227,7 @@ public class AvdManagerCliTest {
                 AvdManager.parseIniFile(new PathFileWrapper(avdConfigFile), null);
         assertEquals("nexus_s", config.get("skin.name"));
         assertEquals(
-                InMemoryFileSystems.getPlatformSpecificPath("skins/nexus_s"),
+                sdkPath.resolve("skins").resolve("nexus_s").toString(),
                 config.get("skin.path"));
     }
 

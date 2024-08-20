@@ -496,6 +496,29 @@ public final class AvdManagerTest {
     }
 
     @Test
+    public void createAvdWithSkin() {
+        MockLog log = new MockLog();
+        DeviceManager deviceManager = DeviceManager.createInstance(mAndroidSdkHandler, log);
+        Device device = deviceManager.getDevice("medium_phone", "Generic");
+        AvdBuilder builder = mAvdManager.createAvdBuilder(device);
+
+        Path skinPath = mAndroidSdkHandler.getLocation().resolve("skins").resolve("pixel_8");
+        InMemoryFileSystems.recordExistingFile(skinPath.resolve("layout"));
+
+        builder.setAvdName(name.getMethodName());
+        builder.setAvdFolder(mAvdFolder);
+        builder.setSystemImage(systemImages.getApi23().getImage());
+        builder.setSkin(new OnDiskSkin(skinPath));
+
+        mAvdManager.createAvd(builder);
+
+        Map<String, String> config = AvdManager.parseIniFile(
+                new PathFileWrapper(mAvdFolder.resolve("config.ini")), null);
+        assertThat(config.get(ConfigKey.SKIN_NAME)).isEqualTo(skinPath.getFileName().toString());
+        assertThat(config.get(ConfigKey.SKIN_PATH)).isEqualTo(skinPath.toString());
+    }
+
+    @Test
     public void moveAvd() {
         Map<String, String> hardwareConfig =
                 ImmutableMap.of("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
