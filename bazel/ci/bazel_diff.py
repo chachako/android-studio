@@ -11,6 +11,7 @@ def generate_hash_file(build_env: bazel.BuildEnv, output_path: pathlib.Path):
   build_env.bazel_run(
       '//tools/base/bazel:bazel-diff',
       '--',
+      '--verbose',
       'generate-hashes',
       '--bazelPath',
       build_env.bazel_path,
@@ -30,6 +31,7 @@ def get_impacted_targets(
   build_env.bazel_run(
       '//tools/base/bazel:bazel-diff',
       '--',
+      '--verbose',
       'get-impacted-targets',
       '--startingHashes',
       starting_hashes_path,
