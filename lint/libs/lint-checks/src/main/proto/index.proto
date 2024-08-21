@@ -34,6 +34,7 @@ message Sdk {
 
   enum IndexAvailability {
     UNKNOWN_INDEX_AVAILABILITY = 0;
+
     // The SDK is not available in the public SDK Index. Critical issues or
     // developer notes are still present, but the `index_url` for this SDK
     // will point to the root SDK Index page (https://play.google.com/sdks).
@@ -129,10 +130,17 @@ message LibraryVersionLabels {
   // The developer added a warning message to this version, indicating a
   // critical issue.
   CriticalIssueInfo critical_issue_info = 1;
+
   // The developer marked this version as outdated.
   OutdatedIssueInfo outdated_issue_info = 2;
+
   // This version is not complying to Google Play policies.
   PolicyIssuesInfo policy_issues_info = 3;
+
+  Severity severity = 4;
+
+  // This version has security vulnerabilities.
+  SecurityVulnerabilitiesInfo security_vulnerabilities_info = 5;
 
   enum Severity {
     UNKNOWN_SEVERITY = 0;
@@ -147,12 +155,11 @@ message LibraryVersionLabels {
     // This version has no labels and therefore no severity.
     NO_SEVERITY = 3;
   }
-  Severity severity = 4;
 
   message CriticalIssueInfo {
     // Developer message describing the issue.
     // Not guaranteed to be present.
-    optional string description = 1;
+    string description = 1;
   }
 
   message OutdatedIssueInfo {
@@ -175,6 +182,7 @@ message LibraryVersionLabels {
       SDK_POLICY_MOBILE_UNWANTED_SOFTWARE = 6;
       SDK_POLICY_MALWARE = 7;
     }
+
     // List of all the Google policies violated by the library version.
     // Always set.
     repeated SdkPolicy violated_sdk_policies = 1;
@@ -183,12 +191,40 @@ message LibraryVersionLabels {
     // Not guaranteed to be set.
     repeated LibraryVersionRange recommended_versions = 2;
   }
+
+  message SecurityVulnerabilitiesInfo {
+    enum SdkSecurityVulnerabilityType {
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSPECIFIED = 0;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_TRUST_MANAGER = 1;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_HOSTNAME_VERIFIER = 2;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_SSL_ERROR_HANDLER = 3;
+      SDK_SECURITY_VULNERABILITY_TYPE_ZIP_PATH_TRAVERSAL = 4;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_WEBVIEW_OAUTH = 5;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_CIPHER_MODE = 6;
+      SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_ENCRYPTION = 7;
+      SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_PENDING_INTENT = 8;
+      SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_INTERNAL_INTENT = 9;
+      SDK_SECURITY_VULNERABILITY_TYPE_CROSS_APP_SCRIPTING = 10;
+      SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS = 11;
+      SDK_SECURITY_VULNERABILITY_TYPE_INTENT_SCHEME_HIJACKING = 12;
+      SDK_SECURITY_VULNERABILITY_TYPE_JS_INTERFACE_INJECTION = 13;
+      SDK_SECURITY_VULNERABILITY_TYPE_INTENT_REDIRECTION = 14;
+      SDK_SECURITY_VULNERABILITY_TYPE_FRAGMENT_INJECTION = 15;
+      SDK_SECURITY_VULNERABILITY_TYPE_PATH_TRAVERSAL = 16;
+      SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION = 17;
+      SDK_SECURITY_VULNERABILITY_TYPE_LEAKED_GCP_KEYS = 18;
+      SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS = 19;
+    }
+    // Set of all the security vulnerabilities detected in the library version.
+    repeated SdkSecurityVulnerabilityType vulnerabilities = 1;
+  }
 }
 
 message LibraryVersionRange {
   // Lowest library version allowed in this range.
   // Always set.
   string lower_bound = 1;
+
   // The biggest library version allowed in this range.
   // Can be the same as lower_bound if no other library versions are allowed.
   // Can be empty. If missing this range should be interpreted as open range.
