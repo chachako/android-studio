@@ -253,7 +253,7 @@ rules_pkg_dependencies()
 
 vendor_repository(
     name = "aswb_test_deps",
-    bzl = "@//tools/vendor/google3/aswb/test_deps:deps.bzl",
+    bzl = "@//tools/adt/idea/aswb/testing/test_deps:deps.bzl",
     function = "aswb_test_deps_dependencies",
 )
 
