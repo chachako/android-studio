@@ -4294,6 +4294,107 @@ class UastTest : TestCase() {
     }
   }
 
+  fun testResolutionToExtensionInCompanion() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import pkg.Lib
+            import pkg.Lib.Companion.foo
+
+            fun test(lib: Lib, other: Any) {
+              lib.foo(other::class)
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+            """
+              package pkg
+
+              import kotlin.reflect.KClass
+
+              class Lib {
+                fun foo(x: String, y: Any?) {}
+                companion object {
+                  @JvmStatic
+                  fun <T : Any> Lib.foo(klass: KClass<T>) {}
+                }
+              }
+            """
+          ),
+          0xb1ca39f1,
+          """
+              META-INF/main.kotlin_module:
+              H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+              JAAAAA==
+              """,
+          """
+              pkg/Lib＄Companion.class:
+              H4sIAAAAAAAA/5VUW08TQRT+ZnvZ7VqkFMWCeIOqBZUteLekiWKMlYpGGl5I
+              NNNlqEO3s2Z32vjIkz/Ef+CTxgdDfPRHGc8sBe8xPuy538+Z/fL14ycA13CH
+              YexVt+M1Zbu8EvZecSVDZYMxFHb4gHsBVx3vSXtH+NpGiiG7LJXUdYZUZW4j
+              jwyyLtKwGdL6pYwZxpu/RauR8XYYMsxWDpS1ZjfUgVReJLYDCu2trgQ8jmtz
+              Gwz15dad5q+5a/V/+S63WrV6EmDiwGBn0PMeDXrrmmvpUxWzzTDqeDtCtyMu
+              VexxpUKjC4leC/VaPwhqpkPTSd1BgeH0D5Gk0iJSPPAaSkfkLv3YRpHhuP9S
+              +N2h/1Me8Z4gQ4aLld+7+EGyboJ0amaIx3DcxTgmGDJd04qDEkOubMooJ4PL
+              HfbOcOIvo2NYrDT/VO59sc37gV6hLnXU93UYPeZRV0SU2oVlVjde9r8rX/QS
+              LcPC/0WjOzpweCw03+Kak8zqDVJ0Z8yAnAFgYF2Sv5aGqxK1tcjwfG932rVK
+              lmsV9nZdyzGE5RqydICcz29Spb3dJavK7tmO9fltlkwelQupKauannGcvd1C
+              Zp6U9GWX8gV7yimmi9bDTNV5aJssSyzJ3WKwh8O0sUCjPTxT2jwJF7qabnkl
+              3BIMo02pxFq/1xZRi7cDkhSboc+DDR5Jww+FuXXZUVz3I6Inn/WVlj2xIWNJ
+              yrvfL4yhPNQ11GBfe3gsP5nlG0qJKFmqINZdD/uRLx7IQGCR9pU2Q0SKKHp7
+              1NEScZ7pjHBm/j2cd0RYuEowmwgdeuVAft8AObiEx3CEJOnEeZWszS5GLhXH
+              PuDE5eIkwZ+D5MnJBDm7bzgMYqgpnEwCj6CEafK4nviN4MbQ8yjhm0ZvETOa
+              rJ8gvawMTg2Lv0LYGhZ/+l1iYnJN7AsPc2VwhvLTrwS3iHMTJw9VTOJ2knMx
+              yfmA5OfIdmYTqQZmGyg3cB4XiMTFBiqY2wSLMY9Lm8jFcGNcjpGNcSQhrsQ4
+              GaMUY/obvtOFxB8FAAA=
+              """,
+          """
+              pkg/Lib.class:
+              H4sIAAAAAAAA/4VTbW8bRRB+9mzf2Ve3cVKaOikpITWtk0DPNuUtNi5toJLL
+              JVRNFKnKp/Vl42583qvu1lb5lt/CPwhIFIGEIj7yoxCzl2tKkgJf5mVn5pnn
+              Zub+/OvX3wHcw0MG58Vw4Pmy74AxVA74hHshVwPvu/6BCLSDHIPdkUrqLkOu
+              vrxTRgG2izwchrx+LhOGkp9htCllP4oY7tT9N0hbOpZq0PbPY7eXdxhu+VE8
+              8A6E7sdcqsTjSkWaaxmRvRnpzXEYEmrtv7IohfdDQWnsZRFTDDeHkQ6l8g4m
+              I08qLWLFQ6+nDI1EBomDaYZrwXMRDLMOT3jMR4ISzzHPeF78FjOGq3jHxQyu
+              McxcTCAu358NZFj0xfXTcfkZ0VjshxT0vl0PeZKkc+l2ttcuVnf/r7azvd3u
+              pgCz/j+m8Hgy2jLzCqh/aT0aveCKZsdw9TVc7fSxXcYCbpZg4T2G6QthB++X
+              cQnzLpZwi8Bq5gRq6dILQ8OA4fq/fBZDsROE2Sk16/7btvS12OfjUK/TYnU8
+              DnQUb/B4KOL2yeEtm7YrxOt18YbQfI9rTuDWaJKjo2ZGlIwALWFI7y+l8Rpk
+              7TUZNo4P512rarlW5fjQtYrGsFxjVq4Yt3p8uFhsWQ22xooPC3/8YFP4cbWS
+              m7ca+ZZdKZC2W8WKM5+vsgYzoC1mWtk0prtDzXDj6VhpORI9NZGJpMN88OZY
+              6ZdZj/YEw5Qvldgcj/oi3jbHa24lCni4w2Np/Oyxdh7r9FLPgJa25EBxPY6p
+              ZC4r2XlL83JPKRGn2xDkulvROA7EIxkKNGnh+XRmc2b/pL8gzyZ9mXSedCH1
+              1sjzzGRJF1ZeoXhEhoV2lmxkh2T5JAEluKSn6WLKlGWKvyFt9uGszlR+wezZ
+              chtOWr54kpKVG2sK11NIB1ViaOFLsi9bGT2GKyTnzF0SVdOlSQCWOYQfsbiy
+              +jNqR2mawZ49CeCDDLuE27hDsW7K5AbuZ1zeJX2ui5FF1E8HUU1p0tf+hqVn
+              7BVWf8LiUfqSw1ckXcpbItAF4vYghf88hX9E7x/SdD7aRa6Huz14PTTQJBOt
+              Hj7GvV2wBJ/g012UErgJPktgJ7iUGlOprCZY+BuTJI2bxwUAAA==
+              """,
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("foo", resolved!!.name)
+            val parameters = resolved.parameterList.parameters
+            assertEquals(2, parameters.size)
+            val extReceiver = parameters[0]
+            assertEquals("pkg.Lib", extReceiver.type.canonicalText)
+            val param = parameters[1]
+            assertEquals("kotlin.reflect.KClass<T>", param.type.canonicalText)
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
   fun testGetJavaClass() {
     val source =
       kotlin(
