@@ -21,7 +21,9 @@ import com.android.sdklib.devices.screenShape
 import com.android.tools.preview.applyTo
 import com.android.tools.render.RenderRequest
 import com.android.tools.render.Renderer
+import com.android.tools.render.framework.IJFramework
 import com.android.tools.rendering.RenderResult
+import com.intellij.openapi.util.Disposer
 import java.awt.AlphaComposite
 import java.awt.Dimension
 import java.awt.image.BufferedImage
@@ -36,9 +38,15 @@ fun main(args: Array<String>) {
         println("Path to the Compose rendering settings file is missing.")
         return
     }
+    try {
+        renderCompose(File(args[0]))
+    } finally {
+        Disposer.dispose(IJFramework)
+    }
+}
 
-    val composeRendering = readComposeRenderingJson(File(args[0]).reader())
-
+fun renderCompose(ComposeRenderingJson: File) {
+    val composeRendering = readComposeRenderingJson(ComposeRenderingJson.reader())
     val composeRenderingResult = renderCompose(composeRendering)
 
     writeComposeRenderingResult(

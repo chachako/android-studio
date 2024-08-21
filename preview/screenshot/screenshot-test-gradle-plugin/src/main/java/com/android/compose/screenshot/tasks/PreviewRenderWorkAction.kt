@@ -22,6 +22,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
+import java.io.File
 import java.nio.file.Paths
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -43,8 +44,8 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun render() {
-        Class.forName(MAIN_CLASS).getMethod("main", Array<String>::class.java)(
-            null, arrayOf(parameters.cliToolArgumentsFile.asFile.get().absolutePath))
+        Class.forName(MAIN_CLASS).getMethod("renderCompose", File::class.java)(
+            null, parameters.cliToolArgumentsFile.asFile.get())
     }
 
     private fun verifyRender() {

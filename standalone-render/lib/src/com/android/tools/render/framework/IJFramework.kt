@@ -16,6 +16,7 @@
 
 package com.android.tools.render.framework
 
+import com.android.tools.rendering.RenderService
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.plugins.PluginSetBuilder
 import com.intellij.mock.MockApplication
@@ -23,14 +24,14 @@ import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
+import com.intellij.util.concurrency.AppExecutorUtil
 
 /** [IJFramework] implementation for the standalone rendering. */
-object IJFramework {
-    private val application = MockApplication(Disposer.newDisposable())
+object IJFramework : Disposable {
+    private val application = MockApplication(this)
 
     init {
-        ApplicationManager.setApplication(application, Disposer.newDisposable())
+        ApplicationManager.setApplication(application, this)
         PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet())
             .createPluginSetWithEnabledModulesMap())
     }
@@ -42,5 +43,10 @@ object IJFramework {
     fun <T : Any> registerService(
         serviceInterface: Class<T>, serviceImplementation: T, disposable: Disposable) {
         application.registerService(serviceInterface, serviceImplementation, disposable)
+    }
+
+    override fun dispose() {
+        RenderService.shutdownRenderExecutor()
+        AppExecutorUtil.shutdownApplicationScheduledExecutorService()
     }
 }
