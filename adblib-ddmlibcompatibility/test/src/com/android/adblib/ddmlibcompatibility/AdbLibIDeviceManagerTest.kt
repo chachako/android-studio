@@ -74,7 +74,7 @@ class AdbLibIDeviceManagerTest {
             "sdk",
             DeviceState.HostConnectionType.USB
         )
-        fakeDevice.deviceStatus = DeviceState.DeviceStatus.FASTBOOTD
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.BOOTLOADER
 
         // Act / Assert
         yieldUntil { deviceManager.devices.size == 1 }
@@ -91,6 +91,10 @@ class AdbLibIDeviceManagerTest {
                 TestIDeviceManagerListener.EventType.Added,
                 TestIDeviceManagerListener.EventType.StateChanged
             ), iDeviceManagerListener.events.toTypedArray()
+        )
+        assertArrayEquals(
+            arrayOf(IDevice.DeviceState.BOOTLOADER),
+            iDeviceManagerListener.addedDevicesStateValues.toTypedArray()
         )
         assertArrayEquals(
             arrayOf(IDevice.DeviceState.ONLINE),
@@ -132,6 +136,10 @@ class AdbLibIDeviceManagerTest {
                 TestIDeviceManagerListener.EventType.Added,
                 TestIDeviceManagerListener.EventType.Removed
             ), iDeviceManagerListener.events.toTypedArray()
+        )
+        assertArrayEquals(
+            arrayOf(IDevice.DeviceState.DISCONNECTED),
+            iDeviceManagerListener.removedDevicesStateValues.toTypedArray()
         )
         // Assert that `DISCONNECTED` device state changed event didn't trigger
         assertTrue(iDeviceManagerListener.deviceStateChangedValues.isEmpty())
@@ -220,15 +228,19 @@ class AdbLibIDeviceManagerTest {
 
         val events = mutableListOf<EventType>()
 
+        val addedDevicesStateValues = mutableListOf<IDevice.DeviceState?>()
+        val removedDevicesStateValues = mutableListOf<IDevice.DeviceState?>()
         val deviceStateChangedValues = mutableListOf<IDevice.DeviceState?>()
 
         @WorkerThread
         override fun addedDevices(deviceList: MutableList<IDevice>) {
+            deviceList.forEach { addedDevicesStateValues.add(it.state) }
             events.add(EventType.Added)
         }
 
         @WorkerThread
         override fun removedDevices(deviceList: MutableList<IDevice>) {
+            deviceList.forEach { removedDevicesStateValues.add(it.state) }
             events.add(EventType.Removed)
         }
 
