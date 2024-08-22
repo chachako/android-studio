@@ -171,18 +171,6 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       return
     }
 
-    if (calleeThreads.containsAll(callerThreads)) {
-      return
-    }
-
-    if (
-      calleeThreads.contains(ANY_THREAD_ANNOTATION.oldName()) ||
-        calleeThreads.contains(ANY_THREAD_ANNOTATION.newName())
-    ) {
-      // Any thread allowed? Then we're good!
-      return
-    }
-
     val message =
       String.format(
         "%1\$s %2\$s must be called from the %3\$s thread, currently inferred thread is %4\$s thread",
@@ -235,9 +223,9 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
     }
 
-  /** returns if any callee's thread annotation accommodates all of caller's */
+  /** returns if all caller's thread annotations are accommodated by some from callee's */
   private fun isCompatibleThread(callers: List<String>, callees: List<String>): Boolean =
-    callees.any { callee -> callers.all { caller -> isCompatibleThread(caller, callee) } }
+    callers.all { caller -> callees.any { callee -> isCompatibleThread(caller, callee) } }
 
   /** returns if callee's thread annotation accommodates caller's */
   private fun isCompatibleThread(caller: String, callee: String): Boolean {

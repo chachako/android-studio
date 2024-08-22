@@ -386,6 +386,38 @@ class ThreadDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
+  fun testMultipleThreadNonTrivialSubsumption() {
+    lint()
+      .files(
+        java(
+          "src/test/pkg/MultiThreadTest.java",
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import androidx.annotation.BinderThread;\n" +
+            "import androidx.annotation.UiThread;\n" +
+            "import androidx.annotation.WorkerThread;\n" +
+            "import androidx.annotation.MainThread;\n" +
+            "\n" +
+            "class MultiThreadTest {\n" +
+            "    @UiThread\n" +
+            "    @WorkerThread\n" +
+            "    private static void callee() {\n" +
+            "    }\n" +
+            "\n" +
+            "    @MainThread\n" +
+            "    @WorkerThread\n" +
+            "    private static void caller() {\n" +
+            "        callee(); // OK - context is included in target\n" +
+            "    }\n" +
+            "}\n",
+        ),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testStaticMethod() {
     // Regression test for
     //  https://code.google.com/p/android/issues/detail?id=175397
