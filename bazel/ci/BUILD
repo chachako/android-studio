@@ -148,3 +148,17 @@ py_test(
         "@absl-py//absl/testing:absltest",
     ],
 )
+
+py_test(
+    name = "presubmit_test",
+    srcs = ["presubmit_test.py"],
+    deps = [
+        ":bazel",
+        ":bazel_diff",
+        ":fake_build_env",
+        ":fake_gce",
+        ":gce",
+        ":presubmit",
+        "@absl-py//absl/testing:absltest",
+    ],
+)

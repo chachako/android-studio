@@ -1,7 +1,5 @@
 """Tests for gce."""
 
-import pathlib
-
 from absl.testing import absltest
 
 from tools.base.bazel.ci import fake_build_env
