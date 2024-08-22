@@ -4727,7 +4727,7 @@
                 <d:sub-type>1</d:sub-type>
                 <d:ranges>0-180</d:ranges>
                 <d:defaults>180</d:defaults>
-                <d:areas>1080-0-0-1840</d:areas>
+                <d:areas>1038-0-0-2152</d:areas>
                 <d:change-orientation-on-fold>1</d:change-orientation-on-fold>
                 <d:posture-list>1, 2, 3</d:posture-list>
                 <d:hinge-angles-posture-definitions>0-30, 30-150, 150-180</d:hinge-angles-posture-definitions>
@@ -4758,7 +4758,7 @@
             </d:abi>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
-            <d:skin>pixel_fold</d:skin>
+            <d:skin>pixel_9_pro_fold</d:skin>
         </d:hardware>
         <d:software>
             <d:api-level>35-</d:api-level>
