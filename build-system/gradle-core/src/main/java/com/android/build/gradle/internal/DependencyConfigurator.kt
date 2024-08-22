@@ -579,7 +579,7 @@ class DependencyConfigurator(
                                 AndroidArtifacts.ArtifactType.CLASSES_JAR.type
                             )
                         }
-                    }.artifacts.artifactFiles.files)
+                    }.artifacts.artifactFiles)
                 }
 
             fun registerExtractSdkShimTransform(usage: String) {
