@@ -208,7 +208,8 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun bootSnapshot(): Unit = runBlockingWithTimeout {
-    val avdInfo = checkNotNull(avdManager.createAvd())
+    val avdInfo = avdManager.makeAvdInfo(1)
+    avdManager.createAvd(avdInfo)
 
     val snapshotPath = avdInfo.dataFolderPath.resolve("snapshots").resolve("snap1")
     createNormalSnapshot(snapshotPath)
@@ -276,7 +277,8 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun id() = runBlockingWithTimeout {
-    val avdInfo = avdManager.createAvd()
+    val avdInfo = avdManager.makeAvdInfo(1)
+    avdManager.createAvd(avdInfo)
     yieldUntil { provisioner.devices.value.size == 1 }
     val handle = provisioner.devices.value[0]
 

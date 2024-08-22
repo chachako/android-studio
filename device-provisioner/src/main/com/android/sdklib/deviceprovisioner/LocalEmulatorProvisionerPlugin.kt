@@ -138,7 +138,8 @@ internal constructor(
 
     suspend fun rescanAvds(): List<AvdInfo>
 
-    suspend fun createAvd(): AvdInfo?
+    /** Prompts the user to create an AVD. Returns true if an AVD was created. */
+    suspend fun createAvd(): Boolean
 
     /** Prompts the user to edit the given AVD. Returns true if the AVD was changed. */
     suspend fun editAvd(avdInfo: AvdInfo): Boolean

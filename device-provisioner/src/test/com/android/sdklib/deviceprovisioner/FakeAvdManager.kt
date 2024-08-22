@@ -44,8 +44,9 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
 
   override suspend fun rescanAvds(): List<AvdInfo> = synchronized(avds) { avds.toList() }
 
-  override suspend fun createAvd(): AvdInfo {
-    return makeAvdInfo(avdIndex++).also { createAvd(it) }
+  override suspend fun createAvd(): Boolean {
+    createAvd(makeAvdInfo(avdIndex++))
+    return true
   }
 
   fun makeAvdInfo(
