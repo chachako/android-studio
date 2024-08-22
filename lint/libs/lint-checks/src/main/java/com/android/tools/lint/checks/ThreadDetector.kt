@@ -157,7 +157,9 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     callerThreads: List<String>,
     calleeThreads: List<String>,
   ) {
-    if (calleeThreads.any { isCompatibleThread(callerThreads, it) }) {
+    // ALL calling contexts must be valid
+    assert(callerThreads.isNotEmpty())
+    if (isCompatibleThread(callerThreads, calleeThreads)) {
       return
     }
 
@@ -233,20 +235,11 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
     }
 
-  /** returns true if the two threads are compatible */
-  private fun isCompatibleThread(callers: List<String>, callee: String): Boolean {
-    // ALL calling contexts must be valid
-    assert(callers.isNotEmpty())
-    for (caller in callers) {
-      if (!isCompatibleThread(caller, callee)) {
-        return false
-      }
-    }
+  /** returns if any callee's thread annotation accommodates all of caller's */
+  private fun isCompatibleThread(callers: List<String>, callees: List<String>): Boolean =
+    callees.any { callee -> callers.all { caller -> isCompatibleThread(caller, callee) } }
 
-    return true
-  }
-
-  /** returns true if the two threads are compatible */
+  /** returns if callee's thread annotation accommodates caller's */
   private fun isCompatibleThread(caller: String, callee: String): Boolean {
     if (callee == caller) {
       return true
