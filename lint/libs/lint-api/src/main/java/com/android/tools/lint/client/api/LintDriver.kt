@@ -3642,10 +3642,6 @@ class LintDriver(
           // org.junit.Assert.fail() from test suite
           throw throwable
         }
-        LintClient.isGradle -> {
-          // Fail the build eagerly from AGP so that errors are not cached (b/230685896)
-          throw throwable
-        }
       }
 
       if (crashCount++ > MAX_REPORTED_CRASHES) {
@@ -3739,6 +3735,10 @@ class LintDriver(
             else -> null
           }
       val message = sb.toString()
+      if (LintClient.isGradle) {
+        // Fail the build eagerly from AGP so that errors are not cached (b/230685896)
+        throw RuntimeException(message)
+      }
       when {
         context != null ->
           context.report(
