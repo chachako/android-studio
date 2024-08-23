@@ -85,6 +85,7 @@ _ARTIFACTS = [
     ('tools/base/build-system/documentation.zip', 'artifacts/android_gradle_plugin_reference_docs.zip'),
     ('tools/base/firebase/testlab/testlab-gradle-plugin/testlab-gradle-plugin.zip', 'artifacts'),
     ('tools/base/preview/screenshot/preview_screenshot_maven_repo.zip', 'artifacts'),
+    ('tools/adt/idea/aswb/aswb/aswb_bazel.zip', 'artifacts'),
 ]
 
 
