@@ -138,8 +138,8 @@ class LintJarVerifierTest {
     val verifier = LintJarVerifier(TestLintClient(), jar)
     assertFalse(verifier.isCompatible())
     assertEquals(
-      "com.android.tools.lint.client.api.ResourceReference: ResourceReference(org.jetbrains.uast.UExpression,java.lang.String,com.android.resources.ResourceType,java.lang.String)",
-      verifier.describeFirstIncompatibleReference(),
+      "com.android.tools.lint.client.api.ResourceReference#ResourceReference(org.jetbrains.uast.UExpression,java.lang.String,com.android.resources.ResourceType,java.lang.String), referenced from test.pkg.MyDetector.test",
+      verifier.describeFirstIncompatibleReference(true),
     )
   }
 
@@ -229,8 +229,8 @@ class LintJarVerifierTest {
     val verifier = LintJarVerifier(TestLintClient(), jar)
     assertFalse(verifier.isCompatible())
     assertEquals(
-      "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
-      verifier.describeFirstIncompatibleReference(),
+      "org.jetbrains.uast.kotlin.KotlinUClass#getKtClass(): org.jetbrains.kotlin.psi.KtClassOrObject, referenced from test.pkg.MyDetector.visitClass",
+      verifier.describeFirstIncompatibleReference(true),
     )
 
     // Test SKIP
@@ -324,9 +324,11 @@ class LintJarVerifierTest {
     val verifier = LintJarVerifier(TestLintClient(), jar)
     assertFalse(verifier.isCompatible())
     assertEquals(
-      "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
-      verifier.describeFirstIncompatibleReference(),
+      "org.jetbrains.uast.kotlin.KotlinUClass#getKtClass(): org.jetbrains.kotlin.psi.KtClassOrObject, referenced from test.pkg.MyDetector.visitClass",
+      verifier.describeFirstIncompatibleReference(true),
     )
+    assertEquals("test/pkg/MyDetector.class", verifier.getReferenceClassFile())
+    assertEquals("test/pkg/MyDetector.visitClass", verifier.getReferenceLocation())
   }
 
   @Test

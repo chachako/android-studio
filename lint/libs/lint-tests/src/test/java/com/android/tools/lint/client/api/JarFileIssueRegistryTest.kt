@@ -3510,7 +3510,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
         """
                 Lint found an issue registry (androidx.fragment.lint.FragmentIssueRegistry)
                 which contains some references to invalid API:
-                org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()
+                org.jetbrains.uast.kotlin.KotlinUClass#getKtClass(): org.jetbrains.kotlin.psi.KtClassOrObject
                 (Referenced from androidx/fragment/lint/FragmentIssueRegistry.class)
 
                 Therefore, this lint check library is not included

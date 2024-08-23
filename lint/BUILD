@@ -139,6 +139,7 @@ maven_library(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.ow2.asm.asm",
+        "@maven//:org.ow2.asm.asm-commons",
         "@maven//:org.ow2.asm.asm-tree",
     ],
     deps = [
@@ -287,6 +288,7 @@ kotlin_test(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
         "@maven//:org.mockito.mockito-core",
+        "@maven//:org.ow2.asm.asm-commons",
         "@maven//:org.ow2.asm.asm-tree",
     ],
 )

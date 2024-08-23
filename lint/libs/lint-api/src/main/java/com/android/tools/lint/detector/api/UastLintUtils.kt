@@ -44,17 +44,21 @@ import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.symbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_MULTIFILE_CLASS_SHORT
 import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_OVERLOADS_FQ_NAME
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtLambdaExpression
@@ -62,6 +66,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
 import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.psiUtil.parameterIndex
@@ -1162,3 +1167,44 @@ fun UBinaryExpression.resolveOperatorUnlessJvmPrimitiveType(): PsiMethod? {
  */
 fun UCallExpression.isSyntheticJavaGetterSetterCallForPropertyAccess(): Boolean =
   uastParent is USimpleNameReferenceExpression
+
+/**
+ * Returns whether this expression is a simple class or interface reference, and if so, maps to its
+ * name.
+ */
+fun UExpression.isClassReference(): Pair<Boolean, String?> {
+  //  True if:
+  //  1. reference to object (i.e. val myStart = TestStart(), startDest =
+  //     myStart)
+  //  2. object declaration (i.e. object MyStart, startDest = MyStart)
+  //  3. class reference (i.e. class MyStart, startDest = MyStart)
+  //
+  //  We only want to catch case 3., so we need more filters to eliminate case
+  //  1 & 2.
+  val isSimpleRefExpression = this is USimpleNameReferenceExpression
+
+  /** True if nested class i.e. OuterClass.InnerClass */
+  val isQualifiedRefExpression = this is UQualifiedReferenceExpression
+
+  if (!(isSimpleRefExpression || isQualifiedRefExpression)) return false to null
+
+  val sourcePsi = sourcePsi as? KtExpression ?: return false to null
+  return analyze(sourcePsi) {
+    val symbol =
+      when (sourcePsi) {
+        is KtDotQualifiedExpression -> {
+          val lastChild = sourcePsi.lastChild
+          if (lastChild is KtReferenceExpression) {
+            lastChild.mainReference.resolveToSymbol()
+          } else {
+            null
+          }
+        }
+        is KtReferenceExpression -> sourcePsi.mainReference.resolveToSymbol()
+        else -> null
+      }
+        as? KaClassSymbol ?: return false to null
+
+    (symbol.classKind.isClass || symbol.classKind.name == "INTERFACE") to symbol.name?.asString()
+  }
+}

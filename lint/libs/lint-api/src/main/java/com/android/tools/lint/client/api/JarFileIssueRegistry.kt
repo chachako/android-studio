@@ -188,6 +188,7 @@ private constructor(
           currentProject,
           driver,
           skipVerification,
+          true,
         )
       return if (userRegistry != null) {
         val vendor = getVendor(client, userRegistry, jarFile)
@@ -255,6 +256,7 @@ private constructor(
       currentProject: Project?,
       driver: LintDriver?,
       skipVerification: Boolean,
+      attemptMigration: Boolean,
     ): IssueRegistry? {
       // Make a class loader for this jar
       return try {
@@ -310,6 +312,18 @@ private constructor(
             // doing simple things which is unaffected by lint changes.
             val verifier = verify(client, jarFile)
             if (!verifier.isCompatible()) {
+              if (verifier.needsApiMigration() && attemptMigration) {
+                val newJar = LintJarApiMigration.getMigratedJar(client, jarFile, className)
+                return loadIssueRegistry(
+                  client,
+                  newJar,
+                  className,
+                  currentProject,
+                  driver,
+                  skipVerification = false,
+                  attemptMigration = false,
+                )
+              }
               if (reportErrors(driver)) {
                 val message = generateVerifierMessage(api, className, issues, verifier)
                 LintClient.report(
@@ -349,6 +363,18 @@ private constructor(
               } else {
                 val verifier = verify(client, jarFile)
                 if (!verifier.isCompatible()) {
+                  if (verifier.needsApiMigration() && attemptMigration) {
+                    val newJar = LintJarApiMigration.getMigratedJar(client, jarFile, className)
+                    return loadIssueRegistry(
+                      client,
+                      newJar,
+                      className,
+                      currentProject,
+                      driver,
+                      skipVerification = false,
+                      attemptMigration = false,
+                    )
+                  }
                   if (reportErrors(driver)) {
                     val message = generateVerifierMessage(api, className, issues, verifier)
                     LintClient.report(
@@ -668,7 +694,7 @@ private constructor(
 
       when {
         reference ==
-          "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()" &&
+          "org.jetbrains.uast.kotlin.KotlinUClass#getKtClass(): org.jetbrains.kotlin.psi.KtClassOrObject" &&
           className == "androidx.fragment.lint.FragmentIssueRegistry" &&
           LintClient.isGradle -> {
           sb.append(

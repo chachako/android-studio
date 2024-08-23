@@ -71,5 +71,6 @@ def lint_test(name, useK2):
             "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
             "@maven//:org.mockito.mockito-core",
             "@maven//:org.ow2.asm.asm-tree",
+            "@maven//:org.ow2.asm.asm-util",
         ],
     )

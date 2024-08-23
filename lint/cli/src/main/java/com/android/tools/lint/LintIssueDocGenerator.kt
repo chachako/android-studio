@@ -45,6 +45,7 @@ import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.IssueRegistry.Companion.AOSP_VENDOR
 import com.android.tools.lint.client.api.JarFileIssueRegistry
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintJarApiMigration
 import com.android.tools.lint.client.api.LintJarVerifier
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.Category
@@ -75,7 +76,6 @@ import java.io.File
 import java.io.File.pathSeparator
 import java.io.File.separator
 import java.io.File.separatorChar
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -510,8 +510,8 @@ class LintIssueDocGenerator(
 
       for ((v, entry) in registry.library.versions.asSequence().sortedByDescending { it.key }) {
         val versionString = v.toString()
-        val bytes = entry.jarBytes
-        val file = File.createTempFile(artifact, DOT_JAR)
+        var bytes = entry.jarBytes
+        var file = File.createTempFile(artifact, DOT_JAR)
         file.deleteOnExit()
         file.writeBytes(bytes)
         val r =
@@ -520,7 +520,15 @@ class LintIssueDocGenerator(
 
         versionIssues.add(versionString to r.issues.map { it.id }.sorted())
 
-        val verifier = LintJarVerifier(client, file, bytes)
+        var verifier = LintJarVerifier(client, file, bytes)
+
+        // Apply automatic API migration (which lint would also apply on load, if recent enough
+        if (verifier.needsApiMigration()) {
+          file = LintJarApiMigration.getMigratedJar(client, file)
+          bytes = file.readBytes()
+          verifier = LintJarVerifier(client, file, bytes)
+        }
+
         val compatible =
           if (verifier.isCompatible()) {
             "Yes"
@@ -583,7 +591,9 @@ class LintIssueDocGenerator(
       if (incompatibilities.isNotEmpty()) {
         versionTable.append("\nCompatibility Problems:\n\n")
         for ((message, number) in incompatibilities.entries.sortedBy { it.value }) {
-          versionTable.append("[^$number]: $message  \n")
+          versionTable.append(
+            "[^$number]: $message  \n"
+          ) // Trailing double space ensures markdown doesn't combine lines
         }
       }
 
@@ -614,7 +624,9 @@ class LintIssueDocGenerator(
       }
 
       sb.append("\n(##) Version Compatibility\n\n")
-      sb.append("There are multiple older versions available of this library:\n\n")
+      if (registry.library.versions.size > 1) {
+        sb.append("There are multiple older versions available of this library:\n\n")
+      }
       sb.append(versionTable.toString())
     }
 
@@ -1135,6 +1147,10 @@ class LintIssueDocGenerator(
 
     val dependency = if (lintLibrary) "lintChecks" else "implementation"
 
+    val catalogId =
+      if (artifactId == "lint") groupId.replace(":", "-").replace(".", "-") + "-" + artifactId
+      else artifactId
+
     sb.append(
       """
       ```
@@ -1145,15 +1161,15 @@ class LintIssueDocGenerator(
       $dependency '$artifact'
 
       // build.gradle.kts with version catalogs:
-      $dependency(libs.$artifactId)
+      $dependency(libs.${catalogId.replace("-", ".")})
 
       # libs.versions.toml
       [versions]
-      $artifactId = "$version"
+      $catalogId = "$version"
       [libraries]
-      $artifactId = {
+      $catalogId = {
           module = "$groupId:$artifactId",
-          version.ref = "$artifactId"
+          version.ref = "$catalogId"
       }
       ```
 
@@ -2461,15 +2477,8 @@ class LintIssueDocGenerator(
     private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
 
     private val unpublishedChecks: List<UnpublishedGithubLibrary> =
-      listOf(
-        UnpublishedGithubLibrary(
-          buildTask = ":checks:assemble",
-          jarFileRelative = "checks/build/libs/checks.jar",
-          user = "google",
-          repository = "android-security-lints",
-          relative = "checks/src",
-        )
-      )
+      // We no longer have any of these after the security checks were published
+      emptyList()
 
     private val thirdPartyChecks: List<MavenCentralLibrary> =
       listOf(
@@ -3008,7 +3017,7 @@ class LintIssueDocGenerator(
               findLintIssueRegistries(
                 client,
                 jarPath,
-                { id, lintLibrary -> GmavenLibrary(id, lintLibrary) },
+                { id, lintLibrary -> createGmavenLibrary(id, lintLibrary) },
               )
             else emptyMap()
           jarMap + gmavenMap + mavenCentralMap + localMap
@@ -3141,9 +3150,22 @@ class LintIssueDocGenerator(
       return findLintIssueRegistries(
         client,
         cacheDir.path,
-        { id, lintLibrary -> GmavenLibrary(id, lintLibrary) },
+        { id, lintLibrary -> createGmavenLibrary(id, lintLibrary) },
         searchWithinArchives = false,
       )
+    }
+
+    private fun createGmavenLibrary(id: String, lintLibrary: Boolean): Library {
+      if (id == "com.android.security.lint:lint") {
+        return GithubLibraryOnMavenCentral(
+          group = "com.android.security.lint",
+          artifact = "lint",
+          user = "google",
+          repository = "android-security-lints",
+          relative = "checks/src",
+        )
+      }
+      return GmavenLibrary(id, lintLibrary)
     }
 
     private fun findLintIssueRegistriesFromMavenCentral(
@@ -3294,8 +3316,20 @@ class LintIssueDocGenerator(
                   val bytes =
                     try {
                       readUrlData(client, url, 30 * 1000)
-                    } catch (e: FileNotFoundException) {
+                    } catch (e: IOException) {
                       aarTarget.createNewFile() // don't try again if it doesn't exist
+
+                      // See if it's a jar library (this isn't common, but happens)
+                      val jarUrl = url.removeSuffix(DOT_AAR) + DOT_JAR
+                      val jarBytes =
+                        try {
+                          readUrlData(client, jarUrl, 30 * 1000)
+                        } catch (e: IOException) {
+                          null
+                        }
+                      if (jarBytes != null) {
+                        lintTarget.writeBytes(jarBytes)
+                      }
                       continue
                     }
                   var lintJarBytes: ByteArray? = null
@@ -3505,125 +3539,129 @@ class LintIssueDocGenerator(
         sourceSet: String,
         extension: String,
       ): String {
-        val url = StringBuilder()
-        if (view) {
-          url.append(
-            "https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:/"
-          )
-        } else {
-          url.append(
-            "https://android.googlesource.com/platform/frameworks/support/+/androidx-main/"
-          )
-        }
+        return getGmavenUrl(id, view, test, issue, detectorPath, sourceSet, extension)
+      }
+    }
 
-        var m =
-          id
-            .removePrefix("androidx.")
-            .replace(':', '/')
-            .replace('.', '/')
-            .removeSuffix("-android") + "-lint"
-        // workaround: androidx generally places lint checks in a predictable place except for one
-        // weird exception. Work around this for now (and get androidx updated.)
-        when (m) {
-          "work/work-runtime-lint" -> m = "work/work-lint"
-          "lifecycle/lifecycle-livedata-core-ktx-lint" ->
-            m = "lifecycle/lifecycle-livedata-core-lint"
-          "lifecycle/lifecycle-runtime-ktx-lint" -> m = "lifecycle/lifecycle-runtime-lint"
-        }
-        url.append(m)
-        url.append("/src/")
+    private fun getGmavenUrl(
+      id: String,
+      view: Boolean,
+      test: Boolean,
+      issue: Issue,
+      detectorPath: String,
+      sourceSet: String,
+      extension: String,
+    ): String {
+      val url = StringBuilder()
+      if (view) {
+        url.append("https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:/")
+      } else {
+        url.append("https://android.googlesource.com/platform/frameworks/support/+/androidx-main/")
+      }
+
+      var m =
+        id.removePrefix("androidx.").replace(':', '/').replace('.', '/').removeSuffix("-android") +
+          "-lint"
+      // workaround: androidx generally places lint checks in a predictable place except for one
+      // weird exception. Work around this for now (and get androidx updated.)
+      when (m) {
+        "work/work-runtime-lint" -> m = "work/work-lint"
+        "lifecycle/lifecycle-livedata-core-ktx-lint" -> m = "lifecycle/lifecycle-livedata-core-lint"
+        "lifecycle/lifecycle-runtime-ktx-lint" -> m = "lifecycle/lifecycle-runtime-lint"
+      }
+      url.append(m)
+      url.append("/src/")
+      if (test) {
+        url.append("test")
+      } else {
+        url.append("main")
+      }
+      url.append('/')
+      url.append(sourceSet)
+      url.append('/')
+
+      val path =
         if (test) {
-          url.append("test")
-        } else {
-          url.append("main")
-        }
-        url.append('/')
-        url.append(sourceSet)
-        url.append('/')
-
-        val path =
-          if (test) {
-            // A few androidx detectors put their tests in weird places; work around this:
-            when (detectorPath) {
-              "androidx/fragment/lint/UnsafeFragmentLifecycleObserverDetector" -> {
-                when (issue.id) {
-                  "FragmentLiveDataObserve" ->
-                    "androidx/fragment/lint/FragmentLiveDataObserveDetector"
-                  "FragmentAddMenuProvider" -> "androidx/fragment/lint/AddMenuProviderDetector"
-                  "FragmentBackPressedCallback" ->
-                    "androidx/fragment/lint/BackPressedDispatcherCallbackDetector"
-                  else -> detectorPath
-                }
-              }
-              "androidx/activity/lint/OnBackPressedDetector" ->
-                "androidx/activity/lint/OnBackPressedDispatcher"
-              "androidx/lifecycle/testing/lint/TestLifecycleOwnerInCoroutineDetector" ->
-                "androidx/lifecycle/runtime/testing/lint/TestLifecycleOwnerInCoroutineDetector"
-              "androidx/annotation/experimental/lint/ExperimentalDetector" ->
-                "androidx/annotation/experimental/lint/ExperimentalDetector"
-
-              // Actually has two test files:
-              // wear/protolayout/protolayout-lint/src/test/java/PrimaryLayoutResponsiveDetectorTest.kt
-              // wear/protolayout/protolayout-lint/src/test/java/EdgeContentLayoutResponsiveDetectorTest.kt
-              "androidx/wear/protolayout/lint/ResponsiveLayoutDetector" ->
-                "PrimaryLayoutResponsiveDetector"
-              "androidx/wear/protolayout/lint/ProtoLayoutMinSchemaDetector" ->
-                "ProtoLayoutMinSchemaDetector"
-              "androidx/lifecycle/lint/NonNullableMutableLiveDataDetector" ->
-                "androidx/lifecycle/livedata/core/lint/NonNullableMutableLiveDataDetector"
-              "androidx/lifecycle/lint/LifecycleWhenChecks" ->
-                "androidx/lifecycle/runtime/lint/LifecycleWhenChecks"
-              "androidx/lifecycle/lint/RepeatOnLifecycleDetector" ->
-                "androidx/lifecycle/runtime/lint/RepeatOnLifecycleDetector"
-              "androidx/recyclerview/lint/InvalidSetHasFixedSizeDetector" ->
-                "androidx/recyclerview/lint/InvalidSetHasFixedSize"
-              "androidx/activity/compose/lint/ActivityResultLaunchDetector" ->
-                "androidx/activity/compose/lint/ActivityResultLaunchDetector"
-              "androidx/activity/lint/ActivityResultFragmentVersionDetector" ->
-                "androidx/activity/lint/ActivityResultFragmentVersionDetector"
-              "androidx/compose/ui/lint/ComposedModifierDetector" ->
-                "androidx/compose/ui/lint/ComposedModifierDetector"
-              "androidx/work/lint/BadConfigurationProviderIssueDetector" ->
-                "androidx/work/lint/BadConfigurationProvider"
-              "androidx/startup/lint/InitializerConstructorDetector" ->
-                "androidx/startup/lint/InitializerConstructor"
-              "androidx/startup/lint/EnsureInitializerMetadataDetector" ->
-                "androidx/startup/lint/EnsureInitializerMetadata"
-              "androidx/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector" ->
-                // Typo: androix
-                "androix/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector"
-              else -> {
-                // All the appcompat lint check tests are in the wrong package; fix that here
-                if (
-                  detectorPath.startsWith("androidx/appcompat/") &&
-                    !detectorPath.startsWith("androidx/appcompat/lint/")
-                ) {
-                  "androidx/appcompat/lint/" + detectorPath.substring("androidx/appcompat/".length)
-                } else {
-                  detectorPath
-                }
+          // A few androidx detectors put their tests in weird places; work around this:
+          when (detectorPath) {
+            "androidx/fragment/lint/UnsafeFragmentLifecycleObserverDetector" -> {
+              when (issue.id) {
+                "FragmentLiveDataObserve" ->
+                  "androidx/fragment/lint/FragmentLiveDataObserveDetector"
+                "FragmentAddMenuProvider" -> "androidx/fragment/lint/AddMenuProviderDetector"
+                "FragmentBackPressedCallback" ->
+                  "androidx/fragment/lint/BackPressedDispatcherCallbackDetector"
+                else -> detectorPath
               }
             }
-          } else if (detectorPath == "androidx/startup/lint/EnsureInitializerMetadataDetector") {
-            "androidx/startup/lint/EnsureInitializerMetadataDetector"
-          } else {
-            detectorPath
+            "androidx/activity/lint/OnBackPressedDetector" ->
+              "androidx/activity/lint/OnBackPressedDispatcher"
+            "androidx/lifecycle/testing/lint/TestLifecycleOwnerInCoroutineDetector" ->
+              "androidx/lifecycle/runtime/testing/lint/TestLifecycleOwnerInCoroutineDetector"
+            "androidx/annotation/experimental/lint/ExperimentalDetector" ->
+              "androidx/annotation/experimental/lint/ExperimentalDetector"
+
+            // Actually has two test files:
+            // wear/protolayout/protolayout-lint/src/test/java/PrimaryLayoutResponsiveDetectorTest.kt
+            // wear/protolayout/protolayout-lint/src/test/java/EdgeContentLayoutResponsiveDetectorTest.kt
+            "androidx/wear/protolayout/lint/ResponsiveLayoutDetector" ->
+              "PrimaryLayoutResponsiveDetector"
+            "androidx/wear/protolayout/lint/ProtoLayoutMinSchemaDetector" ->
+              "ProtoLayoutMinSchemaDetector"
+            "androidx/lifecycle/lint/NonNullableMutableLiveDataDetector" ->
+              "androidx/lifecycle/livedata/core/lint/NonNullableMutableLiveDataDetector"
+            "androidx/lifecycle/lint/LifecycleWhenChecks" ->
+              "androidx/lifecycle/runtime/lint/LifecycleWhenChecks"
+            "androidx/lifecycle/lint/RepeatOnLifecycleDetector" ->
+              "androidx/lifecycle/runtime/lint/RepeatOnLifecycleDetector"
+            "androidx/recyclerview/lint/InvalidSetHasFixedSizeDetector" ->
+              "androidx/recyclerview/lint/InvalidSetHasFixedSize"
+            "androidx/activity/compose/lint/ActivityResultLaunchDetector" ->
+              "androidx/activity/compose/lint/ActivityResultLaunchDetector"
+            "androidx/activity/lint/ActivityResultFragmentVersionDetector" ->
+              "androidx/activity/lint/ActivityResultFragmentVersionDetector"
+            "androidx/compose/ui/lint/ComposedModifierDetector" ->
+              "androidx/compose/ui/lint/ComposedModifierDetector"
+            "androidx/work/lint/BadConfigurationProviderIssueDetector" ->
+              "androidx/work/lint/BadConfigurationProvider"
+            "androidx/startup/lint/InitializerConstructorDetector" ->
+              "androidx/startup/lint/InitializerConstructor"
+            "androidx/startup/lint/EnsureInitializerMetadataDetector" ->
+              "androidx/startup/lint/EnsureInitializerMetadata"
+            "androidx/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector" ->
+              // Typo: androix
+              "androix/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector"
+            else -> {
+              // All the appcompat lint check tests are in the wrong package; fix that here
+              if (
+                detectorPath.startsWith("androidx/appcompat/") &&
+                  !detectorPath.startsWith("androidx/appcompat/lint/")
+              ) {
+                "androidx/appcompat/lint/" + detectorPath.substring("androidx/appcompat/".length)
+              } else {
+                detectorPath
+              }
+            }
           }
-
-        url.append(path)
-        if (test) {
-          url.append("Test")
-        }
-        url.append(extension)
-
-        if (!view) {
-          // gitiles doesn't support fetching text directly, but we can get it as base64 encoded
-          // data
-          url.append("?format=TEXT")
+        } else if (detectorPath == "androidx/startup/lint/EnsureInitializerMetadataDetector") {
+          "androidx/startup/lint/EnsureInitializerMetadataDetector"
+        } else {
+          detectorPath
         }
 
-        return url.toString()
+      url.append(path)
+      if (test) {
+        url.append("Test")
       }
+      url.append(extension)
+
+      if (!view) {
+        // gitiles doesn't support fetching text directly, but we can get it as base64 encoded
+        // data
+        url.append("?format=TEXT")
+      }
+
+      return url.toString()
     }
 
     enum class Type {
@@ -3806,6 +3844,37 @@ class LintIssueDocGenerator(
         type = type,
         lintLibrary = lintLibrary,
         published = published,
+      )
+
+    open class GithubLibraryOnGmaven(
+      group: String,
+      artifact: String,
+      user: String,
+      repository: String,
+      relative: String,
+      language: String = "java",
+      type: Type = Type.JAR,
+      lintLibrary: Boolean = true,
+      branch: String = "main",
+      projectUrl: String = "https://github.com/$user/$repository",
+      sourceSet: String = "main",
+      testSourceSet: String = "test",
+      published: Boolean = true,
+    ) :
+      GithubLibraryOnMavenCentral(
+        group,
+        artifact,
+        user,
+        repository,
+        relative,
+        language,
+        type,
+        lintLibrary,
+        branch,
+        projectUrl,
+        sourceSet,
+        testSourceSet,
+        published,
       )
 
     class UnpublishedGithubLibrary(

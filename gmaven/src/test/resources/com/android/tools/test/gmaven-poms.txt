@@ -677,6 +677,7 @@ com.android.tools.lint:lint-api
     org.jetbrains.kotlin:kotlin-reflect (compile)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (compile)
     org.ow2.asm:asm (compile)
+    org.ow2.asm:asm-commons (compile)
     org.ow2.asm:asm-tree (compile)
     com.android.tools.build:builder-model (runtime)
     com.google.guava:guava (runtime)

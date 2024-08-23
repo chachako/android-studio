@@ -18,6 +18,7 @@
 
 package com.android.tools.lint.client.api
 
+import com.android.SdkConstants.CLASS_CONSTRUCTOR
 import com.android.SdkConstants.CONSTRUCTOR_NAME
 import com.android.SdkConstants.DOT_CLASS
 import com.android.tools.lint.helpers.readAllBytes
@@ -136,10 +137,30 @@ class LintJarVerifier(
   }
 
   /** Returns a message describing the incompatibility */
-  fun describeFirstIncompatibleReference(): String {
+  fun describeFirstIncompatibleReference(includeLocation: Boolean = false): String {
     val reference = incompatibleReference ?: return "Compatible"
+    val description = referenceToDisplay(reference)
+    if (includeLocation) {
+      return description + ", referenced from " + referenceToDisplay(getReferenceLocation())
+    } else {
+      return description
+    }
+  }
+
+  override fun toString(): String {
+    val reference = incompatibleReference ?: return "Compatible"
+    val sb = StringBuilder()
+    if (incompatibleReferencer != null) {
+      sb.append("In ${referenceToDisplay(incompatibleReferencer!!)}: ")
+    }
+    sb.append(referenceToDisplay(reference))
+    return sb.toString()
+  }
+
+  private fun referenceToDisplay(reference: String): String {
     val index = reference.indexOf('#')
     if (index == -1) {
+      // Just a class
       return Type.getObjectType(reference).className.replace('$', '.')
     }
     val className = Type.getObjectType(reference.substring(0, index)).className.replace('$', '.')
@@ -150,27 +171,45 @@ class LintJarVerifier(
     }
 
     // Method
-    val sb = StringBuilder(className).append(": ")
     val descriptor = reference.substring(paren)
     val name = reference.subSequence(index + 1, paren)
-    val arguments = Type.getArgumentTypes(descriptor)
+    val sb = StringBuilder()
+    sb.append(className)
+    sb.append("#")
     if (name == CONSTRUCTOR_NAME) {
       sb.append(className.substring(className.lastIndexOf('.') + 1))
     } else {
-      val returnType = Type.getReturnType(descriptor).className
-      sb.append(returnType).append(' ')
       sb.append(name)
     }
+    val arguments = Type.getArgumentTypes(descriptor)
     sb.append('(')
     sb.append(arguments.joinToString(",") { it.className })
     sb.append(')')
+    if (name != CONSTRUCTOR_NAME) {
+      val returnType = Type.getReturnType(descriptor).className
+      sb.append(": ")
+      sb.append(returnType)
+    }
     return sb.toString()
   }
 
   /** Returns the class file containing the invalid reference. */
   fun getReferenceClassFile(): String {
-    return incompatibleReferencer!! // should only be called if incompatibleReference is non null
+    return incompatibleReferenceFile!!
   }
+
+  /** Returns the class and method containing the invalid reference. */
+  fun getReferenceLocation(): String {
+    return incompatibleReferencer ?: getReferenceClassFile()
+  }
+
+  /**
+   * Whether the verifier found references to old dialects of the Kotlin Analysis API or and the jar
+   * file could benefit from [LintJarApiMigration].
+   */
+  fun needsApiMigration(): Boolean = apiMigrationNeeded
+
+  private var apiMigrationNeeded = false
 
   /** An exception thrown if there is some other verification problem (invalid class file etc) */
   private var verifyProblem: Throwable? = null
@@ -182,6 +221,9 @@ class LintJarVerifier(
   private val bundledClasses: MutableSet<String> = mutableSetOf()
 
   /** The class file containing the reference to [incompatibleReference] */
+  private var incompatibleReferenceFile: String? = null
+
+  /** The class and/or method containing the reference to [incompatibleReference] */
   private var incompatibleReferencer: String? = null
 
   /** Whether the incompatible reference was not accessible rather than not available */
@@ -216,8 +258,7 @@ class LintJarVerifier(
         // Ignoring return value: what we're looking for here is a throw
         getClass(internal)
       } catch (e: Throwable) {
-        incompatibleReference = internal
-        incompatibleReferencer = currentClassFile
+        recordViolation(internal)
       }
     }
   }
@@ -230,6 +271,8 @@ class LintJarVerifier(
   private var currentClassFile: String? = null
   /** The current class being visited */
   private var currentClass: String? = null
+  /** The current method being visited */
+  private var currentMethod: String? = null
   /** The super class of the current class */
   private var currentSuperClass: String? = null
   /**
@@ -250,8 +293,7 @@ class LintJarVerifier(
         val method = getMethod(owner, name, descriptor) // expected side effect: throws if invalid
         checkModifiers(owner, method.modifiers)
       } catch (e: Throwable) {
-        incompatibleReference = "$owner#$name$descriptor"
-        incompatibleReferencer = currentClassFile
+        recordViolation("$owner#$name$descriptor")
       }
     }
   }
@@ -268,10 +310,38 @@ class LintJarVerifier(
         val field = getField(owner, name) // expected side effect: throws if invalid
         checkModifiers(owner, field.modifiers)
       } catch (e: Throwable) {
-        incompatibleReference = "$owner#$name"
-        incompatibleReferencer = currentClassFile
+        recordViolation("$owner#$name")
       }
     }
+  }
+
+  private fun recordViolation(reference: String) {
+    if (LintJarApiMigration.isRelevantType(reference)) {
+      apiMigrationNeeded = true
+    }
+    if (incompatibleReference != null) {
+      // Only record the first occurrence
+      return
+    }
+    incompatibleReference = reference
+
+    incompatibleReferenceFile = currentClassFile
+    val currentClassFile = currentClassFile
+    val currentClass = currentClass
+    incompatibleReferencer =
+      if (
+        currentMethod == null ||
+          currentMethod == CONSTRUCTOR_NAME ||
+          currentMethod == CLASS_CONSTRUCTOR
+      ) {
+        currentClass
+      } else if (
+        currentClassFile != null && currentClass != null && currentClassFile.contains(currentClass)
+      ) {
+        "${currentClass}.${currentMethod}"
+      } else {
+        currentClassFile + ":${currentClass}.${currentMethod}"
+      }
   }
 
   /**
@@ -402,6 +472,7 @@ class LintJarVerifier(
     signature: String?,
     exceptions: Array<out String>?,
   ): MethodVisitor {
+    currentMethod = name
     return methodVisitor
   }
 
@@ -418,7 +489,7 @@ class LintJarVerifier(
  * Given an ASM type compute the corresponding java.lang.Class. I really thought ASM would have this
  * functionality, and perhaps it does, but I could not find it.
  */
-private fun Type.toTypeClass(): Class<out Any> {
+fun Type.toTypeClass(): Class<out Any> {
   return when (descriptor) {
     "Z" -> java.lang.Boolean.TYPE
     "B" -> Byte.TYPE
