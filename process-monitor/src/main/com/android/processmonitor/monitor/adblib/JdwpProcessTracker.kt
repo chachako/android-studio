@@ -19,7 +19,7 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceInfo
 import com.android.adblib.tools.debugging.JdwpProcessChange
-import com.android.adblib.tools.debugging.deviceDebuggableProcessesFlow
+import com.android.adblib.tools.debugging.jdwpProcessChangeFlow
 import com.android.adblib.withPrefix
 import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
@@ -31,7 +31,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/** A [ProcessTracker] that uses JdwpProcessTracker */
+/**
+ * A [ProcessTracker] that uses [ConnectedDevice.jdwpProcessChangeFlow] to
+ * emit process changes when we collected enough data about the process.
+ */
 internal class JdwpProcessTracker(
     private val device: ConnectedDevice,
     logger: AdbLogger,
@@ -46,7 +49,7 @@ internal class JdwpProcessTracker(
             // Keep track of PIDs for which we sent out a `ProcessAdded` event
             val sentProcessAddedEvents: MutableSet<Int> = mutableSetOf()
 
-            device.deviceDebuggableProcessesFlow.collect { processChange ->
+            device.jdwpProcessChangeFlow.collect { processChange ->
                 val processProperties = processChange.processInfo.properties
                 when (processChange) {
                     is JdwpProcessChange.Removed -> {

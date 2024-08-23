@@ -34,7 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
 
-class DeviceDebuggableProcessesTest {
+class JdwpProcessChangeFlowTest {
 
     @JvmField
     @Rule
@@ -66,7 +66,7 @@ class DeviceDebuggableProcessesTest {
                     assertTrue(processAdded.processInfo.properties.pid == pid10)
                 }
 
-                // Wait a little and asserts that the `deviceDebuggableProcessesFlow` didn't
+                // Wait a little and assert that the `jdwpProcessChangeFlow` didn't
                 // collect some unexpected update
                 delay(200)
                 assertEquals(1, processUpdatesList.size)
@@ -75,7 +75,7 @@ class DeviceDebuggableProcessesTest {
             }
 
             connectedDevice.scope.launch {
-                connectedDevice.deviceDebuggableProcessesFlow.collect {
+                connectedDevice.jdwpProcessChangeFlow.collect {
                     processUpdatesList.add(it)
                 }
             }.join()
@@ -124,7 +124,7 @@ class DeviceDebuggableProcessesTest {
             }
 
             connectedDevice.scope.launch {
-                connectedDevice.deviceDebuggableProcessesFlow.collect {
+                connectedDevice.jdwpProcessChangeFlow.collect {
                     processUpdatesList.add(it)
                 }
             }.join()
@@ -171,7 +171,7 @@ class DeviceDebuggableProcessesTest {
             }
 
             connectedDevice.scope.launch {
-                connectedDevice.deviceDebuggableProcessesFlow.collect {
+                connectedDevice.jdwpProcessChangeFlow.collect {
                     processUpdatesList.add(it)
                 }
             }.join()
@@ -216,7 +216,7 @@ class DeviceDebuggableProcessesTest {
             }
 
             connectedDevice.scope.launch {
-                connectedDevice.deviceDebuggableProcessesFlow.collect {
+                connectedDevice.jdwpProcessChangeFlow.collect {
                     processUpdatesList.add(it)
                 }
             }.join()
@@ -266,7 +266,7 @@ class DeviceDebuggableProcessesTest {
             }
 
             connectedDevice.scope.launch {
-                connectedDevice.deviceDebuggableProcessesFlow.collect {
+                connectedDevice.jdwpProcessChangeFlow.collect {
                     processUpdatesList.add(it)
                 }
             }.join()

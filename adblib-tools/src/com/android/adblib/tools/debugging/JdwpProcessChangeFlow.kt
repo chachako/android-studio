@@ -36,9 +36,9 @@ import kotlinx.coroutines.launch
  *
  * See [JdwpProcessChange] for more info.
  */
-val ConnectedDevice.deviceDebuggableProcessesFlow: Flow<JdwpProcessChange>
+val ConnectedDevice.jdwpProcessChangeFlow: Flow<JdwpProcessChange>
     get() = channelFlow {
-        val device = this@deviceDebuggableProcessesFlow
+        val device = this@jdwpProcessChangeFlow
         var currentProcesses = mapOf<Int, JdwpProcess>()
         val currentProcessTrackingJobs: MutableMap<Int, Job> = mutableMapOf()
 
