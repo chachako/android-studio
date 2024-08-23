@@ -19,11 +19,9 @@ package com.android.build.gradle.integration.manifest
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.common.truth.ApkSubject.getManifestContent
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
-import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertTrue
@@ -103,27 +101,6 @@ class ProcessApplicationManifestTest {
         assertTrue { result.failedTasks.isEmpty()}
         val manifestFile =  project.getSubproject(":lib").file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
-    }
-
-    @Test
-    fun testApplicationDeviceTestManifestDoesNotContainDebuggableFlag() {
-        // The manifest shouldn't contain android:debuggable if we set the testBuildType to release.
-        project.getSubproject(":app").buildFile.appendText("\n\nandroid.testBuildType \"release\"\n\n")
-        project.executor().run("assembleReleaseAndroidTest")
-        val releaseManifestContent =
-            getManifestContent(project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_RELEASE).file)
-        assertManifestContentDoesNotContainString(releaseManifestContent, "android:debuggable")
-    }
-
-    private fun assertManifestContentDoesNotContainString(
-        manifestContent: Iterable<String>,
-        stringToAssert: String
-    ) {
-        manifestContent.forEach {
-            if (it.trim().contains(stringToAssert)) {
-                fail("$stringToAssert found in ${manifestContent.joinToString(separator = "\n")}")
-            }
-        }
     }
 
 }

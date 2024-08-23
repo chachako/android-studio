@@ -100,9 +100,7 @@ interface Component: ComponentIdentity {
      */
     val namespace: Provider<String>
 
-    /**
-     * Whether the produced artifacts will be debuggable
-     */
+    /** Whether the produced artifacts will be debuggable */
     val debuggable: Boolean
 
     /**

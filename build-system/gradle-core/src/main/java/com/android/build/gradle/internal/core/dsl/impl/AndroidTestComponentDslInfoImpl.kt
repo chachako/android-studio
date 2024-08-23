@@ -34,7 +34,6 @@ import com.android.build.gradle.internal.profile.ProfilingMode
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.StringOption
 import com.android.builder.core.ComponentType
-import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.dexing.DexingType
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
@@ -78,15 +77,12 @@ internal class AndroidTestComponentDslInfoImpl(
     override val isAndroidTestCoverageEnabled: Boolean
         get() = instrumentedTestDelegate.isAndroidTestCoverageEnabled
 
-    /**
-     * Always return true if the tested component is a library, otherwise use the PROFILING flag,
-     * or the build type.
-     */
+    // TODO: Android Test doesn't have isDebuggable dsl in the build type, we should move to using
+    //  the value from the tested type
     override val isDebuggable: Boolean
-        get() = true.takeIf { mainVariantDslInfo.componentType == ComponentTypeImpl.LIBRARY }
-            ?: ProfilingMode.getProfilingModeType(
-                services.projectOptions[StringOption.PROFILING_MODE]
-            ).isDebuggable
+        get() = ProfilingMode.getProfilingModeType(
+            services.projectOptions[StringOption.PROFILING_MODE]
+        ).isDebuggable
             ?: (buildTypeObj as? ApplicationBuildType)?.isDebuggable
             ?: false
 
