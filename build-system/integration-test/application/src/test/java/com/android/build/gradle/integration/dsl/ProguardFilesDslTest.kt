@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.application
+package com.android.build.gradle.integration.dsl
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -22,7 +22,7 @@ import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 
-class ProguardFilesTest {
+class ProguardFilesDslTest {
 
     private val app =
         MinimalSubProject.app("com.example.baseModule")
