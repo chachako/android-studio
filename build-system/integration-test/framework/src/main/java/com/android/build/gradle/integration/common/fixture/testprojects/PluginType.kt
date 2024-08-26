@@ -17,7 +17,10 @@
 package com.android.build.gradle.integration.common.fixture.testprojects
 
 import com.android.Version
+import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.androidxPrivacySandboxLibraryPluginVersion
 import com.android.build.gradle.internal.utils.ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID
+import com.android.build.gradle.internal.utils.KOTLIN_ANDROID_PLUGIN_ID
+import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.testutils.TestUtils
 
 sealed class PluginType(
@@ -109,6 +112,12 @@ sealed class PluginType(
         isAndroid = true,
         useNewDsl = true,
     )
+    object ANDROIDX_PRIVACY_SANDBOX_LIBRARY: PluginType(
+        id = "androidx.privacysandbox.library",
+        isAndroid = true,
+        useNewDsl = true,
+        version = androidxPrivacySandboxLibraryPluginVersion,
+    )
     object ANDROID_SETTINGS: PluginType(
         id = "com.android.settings",
         isAndroid = true,
@@ -128,6 +137,13 @@ sealed class PluginType(
         id = ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID,
         isAndroid = true,
         useNewDsl = true,
+    )
+    object JETBRAINS_KOTLIN_ANDROID: PluginType(
+        id = KOTLIN_ANDROID_PLUGIN_ID,
+        isAndroid = true,
+        isKotlin = true,
+        useNewDsl = true,
+        version = TestUtils.KSP_VERSION_FOR_TESTS,
     )
     class Custom(id: String): PluginType(id)
 }

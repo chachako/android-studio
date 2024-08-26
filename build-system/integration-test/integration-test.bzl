@@ -98,6 +98,7 @@ def single_gradle_integration_test_per_source(
         maven_repos,
         package_name,
         srcs,
+        non_target_srcs = [],
         runtime_deps = [],
         flaky_targets = [],
         very_flaky_targets = [],
@@ -141,7 +142,7 @@ def single_gradle_integration_test_per_source(
             flaky_tags = ["noci:studio-linux", "ci:studio-linux_flaky"]
         gradle_integration_test(
             name = target_name,
-            srcs = [src],
+            srcs = [src] + non_target_srcs,
             deps = deps,
             flaky = is_flaky,
             data = data,

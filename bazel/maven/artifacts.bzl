@@ -454,6 +454,7 @@ DATA = [
     "androidx.privacysandbox.plugins:plugins-privacysandbox-library:1.0.0-alpha02",
     "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha13",
     "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-alpha13",
+    "androidx.privacysandbox.sdkruntime:sdkruntime-provider:1.0.0-alpha13",
     "androidx.privacysandbox.tools:tools:1.0.0-alpha10",
     "androidx.privacysandbox.tools:tools-apicompiler:1.0.0-alpha10",
     "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha10",

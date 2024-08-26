@@ -55,7 +55,7 @@ fun checkBazelTargetsMatchTestSourceFiles(
 
     val bazelTargets =
         bazelFile.readLines()
-            .filter { it.contains("name = \"") }
+            .filter { it.contains(Regex("\\bname = \"")) }
             .map { it.split("\"")[1] }
             .filterNot { ignoredBazelTargets.contains(it) }
 

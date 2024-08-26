@@ -88,6 +88,8 @@ public class GradleTestProjectBuilder {
     @Nullable
     private String withExtraPluginClasspath;
     private boolean withKotlinGradlePlugin = false;
+
+    private boolean withAndroidxPrivacySandboxLibraryPlugin = false;
     private boolean withBuiltInKotlinSupport = false;
     private boolean withPluginManagementBlock = false;
     private boolean withDependencyManagementBlock = true;
@@ -176,6 +178,7 @@ public class GradleTestProjectBuilder {
                 withSdk,
                 withAndroidGradlePlugin,
                 withKotlinGradlePlugin,
+                withAndroidxPrivacySandboxLibraryPlugin,
                 withExtraPluginClasspath,
                 withBuiltInKotlinSupport,
                 withPluginManagementBlock,
@@ -327,6 +330,11 @@ public class GradleTestProjectBuilder {
 
     public GradleTestProjectBuilder withKotlinGradlePlugin(boolean withKotlinGradlePlugin) {
         this.withKotlinGradlePlugin = withKotlinGradlePlugin;
+        return this;
+    }
+
+    public GradleTestProjectBuilder withAndroidxPrivacySandboxLibraryPlugin(boolean withAndroidxPrivacySandboxLibraryPlugin) {
+        this.withAndroidxPrivacySandboxLibraryPlugin = withAndroidxPrivacySandboxLibraryPlugin;
         return this;
     }
 

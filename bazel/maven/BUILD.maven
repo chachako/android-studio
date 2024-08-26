@@ -29339,6 +29339,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.privacysandbox.sdkruntime.sdkruntime-provider_1.0.0-alpha13",
+    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-provider/1.0.0-alpha13/sdkruntime-provider-1.0.0-alpha13.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-provider/1.0.0-alpha13",
+    deps = [
+        "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha13",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.privacysandbox.tools.tools-apicompiler_1.0.0-alpha10",
     pom = "repository/androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha10/tools-apicompiler-1.0.0-alpha10.pom",
     repo_root_path = "repository",

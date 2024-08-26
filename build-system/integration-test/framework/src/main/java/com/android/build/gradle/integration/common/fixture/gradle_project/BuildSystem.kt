@@ -52,6 +52,7 @@ internal enum class BuildSystem {
     fun getCommonBuildScriptContent(
         withAndroidGradlePlugin: Boolean,
         withKotlinGradlePlugin: Boolean,
+        withAndroidxPrivacySandboxLibraryPlugin: Boolean,
         withDeviceProvider: Boolean,
         withExtraPluginClasspath: String?,
         withBuiltInKotlinSupport: Boolean,
@@ -76,6 +77,10 @@ internal enum class BuildSystem {
             script.append(
                 "        classpath \"org.jetbrains.kotlin:kotlin-gradle-plugin:\${libs.versions.kotlinVersion.get()}\"\n"
             )
+        }
+        if (withAndroidxPrivacySandboxLibraryPlugin) {
+            script.append(
+                "        classpath \"androidx.privacysandbox.plugins:plugins-privacysandbox-library:\${libs.versions.androidxPrivacySandboxLibraryVersion.get()}\"\n")
         }
         if (withDeviceProvider) {
             script.append(

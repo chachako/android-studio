@@ -26,8 +26,10 @@ import org.gradle.api.JavaVersion
 
 private val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
         .replace("""\""", """\\""")
+const val androidxPrivacySandboxActivityVersion = "1.0.0-alpha01"
 const val androidxPrivacySandboxVersion = "1.0.0-alpha10"
 const val androidxPrivacySandboxSdkRuntimeVersion = "1.0.0-alpha13"
+const val androidxPrivacySandboxLibraryPluginVersion = "1.0.0-alpha02"
 
 fun TestProjectBuilder.privacySandboxSdkProject(path: String, action: SubProjectBuilder.() -> Unit) {
     subProject(path) {

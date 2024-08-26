@@ -27,6 +27,19 @@ fun uninstallPackage(packageName: String, ignoreErrors : Boolean = false) =
 fun executeShellCommand(vararg cmd: String, ignoreErrors: Boolean = false)
     = execAdb("shell", *cmd, ignoreErrors = ignoreErrors)
 
+fun setDeviceConfig(nameSpace: String, key:String, value:String, ignoreErrors: Boolean = false)
+    = executeShellCommand("device_config", "put", nameSpace, key, value, ignoreErrors = ignoreErrors)
+
+fun deviceSupportsPrivacySandbox()
+    = executeShellCommand("service", "list").contains("sdk_sandbox")
+
+fun enablePrivacySandboxOnTestDevice() {
+    setDeviceConfig("adservices", "adservice_system_service_enabled", "false")
+    setDeviceConfig("adservices", "global_kill_switch", "false")
+    setDeviceConfig("adservices", "disable_sdk_sandbox", "false")
+    setDeviceConfig("adservices", "sdksandbox_customized_sdk_context_enabled", "true")
+}
+
 private fun execAdb(vararg  cmd: String, ignoreErrors: Boolean = false) =
     exec(SdkHelper.getAdb().absolutePath, *cmd, ignoreErrors = ignoreErrors)
 

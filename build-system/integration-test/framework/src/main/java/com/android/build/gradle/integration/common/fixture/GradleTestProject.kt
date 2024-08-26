@@ -25,6 +25,7 @@ import com.android.build.gradle.integration.common.fixture.gradle_project.BuildS
 import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
 import com.android.build.gradle.integration.common.fixture.gradle_project.initializeProjectLocation
 import com.android.build.gradle.integration.common.fixture.testprojects.TestProjectBuilder
+import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.androidxPrivacySandboxLibraryPluginVersion
 import com.android.build.gradle.integration.common.truth.AarSubject
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -112,6 +113,7 @@ open class GradleTestProject @JvmOverloads constructor(
     private val withSdk: Boolean,
     private val withAndroidGradlePlugin: Boolean,
     private val withKotlinGradlePlugin: Boolean,
+    private val withAndroidxPrivacySandboxLibraryPlugin:Boolean,
     private val withExtraPluginClasspath: String?,
     private val withBuiltInKotlinSupport: Boolean,
     private val withPluginManagementBlock: Boolean,
@@ -455,6 +457,7 @@ open class GradleTestProject @JvmOverloads constructor(
             withSdk = rootProject.withSdk,
             withAndroidGradlePlugin = rootProject.withAndroidGradlePlugin,
             withKotlinGradlePlugin = rootProject.withKotlinGradlePlugin,
+            withAndroidxPrivacySandboxLibraryPlugin = rootProject.withAndroidxPrivacySandboxLibraryPlugin,
             withExtraPluginClasspath = rootProject.withExtraPluginClasspath,
             withBuiltInKotlinSupport = rootProject.withBuiltInKotlinSupport,
             withPluginManagementBlock = rootProject.withPluginManagementBlock,
@@ -687,6 +690,7 @@ ext {
     kotlinVersion = '%4${"$"}s'
     composeVersion = '%5${"$"}s'
     composeCompilerVersion = '%6${"$"}s'
+    androidxPrivacySandboxLibraryVersion = '%7${"$"}s'
 }
 """,
             DEFAULT_BUILD_TOOL_VERSION,
@@ -695,6 +699,7 @@ ext {
             kotlinVersion,
             TaskManager.COMPOSE_UI_VERSION,
             TestUtils.COMPOSE_COMPILER_FOR_TESTS,
+            androidxPrivacySandboxLibraryPluginVersion
         )
         if (APPLY_DEVICEPOOL_PLUGIN) {
             result += """
@@ -722,6 +727,7 @@ allprojects { proj ->
             .getCommonBuildScriptContent(
                 withAndroidGradlePlugin,
                 withKotlinGradlePlugin,
+                withAndroidxPrivacySandboxLibraryPlugin,
                 withDeviceProvider,
                 withExtraPluginClasspath,
                 withBuiltInKotlinSupport
@@ -1628,7 +1634,8 @@ buildCache {
                         + "version('kotlinVersion', '%s')%n"
                         + "version('kotlinVersionForCompose', '%s')%n"
                         + "version('composeVersion', '%s')%n"
-                        + "version('composeCompilerVersion', '%s')%n",
+                        + "version('composeCompilerVersion', '%s')%n"
+                        + "version('androidxPrivacySandboxLibraryVersion', '%s')%n",
                 Version.ANDROID_GRADLE_PLUGIN_VERSION,
                 Version.ANDROID_TOOLS_BASE_VERSION,
                 SUPPORT_LIB_VERSION,
@@ -1643,6 +1650,7 @@ buildCache {
                 TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS,
                 TaskManager.COMPOSE_UI_VERSION,
                 TestUtils.COMPOSE_COMPILER_FOR_TESTS,
+                androidxPrivacySandboxLibraryPluginVersion
         )
     }
 
