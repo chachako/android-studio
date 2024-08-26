@@ -34,6 +34,7 @@ class BazelTargetTest {
                 "all_test_files",
                 "avd",
                 "avd_32",
+                "avd_34",
                 "avd_default_30",
                 "avd_old_emulator_binary",
                 "connected",

@@ -54,6 +54,12 @@ TEST_DEPS = [
 
 avd(name = "avd")
 
+# For tests that needs to run on API 34 devices.
+avd(
+    name = "avd_34",
+    image = "@system_image_android-34_aosp_atd_x86_64//:x86_64-android-34AospAtd-images",
+)
+
 # For tests that needs to be updated in order to support API 33 devices.
 avd(
     name = "avd_32",

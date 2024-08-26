@@ -200,6 +200,14 @@ http_archive(
 )
 
 http_archive(
+    name = "system_image_android-34_aosp_atd_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "00f8c28481184e9cd06da4ca92df870fc68532c6ca30c372e1720e4cbc632fbd",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/aosp_atd/x86_64-34_r02.zip",
+)
+
+http_archive(
     name = "system_image_android-33PlayStore_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "74b0a57c2cfee755dcf7645e5da9d5468a2982af0bf012dfb46f661bc8b9f84a",
