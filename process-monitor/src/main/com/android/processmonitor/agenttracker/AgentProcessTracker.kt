@@ -40,6 +40,8 @@ import java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE
 import java.nio.file.attribute.PosixFilePermission.OWNER_READ
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.io.path.notExists
+import kotlin.io.path.pathString
 
 /**
  * Implementation of [ProcessTracker]
@@ -64,7 +66,10 @@ internal class AgentProcessTracker(
     override fun trackProcesses()
             : Flow<ProcessEvent> = flow {
         val deviceSelector = DeviceSelector.fromSerialNumber(serialNumber)
-        pushAgent(deviceSelector, deviceAbi)
+        val agentPushed = pushAgent(deviceSelector, deviceAbi)
+        if (!agentPushed) {
+            return@flow
+        }
         val command = "$AGENT_PATH --interval $intervalMillis"
         adbSession.deviceServices.shellCommand(deviceSelector, command)
             .withCollector(LineShellV2Collector())
@@ -80,7 +85,7 @@ internal class AgentProcessTracker(
     }.flowOn(adbSession.ioDispatcher + context)
 
     // TODO(aalbert): Support multiple ABI's?
-    private suspend fun pushAgent(deviceSelector: DeviceSelector, deviceAbi: String) {
+    private suspend fun pushAgent(deviceSelector: DeviceSelector, deviceAbi: String): Boolean {
         val command = "mkdir -p $AGENT_DIR; chmod 755 $AGENT_DIR; chown shell:shell $AGENT_DIR"
         adbSession.deviceServices.shellAsLines(deviceSelector, command).collect {
             when {
@@ -92,8 +97,14 @@ internal class AgentProcessTracker(
             }
         }
         val binary = agentSourcePath.resolve("native/$deviceAbi/$AGENT_NAME")
+        if (binary.notExists()) {
+            logger.warn("ProcessTrackerAgent not found. ABI '$deviceAbi' might not be supported: ${binary.pathString}")
+            return false
+        }
         val permissions = RemoteFileMode.fromPosixPermissions(OWNER_READ, OWNER_EXECUTE)
         adbSession.deviceServices.syncSend(deviceSelector, binary, AGENT_PATH, permissions)
+
+        return true
     }
 
     private suspend fun FlowCollector<ProcessEvent>.handleLine(line: String) {
