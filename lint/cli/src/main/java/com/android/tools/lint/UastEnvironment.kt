@@ -105,7 +105,13 @@ interface UastEnvironment {
           mergedFiles(Module::classpathRoots).also { bootClassPaths?.let(it::addAll) }
         return sourceRoots to classPathRoots
       }
+
+      internal val Configuration.isKMP: Boolean
+        get() = modules.mapTo(mutableSetOf()) { it.variant }.size > 1
     }
+
+    val modules: Collection<Module>
+    val classPaths: Collection<File>
 
     fun addModules(modules: List<Module>, bootClassPaths: Iterable<File>? = null)
 

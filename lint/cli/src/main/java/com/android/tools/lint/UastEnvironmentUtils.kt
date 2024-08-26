@@ -15,6 +15,11 @@
  */
 package com.android.tools.lint
 
+import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
+import com.android.tools.lint.UastEnvironment.Configuration.Companion.isKMP
+import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toTargetPlatform
+import com.android.tools.lint.detector.api.GraphUtils
+import com.android.tools.lint.detector.api.Project
 import com.intellij.codeInsight.CustomExceptionHandler
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInsight.InferredAnnotationsManager
@@ -30,7 +35,16 @@ import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.pom.java.LanguageFeatureProvider
+import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.sequences.forEach
+import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
+import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
+import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
+import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleProviderBuilder
+import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
+import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
+import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
@@ -41,6 +55,11 @@ import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.platform.CommonPlatforms
+import org.jetbrains.kotlin.platform.has
+import org.jetbrains.kotlin.platform.jvm.JvmPlatform
+import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.uast.UastContext
 import org.jetbrains.uast.UastLanguagePlugin
@@ -109,6 +128,137 @@ internal fun configureProjectEnvironment(
   // TODO(b/283351708): Migrate to using UastFacade/UastLanguagePlugin instead,
   //  even including lint checks shipped in a binary form?!
   @Suppress("DEPRECATION") project.registerService(UastContext::class.java, UastContext(project))
+}
+
+internal fun configureAnalysisApiProjectStructure(
+  config: UastEnvironment.Configuration
+): KtModuleProviderBuilder.() -> Unit = {
+  val isKMP = config.isKMP
+  // The platform of the module provider, not individual modules
+  platform = if (isKMP) CommonPlatforms.defaultCommonPlatform else JvmPlatforms.defaultJvmPlatform
+
+  val uastEnvModuleByName = config.modules.associateBy(UastEnvironment.Module::name)
+  val uastEnvModuleOrder = // We need to start from the leaves of the dependency
+    GraphUtils.reverseTopologicalSort(config.modules.map { it.name }) {
+      uastEnvModuleByName[it]!!.directDependencies.map { (depName, _) -> depName }
+    }
+  val builtKtModuleByName = hashMapOf<String, KaModule>() // incrementally added below
+  val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
+
+  uastEnvModuleOrder.forEach { name ->
+    val m = uastEnvModuleByName[name]!!
+    val mPlatform = m.variant.toTargetPlatform()
+
+    fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
+      val classPaths =
+        if (mPlatform.has<JvmPlatform>()) {
+            // Include boot classpath in [config.classPaths], except for non-JVM modules
+            m.classpathRoots + config.classPaths
+          } else {
+            m.classpathRoots
+          }
+          .toPathCollection()
+
+      if (classPaths.isNotEmpty()) {
+        addRegularDependency(
+          buildKtLibraryModule {
+            platform = mPlatform
+            addBinaryPaths(classPaths)
+            libraryName = "Library for $moduleName"
+          }
+        )
+      }
+
+      // Not necessary to set up JDK dependency for non-JVM modules
+      if (mPlatform.has<JvmPlatform>()) {
+        m.jdkHome?.let { jdkHome ->
+          val jdkHomePath = jdkHome.toPath()
+          addRegularDependency(
+            buildKtSdkModule {
+              platform = mPlatform
+              addBinaryRoots(LibraryUtils.findClassesFromJdkHome(jdkHomePath, isJre = true))
+              libraryName = "JDK for $moduleName"
+            }
+          )
+        }
+      }
+
+      val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) =
+        m.klibs.keys.partition { m.klibs[it] == Project.DependencyKind.Regular }
+
+      fun buildKlibModule(klibs: PathCollection, name: String) = buildKtLibraryModule {
+        platform = mPlatform
+        addBinaryPaths(klibs)
+        libraryName = name
+      }
+
+      val klibRegularDeps = moduleKlibPathsRegular.toPathCollection() + configKlibPaths
+      if (klibRegularDeps.isNotEmpty()) {
+        addRegularDependency(buildKlibModule(klibRegularDeps, "Regular klibs for $moduleName"))
+      }
+
+      if (moduleKlibPathsDependsOn.isNotEmpty()) {
+        addDependsOnDependency(
+          buildKlibModule(
+            moduleKlibPathsDependsOn.toPathCollection(),
+            "dependsOn klibs for $moduleName",
+          )
+        )
+      }
+    }
+
+    val scripts =
+      getSourceFilePaths(m.sourceRoots + m.gradleBuildScripts, includeDirectoryRoot = true)
+        .filter<KtFile>(kotlinCoreProjectEnvironment, KtFile::isScript)
+    // TODO: https://youtrack.jetbrains.com/issue/KT-62161
+    //   This must be [KtScriptModule], but until the above YT resolved
+    //   add this fake [KtSourceModule] to suppress errors from module lookup.
+    if (!scripts.isEmpty()) {
+      addModule(
+        buildKtSourceModule {
+          addModuleDependencies("Temporary module for scripts in " + m.name)
+          platform = mPlatform
+          moduleName = m.name
+          addSourcePaths(scripts)
+        }
+      )
+    }
+    /*
+    for (scriptFile in scriptFiles) {
+      addModule(
+        buildKtScriptModule {
+          platform = mPlatform
+          file = scriptFile
+          addModuleDependencies("Script " + scriptFile.name)
+        }
+      )
+    }
+    */
+
+    val ktModule = buildKtSourceModule {
+      languageVersionSettings =
+        if (isKMP) m.kotlinLanguageLevel.withKMPEnabled() else m.kotlinLanguageLevel
+      addModuleDependencies(m.name)
+      platform = mPlatform
+      moduleName = m.name
+
+      m.directDependencies.forEach { (depName, depKind) ->
+        builtKtModuleByName[depName]?.let { depKtModule ->
+          when (depKind) {
+            Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
+            Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
+          }
+        } ?: System.err.println("Dependency named `$depName` ignored because module not found")
+      }
+
+      // NB: This should include both .kt and .java sources if any,
+      //  and thus we don't need to specify the reified type for the return file type.
+      addSourcePaths(getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
+    }
+
+    addModule(ktModule)
+    builtKtModuleByName[name] = ktModule
+  }
 }
 
 // In parallel builds the Kotlin compiler will reuse the application environment

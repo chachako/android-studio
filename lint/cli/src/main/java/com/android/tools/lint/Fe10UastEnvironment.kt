@@ -67,9 +67,7 @@ import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltinsVirtualFileProviderC
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.ClsKotlinBinaryClassCache
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.DummyFileAttributeService
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.FileAttributeService
-import org.jetbrains.kotlin.analysis.project.structure.impl.buildKtModuleProviderByCompilerConfiguration
-import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
-import org.jetbrains.kotlin.analysis.project.structure.impl.getSourceFilePaths
+import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleProviderBuilder
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles.JVM_CONFIG_FILES
@@ -129,11 +127,17 @@ private constructor(
     // klibs indexed by paths to avoid duplicates
     internal val klibs = hashMapOf<String, KotlinLibrary>()
 
+    override val modules = mutableListOf<UastEnvironment.Module>()
+    override val classPaths = mutableSetOf<File>()
+
     // Legacy merging behavior for Fe 1.0
     override fun addModules(
       modules: List<UastEnvironment.Module>,
       bootClassPaths: Iterable<File>?,
     ) {
+      this.modules.addAll(modules)
+      bootClassPaths?.let(this.classPaths::addAll)
+
       kotlinLanguageLevel =
         modules.map(UastEnvironment.Module::kotlinLanguageLevel).reduce { r, t ->
           // TODO: How to accumulate `analysisFlags` and `specificFeatures` ?
@@ -314,7 +318,9 @@ private fun configureAnalysisApiServices(
   )
   project.registerService(SmartPointerManager::class.java, SmartPointerManagerImpl::class.java)
 
-  val ktFiles = getPsiFilesFromPaths<KtFile>(env, getSourceFilePaths(config.kotlinCompilerConfig))
+  val projectStructureProvider =
+    KtModuleProviderBuilder(env).apply(configureAnalysisApiProjectStructure(config)).build()
+  val ktFiles = projectStructureProvider.allSourceFiles.filterIsInstance<KtFile>()
 
   project.registerService(
     KotlinAnnotationsResolverFactory::class.java,
@@ -325,10 +331,7 @@ private fun configureAnalysisApiServices(
     KotlinByModulesResolutionScopeProvider::class.java,
   )
 
-  project.registerService(
-    KotlinProjectStructureProvider::class.java,
-    buildKtModuleProviderByCompilerConfiguration(env, config.kotlinCompilerConfig, ktFiles),
-  )
+  project.registerService(KotlinProjectStructureProvider::class.java, projectStructureProvider)
 
   project.registerService(
     KotlinDeclarationProviderFactory::class.java,
