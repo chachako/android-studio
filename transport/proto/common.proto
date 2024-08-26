@@ -112,6 +112,7 @@ message Event {
 
     // LeakCanary Prefix = 800
     LEAKCANARY_LOGCAT = 801;
+    LEAKCANARY_LOGCAT_INFO = 802;
 
     // Demo echo event = 1000
     ECHO = 1000;
@@ -225,6 +226,7 @@ message Event {
 
     // LeakCanary Prefix = 800
     LeakCanaryLogcatData leakcanary_logcat = 801;
+    LeakCanaryLogcatInfo leakCanary_logcat_info = 802;
 
     // Echo Event Prefix = 1000
     echo.EchoData echo = 1000;
@@ -404,6 +406,7 @@ enum ProfilerTaskType {
   JAVA_KOTLIN_ALLOCATIONS = 7;
   LIVE_VIEW = 8;
   JAVA_KOTLIN_METHOD_RECORDING = 9;
+  LEAKCANARY = 10;
 }
 
 message SessionData {

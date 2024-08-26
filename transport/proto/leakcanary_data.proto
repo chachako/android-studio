@@ -23,3 +23,27 @@ option java_outer_classname = "LeakCanary";
 message LeakCanaryLogcatData {
   string logcat_message = 1;
 }
+
+/** LeakCanary event information */
+message LeakCanaryLogcatInfo {
+  oneof union {
+    LeakCanaryLogcatStarted logcat_started = 1;
+    LeakCanaryLogcatEnded logcat_ended = 2;
+  }
+}
+
+message LeakCanaryLogcatStarted {
+  int64 timestamp = 1;
+}
+
+message LeakCanaryLogcatEnded {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+  }
+
+  Status status = 1;
+  int64 start_timestamp = 2;
+  int64 end_timestamp = 3;
+}
