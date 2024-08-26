@@ -540,25 +540,7 @@
         </xsd:annotation>
         <xsd:simpleType>
           <xsd:restriction base="xsd:token">
-            <xsd:enumeration value="ldpi" />
-            <xsd:enumeration value="mdpi" />
-            <xsd:enumeration value="tvdpi" />
-            <xsd:enumeration value="hdpi" />
-            <xsd:enumeration value="140dpi" />
-            <xsd:enumeration value="180dpi" />
-            <xsd:enumeration value="200dpi" />
-            <xsd:enumeration value="260dpi" />
-            <xsd:enumeration value="280dpi" />
-            <xsd:enumeration value="300dpi" />
-            <xsd:enumeration value="xhdpi" />
-            <xsd:enumeration value="340dpi" />
-            <xsd:enumeration value="360dpi" />
-            <xsd:enumeration value="400dpi" />
-            <xsd:enumeration value="420dpi" />
-            <xsd:enumeration value="440dpi" />
-            <xsd:enumeration value="xxhdpi" />
-            <xsd:enumeration value="560dpi" />
-            <xsd:enumeration value="xxxhdpi" />
+            <xsd:pattern value="(l|m|tv|h|xh|xxh|xxxh|[0-9]{3})dpi" />
           </xsd:restriction>
         </xsd:simpleType>
       </xsd:element>

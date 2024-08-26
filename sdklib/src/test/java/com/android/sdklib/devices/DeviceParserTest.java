@@ -28,17 +28,25 @@ import com.android.resources.ScreenRound;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
 import com.android.sdklib.devices.Storage.Unit;
+
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
+import com.google.common.io.CharStreams;
+
+import junit.framework.TestCase;
+
+import org.xml.sax.SAXParseException;
+
 import java.awt.Dimension;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import junit.framework.TestCase;
-import org.xml.sax.SAXParseException;
 
 public class DeviceParserTest extends TestCase {
 
@@ -166,13 +174,17 @@ public class DeviceParserTest extends TestCase {
             assertEquals(null, device0.getTagId());
             assertEquals("{}", device0.getBootProps().toString());
             assertEquals("OMAP 4460", device0.getDefaultHardware().getCpu());
-            assertEquals("[armeabi, armeabi-v7a]", device0.getDefaultHardware().getSupportedAbis().toString());
+            assertEquals(
+                    "[armeabi, armeabi-v7a]",
+                    device0.getDefaultHardware().getSupportedAbis().toString());
 
             Device device1 = devices.get("Droid", "Motorola");
             assertEquals(null, device1.getTagId());
             assertEquals("{}", device1.getBootProps().toString());
             assertEquals("OMAP 3430", device1.getDefaultHardware().getCpu());
-            assertEquals("[armeabi, armeabi-v7a]", device1.getDefaultHardware().getSupportedAbis().toString());
+            assertEquals(
+                    "[armeabi, armeabi-v7a]",
+                    device1.getDefaultHardware().getSupportedAbis().toString());
 
             Device device2 = devices.get("Nexus 5", "Google");
             assertEquals("tag-1", device2.getTagId());
@@ -227,7 +239,8 @@ public class DeviceParserTest extends TestCase {
                           "ro.build.display.id=sdk-eng 4.3 JB_MR2 774058 test-keys}",
                          device2.getBootProps().toString());
             assertEquals("MIPS32+64", device2.getDefaultHardware().getCpu());
-            assertEquals("[mips, mips64]", device2.getDefaultHardware().getSupportedAbis().toString());
+            assertEquals(
+                    "[mips, mips64]", device2.getDefaultHardware().getSupportedAbis().toString());
 
             assertEquals(device2.getChinSize(), 0);
             assertFalse(device2.isScreenRound());
@@ -276,7 +289,8 @@ public class DeviceParserTest extends TestCase {
                          "ro.build.display.id=sdk-eng 4.3 JB_MR2 774058 test-keys}",
                          device2.getBootProps().toString());
             assertEquals("MIPS32+64", device2.getDefaultHardware().getCpu());
-            assertEquals("[mips, mips64]", device2.getDefaultHardware().getSupportedAbis().toString());
+            assertEquals(
+                    "[mips, mips64]", device2.getDefaultHardware().getSupportedAbis().toString());
 
             assertEquals(device2.getChinSize(), 0);
             assertFalse(device2.isScreenRound());
@@ -363,7 +377,12 @@ public class DeviceParserTest extends TestCase {
         try {
             Table<String, String, Device> devices = DeviceParser.parse(stream);
             assertEquals(1, devices.size());
-            assertEquals(0, devices.get("Galaxy Nexus", "Samsung").getDefaultHardware().getNetworking().size());
+            assertEquals(
+                    0,
+                    devices.get("Galaxy Nexus", "Samsung")
+                            .getDefaultHardware()
+                            .getNetworking()
+                            .size());
             fail();
         } catch (SAXParseException e) {
             assertTrue(e.getMessage().startsWith("cvc-enumeration-valid: Value 'NFD'"));
@@ -387,6 +406,49 @@ public class DeviceParserTest extends TestCase {
             assertEquals(new Dimension(720, 1280), device.getScreenSize(ScreenOrientation.PORTRAIT));
         } finally {
             stream.close();
+        }
+    }
+
+    public void testDPI() throws Exception {
+        Map<String, Density> dpis =
+                ImmutableMap.of(
+                        "l", Density.LOW,
+                        "m", Density.MEDIUM,
+                        "tv", Density.TV,
+                        "h", Density.HIGH,
+                        "xh", Density.XHIGH,
+                        "xxh", Density.XXHIGH,
+                        "xxxh", Density.XXXHIGH,
+                        "123", Density.create(123));
+        try (InputStream stream =
+                DeviceSchemaTest.class.getResourceAsStream("devices_dpitest_template.xml")) {
+            String template = CharStreams.toString(new InputStreamReader(stream));
+            for (Map.Entry<String, Density> entry : dpis.entrySet()) {
+                Table<String, String, Device> devices =
+                        DeviceParser.parse(
+                                new ByteArrayInputStream(
+                                        String.format(template, entry.getKey()).getBytes()));
+                assertEquals(devices.size(), 1);
+                assertEquals(
+                        devices.get("testDevice-" + entry.getKey(), "Google")
+                                .getDefaultState()
+                                .getHardware()
+                                .getScreen()
+                                .getPixelDensity(),
+                        entry.getValue());
+            }
+            try {
+                DeviceParser.parse(
+                        new ByteArrayInputStream(String.format(template, "error").getBytes()));
+                fail("Excepted exception for invalid dpi");
+            } catch (Exception expected) {
+            }
+            try {
+                DeviceParser.parse(
+                        new ByteArrayInputStream(String.format(template, "1").getBytes()));
+                fail("Excepted exception for invalid dpi");
+            } catch (Exception expected) {
+            }
         }
     }
 }
