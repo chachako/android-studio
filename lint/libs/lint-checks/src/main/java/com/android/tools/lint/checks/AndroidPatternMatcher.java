@@ -58,6 +58,11 @@ public class AndroidPatternMatcher {
      */
     public static final int PATTERN_ADVANCED_GLOB = 3;
 
+    /** Pattern type: the given pattern must match the end of the string it is tested against. */
+    public static final int PATTERN_SUFFIX = 4;
+
+    public @interface PatternType {}
+
     // token types for advanced matching
     private static final int TOKEN_TYPE_LITERAL = 0;
     private static final int TOKEN_TYPE_ANY = 1;
@@ -66,6 +71,8 @@ public class AndroidPatternMatcher {
 
     // Return for no match
     private static final int NO_MATCH = -1;
+
+    private static final String TAG = "PatternMatcher";
 
     // Parsed placeholders for advanced patterns
     private static final int PARSED_TOKEN_CHAR_SET_START = -1;
@@ -107,6 +114,7 @@ public class AndroidPatternMatcher {
         return matchPattern(str, mPattern, mParsedPattern, mType);
     }
 
+    // Don't update this, since that would change AppLinksValidDetector's messages.
     public String toString() {
         String type = "? ";
         switch (mType) {
@@ -126,10 +134,25 @@ public class AndroidPatternMatcher {
         return type + mPattern;
     }
 
-    static boolean matchPattern(String match, String pattern, int[] parsedPattern, int type) {
-        if (match == null) {
+    /**
+     * Perform a check on the matcher for the pattern type of {@link #PATTERN_ADVANCED_GLOB}. Return
+     * true if it passed.
+     *
+     * @hide
+     */
+    public boolean check() {
+        try {
+            if (mType == PATTERN_ADVANCED_GLOB) {
+                return Arrays.equals(mParsedPattern, parseAndVerifyAdvancedPattern(mPattern));
+            }
+        } catch (IllegalArgumentException e) {
             return false;
         }
+        return true;
+    }
+
+    static boolean matchPattern(String match, String pattern, int[] parsedPattern, int type) {
+        if (match == null) return false;
         if (type == PATTERN_LITERAL) {
             return pattern.equals(match);
         }
@@ -139,6 +162,8 @@ public class AndroidPatternMatcher {
             return matchGlobPattern(pattern, match);
         } else if (type == PATTERN_ADVANCED_GLOB) {
             return matchAdvancedPattern(parsedPattern, match);
+        } else if (type == PATTERN_SUFFIX) {
+            return match.endsWith(pattern);
         }
         return false;
     }
@@ -202,9 +227,7 @@ public class AndroidPatternMatcher {
                     nextChar = ip < NP ? pattern.charAt(ip) : 0;
                 }
             } else {
-                if (c != '.' && match.charAt(im) != c) {
-                    return false;
-                }
+                if (c != '.' && match.charAt(im) != c) return false;
                 im++;
             }
         }
@@ -217,7 +240,6 @@ public class AndroidPatternMatcher {
         // One last check: we may have finished the match string, but still
         // have a '.*' at the end of the pattern, which should still count
         // as a match.
-        //noinspection RedundantIfStatement
         if (ip == NP - 2 && pattern.charAt(ip) == '.' && pattern.charAt(ip + 1) == '*') {
             return true;
         }
