@@ -788,7 +788,10 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
             AndroidManifest.xml:10: Error: android:path attribute should start with /, but it is samplePath [AppLinkUrlError]
                                   android:path="samplePath"
                                                 ~~~~~~~~~~
-            2 errors, 0 warnings
+            AndroidManifest.xml:11: Error: android:pathPattern attribute should start with / or .*, but it is samplePattern [AppLinkUrlError]
+                                  android:pathPattern="samplePattern"/>
+                                                       ~~~~~~~~~~~~~
+            3 errors, 0 warnings
             """
     lint()
       .files(
@@ -811,7 +814,6 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             </intent-filter>
                         </activity>
                     </application>
-
                 </manifest>
                 """,
           )
@@ -1916,4 +1918,199 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
         """
       )
   }
+
+  fun testPathMatcherOrdering() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https"
+                                      android:host="example.com"
+                                      android:pathPrefix="/gizmos"
+                                      android:pathAdvancedPattern="[A-Z]gizmos"
+                                      android:pathPattern=".*gizmos"
+                                      android:path="/gizmos"
+                                      android:pathSuffix="gizmos" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .issues(AppLinksValidDetector.INTENT_FILTER_UNIQUE_DATA_ATTRIBUTES)
+      .run()
+      .expectFixDiffs(
+        """
+        Autofix for AndroidManifest.xml line 21: Replace with <data android:scheme="https"/>...:
+        @@ -21 +21
+        -                 <data android:scheme="https"
+        -                       android:host="example.com"
+        -                       android:pathPrefix="/gizmos"
+        -                       android:pathAdvancedPattern="[A-Z]gizmos"
+        -                       android:pathPattern=".*gizmos"
+        -                       android:path="/gizmos"
+        -                       android:pathSuffix="gizmos" />
+        +                 <data android:scheme="https"/>
+        +                 <data android:host="example.com"/>
+        +                 <data android:path="/gizmos"/>
+        +                 <data android:pathPrefix="/gizmos"/>
+        +                 <data android:pathPattern=".*gizmos"/>
+        +                 <data android:pathSuffix="gizmos"/>
+        +                 <data android:pathAdvancedPattern="[A-Z]gizmos"/>
+      """
+      )
+  }
+
+  fun testPattern_startWithSlashOk() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:pathPattern="/gizmos" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testPattern_startWithDotStarOk() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:pathPattern=".*gizmos" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testSuffixValidation() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:pathSuffix="" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:22: Error: android:pathSuffix cannot be empty [AppLinkUrlError]
+                        <data android:pathSuffix="" />
+                              ~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs("")
+  }
+
+  fun testAdvancedPatternValidation() {}
 }

@@ -22,8 +22,10 @@ import com.android.SdkConstants.ATTR_EXPORTED
 import com.android.SdkConstants.ATTR_HOST
 import com.android.SdkConstants.ATTR_MIME_TYPE
 import com.android.SdkConstants.ATTR_PATH
+import com.android.SdkConstants.ATTR_PATH_ADVANCED_PATTERN
 import com.android.SdkConstants.ATTR_PATH_PATTERN
 import com.android.SdkConstants.ATTR_PATH_PREFIX
+import com.android.SdkConstants.ATTR_PATH_SUFFIX
 import com.android.SdkConstants.ATTR_PORT
 import com.android.SdkConstants.ATTR_SCHEME
 import com.android.SdkConstants.PREFIX_RESOURCE_REF
@@ -38,6 +40,11 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
+import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_ADVANCED_GLOB
+import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_LITERAL
+import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_PREFIX
+import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_SIMPLE_GLOB
+import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_SUFFIX
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.detector.api.Category
@@ -387,17 +394,11 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       schemes = addAttribute(context, ATTR_SCHEME, schemes, data)
       hosts = addAttribute(context, ATTR_HOST, hosts, data)
       ports = addAttribute(context, ATTR_PORT, ports, data)
-      paths = addMatcher(context, ATTR_PATH, AndroidPatternMatcher.PATTERN_LITERAL, paths, data)
-      paths =
-        addMatcher(context, ATTR_PATH_PREFIX, AndroidPatternMatcher.PATTERN_PREFIX, paths, data)
-      paths =
-        addMatcher(
-          context,
-          ATTR_PATH_PATTERN,
-          AndroidPatternMatcher.PATTERN_SIMPLE_GLOB,
-          paths,
-          data,
-        )
+      paths = addMatcher(context, ATTR_PATH, PATTERN_LITERAL, paths, data)
+      paths = addMatcher(context, ATTR_PATH_PREFIX, PATTERN_PREFIX, paths, data)
+      paths = addMatcher(context, ATTR_PATH_PATTERN, PATTERN_SIMPLE_GLOB, paths, data)
+      paths = addMatcher(context, ATTR_PATH_ADVANCED_PATTERN, PATTERN_ADVANCED_GLOB, paths, data)
+      paths = addMatcher(context, ATTR_PATH_SUFFIX, PATTERN_SUFFIX, paths, data)
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
     if (actionView && browsable && schemes == null && !hasMimeType) {
@@ -713,24 +714,27 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
       val currentMatcher = AndroidPatternMatcher(value, type)
       current?.add(currentMatcher)
-      if (
-        context != null &&
-          !value.startsWith("/") &&
-          !isSubstituted(value) &&
-          !value.startsWith(
-            PREFIX_RESOURCE_REF
-          ) && // Only enforce / for path and prefix; for pattern it seems to
-          // work without
-          attributeName != ATTR_PATH_PATTERN
-      ) {
-        val fix = LintFix.create().replace().text(attribute.value).with("/$value").build()
-        reportUrlError(
-          context,
-          attribute,
-          context.getValueLocation(attribute),
-          "`${attribute.name}` attribute should start with `/`, but it is `$value`",
-          fix,
-        )
+      if (context != null && !isSubstituted(value) && !value.startsWith(PREFIX_RESOURCE_REF)) {
+        if (!value.startsWith("/") && attributeName in setOf(ATTR_PATH, ATTR_PATH_PREFIX)) {
+          val fix = LintFix.create().replace().text(attribute.value).with("/$value").build()
+          reportUrlError(
+            context,
+            attribute,
+            context.getValueLocation(attribute),
+            "`${attribute.name}` attribute should start with `/`, but it is `$value`",
+            fix,
+          )
+        }
+        if (
+          !(value.startsWith("/") || value.startsWith(".*")) && attributeName == ATTR_PATH_PATTERN
+        ) {
+          reportUrlError(
+            context,
+            attribute,
+            context.getValueLocation(attribute),
+            "`${attribute.name}` attribute should start with `/` or `.*`, but it is `$value`",
+          )
+        }
       }
     }
     return current
@@ -973,9 +977,21 @@ class AppLinksValidDetector : Detector(), XmlScanner {
 
     const val KEY_SHOW_APP_LINKS_ASSISTANT = "SHOW_APP_LINKS_ASSISTANT"
 
-    // <scheme>://<host>:<port>[<path>|<pathPrefix>|<pathPattern>]
+    // Path matchers use the order used in
+    // https://developer.android.com/guide/topics/manifest/data-element
+    // <scheme>://<host>:<port>[<path>|<pathPrefix>|<pathPattern>|<pathSuffix>|<pathAdvancedPattern>]
     private val INTENT_FILTER_DATA_SORT_REFERENCE =
-      listOf("scheme", "host", "port", "path", "pathPrefix", "pathPattern", "mimeType")
+      listOf(
+        "scheme",
+        "host",
+        "port",
+        "path",
+        "pathPrefix",
+        "pathPattern",
+        "pathSuffix",
+        "pathAdvancedPattern",
+        "mimeType",
+      )
 
     private fun isSubstituted(expression: String): Boolean {
       return isDataBindingExpression(expression) || isManifestPlaceHolderExpression(expression)
