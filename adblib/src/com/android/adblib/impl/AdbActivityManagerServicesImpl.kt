@@ -27,6 +27,7 @@ class AdbActivityManagerServicesImpl(private val session: AdbSession) : AdbActiv
     private val logger = adbLogger(session.host)
 
     override suspend fun forceStop(device: DeviceSelector, packageName: String) {
+        validatePackageName(packageName)
         session.deviceServices
             .shellCommand(device, "am force-stop $packageName")
             .withTextCollector()
@@ -40,6 +41,7 @@ class AdbActivityManagerServicesImpl(private val session: AdbSession) : AdbActiv
     }
 
     override suspend fun crash(device: DeviceSelector, packageName: String) {
+        validatePackageName(packageName)
         session.deviceServices
             .shellCommand(device, "am crash $packageName")
             .withTextCollector()
@@ -52,4 +54,15 @@ class AdbActivityManagerServicesImpl(private val session: AdbSession) : AdbActiv
                 }
             }
     }
+
+    /**
+     * Ensures a package name contains only valid characters.
+     */
+    private fun validatePackageName(packageName: String) {
+        if (!packageName.matches(PACKAGE_NAME_REGEX)) {
+            throw IllegalArgumentException("packageName `$packageName` contains illegal characters")
+        }
+    }
 }
+
+private val PACKAGE_NAME_REGEX: Regex = Regex("[a-zA-Z0-9._]+")

@@ -21,6 +21,7 @@ import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
@@ -57,6 +58,20 @@ class AdbActivityManagerServicesTest {
     }
 
     @Test
+    fun testForceStopThrows_whenPackageContainsInvalidCharacters(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val device = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(device.deviceId)
+
+        // Act
+        exceptionRule.expect(IllegalArgumentException::class.java)
+        activityManagerServices.forceStop(deviceSelector, "package name with spaces")
+
+        // Assert
+        Assert.fail("Test should have thrown an exception")
+    }
+
+    @Test
     fun testCrash(): Unit = runBlockingWithTimeout {
         // Prepare
         val device = addFakeDevice(fakeAdb)
@@ -70,6 +85,20 @@ class AdbActivityManagerServicesTest {
 
         // Assert
         yieldUntil { device.getClient(pid) == null }
+    }
+
+    @Test
+    fun testCrashThrows_whenPackageContainsInvalidCharacters(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val device = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(device.deviceId)
+
+        // Act
+        exceptionRule.expect(IllegalArgumentException::class.java)
+        activityManagerServices.crash(deviceSelector, "package&ampersand")
+
+        // Assert
+        Assert.fail("Test should have thrown an exception")
     }
 
     private fun addFakeDevice(fakeAdb: FakeAdbServerProvider, sdk: Int = 30): DeviceState {
