@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <d:devices
-        xmlns:d="http://schemas.android.com/sdk/devices/7">
+        xmlns:d="http://schemas.android.com/sdk/devices/8">
 
     <d:device deprecated="true">
         <d:name>Nexus One</d:name>
@@ -49,10 +49,10 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Scorpion</d:cpu>
             <d:gpu>Qualcomm Adreno 200</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_one</d:skin>
@@ -133,10 +133,10 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Samsung Exynos 3110</d:cpu>
             <d:gpu>PowerVR SGX 540</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_s</d:skin>
@@ -247,10 +247,10 @@
             <d:removable-storage unit="KiB"></d:removable-storage>
             <d:cpu>OMAP 4460</d:cpu> <!-- cpu type (Tegra3) freeform -->
             <d:gpu>PowerVR SGX540</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi
                 armeabi-v7a
-            </d:abi>
+            </d:abis>
             <!--dock (car, desk, tv, none)-->
             <d:dock>
             </d:dock>
@@ -375,10 +375,10 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Tegra3</d:cpu>
             <d:gpu>Tegra3</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_7</d:skin>
@@ -461,10 +461,10 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Qualcomm Snapdragon S4 Pro</d:cpu>
             <d:gpu>Adreno 320</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_4</d:skin>
@@ -557,10 +557,10 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Dual-core A15</d:cpu>
             <d:gpu>Quad-core Mali T604</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_10</d:skin>
@@ -653,10 +653,10 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Qualcomm Snapdragon S4 Pro, 1.5GHz</d:cpu>
             <d:gpu>Adreno 320, 400MHz</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_7_2013</d:skin>
@@ -757,10 +757,10 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Snapdragon 800 (MSM8974)</d:cpu>
             <d:gpu>Adreno 330</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_5</d:skin>
@@ -858,10 +858,10 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Quad core Krait 450 CPU 2.7GHz (Qualcomm Snapdragon 805 SOC)</d:cpu>
             <d:gpu>Adreno 420</d:gpu>
-            <d:abi>
+            <d:abis>
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_6</d:skin>
@@ -977,9 +977,9 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>64-bit NVIDIA Tegra K1 Dual Denver @ 2.3GHz</d:cpu>
             <d:gpu>192-core Kepler GPU</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_9</d:skin>
@@ -1129,11 +1129,11 @@
             <d:removable-storage unit="GiB">2</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 808 processor, 1.8 GHz hexa-core 64-bit</d:cpu>
             <d:gpu>Qualcomm Adreno 418</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_5x</d:skin>
@@ -1242,11 +1242,11 @@
             <d:removable-storage unit="GiB">2</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 810 v2.1 processor, 2.0 GHz octa-core 64-bit</d:cpu>
             <d:gpu>Qualcomm Adreno 430</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>nexus_6p</d:skin>
@@ -1349,9 +1349,9 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>64-bit Nvidia Tegra X1</d:cpu>
             <d:gpu>NVIDIA Maxwell 256-core GPU</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_c</d:skin>
@@ -1507,11 +1507,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Quad Core 2x 2.15GHz / 2x 1.6GHz (Qualcomm Snapdragon 821)</d:cpu>
             <d:gpu>Adreno 530</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_silver</d:skin>
@@ -1624,11 +1624,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Quad Core 2x 2.15GHz / 2x 1.6GHz (Qualcomm Snapdragon 821)</d:cpu>
             <d:gpu>Adreno 530</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_xl_silver</d:skin>
@@ -1743,11 +1743,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 835</d:cpu>
             <d:gpu>Adreno 540</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_2</d:skin>
@@ -1864,11 +1864,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 835</d:cpu>
             <d:gpu>Adreno 540</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_2_xl</d:skin>
@@ -1990,11 +1990,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 845</d:cpu>
             <d:gpu>Adreno 630</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_3</d:skin>
@@ -2119,11 +2119,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 845</d:cpu>
             <d:gpu>Adreno 630</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_3_xl</d:skin>
@@ -2249,11 +2249,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 845</d:cpu>
             <d:gpu>Adreno 630</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_3a</d:skin>
@@ -2378,11 +2378,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 845</d:cpu>
             <d:gpu>Adreno 630</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_3a_xl</d:skin>
@@ -2504,11 +2504,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 855, AArch64 Processor rev 14 (aarch64)</d:cpu>
             <d:gpu>Qualcomm, Adreno (TM) 640</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_4</d:skin>
@@ -2632,11 +2632,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 855, AArch64 Processor rev 14 (aarch64)</d:cpu>
             <d:gpu>Qualcomm, Adreno (TM) 640</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_4_xl</d:skin>
@@ -2761,11 +2761,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 730</d:cpu>
             <d:gpu>Qualcomm, Adreno (TM) 618</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_4a</d:skin>
@@ -2892,11 +2892,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Qualcomm Snapdragon 765G</d:cpu>
             <d:gpu>Qualcomm, Adreno (TM) 620</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_5</d:skin>
@@ -3022,11 +3022,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor</d:cpu>
             <d:gpu>ARM, Mali-G78 MP20</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_6</d:skin>
@@ -3151,11 +3151,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor</d:cpu>
             <d:gpu>ARM, Mali-G78 MP20</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock></d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_6_pro</d:skin>
@@ -3280,11 +3280,11 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor</d:cpu>
             <d:gpu>ARM, Mali-G78</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
                 armeabi-v7a
                 armeabi
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_6a</d:skin>
@@ -3474,9 +3474,9 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor G2</d:cpu>
             <d:gpu>ARM, Mali-G710</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_7_pro</d:skin>
@@ -3666,9 +3666,9 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor G2</d:cpu>
             <d:gpu>ARM, Mali-G710</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_7</d:skin>
@@ -3861,9 +3861,9 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Google Tensor G2</d:cpu>
             <d:gpu>ARM, Mali-G710</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_fold</d:skin>
@@ -4053,9 +4053,9 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor G2</d:cpu>
             <d:gpu>ARM, Mali-G710</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock>desk</d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_tablet</d:skin>
@@ -4231,9 +4231,9 @@
             <d:removable-storage unit="MiB">0</d:removable-storage>
             <d:cpu>Google Tensor G2</d:cpu>
             <d:gpu>ARM, Mali-G710, OpenGL ES 3.2 v1.r43p0-01eac0.ff5c643eda65d3f5ba9886fdffb12673</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_7a</d:skin>
@@ -4303,9 +4303,9 @@
             <d:removable-storage unit="MiB">112288</d:removable-storage>
             <d:cpu>Google Tensor G3</d:cpu>
             <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r44p0-01eac0.d0969c01d66270848df0f1eaaba55820</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_8</d:skin>
@@ -4375,9 +4375,9 @@
             <d:removable-storage unit="MiB">112288</d:removable-storage>
             <d:cpu>TODO</d:cpu>
             <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r44p0-01eac0.d0969c01d66270848df0f1eaaba55820</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_8_pro</d:skin>
@@ -4447,9 +4447,9 @@
               <d:removable-storage unit="MiB">112288</d:removable-storage>
               <d:cpu>Google Tensor G3</d:cpu>
               <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r44p0-01eac0.d0969c01d66270848df0f1eaaba55820</d:gpu>
-              <d:abi>
+              <d:abis>
                   arm64-v8a
-              </d:abi>
+              </d:abis>
               <d:dock> </d:dock>
               <d:power-type>battery</d:power-type>
               <d:skin>pixel_8a</d:skin>
@@ -4519,9 +4519,9 @@
               <d:removable-storage unit="MiB">234128</d:removable-storage>
               <d:cpu>Google Tensor G4</d:cpu>
               <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r47p0-01eac0.cee66b3a4d2ed62faa54506ebe50471d</d:gpu>
-              <d:abi>
+              <d:abis>
                   arm64-v8a
-              </d:abi>
+              </d:abis>
               <d:dock> </d:dock>
               <d:power-type>battery</d:power-type>
               <d:skin>pixel_9</d:skin>
@@ -4591,9 +4591,9 @@
               <d:removable-storage unit="MiB">234128</d:removable-storage>
               <d:cpu>Google Tensor G4</d:cpu>
               <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r47p0-01eac0.cee66b3a4d2ed62faa54506ebe50471d</d:gpu>
-              <d:abi>
+              <d:abis>
                   arm64-v8a
-              </d:abi>
+              </d:abis>
               <d:dock> </d:dock>
               <d:power-type>battery</d:power-type>
               <d:skin>pixel_9_pro</d:skin>
@@ -4663,9 +4663,9 @@
               <d:removable-storage unit="MiB">478192</d:removable-storage>
               <d:cpu>Google Tensor G4</d:cpu>
               <d:gpu>ARM, Mali-G715, OpenGL ES 3.2 v1.r47p0-01eac0.cee66b3a4d2ed62faa54506ebe50471d</d:gpu>
-              <d:abi>
+              <d:abis>
                   arm64-v8a
-              </d:abi>
+              </d:abis>
               <d:dock> </d:dock>
               <d:power-type>battery</d:power-type>
               <d:skin>pixel_9_pro_xl</d:skin>
@@ -4701,7 +4701,7 @@
             <d:screen>
                 <d:screen-size>large</d:screen-size>
                 <d:diagonal-length>8</d:diagonal-length>
-                <d:pixel-density>420dpi</d:pixel-density>
+                <d:pixel-density>390dpi</d:pixel-density>
                 <d:screen-ratio>notlong</d:screen-ratio>
                 <d:dimensions>
                     <d:x-dimension>2076</d:x-dimension>
@@ -4753,9 +4753,9 @@
             <d:removable-storage unit="MiB"></d:removable-storage>
             <d:cpu>Google Tensor G4</d:cpu>
             <d:gpu>ARM, Mali-G710</d:gpu>
-            <d:abi>
+            <d:abis>
                 arm64-v8a
-            </d:abi>
+            </d:abis>
             <d:dock> </d:dock>
             <d:power-type>battery</d:power-type>
             <d:skin>pixel_9_pro_fold</d:skin>
