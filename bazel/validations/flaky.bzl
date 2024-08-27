@@ -5,7 +5,6 @@ the allowlisted targets below can set "flaky" to true.
 """
 
 APPROVED_FLAKY_TESTS = [
-    "//tools/base/build-system/integration-test/application:tests__GradlePluginMemoryLeakTest",  # b/153972155
     "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",  # b/172521726
     "//tools/adt/idea/android-uitests:DeploymentTest",  # b/200082548
     "//tools/adt/idea/android-uitests:CreateCppKotlinProjectTest",  # b/185998794

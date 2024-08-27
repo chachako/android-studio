@@ -279,9 +279,6 @@ single_gradle_integration_test_per_source(
         "//tools/base/build-system/previous-versions:3.5.0",
     ],
     resources = glob(["src/test/resources/**"]),
-    very_flaky_targets = [
-        "GradlePluginMemoryLeakTest",  # b/303907470
-    ],
     deps = TEST_DEPS,
 )
 
