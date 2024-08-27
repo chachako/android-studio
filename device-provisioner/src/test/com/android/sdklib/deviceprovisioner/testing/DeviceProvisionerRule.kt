@@ -17,6 +17,7 @@ package com.android.sdklib.deviceprovisioner.testing
 
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
+import com.android.sdklib.deviceprovisioner.DefaultProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceIcons
 import com.android.sdklib.deviceprovisioner.DeviceProvisioner
 import com.android.sdklib.deviceprovisioner.EmptyIcon
@@ -36,7 +37,11 @@ class DeviceProvisionerRule(
     super.before()
     deviceProvisionerPlugin = FakeAdbDeviceProvisionerPlugin(adbSession.scope, fakeAdb)
     deviceProvisioner =
-      DeviceProvisioner.create(adbSession, listOf(deviceProvisionerPlugin), testDeviceIcons)
+      DeviceProvisioner.create(
+        adbSession.scope,
+        adbSession,
+        listOf(deviceProvisionerPlugin, DefaultProvisionerPlugin(adbSession.scope, testDeviceIcons)),
+      )
   }
 }
 

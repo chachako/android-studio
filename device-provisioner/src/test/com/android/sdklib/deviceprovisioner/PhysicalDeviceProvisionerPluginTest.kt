@@ -29,8 +29,7 @@ import org.junit.Test
 
 class PhysicalDeviceProvisionerPluginTest : DeviceProvisionerTestFixture() {
   private val plugin = PhysicalDeviceProvisionerPlugin(fakeSession.scope, deviceIcons)
-  private val provisioner =
-    DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin), deviceIcons)
+  private val provisioner = DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin))
 
   @Test
   fun physicalUsbWiFiProperties() {

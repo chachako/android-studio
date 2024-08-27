@@ -33,9 +33,15 @@ import org.junit.Test
 /** Tests generic functionality of the [DeviceProvisioner]. */
 class DeviceProvisionerTest : DeviceProvisionerTestFixture() {
 
-  private val plugin = PhysicalDeviceProvisionerPlugin(fakeSession.scope, deviceIcons)
   private val provisioner =
-    DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin), deviceIcons)
+    DeviceProvisioner.create(
+      fakeSession.scope,
+      fakeSession,
+      listOf(
+        PhysicalDeviceProvisionerPlugin(fakeSession.scope, deviceIcons),
+        DefaultProvisionerPlugin(fakeSession.scope, deviceIcons),
+      ),
+    )
 
   @Test
   fun findConnectedDeviceHandle() {

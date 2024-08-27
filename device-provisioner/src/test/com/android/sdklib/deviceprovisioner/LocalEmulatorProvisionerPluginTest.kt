@@ -78,7 +78,7 @@ class LocalEmulatorProvisionerPluginTest {
         pluginExtensions = listOf(TestExtension::class providedBy { LocalEmulatorTestExtension() }),
         handleExtensions = listOf(TestExtension::class providedBy { LocalEmulatorTestExtension() }),
       )
-    provisioner = DeviceProvisioner.create(session, listOf(plugin), deviceIcons)
+    provisioner = DeviceProvisioner.create(session.scope, session, listOf(plugin))
   }
 
   @After

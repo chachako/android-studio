@@ -18,6 +18,7 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.sdklib.deviceprovisioner.DeviceProvisioner.Companion.create
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import kotlinx.coroutines.channels.Channel
@@ -27,8 +28,13 @@ import kotlinx.coroutines.launch
 import org.junit.Test
 
 class DefaultProvisionerPluginTest : DeviceProvisionerTestFixture() {
+
   private val provisioner =
-    DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(), deviceIcons)
+    create(
+      fakeSession.scope,
+      fakeSession,
+      listOf(DefaultProvisionerPlugin(fakeSession.scope, deviceIcons)),
+    )
 
   @Test
   fun defaultUsbWiFiProperties() {

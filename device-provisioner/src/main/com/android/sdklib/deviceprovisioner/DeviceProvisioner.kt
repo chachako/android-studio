@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.withTimeoutOrNull
-import org.jetbrains.annotations.TestOnly
 
 /**
  * Central access point for devices and device templates. [DeviceProvisionerPlugin] instances
@@ -57,26 +56,12 @@ private constructor(
   private val provisioners: List<DeviceProvisionerPlugin>,
 ) {
   companion object {
-    @TestOnly
-    fun create(
-      adbSession: AdbSession,
-      provisioners: List<DeviceProvisionerPlugin>,
-      icons: DeviceIcons,
-    ) = create(adbSession.scope, adbSession, provisioners, icons)
-
     fun create(
       coroutineScope: CoroutineScope,
       adbSession: AdbSession,
       provisioners: List<DeviceProvisionerPlugin>,
-      defaultIcons: DeviceIcons,
     ) =
-      DeviceProvisioner(
-        coroutineScope,
-        adbSession,
-        (provisioners + DefaultProvisionerPlugin(coroutineScope, defaultIcons)).sortedByDescending {
-          it.priority
-        },
-      )
+      DeviceProvisioner(coroutineScope, adbSession, provisioners.sortedByDescending { it.priority })
   }
 
   private val logger = adbLogger(adbSession)
