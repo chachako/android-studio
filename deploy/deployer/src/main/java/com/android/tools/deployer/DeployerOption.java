@@ -21,6 +21,7 @@ public class DeployerOption {
     public final boolean useOptimisticSwap;
     public final boolean useOptimisticResourceSwap;
     public final EnumSet<ChangeType> optimisticInstallSupport;
+    public final boolean allowAssumeVerified;
     public final boolean useStructuralRedefinition;
     public final boolean useVariableReinitialization;
     public final boolean fastRestartOnSwapFail;
@@ -32,6 +33,7 @@ public class DeployerOption {
             boolean useOptimisticSwap,
             boolean useOptimisticResourceSwap,
             EnumSet<ChangeType> optimisticInstallSupport,
+            boolean allowAssumeVerified,
             boolean useStructuralRedefinition,
             boolean useVariableReinitialization,
             boolean fastRestartOnSwapFail,
@@ -41,6 +43,7 @@ public class DeployerOption {
         this.useOptimisticSwap = useOptimisticSwap;
         this.useOptimisticResourceSwap = useOptimisticResourceSwap;
         this.optimisticInstallSupport = optimisticInstallSupport;
+        this.allowAssumeVerified = allowAssumeVerified;
         this.useStructuralRedefinition = useStructuralRedefinition;
         this.useVariableReinitialization = useVariableReinitialization;
         this.fastRestartOnSwapFail = fastRestartOnSwapFail;
@@ -53,6 +56,7 @@ public class DeployerOption {
         private boolean useOptimisticSwap;
         private boolean useOptimisticResourceSwap;
         private EnumSet<ChangeType> optimisticInstallSupport = EnumSet.noneOf(ChangeType.class);
+        private boolean allowAssumeVerified;
         private boolean useStructuralRedefinition;
         private boolean useVariableReinitialization;
         private boolean fastRestartOnSwapFail;
@@ -72,6 +76,11 @@ public class DeployerOption {
 
         public Builder setOptimisticInstallSupport(EnumSet<ChangeType> supportedChanges) {
             this.optimisticInstallSupport = supportedChanges;
+            return this;
+        }
+
+        public Builder setAllowAssumeVerified(boolean allowAssumeVerified) {
+            this.allowAssumeVerified = allowAssumeVerified;
             return this;
         }
 
@@ -110,6 +119,7 @@ public class DeployerOption {
                     useOptimisticSwap,
                     useOptimisticResourceSwap,
                     optimisticInstallSupport,
+                    allowAssumeVerified,
                     useStructuralRedefinition,
                     useVariableReinitialization,
                     fastRestartOnSwapFail,

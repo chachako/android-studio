@@ -222,26 +222,55 @@ bool CmdCommand::UpdateAppInfo(const std::string& user_id,
 }
 
 bool CmdCommand::CreateInstallSession(
-    std::string* output, const std::vector<std::string> options) const
-    noexcept {
+    std::string* output, const bool assume_verified,
+    const std::vector<std::string> options) const noexcept {
   Phase p("Create Install Session");
   std::vector<std::string> parameters;
   parameters.emplace_back("package");
   parameters.emplace_back("install-create");
+
+  int dexopt_idx = -1;
+  if (assume_verified) {
+    dexopt_idx = parameters.size();
+    parameters.emplace_back("--dexopt-compiler-filter");
+    parameters.emplace_back("assume-verified");
+  }
+
   for (const std::string& option : options) {
     parameters.emplace_back(option);
   }
-  for (auto& option : options) {
-    LogEvent(option);
-  }
+
+  std::stringstream cmdline;
+  copy(parameters.begin(), parameters.end(),
+       std::ostream_iterator<std::string>(cmdline, " "));
+  LogEvent(cmdline.str());
 
   std::string err;
   executor_.Run(cmd_exec_, parameters, output, &err);
-  std::string match = "Success: created install session [";
-  if (output->find(match, 0) != 0) {
+  std::string success_match = "Success: created install session [";
+  std::string filter_not_supported = "Unknown option --dexopt-compiler-filter";
+
+  // dexopt-compiler-filter should be supported on API35+ and the host should
+  // not have requested it on devices that doesn't support it. There is one
+  // exception to this is certain pre-release / beta versions of API35. If we
+  // encounter this range of builds, we would take a performance penalty to
+  // retry without the flag.
+  if (err.find(filter_not_supported, 0) != std::string::npos) {
+    std::stringstream retry_cmdline;
+    parameters.erase(parameters.begin() + dexopt_idx,
+                     parameters.begin() + dexopt_idx + 2);
+    executor_.Run(cmd_exec_, parameters, output, &err);
+    copy(parameters.begin(), parameters.end(),
+         std::ostream_iterator<std::string>(retry_cmdline, " "));
+    InfoEvent(retry_cmdline.str());
+  }
+
+  if (output->find(success_match, 0) != 0) {
     return false;
   }
-  *output = output->substr(match.size(), output->size() - match.size() - 2);
+
+  *output = output->substr(success_match.size(),
+                           output->size() - success_match.size() - 2);
   return true;
 }
 

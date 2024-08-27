@@ -99,7 +99,8 @@ bool BaseInstallCommand::CreateInstallSession(
   }
 
   CmdCommand cmd(workspace_);
-  return cmd.CreateInstallSession(output, *options);
+  return cmd.CreateInstallSession(output, install_info_.assume_verified(),
+                                  *options);
 }
 
 bool BaseInstallCommand::SendApksToPackageManager(

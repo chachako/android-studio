@@ -20,6 +20,7 @@ import static com.android.tools.deployer.DeployerException.Error.CANNOT_SWAP_RES
 import static com.android.tools.deployer.DeployerException.Error.DUMP_FAILED;
 import static com.android.tools.deployer.DeployerException.Error.DUMP_UNKNOWN_PROCESS;
 import static com.android.tools.deployer.DeployerException.Error.NO_ERROR;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,17 +42,9 @@ import com.android.tools.perflogger.Benchmark;
 import com.android.tools.tracer.Trace;
 import com.android.utils.FileUtils;
 import com.android.utils.ILogger;
+
 import com.google.common.base.Charsets;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,6 +55,17 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 How these tests work:
@@ -151,7 +155,8 @@ public class DeployerRunnerTest {
             long timeTaken = currentTime - startTime;
 
             // Benchmark names can only include [a-zA-Z0-9_-] characters in them.
-            String metricName = String.format("%s-%s_time", name.getMethodName(), connection.getDeviceId());
+            String metricName =
+                    String.format("%s-%s_time", name.getMethodName(), connection.getDeviceId());
             benchmark.log(metricName, timeTaken);
         }
         System.out.print(getLogcatContent(device));
@@ -372,11 +377,13 @@ public class DeployerRunnerTest {
                             "%s package install-create -r -t -S ${size:com.example.helloworld}",
                             device),
                     cmd(
-                            "%s package install-write -S ${size:com.example.helloworld} 1 sample.apk -",
+                            "%s package install-write -S ${size:com.example.helloworld} 1"
+                                    + " sample.apk -",
                             device),
                     cmd("%s package install-commit 1", device),
                     "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                    "/system/bin/run-as com.example.helloworld cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                    "/system/bin/run-as com.example.helloworld cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                             + Sites.appCodeCache("com.example.helloworld")
                             + "coroutine_debugger_agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -463,7 +470,8 @@ public class DeployerRunnerTest {
                             "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                     "am force-stop com.example.simpleapp",
                     "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                             + Sites.appCodeCache("com.example.simpleapp")
                             + "coroutine_debugger_agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -546,7 +554,7 @@ public class DeployerRunnerTest {
                     "DELTAINSTALL_UPLOAD",
                     "DELTAINSTALL_INSTALL",
                     "DELTAINSTALL:SUCCESS");
-        } else {
+        } else if (device.getApi() < 35) {
             String packageCommand = "path";
             assertHistory(
                     device,
@@ -561,7 +569,36 @@ public class DeployerRunnerTest {
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     "/system/bin/cmd package install-commit 2",
                     "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so",
+                    "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so");
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL_UPLOAD",
+                    "DELTAINSTALL_INSTALL",
+                    "DELTAINSTALL:SUCCESS");
+        } else {
+            String packageCommand = "path";
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump
+                    "/system/bin/run-as com.example.simpleapp id -u",
+                    "id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                    INSTALLER_INVOCATION, // deltainstall
+                    "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                            + " assume-verified -t -r",
+                    "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
+                    "/system/bin/cmd package install-commit 2",
+                    "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                             + Sites.appCodeCache("com.example.simpleapp")
                             + "coroutine_debugger_agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -667,7 +704,7 @@ public class DeployerRunnerTest {
                     "DELTAINSTALL_UPLOAD",
                     "DELTAINSTALL_INSTALL",
                     "DELTAINSTALL:ERROR.INSTALL_FAILED_VERSION_DOWNGRADE");
-        } else {
+        } else if (device.getApi() < 35) {
             String packageCommand = "path";
             assertHistory(
                     device,
@@ -679,6 +716,26 @@ public class DeployerRunnerTest {
                             "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                     INSTALLER_INVOCATION, // deltainstall
                     "/system/bin/cmd package install-create -t -r",
+                    "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
+                    "/system/bin/cmd package install-commit 2");
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL_UPLOAD",
+                    "DELTAINSTALL_INSTALL",
+                    "DELTAINSTALL:ERROR.INSTALL_FAILED_VERSION_DOWNGRADE");
+        } else {
+            String packageCommand = "path";
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump com.example.simpleapp
+                    "/system/bin/run-as com.example.simpleapp id -u",
+                    "id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                    INSTALLER_INVOCATION, // deltainstall
+                    "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                            + " assume-verified -t -r",
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     "/system/bin/cmd package install-commit 2");
             assertMetrics(
@@ -758,6 +815,107 @@ public class DeployerRunnerTest {
     }
 
     @Test
+    @ApiLevel.InRange(min = 34, max = 35)
+    public void testAssumeVerifiedSuccessful() throws Exception {
+        AssumeUtil.assumeNotWindows(); // This test runs the installer on the host
+
+        assertTrue(device.getApps().isEmpty());
+        DeployerRunner runner = new DeployerRunner(cacheDb, dexDB, service);
+        Path file = TestUtils.resolveWorkspacePath(BASE + "apks/simple.apk");
+        Path installersPath = DeployerTestUtils.prepareInstaller().toPath();
+
+        String[] args = {
+            "install",
+            "com.example.simpleapp",
+            file.toString(),
+            "--force-full-install",
+            "--installers-path=" + installersPath.toString()
+        };
+
+        assertEquals(0, runner.run(args));
+        assertInstalled("com.example.simpleapp", file);
+        assertMetrics(
+                runner.getMetrics(),
+                "DELTAINSTALL:DISABLED",
+                "INSTALL:OK",
+                "DDMLIB_UPLOAD",
+                "DDMLIB_INSTALL");
+        device.getShell().clearHistory();
+
+        file = TestUtils.resolveWorkspacePath(BASE + "apks/simple+code.apk");
+        args =
+                new String[] {
+                    "install",
+                    "com.example.simpleapp",
+                    file.toString(),
+                    "--installers-path=" + installersPath.toString()
+                };
+
+        int retcode = runner.run(args);
+        assertEquals(0, retcode);
+        assertEquals(1, device.getApps().size());
+
+        assertInstalled("com.example.simpleapp", file);
+
+        if (device.getApi() < 35) {
+            String packageCommand = "path";
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump
+                    "/system/bin/run-as com.example.simpleapp id -u",
+                    "id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                    INSTALLER_INVOCATION, // deltainstall
+                    "/system/bin/cmd package install-create -t -r",
+                    "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
+                    "/system/bin/cmd package install-commit 2",
+                    "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so",
+                    "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so");
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL_UPLOAD",
+                    "DELTAINSTALL_INSTALL",
+                    "DELTAINSTALL:SUCCESS");
+        } else {
+            String packageCommand = "path";
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump
+                    "/system/bin/run-as com.example.simpleapp id -u",
+                    "id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                    INSTALLER_INVOCATION, // deltainstall
+                    "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                            + " assume-verified -t -r",
+                    "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
+                    "/system/bin/cmd package install-commit 2",
+                    "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so",
+                    "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so");
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL_UPLOAD",
+                    "DELTAINSTALL_INSTALL",
+                    "DELTAINSTALL:SUCCESS");
+        }
+    }
+
+    @Test
     public void testBadDeltaOnSplit() throws Exception {
         AssumeUtil.assumeNotWindows(); // This test runs the installer on the host
 
@@ -826,7 +984,8 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_ver.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_ver.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -850,8 +1009,34 @@ public class DeployerRunnerTest {
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // deltainstall
                         "/system/bin/cmd package install-create -t -r",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_split_01.apk",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 base.apk",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
+                        "/system/bin/cmd package install-commit 2");
+                assertMetrics(
+                        runner.getMetrics(),
+                        "DELTAINSTALL_UPLOAD",
+                        "DELTAINSTALL_INSTALL",
+                        "DELTAINSTALL:ERROR.INSTALL_FAILED_INVALID_APK");
+            } else if (device.getApi() < 35) {
+                String packageCommand = "path";
+                assertHistory(
+                        device,
+                        "getprop",
+                        INSTALLER_INVOCATION, // dump com.example.simpleapp
+                        "/system/bin/run-as com.example.simpleapp id -u",
+                        "id -u",
+                        String.format(
+                                "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                        INSTALLER_INVOCATION, // deltainstall
+                        "/system/bin/cmd package install-create -t -r",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
                         "/system/bin/cmd package install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -869,9 +1054,13 @@ public class DeployerRunnerTest {
                         String.format(
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // deltainstall
-                        "/system/bin/cmd package install-create -t -r",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_split_01.apk",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 base.apk",
+                        "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                                + " assume-verified -t -r",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
                         "/system/bin/cmd package install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -879,6 +1068,7 @@ public class DeployerRunnerTest {
                         "DELTAINSTALL_INSTALL",
                         "DELTAINSTALL:ERROR.INSTALL_FAILED_INVALID_APK");
             }
+
         }
     }
 
@@ -951,7 +1141,8 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_code.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_code.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -977,8 +1168,39 @@ public class DeployerRunnerTest {
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // detalinstall
                         "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_split_01.apk",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
                         "/system/bin/cmd package install-commit 2");
+                assertMetrics(
+                        runner.getMetrics(),
+                        "DELTAINSTALL_UPLOAD",
+                        "DELTAINSTALL_INSTALL",
+                        "DELTAINSTALL:SUCCESS");
+            } else if (device.getApi() < 35) {
+                String packageCommand = "path";
+                assertHistory(
+                        device,
+                        "getprop",
+                        INSTALLER_INVOCATION, // dump com.example.simpleapp
+                        "/system/bin/run-as com.example.simpleapp id -u",
+                        "id -u",
+                        String.format(
+                                "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                        INSTALLER_INVOCATION, // detalinstall
+                        "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
+                        "/system/bin/cmd package install-commit 2",
+                        "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so",
+                        "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so");
                 assertMetrics(
                         runner.getMetrics(),
                         "DELTAINSTALL_UPLOAD",
@@ -995,11 +1217,15 @@ public class DeployerRunnerTest {
                         String.format(
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // detalinstall
-                        "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_split_01.apk",
+                        "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                                + " assume-verified -t -r -p com.example.simpleapp",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split_split_01.apk",
                         "/system/bin/cmd package install-commit 2",
                         "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                        "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                                 + Sites.appCodeCache("com.example.simpleapp")
                                 + "coroutine_debugger_agent.so",
                         "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -1084,8 +1310,10 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_02.apk} 2 split2.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_02.apk} 2"
+                                + " split2.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1110,9 +1338,12 @@ public class DeployerRunnerTest {
                         String.format(
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         "cmd package install-create -r -t -S ${size:com.example.simpleapp}",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_02.apk} 2 split2.apk -",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " simple.apk -",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                        "cmd package install-write -S"
+                            + " ${size:com.example.simpleapp:split_split_02.apk} 2 split2.apk -",
                         "cmd package install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1134,17 +1365,23 @@ public class DeployerRunnerTest {
                                 "%s package install-create -r -t -S ${size:com.example.simpleapp}",
                                 device),
                         cmd(
-                                "%s package install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
+                                "%s package install-write -S ${size:com.example.simpleapp:base.apk}"
+                                        + " 2 simple.apk -",
                                 device),
                         cmd(
-                                "%s package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                        + " split.apk -",
                                 device),
                         cmd(
-                                "%s package install-write -S ${size:com.example.simpleapp:split_split_02.apk} 2 split2.apk -",
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_02.apk} 2"
+                                        + " split2.apk -",
                                 device),
                         cmd("%s package install-commit 2", device),
                         "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                        "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                                 + Sites.appCodeCache("com.example.simpleapp")
                                 + "coroutine_debugger_agent.so",
                         "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -1230,7 +1467,8 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1255,8 +1493,10 @@ public class DeployerRunnerTest {
                         String.format(
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         "cmd package install-create -r -t -S ${size:com.example.simpleapp}",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "cmd package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " simple.apk -",
+                        "cmd package install-write -S"
+                                + " ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
                         "cmd package install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1278,14 +1518,18 @@ public class DeployerRunnerTest {
                                 "%s package install-create -r -t -S ${size:com.example.simpleapp}",
                                 device),
                         cmd(
-                                "%s package install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
+                                "%s package install-write -S ${size:com.example.simpleapp:base.apk}"
+                                        + " 2 simple.apk -",
                                 device),
                         cmd(
-                                "%s package install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                        + " split.apk -",
                                 device),
                         cmd("%s package install-commit 2", device),
                         "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                        "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                                 + Sites.appCodeCache("com.example.simpleapp")
                                 + "coroutine_debugger_agent.so",
                         "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -1374,7 +1618,7 @@ public class DeployerRunnerTest {
                     "DELTAINSTALL_UPLOAD",
                     "DELTAINSTALL_INSTALL",
                     "DELTAINSTALL:SUCCESS");
-        } else {
+        } else if (device.getApi() < 35) {
             String packageCommand = "path";
             assertHistory(
                     device,
@@ -1389,7 +1633,36 @@ public class DeployerRunnerTest {
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     "/system/bin/cmd package install-commit 2",
                     "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so",
+                    "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.simpleapp")
+                            + "coroutine_debugger_agent.so");
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL_UPLOAD",
+                    "DELTAINSTALL_INSTALL",
+                    "DELTAINSTALL:SUCCESS");
+        } else {
+            String packageCommand = "path";
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump com.example.simpleapp
+                    "/system/bin/run-as com.example.simpleapp id -u",
+                    "id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                    INSTALLER_INVOCATION, // deltainstall
+                    "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                            + " assume-verified -t -r",
+                    "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
+                    "/system/bin/cmd package install-commit 2",
+                    "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                             + Sites.appCodeCache("com.example.simpleapp")
                             + "coroutine_debugger_agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -1471,8 +1744,10 @@ public class DeployerRunnerTest {
                         device,
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
-                        "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple_new_asset.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " simple_new_asset.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                + " split.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1498,8 +1773,37 @@ public class DeployerRunnerTest {
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // deltainstal
                         "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 base.apk",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
                         "/system/bin/cmd package install-commit 2");
+                assertMetrics(
+                        runner.getMetrics(),
+                        "DELTAINSTALL_UPLOAD",
+                        "DELTAINSTALL_INSTALL",
+                        "DELTAINSTALL:SUCCESS");
+            } else if (device.getApi() < 35) {
+                String packageCommand = "path";
+                assertHistory(
+                        device,
+                        "getprop",
+                        INSTALLER_INVOCATION, // dump com.example.simpleapp
+                        "/system/bin/run-as com.example.simpleapp id -u",
+                        "id -u",
+                        String.format(
+                                "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                        INSTALLER_INVOCATION, // deltainstal
+                        "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
+                        "/system/bin/cmd package install-commit 2",
+                        "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so",
+                        "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so");
                 assertMetrics(
                         runner.getMetrics(),
                         "DELTAINSTALL_UPLOAD",
@@ -1516,11 +1820,14 @@ public class DeployerRunnerTest {
                         String.format(
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         INSTALLER_INVOCATION, // deltainstal
-                        "/system/bin/cmd package install-create -t -r -p com.example.simpleapp",
-                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2 base.apk",
+                        "/system/bin/cmd package install-create --dexopt-compiler-filter"
+                                + " assume-verified -t -r -p com.example.simpleapp",
+                        "cmd package install-write -S ${size:com.example.simpleapp:base.apk} 2"
+                                + " base.apk",
                         "/system/bin/cmd package install-commit 2",
                         "/data/local/tmp/.studio/bin/installer -version=$VERSION",
-                        "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
                                 + Sites.appCodeCache("com.example.simpleapp")
                                 + "coroutine_debugger_agent.so",
                         "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
@@ -1555,7 +1862,8 @@ public class DeployerRunnerTest {
         assertEquals(1, device.getApps().size());
         assertInstalled("com.example.simpleapp", file);
 
-        String cmd = "am start -n com.example.simpleapp/.MainActivity -a android.intent.action.MAIN";
+        String cmd =
+                "am start -n com.example.simpleapp/.MainActivity -a android.intent.action.MAIN";
         assertEquals(0, device.executeScript(cmd, new byte[] {}).value);
         List<FakeDevice.AndroidProcess> processes = device.getProcesses();
         assertEquals(1, processes.size());
@@ -1906,19 +2214,29 @@ public class DeployerRunnerTest {
                     "/system/bin/cmd package install-create -t -r --dont-kill",
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     INSTALLER_INVOCATION, // swap
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/system/bin/run-as com.example.simpleapp cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp cp -n"
+                        + " /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStartupAgent("com.example.simpleapp"),
                     "mkdir " + Sites.appStartupAgent("com.example.simpleapp"),
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStudio("com.example.simpleapp"),
                     "mkdir " + Sites.appStudio("com.example.simpleapp"),
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/agent.so "
                             + Sites.appStartupAgent("com.example.simpleapp")
                             + "$VERSION-agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
@@ -1955,19 +2273,29 @@ public class DeployerRunnerTest {
                     "/system/bin/cmd package install-create -t -r --dont-kill",
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     INSTALLER_INVOCATION, // swap
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/system/bin/run-as com.example.simpleapp cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp cp -n"
+                        + " /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStartupAgent("com.example.simpleapp"),
                     "mkdir " + Sites.appStartupAgent("com.example.simpleapp"),
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStudio("com.example.simpleapp"),
                     "mkdir " + Sites.appStudio("com.example.simpleapp"),
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/agent.so "
                             + Sites.appStartupAgent("com.example.simpleapp")
                             + "$VERSION-agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
@@ -2361,19 +2689,29 @@ public class DeployerRunnerTest {
                     "/system/bin/cmd package install-create -t -r --dont-kill",
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     INSTALLER_INVOCATION, // swap
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/system/bin/run-as com.example.simpleapp cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp cp -n"
+                        + " /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStartupAgent("com.example.simpleapp"),
                     "mkdir " + Sites.appStartupAgent("com.example.simpleapp"),
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStudio("com.example.simpleapp"),
                     "mkdir " + Sites.appStudio("com.example.simpleapp"),
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/agent.so "
                             + Sites.appStartupAgent("com.example.simpleapp")
                             + "$VERSION-agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
@@ -2410,19 +2748,29 @@ public class DeployerRunnerTest {
                     "/system/bin/cmd package install-create -t -r --dont-kill",
                     "cmd package install-write -S ${size:com.example.simpleapp} 2 base.apk",
                     INSTALLER_INVOCATION, // swap
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/system/bin/run-as com.example.simpleapp cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
-                    "/system/bin/run-as com.example.simpleapp /data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
-                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/system/bin/run-as com.example.simpleapp cp -n"
+                        + " /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "cp -n /data/local/tmp/.studio/tmp/$VERSION/install_server"
+                        + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION",
+                    "/system/bin/run-as com.example.simpleapp"
+                            + " /data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
+                    "/data/data/com.example.simpleapp/code_cache/install_server-$VERSION"
+                            + " com.example.simpleapp",
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStartupAgent("com.example.simpleapp"),
                     "mkdir " + Sites.appStartupAgent("com.example.simpleapp"),
                     "/system/bin/run-as com.example.simpleapp mkdir "
                             + Sites.appStudio("com.example.simpleapp"),
                     "mkdir " + Sites.appStudio("com.example.simpleapp"),
-                    "/system/bin/run-as com.example.simpleapp cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "
+                    "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/agent.so "
                             + Sites.appStartupAgent("com.example.simpleapp")
                             + "$VERSION-agent.so",
                     "cp -F /data/local/tmp/.studio/tmp/$VERSION/agent.so "

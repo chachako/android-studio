@@ -52,7 +52,7 @@ class CmdCommand {
                      const std::string& package_name,
                      std::string* error_string) const noexcept;
 
-  bool CreateInstallSession(std::string* session,
+  bool CreateInstallSession(std::string* session, const bool assume_verified,
                             const std::vector<std::string> options) const
       noexcept;
 

@@ -27,6 +27,7 @@ import com.android.tools.deployer.model.Apk;
 import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.utils.ILogger;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -310,6 +311,7 @@ public class ApkInstaller {
         builder.setInherit(inherit);
         builder.addAllPatchInstructions(patches);
         builder.setPackageName(app.getAppId());
+        builder.setAssumeVerified(options.getAssumeVerified());
 
         Deploy.InstallInfo info = builder.build();
         // Check that size if not beyond the limit.
@@ -397,9 +399,11 @@ public class ApkInstaller {
                 return "Device not responding.";
             case INSTALL_FAILED_UPDATE_INCOMPATIBLE:
             case INCONSISTENT_CERTIFICATES:
-                return "The device already has an application with the same package but a different signature.";
+                return "The device already has an application with the same package but a different"
+                        + " signature.";
             case INSTALL_FAILED_DEXOPT:
-                return "The device might have stale dexed jars that don't match the current version (dexopt error).";
+                return "The device might have stale dexed jars that don't match the current version"
+                        + " (dexopt error).";
             case NO_CERTIFICATE:
                 return "The APK was either not signed, or signed incorrectly.";
             case INSTALL_FAILED_OLDER_SDK:
@@ -409,9 +413,11 @@ public class ApkInstaller {
             case SHELL_UNRESPONSIVE:
                 return "The device timed out while trying to install the application.";
             case INSTALL_FAILED_INSUFFICIENT_STORAGE:
-                return "The device needs more free storage to install the application (extra space is needed in addition to APK size).";
+                return "The device needs more free storage to install the application (extra space"
+                        + " is needed in addition to APK size).";
             case MULTI_APKS_NO_SUPPORTED_BELOW21:
-                return "Multi-APK app installation is not supported on devices with API level < 21.";
+                return "Multi-APK app installation is not supported on devices with API level <"
+                        + " 21.";
             case INSTALL_PARSE_FAILED_NO_CERTIFICATES:
                 return "APK signature verification failed.";
             case INSTALL_FAILED_USER_RESTRICTED:

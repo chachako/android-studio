@@ -73,7 +73,6 @@ public class FakeDeviceLibrary {
             case API_33:
             case API_34:
             case API_35:
-                HashSet<String> packagesWithProfiles = new HashSet<>();
                 device.getShell().addCommand(new Cmd());
                 device.getShell().addCommand(new DumpPm());
                 break;

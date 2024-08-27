@@ -17,7 +17,9 @@ package com.android.tools.deployer.devices.shell;
 
 import com.android.tools.deployer.devices.FakeDevice;
 import com.android.tools.deployer.devices.shell.interpreter.ShellContext;
+
 import com.google.common.io.ByteStreams;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -69,7 +71,8 @@ public class Cmd extends ShellCommand {
                     String pid = args.nextArgument();
                     String agent = args.nextArgument();
                     if (!device.attachAgent(Integer.valueOf(pid), agent)) {
-                        stdout.println("java.lang.IllegalArgumentException: Unknown process: " + pid);
+                        stdout.println(
+                                "java.lang.IllegalArgumentException: Unknown process: " + pid);
                         return 255;
                     }
                     return 0;
@@ -92,7 +95,7 @@ public class Cmd extends ShellCommand {
                 {
                     String opt;
                     String inherit = null;
-                    while ((opt = args.nextOption()) != null) {
+                    while ((opt = args.nextArgument()) != null) {
                         if (opt.equals("-p")) {
                             inherit = args.nextArgument();
                         }
@@ -111,8 +114,10 @@ public class Cmd extends ShellCommand {
                         return 1;
                     } else if (!opt.equals("-S")) {
                         stdout.format(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: Unknown option %s\n\tat com...\n",
+                                "\n"
+                                        + "Exception occurred while executing:\n"
+                                        + "java.lang.IllegalArgumentException: Unknown option %s\n"
+                                        + "\tat com...\n",
                                 opt);
                         return 255;
                     }
@@ -122,8 +127,10 @@ public class Cmd extends ShellCommand {
                     String name = args.nextArgument();
                     if (name == null) {
                         stdout.println(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: Invalid name: null\n\tat com...");
+                                "\n"
+                                        + "Exception occurred while executing:\n"
+                                        + "java.lang.IllegalArgumentException: Invalid name: null\n"
+                                        + "\tat com...");
                         return 255;
                     }
                     String path = args.nextArgument();
@@ -154,7 +161,8 @@ public class Cmd extends ShellCommand {
                             return 0;
                         case INSTALL_FAILED_INVALID_APK:
                             stdout.printf(
-                                    "Failure [INSTALL_FAILED_INVALID_APK: <filename> version code %d inconsistent with %d]\n",
+                                    "Failure [INSTALL_FAILED_INVALID_APK: <filename> version code"
+                                            + " %d inconsistent with %d]\n",
                                     result.previous, result.value);
                             if (device.getApi() <= 25) {
                                 return 0;
@@ -241,8 +249,11 @@ public class Cmd extends ShellCommand {
                     String pkg = args.nextArgument();
                     if (pkg == null) {
                         stdout.println(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: Argument expected after \"path\"\n\tat com...");
+                                "\n"
+                                    + "Exception occurred while executing:\n"
+                                    + "java.lang.IllegalArgumentException: Argument expected after"
+                                    + " \"path\"\n"
+                                    + "\tat com...");
                         return 255;
                     }
                     List<String> paths = device.getAppPaths(pkg);
@@ -265,8 +276,11 @@ public class Cmd extends ShellCommand {
                     String target = args.nextArgument();
                     if (target == null) {
                         stdout.println(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: Argument expected after \"list\"\n\tat com...");
+                                "\n"
+                                    + "Exception occurred while executing:\n"
+                                    + "java.lang.IllegalArgumentException: Argument expected after"
+                                    + " \"list\"\n"
+                                    + "\tat com...");
                         return 255;
                     }
                     if (!target.equals("packages")) {
@@ -276,8 +290,11 @@ public class Cmd extends ShellCommand {
                     String option = args.nextOption();
                     if (option == null) {
                         stdout.println(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: Options expected after \"list packages\"\n\tat com...");
+                                "\n"
+                                    + "Exception occurred while executing:\n"
+                                    + "java.lang.IllegalArgumentException: Options expected after"
+                                    + " \"list packages\"\n"
+                                    + "\tat com...");
                         return 255;
                     }
                     if (!option.equals("--uid")) {
@@ -287,8 +304,11 @@ public class Cmd extends ShellCommand {
                     String uidString = args.nextArgument();
                     if (uidString == null) {
                         stdout.println(
-                                "\nException occurred while executing:\n"
-                                        + "java.lang.IllegalArgumentException: UID expected after \"list packages --uid\"\n\tat com...");
+                                "\n"
+                                        + "Exception occurred while executing:\n"
+                                        + "java.lang.IllegalArgumentException: UID expected after"
+                                        + " \"list packages --uid\"\n"
+                                        + "\tat com...");
                         return 255;
                     }
                     int uid = Integer.parseInt(uidString);
@@ -306,7 +326,9 @@ public class Cmd extends ShellCommand {
             throw new IllegalArgumentException(
                     String.format(
                             "Security exception: Caller has no access to session %d\n\n"
-                                    + "java.lang.SecurityException: Caller has no access to session %d\n\tat com...\n",
+                                    + "java.lang.SecurityException: Caller has no access to session"
+                                    + " %d\n"
+                                    + "\tat com...\n",
                             session, session));
         }
         return session;
@@ -319,11 +341,18 @@ public class Cmd extends ShellCommand {
         } catch (NumberFormatException e) {
             if (argument == null) {
                 throw new IllegalArgumentException(
-                        "\nException occurred while dumping:\n java.lang.NumberFormatException: null\n\tat java...\n");
+                        "\n"
+                                + "Exception occurred while dumping:\n"
+                                + " java.lang.NumberFormatException: null\n"
+                                + "\tat java...\n");
             } else {
                 throw new IllegalArgumentException(
                         String.format(
-                                "\nException occurred while dumping:\n java.lang.NumberFormatException: For input string: \"%s\", \n\tat java...\n",
+                                "\n"
+                                    + "Exception occurred while dumping:\n"
+                                    + " java.lang.NumberFormatException: For input string: \"%s\","
+                                    + " \n"
+                                    + "\tat java...\n",
                                 argument));
             }
         }

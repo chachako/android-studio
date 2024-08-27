@@ -597,6 +597,7 @@ message InstallInfo {
   repeated PatchInstruction patchInstructions = 2;
   bool inherit = 3;
   string package_name = 4;
+  bool assume_verified = 5;
 }
 
 enum DeltaStatus {

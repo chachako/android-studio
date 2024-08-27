@@ -28,8 +28,10 @@ import com.android.tools.deployer.tasks.TaskRunner;
 import com.android.tools.tracer.Trace;
 import com.android.utils.ILogger;
 import com.android.utils.StdLogger;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,7 +123,9 @@ public class DeployerRunner {
             // The values for --user come directly from the framework's package manager, and is
             // passed directly through to pm.
             System.out.println(
-                    "Usage: {install | codeswap | fullswap} [--device=<serial>] [--user=<user id>|all|current] [--adb=<path>] packageName baseApk [splitApk1, splitApk2, ...]");
+                    "Usage: {install | codeswap | fullswap} [--device=<serial>] [--user=<user"
+                            + " id>|all|current] [--adb=<path>] packageName baseApk [splitApk1,"
+                            + " splitApk2, ...]");
             return ERR_BAD_ARGS;
         }
 
@@ -200,6 +204,7 @@ public class DeployerRunner {
                         .setFastRestartOnSwapFail(false)
                         .setOptimisticInstallSupport(optimisticInstallSupport)
                         .enableCoroutineDebugger(true)
+                        .setAllowAssumeVerified(device.getVersion().isGreaterOrEqualThan(35))
                         .skipPostInstallTasks(parameters.getSkipPostInstallTasks())
                         .useRootPushInstall(parameters.getUseRootPushInstall())
                         .build();
@@ -233,6 +238,9 @@ public class DeployerRunner {
                 if (parameters.getTargetUserId() != null) {
                     options.setInstallOnUser(parameters.getTargetUserId());
                 }
+
+                options.setAssumeVerified(deployerOption.allowAssumeVerified);
+
                 deployResult = deployer.install(app, options.build(), installMode);
             } else if (parameters.getCommands().contains(DeployRunnerParameters.Command.FULLSWAP)) {
                 deployResult = deployer.fullSwap(app, Canceller.NO_OP);
