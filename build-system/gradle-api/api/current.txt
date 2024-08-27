@@ -152,11 +152,11 @@ package com.android.build.api.artifact {
   public abstract sealed class ScopedArtifact extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.RegularFile> {
   }
 
-  public static final class ScopedArtifact.CLASSES extends com.android.build.api.artifact.ScopedArtifact {
+  public static final class ScopedArtifact.CLASSES extends com.android.build.api.artifact.ScopedArtifact implements com.android.build.api.artifact.Artifact.Appendable com.android.build.api.artifact.Artifact.Replaceable com.android.build.api.artifact.Artifact.Transformable {
     field public static final com.android.build.api.artifact.ScopedArtifact.CLASSES INSTANCE;
   }
 
-  public static final class ScopedArtifact.JAVA_RES extends com.android.build.api.artifact.ScopedArtifact {
+  public static final class ScopedArtifact.JAVA_RES extends com.android.build.api.artifact.ScopedArtifact implements com.android.build.api.artifact.Artifact.Appendable com.android.build.api.artifact.Artifact.Replaceable com.android.build.api.artifact.Artifact.Transformable {
     field public static final com.android.build.api.artifact.ScopedArtifact.JAVA_RES INSTANCE;
   }
 
@@ -3102,10 +3102,10 @@ package com.android.build.api.variant {
   }
 
   public interface ScopedArtifactsOperation<T extends org.gradle.api.Task> {
-    method public void toAppend(com.android.build.api.artifact.ScopedArtifact to, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.Property<? extends org.gradle.api.file.FileSystemLocation>> with);
+    method public <ArtifactT extends com.android.build.api.artifact.ScopedArtifact & com.android.build.api.artifact.Artifact.Appendable> void toAppend(ArtifactT to, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.Property<? extends org.gradle.api.file.FileSystemLocation>> with);
     method public void toGet(com.android.build.api.artifact.ScopedArtifact type, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile>> inputJars, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.Directory>> inputDirectories);
-    method public void toReplace(com.android.build.api.artifact.ScopedArtifact type, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.file.RegularFileProperty> into);
-    method public void toTransform(com.android.build.api.artifact.ScopedArtifact type, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile>> inputJars, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.Directory>> inputDirectories, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.file.RegularFileProperty> into);
+    method public <ArtifactT extends com.android.build.api.artifact.ScopedArtifact & com.android.build.api.artifact.Artifact.Replaceable> void toReplace(ArtifactT type, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.file.RegularFileProperty> into);
+    method public <ArtifactT extends com.android.build.api.artifact.ScopedArtifact & com.android.build.api.artifact.Artifact.Transformable> void toTransform(ArtifactT type, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile>> inputJars, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.provider.ListProperty<org.gradle.api.file.Directory>> inputDirectories, kotlin.jvm.functions.Function1<? super T,? extends org.gradle.api.file.RegularFileProperty> into);
   }
 
   public interface SigningConfig {
