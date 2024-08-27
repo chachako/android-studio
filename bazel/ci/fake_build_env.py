@@ -13,7 +13,7 @@ class FakeBuildEnv(bazel.BuildEnv):
   """Fake build environment for testing."""
 
   def __init__(self, root_dir: pathlib.Path):
-    super().__init__('', 'user')
+    super().__init__('', 'user', '7.0.0')
     self.build_number = 'P123'
     self.build_target_name = 'studio-test'
     self.workspace_dir = str(root_dir / 'workspace')

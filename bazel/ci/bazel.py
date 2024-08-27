@@ -21,25 +21,34 @@ class BuildEnv:
   dist_dir: str
   tmp_dir: str
   bazel_path: str
+  bazel_version: str
   user: str
 
   # Startup options for Bazel commands.
   _startup_options: List[str]
 
-  def __init__(self, bazel_path: str, user: str = getpass.getuser()):
+  def __init__(self, bazel_path: str, user: str = getpass.getuser(),
+               bazel_version: str = ""):
     self.build_number = os.environ.get("BUILD_NUMBER", "SNAPSHOT")
     self.build_target_name = os.environ.get("BUILD_TARGET_NAME", "")
     self.workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", "")
     self.dist_dir = os.environ.get("DIST_DIR", "")
     self.tmp_dir = os.environ.get("TMPDIR", "")
     self.bazel_path = os.path.normpath(bazel_path)
+    if bazel_version:
+      self.bazel_version = bazel_version
+    else:
+      with open(os.path.join(self.workspace_dir, ".bazelversion")) as f:
+        self.bazel_version = f.read()
     self.user = user
 
     self._startup_options = ["--max_idle_secs=60"]
     if self.is_ab_environment():
+      install_base = os.path.join(
+          self.tmp_dir, "bazel_install", self.bazel_version)
       self._startup_options.extend([
           f"--output_base={os.path.join(self.tmp_dir, 'bazel_out')}",
-          f"--install_base={os.path.join(self.tmp_dir, 'bazel_install')}",
+          f"--install_base={install_base}",
       ])
 
   def is_ab_environment(self) -> bool:
