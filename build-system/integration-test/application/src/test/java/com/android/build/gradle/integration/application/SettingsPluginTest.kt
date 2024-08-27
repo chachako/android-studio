@@ -35,6 +35,12 @@ class SettingsPluginTest {
         settings {
             plugins.add(PluginType.ANDROID_SETTINGS)
         }
+        subProject(":lib") {
+            plugins.add(PluginType.ANDROID_LIB)
+            android {
+                namespace = "com.example.lib"
+            }
+        }
         rootProject {
             plugins.add(PluginType.ANDROID_APP)
             android {
@@ -226,6 +232,8 @@ class SettingsPluginTest {
                 minSdk = minSdk,
                 execProfile = null,
                 profiles = listOf())
+
+        // First check app
         val modelInfo = project.modelV2().fetchModels().container.getProject(":")
         val androidDsl = modelInfo.androidDsl ?: error("failed to fetch android DSL model")
         assertThat(androidDsl.compileTarget)
@@ -234,12 +242,35 @@ class SettingsPluginTest {
         assertThat(androidDsl.defaultConfig.targetSdkVersion?.apiLevel)
                 .named("androidDsl.defaultConfig.targetSdkVersion.apiLevel")
                 .isEqualTo(targetSdk)
+        assertThat(androidDsl.lintOptions.targetSdk?.apiLevel)
+            .named("androidDsl.lintOptions.targetSdk.apiLevel")
+            .isEqualTo(null)
         val androidProject = modelInfo.androidProject ?: error("Failed to fetch android project")
         assertThat(androidProject.variants).isNotEmpty()
         for (variant in androidProject.variants) {
             assertThat(variant.mainArtifact.minSdkVersion.apiLevel)
                     .named("variant %s mainArtifact.minSdkVersion.apiLevel", variant.name)
                     .isEqualTo(minSdk)
+        }
+
+        // Then check library
+        val libModelInfo = project.modelV2().fetchModels().container.getProject(":lib")
+        val libAndroidDsl = libModelInfo.androidDsl ?: error("failed to fetch android DSL model")
+        assertThat(libAndroidDsl.compileTarget)
+            .named("libAndroidDsl.compileTarget")
+            .isEqualTo("android-$compileSdk")
+        assertThat(libAndroidDsl.defaultConfig.targetSdkVersion)
+            .named("libAndroidDsl.defaultConfig.targetSdkVersion")
+            .isEqualTo(null)
+        assertThat(libAndroidDsl.lintOptions.targetSdk?.apiLevel)
+            .named("libAndroidDsl.lintOptions.targetSdk.apiLevel")
+            .isEqualTo(targetSdk)
+        val libAndroidProject = modelInfo.androidProject ?: error("Failed to fetch android project")
+        assertThat(libAndroidProject.variants).isNotEmpty()
+        for (variant in libAndroidProject.variants) {
+            assertThat(variant.mainArtifact.minSdkVersion.apiLevel)
+                .named("variant %s mainArtifact.minSdkVersion.apiLevel", variant.name)
+                .isEqualTo(minSdk)
         }
     }
 }

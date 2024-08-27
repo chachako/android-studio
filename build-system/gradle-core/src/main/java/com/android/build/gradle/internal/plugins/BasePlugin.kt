@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.plugins
 import com.android.SdkConstants
 import com.android.build.api.dsl.BuildFeatures
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -903,15 +904,26 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             this.defaultConfig.minSdkPreview = minSdkPreview
         }
 
-        // Set target for all types, even where it is not directly exposed for now
-        // Eventually this will not be applicable for library, but separated for tests and lint
-        // which will likely also make sense to set to this default value
+        // For libraries, set testOptions.targetSdk and lint.targetSdk instead of the deprecated
+        // LibraryBaseFlavor.targetSdk
         settings.targetSdk?.let {targetSdk ->
-            (this.defaultConfig as DefaultConfig).targetSdk = targetSdk
+            if (this is LibraryExtension) {
+                this.testOptions.targetSdk = targetSdk
+                this.lint.targetSdk = targetSdk
+            } else {
+                (this.defaultConfig as DefaultConfig).targetSdk = targetSdk
+            }
         }
 
+        // For libraries, set testOptions.targetSdkPreview and lint.targetSdkPreview instead of the
+        // deprecated LibraryBaseFlavor.targetSdkPreview
         settings.targetSdkPreview?.let { targetSdkPreview ->
-            (this.defaultConfig as DefaultConfig).targetSdkPreview = targetSdkPreview
+            if (this is LibraryExtension) {
+                this.testOptions.targetSdkPreview = targetSdkPreview
+                this.lint.targetSdkPreview = targetSdkPreview
+            } else {
+                (this.defaultConfig as DefaultConfig).targetSdkPreview = targetSdkPreview
+            }
         }
 
         settings.ndkVersion.let { ndkVersion ->
