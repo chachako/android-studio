@@ -1061,7 +1061,9 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.20-Beta2-1",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.20-RC2",
     "org.jetbrains.kotlin:kotlin-stdlib-js:1.7.0",
+    "org.jetbrains.kotlin:kotlin-test:1.9.24",
     "org.jetbrains.kotlin:kotlin-test-junit:1.7.10",
+    "org.jetbrains.kotlin:kotlin-test-junit:1.9.24",
     "org.jetbrains.kotlin:kotlin-test-junit:2.0.20-RC2",
     "org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin:pom:1.8.21",
     "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:pom:2.0.0",  # Compose/Kotlin 2.0.0 templates
