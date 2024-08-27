@@ -177,7 +177,7 @@ class PreviewScreenshotTestEngine : TestEngine {
 
         //Image comparison
         val threshold = parameters.threshold?.toFloat()
-        val imageDiffer = if (threshold != null) ImageDiffer.MSSIMMatcher(threshold) else ImageDiffer.MSSIMMatcher()
+        val imageDiffer = if (threshold != null) ImageDiffer.PixelPerfect(threshold) else ImageDiffer.PixelPerfect()
         val verifier = Verify(imageDiffer, diffPath)
 
         return when (val result = verifier.assertMatchReference(referencePath, ImageIO.read(actualPath.toFile()))) {
