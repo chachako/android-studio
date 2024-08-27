@@ -67,12 +67,6 @@ class StringPoolTest {
   }
 
   @Test
-  @Ignore("b/303074426") // TODO(@daniellabar): fix pruning and reference management.
-  fun pruneStringsWithNoReferences() {
-    // TEST HERE
-  }
-
-  @Test
   fun sortAndMaintainIndexesInStringReferences() {
     val pool = StringPool()
 
