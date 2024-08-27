@@ -24,6 +24,7 @@ import static com.android.manifmerger.AttributeModel.AND_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.Hexadecimal32BitsWithMinimumValue;
 import static com.android.manifmerger.AttributeModel.OR_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.STRICT_MAIN_OR_OVERLAY_MERGING_POLICY;
+import static com.android.manifmerger.AttributeModel.STRING_VALUE_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.SeparatedValuesValidator;
 
 import com.android.SdkConstants;
@@ -606,14 +607,17 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
                 AttributeModel.newModel(SdkConstants.ATTR_NAME).setIsPackageDependent()),
 
         /**
-         * Service (contained in application)
-         * <br>
-         * <b>See also : </b>
-         * {@link <a href=http://developer.android.com/guide/topics/manifest/application-element.html>
-         *     Service Xml documentation</a>}
+         * Service (contained in application) <br>
+         * <b>See also : </b> {@link <a
+         * href=http://developer.android.com/guide/topics/manifest/application-element.html>Service
+         * Xml documentation</a>}
          */
-        SERVICE(MergeType.MERGE, DEFAULT_NAME_ATTRIBUTE_RESOLVER,
-                AttributeModel.newModel(SdkConstants.ATTR_NAME).setIsPackageDependent()),
+        SERVICE(
+                MergeType.MERGE,
+                DEFAULT_NAME_ATTRIBUTE_RESOLVER,
+                AttributeModel.newModel(SdkConstants.ATTR_NAME).setIsPackageDependent(),
+                AttributeModel.newModel(SdkConstants.ATTR_FOREGROUND_SERVICE_TYPE)
+                        .setMergingPolicy(STRING_VALUE_MERGING_POLICY)),
 
         /**
          * Supports-gl-texture (contained in manifest)

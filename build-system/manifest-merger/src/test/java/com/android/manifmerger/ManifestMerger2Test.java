@@ -89,6 +89,7 @@ public class ManifestMerger2Test {
                 "11_activity_dup",
                 "12_alias_dup",
                 "13_service_dup",
+                "13b_service_foreground_service_type_merge.xml",
                 "14_receiver_dup",
                 "15_provider_dup",
                 "16_fqcn_merge",
