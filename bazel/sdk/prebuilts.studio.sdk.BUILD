@@ -15,6 +15,14 @@ filegroup(
 )
 
 filegroup(
+    name = "build-tools/35.0.0",
+    srcs = glob(
+        include = ["*/build-tools/35.0.0/**"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "build-tools/34.0.0",
     srcs = glob(
         include = ["*/build-tools/34.0.0/**"],

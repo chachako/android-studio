@@ -15,7 +15,7 @@ gradle_integration_test(
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/google_apis-24_r1.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-24_r02.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-31_r01.zip",
-        "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-tools_r34.0.3-linux.zip",
+        "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-tools_r35.0.2-linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/repository2-3.xml",
         "//tools/base/build-system:gradle-distrib",
         "//tools/base/build-system/integration-test:test-projects/commonBuildScript.gradle",
