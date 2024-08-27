@@ -26,8 +26,8 @@ def get_impacted_targets(
     starting_hashes_path: str,
     final_hashes_path: str,
     output_path: pathlib.Path,
-) -> List[str]:
-  """Returns the list of impacted targets given base and current hash file paths."""
+) -> None:
+  """Generates the list of impacted targets given base and current hash file paths."""
   build_env.bazel_run(
       '//tools/base/bazel:bazel-diff',
       '--',

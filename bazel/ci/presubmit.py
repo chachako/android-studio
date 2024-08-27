@@ -72,7 +72,7 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
         build_env,
         base_hashes,
         current_hashes,
-        str(impacted_targets),
+        impacted_targets,
     )
     return impacted_targets.read_text().splitlines()
 
@@ -101,7 +101,8 @@ def _find_impacted_test_targets(
     logging.info('Using base targets')
     return base_targets
 
-  filters = test_flag_filters.split(',') + ['-manual']
+  filters = test_flag_filters.split(',') if test_flag_filters else []
+  filters.append('-manual')
 
   include_query = []
   exclude_query = []

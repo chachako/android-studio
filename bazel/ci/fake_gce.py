@@ -24,6 +24,8 @@ class FakeGCE:
     self.reference_build_id = '789'
     self.changes: List[gce.GerritChange] = []
     self.files: Dict[str, bytes] = {}
+    gce.get_reference_build_id.cache_clear()
+    gce.get_gerrit_changes.cache_clear()
 
   def curl(self, method: str, headers: List[str], url: str, *args: List[str]) -> str:
     """Fakes the curl method."""
