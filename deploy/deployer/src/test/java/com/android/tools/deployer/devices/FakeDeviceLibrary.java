@@ -21,6 +21,7 @@ import com.android.tools.deployer.devices.shell.Chmod;
 import com.android.tools.deployer.devices.shell.Chown;
 import com.android.tools.deployer.devices.shell.Cmd;
 import com.android.tools.deployer.devices.shell.Cp;
+import com.android.tools.deployer.devices.shell.DumpPm;
 import com.android.tools.deployer.devices.shell.Echo;
 import com.android.tools.deployer.devices.shell.GetProp;
 import com.android.tools.deployer.devices.shell.Id;
@@ -31,7 +32,9 @@ import com.android.tools.deployer.devices.shell.SessionPm;
 import com.android.tools.deployer.devices.shell.Stat;
 import com.android.tools.deployer.devices.shell.Su;
 import com.android.tools.deployer.devices.shell.Xargs;
+
 import java.io.IOException;
+import java.util.HashSet;
 
 public class FakeDeviceLibrary {
 
@@ -66,7 +69,13 @@ public class FakeDeviceLibrary {
             case API_29:
             case API_30:
             case API_31:
+            case API_32:
+            case API_33:
+            case API_34:
+            case API_35:
+                HashSet<String> packagesWithProfiles = new HashSet<>();
                 device.getShell().addCommand(new Cmd());
+                device.getShell().addCommand(new DumpPm());
                 break;
             default:
                 throw new IllegalStateException("No Shell set");

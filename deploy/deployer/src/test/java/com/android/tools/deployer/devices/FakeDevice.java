@@ -28,7 +28,9 @@ import com.android.tools.idea.io.grpc.netty.NettyChannelBuilder;
 import com.android.tools.idea.io.grpc.netty.NettyServerBuilder;
 import com.android.tools.manifest.parser.ManifestInfo;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Charsets;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -374,6 +376,7 @@ public class FakeDevice {
 
         String packageName = null;
         int versionCode = 0;
+        boolean hasBaselineProfile = false;
 
         SortedMap<String, byte[]> stage = new TreeMap<>(); // sorted by the apk name
         Map<String, ManifestInfo> details = new HashMap<>();
@@ -392,6 +395,9 @@ public class FakeDevice {
         }
 
         for (InstallWrittenFile file : session.files) {
+            if (file.name.endsWith("dm")) {
+                hasBaselineProfile = true;
+            }
             if (!file.name.endsWith("apk")) {
                 // We skip non apks.
                 continue;
@@ -454,7 +460,15 @@ public class FakeDevice {
         // Using a similar numbering and naming scheme as android:
         // See https://android.googlesource.com/platform/system/core/+/master/libcutils/include/private/android_filesystem_config.h
         User user = addUser(10000 + id, "u0_a" + id);
-        Application app = new Application(packageName, apks, appPath, dataPath, user, versionCode);
+        Application app =
+                new Application(
+                        packageName,
+                        apks,
+                        appPath,
+                        dataPath,
+                        user,
+                        versionCode,
+                        hasBaselineProfile);
         apps.put(packageName, app);
         return new InstallResult(InstallResult.Error.SUCCESS, 0, versionCode);
     }
@@ -609,6 +623,7 @@ public class FakeDevice {
         public final User user;
         public final List<Apk> apks;
         public final int versionCode;
+        public final boolean hasBaselineProfile;
 
         public Application(
                 String packageName,
@@ -616,13 +631,15 @@ public class FakeDevice {
                 String path,
                 String dataPath,
                 User user,
-                int versionCode) {
+                int versionCode,
+                boolean hasBaselineProfile) {
             this.packageName = packageName;
             this.apks = apks;
             this.path = path;
             this.dataPath = dataPath;
             this.user = user;
             this.versionCode = versionCode;
+            this.hasBaselineProfile = hasBaselineProfile;
         }
     }
 
