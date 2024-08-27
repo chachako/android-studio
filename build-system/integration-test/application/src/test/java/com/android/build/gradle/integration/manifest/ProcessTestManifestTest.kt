@@ -197,6 +197,30 @@ class ProcessTestManifestTest {
     }
 
     @Test
+    fun testDebuggingFlagCanBeSet() {
+        project.buildFile.appendText("""
+            android {
+                testBuildType = "release"
+            }
+            androidComponents {
+                beforeVariants(selector().withBuildType("release"), { variantBuilder ->
+                    variantBuilder.deviceTests.get("AndroidTest").debuggable = true
+                })
+                onVariants(selector().withBuildType("release"), { variant ->
+                    if (!variant.deviceTests.get("AndroidTest").debuggable) {
+                        throw new RuntimeException("DeviceTest.debuggable value not set to true")
+                    }
+                })
+            }
+        """.trimIndent())
+        project.buildFile.appendText("\n\nandroid.testBuildType \"release\"\n\n")
+        project.executor().run("assembleReleaseAndroidTest")
+        val releaseManifestContent =
+            getManifestContent(project.getApk(GradleTestProject.ApkType.ANDROIDTEST_RELEASE).file)
+        assertManifestContentContainsString(releaseManifestContent, "android:debuggable")
+    }
+
+    @Test
     fun testManifestOverlays() {
         project.buildFile.appendText("""
             android {

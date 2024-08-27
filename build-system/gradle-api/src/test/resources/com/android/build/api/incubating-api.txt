@@ -706,8 +706,6 @@ https://issuetracker.google.com/335848584
 https://issuetracker.google.com/336296433
   * com.android.build.api.variant.DeviceTestBuilder.getEnableCodeCoverage: boolean ()
   * com.android.build.api.variant.DeviceTestBuilder.setEnableCodeCoverage: void (boolean)
-https://issuetracker.google.com/336737028
-  * com.android.build.api.variant.DeviceTestBuilder implements com.android.build.api.variant.GeneratesApkBuilder
 https://issuetracker.google.com/336985668
   * com.android.build.api.variant.HostTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
   * com.android.build.api.variant.UnitTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
@@ -741,6 +739,11 @@ https://issuetracker.google.com/350672659
 https://issuetracker.google.com/357083708
   * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTest> ()
   * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTestBuilder> ()
+https://issuetracker.google.com/361880963
+  * com.android.build.api.variant.DeviceTestBuilder implements com.android.build.api.variant.GeneratesTestApkBuilder
+  * com.android.build.api.variant.GeneratesTestApkBuilder implements com.android.build.api.variant.GeneratesApkBuilder
+  * com.android.build.api.variant.GeneratesTestApkBuilder.getDebuggable: boolean ()
+  * com.android.build.api.variant.GeneratesTestApkBuilder.setDebuggable: void (boolean)
 https://issuetracker.google.com/362870092
   * com.android.build.api.variant.GeneratesApk.getMinSdk: com.android.build.api.variant.AndroidVersion ()
 https://issuetracker.google.com/362941219

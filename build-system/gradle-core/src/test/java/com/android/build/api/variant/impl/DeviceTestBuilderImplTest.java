@@ -52,6 +52,7 @@ public class DeviceTestBuilderImplTest {
                                 variantBuilderServices,
                                 global,
                                 () -> androidVersion,
+                                false,
                                 false)
                         .get(DeviceTestBuilder.ANDROID_TEST_TYPE);
         builder.getEnableMultiDex();
@@ -74,6 +75,7 @@ public class DeviceTestBuilderImplTest {
                                 variantBuilderServices,
                                 global,
                                 () -> androidVersion,
+                                false,
                                 false)
                         .get(DeviceTestBuilder.ANDROID_TEST_TYPE);
 

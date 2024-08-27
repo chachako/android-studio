@@ -2783,7 +2783,7 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.SigningConfig? signingConfig;
   }
 
-  @org.gradle.api.Incubating public interface DeviceTestBuilder extends com.android.build.api.variant.GeneratesApkBuilder {
+  @org.gradle.api.Incubating public interface DeviceTestBuilder extends com.android.build.api.variant.GeneratesTestApkBuilder {
     method @org.gradle.api.Incubating public boolean getEnable();
     method @Deprecated @org.gradle.api.Incubating public boolean getEnableCodeCoverage();
     method @org.gradle.api.Incubating public void setEnable(boolean);
@@ -2925,6 +2925,12 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.Property<java.lang.String> instrumentationRunner;
     property public abstract org.gradle.api.provider.MapProperty<java.lang.String,java.lang.String> instrumentationRunnerArguments;
     property public abstract org.gradle.api.provider.Property<java.lang.String> testLabel;
+  }
+
+  @org.gradle.api.Incubating public interface GeneratesTestApkBuilder extends com.android.build.api.variant.GeneratesApkBuilder {
+    method @Deprecated @org.gradle.api.Incubating public boolean getDebuggable();
+    method @Deprecated @org.gradle.api.Incubating public void setDebuggable(boolean);
+    property @Deprecated @org.gradle.api.Incubating public abstract boolean debuggable;
   }
 
   public interface HasAndroidResources {

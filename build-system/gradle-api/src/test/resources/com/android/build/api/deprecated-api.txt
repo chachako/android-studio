@@ -8,6 +8,7 @@ Deprecated from AGP 8.8.0
 Deprecated from AGP 8.7.0
   * com.android.build.api.dsl.ComposeOptions.getUseLiveLiterals: boolean ()
   * com.android.build.api.dsl.ComposeOptions.setUseLiveLiterals: void (boolean)
+  * com.android.build.api.variant.GeneratesTestApkBuilder.getDebuggable: boolean ()
 Deprecated from AGP 8.6.0
   * com.android.build.api.dsl.AndroidSourceSet.getWearAppConfigurationName: java.lang.String ()
 Deprecated from AGP 8.5.0

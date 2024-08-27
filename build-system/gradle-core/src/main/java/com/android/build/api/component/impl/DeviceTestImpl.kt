@@ -103,7 +103,7 @@ open class DeviceTestImpl @Inject constructor(
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
 
-    override val debuggable: Boolean = dslInfo.isDebuggable
+    override val debuggable: Boolean = deviceTestBuilder.debuggable
 
     override val minSdk: AndroidVersion
         get() = mainVariant.minSdk

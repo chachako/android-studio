@@ -19,9 +19,11 @@ package com.android.build.gradle.integration.manifest
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.ApkSubject.getManifestContent
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertTrue
@@ -103,4 +105,57 @@ class ProcessApplicationManifestTest {
         assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
     }
 
+    @Test
+    fun testApplicationDeviceTestManifestDoesNotContainDebuggableFlag() {
+        // The manifest shouldn't contain android:debuggable if we set the testBuildType to release.
+        project.getSubproject(":app").buildFile.appendText("\n\nandroid.testBuildType \"release\"\n\n")
+        project.executor().run("assembleReleaseAndroidTest")
+        val releaseManifestContent =
+            getManifestContent(project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_RELEASE).file)
+        assertManifestContentDoesNotContainString(releaseManifestContent, "android:debuggable")
+    }
+
+    @Test
+    fun testApplicationDeviceTestManifestDoesContainDebuggableFlagWhenRequested() {
+        // The manifest shouldn't contain android:debuggable if we set the testBuildType to release.
+        project.getSubproject(":app").buildFile.appendText("""
+            android {
+                testBuildType = "release"
+            }
+            androidComponents {
+                beforeVariants(selector().withBuildType("release"), { variantBuilder ->
+                    variantBuilder.deviceTests.get("AndroidTest").debuggable = true
+                })
+
+                onVariants(selector().withBuildType("release"), { variant ->
+                    if (!variant.deviceTests.get("AndroidTest").debuggable) {
+                        throw new RuntimeException("DeviceTest.debuggable value not set to true")
+                    }
+                })
+            }
+        """.trimIndent())
+        project.executor().run("assembleReleaseAndroidTest")
+        val releaseManifestContent =
+            getManifestContent(project.getSubproject(":app").getApk(GradleTestProject.ApkType.ANDROIDTEST_RELEASE).file)
+        assertManifestContentContainsString(releaseManifestContent, "android:debuggable")
+    }
+
+    private fun assertManifestContentContainsString(
+        manifestContent: Iterable<String>,
+        stringToAssert: String
+    ) {
+        manifestContent.forEach { if (it.trim().contains(stringToAssert)) return }
+        fail("Cannot find $stringToAssert in ${manifestContent.joinToString(separator = "\n")}")
+    }
+
+    private fun assertManifestContentDoesNotContainString(
+        manifestContent: Iterable<String>,
+        stringToAssert: String
+    ) {
+        manifestContent.forEach {
+            if (it.trim().contains(stringToAssert)) {
+                fail("$stringToAssert found in ${manifestContent.joinToString(separator = "\n")}")
+            }
+        }
+    }
 }
