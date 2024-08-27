@@ -228,13 +228,17 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         (isNullableAnnotation(qualifiedName) || isNonNullAnnotation(qualifiedName))
     }
 
-    private fun JavaContext.hasNullnessAnnotation(node: PsiModifierListOwner): Boolean {
+    private fun JavaContext.hasNullnessAnnotation(
+      node: PsiModifierListOwner,
+      type: PsiType?,
+    ): Boolean {
       // Check both the annotations from the evaluator (which will include external annotations from
       // XML files) and the annotations on the node (which will include nullness annotations for
-      // Kotlin not present in source).
+      // Kotlin not present in source), as well as annotations on the type
       @Suppress("ExternalAnnotations")
       return evaluator.getAnnotations(node, false).any { isNullnessAnnotation(it.qualifiedName) } ||
-        node.annotations.any { isNullnessAnnotation(it.qualifiedName) }
+        node.annotations.any { isNullnessAnnotation(it.qualifiedName) } ||
+        type?.annotations?.any { isNullnessAnnotation(it.qualifiedName) } == true
     }
 
     private fun isApi(context: JavaContext, declaration: UDeclaration): Boolean {
@@ -278,7 +282,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         }
 
         // Already annotated?
-        if (context.hasNullnessAnnotation(node)) {
+        if (context.hasNullnessAnnotation(node, uastType)) {
           return
         }
 
@@ -757,9 +761,10 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           val superParameters = superMethod.parameterList.parameters
           val parameterIndex = method.uastParameters.indexOf(node)
           if (parameterIndex >= 0 && parameterIndex < superParameters.size) {
+            val superParameter = superParameters[parameterIndex]
             if (
               isPlatformMethod(superMethod) &&
-                !context.hasNullnessAnnotation(superParameters[parameterIndex])
+                !context.hasNullnessAnnotation(superParameter, superParameter.type)
             ) {
               return true
             }
@@ -768,7 +773,10 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         }
       } else if (node is UMethod && !node.isConstructor) {
         val superMethod = node.findRootMethod() ?: return false
-        if (isPlatformMethod(superMethod) && !context.hasNullnessAnnotation(superMethod)) {
+        if (
+          isPlatformMethod(superMethod) &&
+            !context.hasNullnessAnnotation(superMethod, superMethod.returnType)
+        ) {
           return true
         }
       }

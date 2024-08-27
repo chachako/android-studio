@@ -525,6 +525,54 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
+        kotlin(
+            """
+              package test.pkg
+              fun propagatesNonNull(foo: Foo) = foo.okString() // OK
+              fun propagatesNullable(foo: Foo) = foo.okList() // OK
+              fun propagatesUnknown(foo: Foo) = foo.errorString() // ERROR
+            """
+          )
+          .indented(),
+        java(
+            """
+              package android.test;
+              import test.annotation.NonNull;
+              import test.annotation.Nullable;
+              public class PlatformSuperClass {
+                  public @Nullable String declaresReturnNullness() {
+                      return null;
+                  }
+                  public void declaresParameterNullness(@NonNull String str) {
+                  }
+                  @SuppressWarnings("UnknownNullness")
+                  public String noNullness(String str) {
+                      return str;
+                  }
+              }
+            """
+          )
+          .indented(),
+        java(
+            """
+              package test.pkg;
+              import android.test.PlatformSuperClass;
+              public class ExtendsPlatformClass extends PlatformSuperClass {
+                  @Override
+                  public String declaresReturnNullness() { // ERROR
+                      return null;
+                  }
+                  @Override
+                  public void declaresParameterNullness(String str) {  // ERROR
+                  }
+                  @Override
+                  public String noNullness(String str) { // OK
+                      return str;
+                  }
+              }
+            """
+          )
+          .indented(),
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -536,6 +584,12 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
           src/test/pkg/ErrorToStringAndEquals.java:6: Warning: Unexpected @NonNull: The equals contract allows the parameter to be null [UnknownNullness]
               public boolean equals(java.lang.@NonNull Object other) { return false; }
                                               ~~~~~~~~
+          src/test/pkg/ExtendsPlatformClass.java:5: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public String declaresReturnNullness() { // ERROR
+                     ~~~~~~
+          src/test/pkg/ExtendsPlatformClass.java:9: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public void declaresParameterNullness(String str) {  // ERROR
+                                                    ~~~~~~
           src/test/pkg/Foo.java:10: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
               public String errorString() { return ""; }
                      ~~~~~~
@@ -548,11 +602,38 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
           src/test/pkg/Foo.java:13: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
               public String[] @Nullable [] error2dArray() { return null; }
                      ~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 6 warnings
+          src/test/pkg/test.kt:4: Warning: Should explicitly declare type here since implicit type does not specify nullness [UnknownNullness]
+          fun propagatesUnknown(foo: Foo) = foo.errorString() // ERROR
+              ~~~~~~~~~~~~~~~~~
+          0 errors, 9 warnings
         """
       )
       .expectFixDiffs(
         """
+          Fix for src/test/pkg/ExtendsPlatformClass.java line 5: Annotate @NonNull:
+          @@ -3 +3
+          + import androidx.annotation.NonNull;
+          @@ -4 +5
+          -     @Override
+          +     @NonNull @Override
+          Fix for src/test/pkg/ExtendsPlatformClass.java line 5: Annotate @Nullable:
+          @@ -3 +3
+          + import androidx.annotation.Nullable;
+          @@ -4 +5
+          -     @Override
+          +     @Nullable @Override
+          Fix for src/test/pkg/ExtendsPlatformClass.java line 9: Annotate @NonNull:
+          @@ -3 +3
+          + import androidx.annotation.NonNull;
+          @@ -9 +10
+          -     public void declaresParameterNullness(String str) {  // ERROR
+          +     public void declaresParameterNullness(@NonNull String str) {  // ERROR
+          Fix for src/test/pkg/ExtendsPlatformClass.java line 9: Annotate @Nullable:
+          @@ -3 +3
+          + import androidx.annotation.Nullable;
+          @@ -9 +10
+          -     public void declaresParameterNullness(String str) {  // ERROR
+          +     public void declaresParameterNullness(@Nullable String str) {  // ERROR
           Fix for src/test/pkg/Foo.java line 10: Annotate @NonNull:
           @@ -10 +10
           -     public String errorString() { return ""; }
