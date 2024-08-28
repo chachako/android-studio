@@ -20,6 +20,7 @@ import com.android.adblib.DeviceSelector
 import com.android.backup.AdbServices.Companion.BACKUP_DIR
 import com.android.backup.BackupProgressListener.Step
 import com.android.backup.ErrorCode.BACKUP_FAILED
+import com.android.backup.ErrorCode.BACKUP_NOT_ALLOWED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
 import com.android.backup.ErrorCode.GMSCORE_IS_TOO_OLD
 import com.android.backup.ErrorCode.GMSCORE_NOT_FOUND
@@ -71,9 +72,11 @@ abstract class AbstractAdbServices(
   }
 
   override suspend fun backupNow(applicationId: String) {
-    val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED)
-    if (out.stdout.lines().last() != "Backup finished with result: Success") {
-      throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: ${out.stdout}")
+    val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED).stdout
+    when {
+      out.isBackupSuccess(applicationId) -> return
+      out.isBackupNotAllowd() -> throw BackupException(BACKUP_NOT_ALLOWED, "Backup of '$applicationId` is not allowed")
+      else -> throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
     }
   }
 
@@ -219,3 +222,12 @@ abstract class AbstractAdbServices(
 /** Get a named group value. Should only throw if the regex is bad. */
 private fun MatchResult.getGroup(name: String) =
   groups[name]?.value ?: throw BackupException(UNEXPECTED_ERROR, "Group $name not found")
+
+private fun String.isBackupSuccess(applicationId: String) = endsWith(
+  """
+    Package $applicationId with result: Success
+    Backup finished with result: Success
+  """.trimIndent()
+)
+
+private fun String.isBackupNotAllowd() = contains(" with result: Backup is not allowed")

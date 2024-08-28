@@ -47,15 +47,15 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
         withSetup(TRANSPORT_D2D) {
           reportProgress("Initializing backup transport")
           initializeTransport(TRANSPORT_D2D)
-
-          reportProgress("Running backup")
-          adbServices.backupNow(applicationId)
-
-          reportProgress("Fetching backup")
-          pullBackup(adbServices, applicationId, backupFile)
-
-          reportProgress("Cleaning up")
-          deleteBackupDir()
+          try {
+            reportProgress("Running backup")
+            adbServices.backupNow(applicationId)
+            reportProgress("Fetching backup")
+            pullBackup(adbServices, applicationId, backupFile)
+          } finally {
+            reportProgress("Cleaning up")
+            deleteBackupDir()
+          }
         }
         reportProgress("Done")
       }

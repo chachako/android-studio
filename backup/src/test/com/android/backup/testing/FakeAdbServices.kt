@@ -101,7 +101,7 @@ internal class FakeAdbServices(
         command.startsWith(SET_TRANSPORT) -> handleSetTransport(command)
         command == LIST_TRANSPORT -> handleListTransports()
         command.startsWith(INIT_TRANSPORT) -> handleInitTransport(command)
-        command.startsWith(BACKUP_NOW) -> handleBackupNow()
+        command.startsWith(BACKUP_NOW) -> handleBackupNow(command)
         command.startsWith(RESTORE) -> handleRestore()
         command.startsWith(DELETE_FILES) -> "".asStdout()
         command == DUMPSYS_GMSCORE -> handleDumpsysGmsCore()
@@ -190,8 +190,13 @@ internal class FakeAdbServices(
       .asStdout()
   }
 
-  private fun handleBackupNow(): AdbOutput {
-    return "Backup finished with result: Success".asStdout()
+  private fun handleBackupNow(command: String): AdbOutput {
+    val applicationId = command.substringAfterLast(" ")
+    return """
+    Package $applicationId with result: Success
+    Backup finished with result: Success
+  """.trimIndent()
+      .asStdout()
   }
 
   private fun handleLaunchPlayStore(): AdbOutput {
