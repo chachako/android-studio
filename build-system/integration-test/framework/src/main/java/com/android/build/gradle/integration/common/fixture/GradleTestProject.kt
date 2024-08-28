@@ -213,7 +213,7 @@ open class GradleTestProject @JvmOverloads constructor(
         fun mavenSnippet(repo: Path): String {
             return String.format(
                 """maven {
-  url '%s'
+  url = uri("%s")
   metadataSources {
     mavenPom()
     artifact()
@@ -613,7 +613,7 @@ open class GradleTestProject @JvmOverloads constructor(
         for (includedBuild in  parentTestProject.includedBuilds) {
             val includedProjectDir = parentDir.resolve(includedBuild.name)
             createSettingsFile(
-                File(includedProjectDir, "settings.gradle"),
+                getSettingsFile(includedProjectDir),
                 rootProjectName = null
             )
             createLocalProp(includedProjectDir)
@@ -753,9 +753,9 @@ allprojects { proj ->
     val mainResDir: File
         get() = FileUtils.join(projectDir, "src", "main", "res")
 
-    /** Return the settings.gradle of the test project.  */
+    /** Return the settings.gradle/settings.gradle.kts of the test project.  */
     val settingsFile: File
-        get() = File(projectDir, "settings.gradle")
+        get() = getSettingsFile(projectDir)
 
     /** Return the gradle.properties file of the test project.  */
     val gradlePropertiesFile: File
@@ -799,6 +799,16 @@ allprojects { proj ->
 
     val generatedDir: File
         get() = FileUtils.join(projectDir, "build", SdkConstants.FD_GENERATED)
+
+    private fun getSettingsFile(projectDir: File): File {
+        val settingsGradle = File(projectDir, "settings.gradle")
+
+        return if (settingsGradle.exists()) {
+            settingsGradle
+        } else {
+            File(projectDir, "settings.gradle.kts")
+        }
+    }
 
     /**
      * Returns the directory in which profiles will be generated. A null value indicates that
@@ -1486,7 +1496,8 @@ allprojects { proj ->
     }
 
     /**
-     * Creates settings.gradle unless settings.gradle.kts exists in the same directory.
+     * Creates a single settings script, either settings.gradle or settings.gradle.kts, depending
+     * on whether settings.gradle originally exists or not
      */
     private fun createSettingsFile(
         settingsFile: File,
@@ -1497,9 +1508,15 @@ allprojects { proj ->
         if (withPluginManagementBlock) {
             val projectParentDir = projectDir.parent
 
+            val commonLocalRepoPath = "${File(projectParentDir, "commonLocalRepo.gradle").toURI()}"
+            val applyCommonLocalRepo = if (settingsFile.name.endsWith(".kts")) {
+                "apply(from = \"$commonLocalRepoPath\", to=pluginManagement)"
+            } else {
+                "apply from: \"$commonLocalRepoPath\", to: this"
+            }
             settingsContent = """
-            pluginManagement { t ->
-                apply from: "${File(projectParentDir, "commonLocalRepo.gradle").toURI()}", to: t
+            pluginManagement {
+                $applyCommonLocalRepo
 
                 resolutionStrategy {
                     eachPlugin {
@@ -1518,19 +1535,28 @@ allprojects { proj ->
                 """
 
 dependencyResolutionManagement {
-    RepositoriesMode.PREFER_SETTINGS
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     ${generateProjectRepoScript()}
 }
 
                     """.trimIndent()
         }
 
-        settingsContent +=
-                """
+        val versionCatalogPath = "${File(projectDir.parent, "versionCatalog.gradle").toURI()}"
+        settingsContent += if (settingsFile.name.endsWith(".kts")) {
+            """
 
-                apply from: "${File(projectDir.parent, "versionCatalog.gradle").toURI()}"
+apply(from = "$versionCatalogPath")
 
-                """.trimIndent()
+                    """.trimIndent()
+        } else {
+            """
+
+apply from: "$versionCatalogPath"
+
+                    """.trimIndent()
+        }
+
 
         if (gradleBuildCacheDirectory != null) {
             val absoluteFile: File = if (gradleBuildCacheDirectory.isAbsolute)
@@ -1554,9 +1580,7 @@ buildCache {
                     """.trimIndent()
         }
 
-        val settingsKtsExist = settingsFile.parentFile.resolve("settings.gradle.kts").exists()
-
-        if (!settingsKtsExist && settingsContent.isNotEmpty()) {
+        if (settingsContent.isNotEmpty()) {
             settingsFile.writeText(settingsContent)
         }
     }
@@ -1663,10 +1687,10 @@ buildCache {
             )
         } catch (e: Throwable) { }
 
-        val includedProjects = projects.joinToString(separator = ",") { "'$it'" }
+        val includedProjects = projects.joinToString(separator = ",") { "\"$it\"" }
         settingsFile.appendText("""
 
-            include $includedProjects
+            include($includedProjects)
         """.trimIndent())
     }
 }

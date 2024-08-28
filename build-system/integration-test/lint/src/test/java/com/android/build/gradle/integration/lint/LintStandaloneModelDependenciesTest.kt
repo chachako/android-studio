@@ -45,19 +45,6 @@ class LintStandaloneModelDependenciesTest {
                         // Add xml dependency as regression test for b/198048896
                         implementation 'com.example:xml:1.0'
                     }
-
-                    repositories {
-                        apply from: "../../commonLocalRepo.gradle", to: repositories
-
-                        ivy {
-                            url = uri("../ivyRepo")
-                            patternLayout {
-                                ivy("[organisation]/[module]/[revision]/[module]-[revision].ivy")
-                                artifact("[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])")
-                                m2compatible = true
-                            }
-                        }
-                    }
                 """.trimIndent()
             )
 
@@ -82,6 +69,25 @@ class LintStandaloneModelDependenciesTest {
     @Before
     fun before() {
         createIvyRepo()
+
+        TestFileUtils.appendToFile(
+            project.settingsFile,
+            """
+                dependencyResolutionManagement {
+                     repositories {
+                         // Add the Ivy repository
+                        ivy {
+                            url = uri("ivyRepo") // Set the repository URL
+                            patternLayout {
+                                ivy("[organisation]/[module]/[revision]/[module]-[revision].ivy")
+                                artifact("[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])")
+                                m2compatible = true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
     }
 
     // Regression test for b/197146610

@@ -62,7 +62,7 @@ class AsmTransformApiConfigurationCachingTest {
 
         FileUtils.writeToFile(project.file("buildSrc/settings.gradle"),
         """
-            apply from: "../settings.gradle"
+            apply from: "../settings.gradle.kts"
         """.trimIndent())
 
         FileUtils.writeToFile(

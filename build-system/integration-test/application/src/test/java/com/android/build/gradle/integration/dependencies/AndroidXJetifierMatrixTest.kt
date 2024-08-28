@@ -78,7 +78,7 @@ class AndroidXJetifierMatrixTest {
                 """
                     dependencyResolutionManagement {
                         repositories {
-                            maven { url 'mavenRepo' }
+                            maven { url = uri("mavenRepo") }
                         }
                     }
                 """.trimIndent()
@@ -121,7 +121,7 @@ class AndroidXJetifierMatrixTest {
                 """
                     dependencyResolutionManagement {
                         repositories {
-                            maven { url 'mavenRepo' }
+                            maven { url =uri("mavenRepo") }
                         }
                     }
                 """.trimIndent()

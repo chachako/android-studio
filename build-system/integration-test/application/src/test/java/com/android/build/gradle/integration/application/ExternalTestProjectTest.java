@@ -20,10 +20,12 @@ import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import java.io.File;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
 
 /**
  * Check that a project can depend on a jar dependency published by another app project.
@@ -37,8 +39,8 @@ public class ExternalTestProjectTest {
 
     @Before
     public void setUp() throws Exception {
-        TestFileUtils.appendToFile(project.getSettingsFile(),
-                "include ':app1'\ninclude ':app2'\n");
+        TestFileUtils.appendToFile(
+                project.getSettingsFile(), "include(\":app1\")\ninclude(\":app2\")\n");
 
         File rootFile = project.getProjectDir();
 

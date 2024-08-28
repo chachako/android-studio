@@ -20,8 +20,10 @@ import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.v2.ide.SyncIssue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -79,11 +81,6 @@ class CyclicPomDependencyTest: ModelComparator() {
             }
             appendToBuildFile {
                 """
-                    repositories {
-                        maven {
-                            url { '../repo' }
-                        }
-                    }
                     dependencies {
                         implementation("com.foo:bar1:1.0")
                     }
@@ -108,6 +105,22 @@ class CyclicPomDependencyTest: ModelComparator() {
             // b/308936442
             set(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
         }
+    }
+
+    @Before
+    fun setUp() {
+        TestFileUtils.appendToFile(
+            project.settingsFile,
+            """
+                dependencyResolutionManagement {
+                    repositories {
+                        maven {
+                            url { "repo" }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
     }
 
     @Test

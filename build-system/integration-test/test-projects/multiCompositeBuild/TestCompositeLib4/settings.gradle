@@ -17,4 +17,4 @@ include 'services:webservice'
 
 rootProject.name = 'composite4'
 
-apply from : "../settings.gradle"
+apply from : "../settings.gradle.kts"

@@ -37,13 +37,6 @@ class TransformApplicationAssetsTest {
 
     @Test
     fun transformAssetInLibrary() {
-        project.settingsFile.appendText(
-            """
-                buildscript.dependencies{
-                    classpath 'commons-io:commons-io:2.4'
-                }
-            """.trimIndent()
-        )
         project.buildFile.appendText(
             """
         import org.apache.commons.io.FileUtils

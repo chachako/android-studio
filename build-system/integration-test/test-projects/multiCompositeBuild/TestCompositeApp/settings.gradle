@@ -5,4 +5,4 @@ includeBuild '../TestCompositeLib2'
 includeBuild '../TestCompositeLib3'
 includeBuild '../TestCompositeLib4'
 
-apply from : "../settings.gradle"
+apply from : "../settings.gradle.kts"
