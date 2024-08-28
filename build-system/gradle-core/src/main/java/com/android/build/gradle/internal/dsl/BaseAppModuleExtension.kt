@@ -58,11 +58,6 @@ open class BaseAppModuleExtensionInternal(
         super.compileOptions(action)
     }
 
-    @Configuring
-    fun buildFeaturesDcl(action: ApplicationBuildFeatures.() -> Unit) {
-        super.buildFeatures(action)
-    }
-
     private val appBuildTypes: ApplicationBuildTypeContainer
         get() = ApplicationBuildTypeContainer(publicExtensionImpl.buildTypes)
 
@@ -127,8 +122,16 @@ open class BaseAppModuleExtension(
     override val androidResources: ApplicationAndroidResources
         get() = publicExtensionImpl.androidResources
 
+    override val buildFeatures: ApplicationBuildFeatures
+        get() = publicExtensionImpl.buildFeatures
+
     @Configuring
     override fun defaultConfig(action: ApplicationDefaultConfig.() -> Unit) {
         action.invoke(defaultConfig)
+    }
+
+    @Configuring
+    override fun buildFeatures(action: ApplicationBuildFeatures.() -> Unit) {
+        action.invoke(buildFeatures)
     }
 }

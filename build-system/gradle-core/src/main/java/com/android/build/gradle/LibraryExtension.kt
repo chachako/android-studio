@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle
 
+import com.android.build.api.dsl.LibraryBuildFeatures
 import com.android.build.api.dsl.LibraryDefaultConfig
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.BaseVariant
@@ -129,8 +130,16 @@ open class LibraryExtension(
     override val libraryRequests: MutableCollection<LibraryRequest>
         get() = publicExtensionImpl.libraryRequests
 
+    override val buildFeatures: LibraryBuildFeatures
+        get() = publicExtensionImpl.buildFeatures
+
     @Configuring
     override fun defaultConfig(action: LibraryDefaultConfig.() -> Unit) {
         action.invoke(defaultConfig)
+    }
+
+    @Configuring
+    override fun buildFeatures(action: LibraryBuildFeatures.() -> Unit) {
+        action.invoke(buildFeatures)
     }
 }
