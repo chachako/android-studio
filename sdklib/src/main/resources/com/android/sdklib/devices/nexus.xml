@@ -385,7 +385,7 @@
         </d:hardware>
 
         <d:software>
-            <d:api-level>16</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>2.0</d:gl-version>
@@ -470,7 +470,7 @@
             <d:skin>nexus_4</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>16</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>2.0</d:gl-version>
@@ -566,7 +566,7 @@
             <d:skin>nexus_10</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>16</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>2.0</d:gl-version>
@@ -663,7 +663,7 @@
         </d:hardware>
 
         <d:software>
-            <d:api-level>18</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.0</d:gl-version>
@@ -766,7 +766,7 @@
             <d:skin>nexus_5</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>19</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.0</d:gl-version>
@@ -867,7 +867,7 @@
             <d:skin>nexus_6</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>21</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.0</d:gl-version>
@@ -985,7 +985,7 @@
             <d:skin>nexus_9</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>21</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.1</d:gl-version>
@@ -1139,7 +1139,7 @@
             <d:skin>nexus_5x</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>23</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.1</d:gl-version>
@@ -1252,7 +1252,7 @@
             <d:skin>nexus_6p</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>23</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.1</d:gl-version>
@@ -1357,7 +1357,7 @@
             <d:skin>pixel_c</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>23</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.1</d:gl-version>
@@ -1517,7 +1517,7 @@
             <d:skin>pixel_silver</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>25</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -1634,7 +1634,7 @@
             <d:skin>pixel_xl_silver</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>25</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -1753,7 +1753,7 @@
             <d:skin>pixel_2</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>27</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -1874,7 +1874,7 @@
             <d:skin>pixel_2_xl</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>27</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2000,7 +2000,7 @@
             <d:skin>pixel_3</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>28</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2129,7 +2129,7 @@
             <d:skin>pixel_3_xl</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>28</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2259,7 +2259,7 @@
             <d:skin>pixel_3a</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>28</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2388,7 +2388,7 @@
             <d:skin>pixel_3a_xl</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>28</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2514,7 +2514,7 @@
             <d:skin>pixel_4</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>29</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2642,7 +2642,7 @@
             <d:skin>pixel_4_xl</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>29</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -2902,7 +2902,7 @@
             <d:skin>pixel_5</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>30</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -3032,7 +3032,7 @@
             <d:skin>pixel_6</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>31</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -3161,7 +3161,7 @@
             <d:skin>pixel_6_pro</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>31</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -3290,7 +3290,7 @@
             <d:skin>pixel_6a</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>33</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -3482,7 +3482,7 @@
             <d:skin>pixel_7_pro</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>33</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -3674,7 +3674,7 @@
             <d:skin>pixel_7</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>33</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -4061,7 +4061,7 @@
             <d:skin>pixel_tablet</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>33</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -4239,7 +4239,7 @@
             <d:skin>pixel_7a</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>34</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -4311,7 +4311,7 @@
             <d:skin>pixel_8</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>34</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -4383,7 +4383,7 @@
             <d:skin>pixel_8_pro</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>34</d:api-level>
+            <d:api-level>-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -4455,7 +4455,7 @@
               <d:skin>pixel_8a</d:skin>
           </d:hardware>
           <d:software>
-              <d:api-level>34</d:api-level>
+              <d:api-level>-</d:api-level>
               <d:live-wallpaper-support>true</d:live-wallpaper-support>
               <d:bluetooth-profiles> </d:bluetooth-profiles>
               <d:gl-version>3.2</d:gl-version>
