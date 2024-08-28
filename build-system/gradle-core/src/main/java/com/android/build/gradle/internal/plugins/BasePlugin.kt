@@ -88,7 +88,6 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigI
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfigImpl
 import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
-import com.android.build.gradle.internal.utils.enforceMinimumVersionsOfPlugins
 import com.android.build.gradle.internal.utils.getKotlinAndroidPluginVersion
 import com.android.build.gradle.internal.utils.syncAgpAndKgpSources
 import com.android.build.gradle.internal.variant.ComponentInfo
@@ -97,6 +96,7 @@ import com.android.build.gradle.internal.variant.VariantFactory
 import com.android.build.gradle.internal.variant.VariantInputModel
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.build.gradle.internal.variant.VariantModelImpl
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.SyncOptions
 import com.android.builder.errors.IssueReporter.Type
 import com.android.builder.model.v2.ide.ProjectType
@@ -416,12 +416,6 @@ abstract class BasePlugin<
             .allOptions
             .forEach(projectServices.deprecationReporter::reportOptionIssuesIfAny)
         IncompatibleProjectOptionsReporter.check(projectOptions, issueReporter)
-
-        // TODO(b/189990965) Re-enable checking minimum versions of certain plugins once
-        // https://github.com/gradle/gradle/issues/23838 is fixed
-        if (!gradleBuildFeatures.projectIsolationActive()) {
-            enforceMinimumVersionsOfPlugins(project, issueReporter)
-        }
 
         // Apply the Java plugin
         project.plugins.apply(JavaBasePlugin::class.java)

@@ -345,7 +345,6 @@ enum class BooleanOption(
         FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
 
-
     ENABLE_EMULATOR_CONTROL(
         "android.experimental.androidTest.enableEmulatorControl",
         true,
