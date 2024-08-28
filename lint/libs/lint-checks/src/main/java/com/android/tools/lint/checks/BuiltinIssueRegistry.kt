@@ -194,6 +194,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           GradleDetector.NOT_INTERPOLATED,
           GradleDetector.PATH,
           GradleDetector.PLAY_SDK_INDEX_NON_COMPLIANT,
+          GradleDetector.PLAY_SDK_INDEX_VULNERABILITY,
           GradleDetector.PLAY_SDK_INDEX_GENERIC_ISSUES,
           GradleDetector.PLUS,
           GradleDetector.REMOTE_VERSION,

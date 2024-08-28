@@ -16,6 +16,34 @@
 package com.android.tools.lint.checks
 
 import com.android.ide.common.repository.NetworkCache
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DECEPTIVE_BEHAVIOR
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DEVICE_AND_NETWORK_ABUSE
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MOBILE_UNWANTED_SOFTWARE
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_UNKNOWN
+import com.android.tools.lint.checks.LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_CROSS_APP_SCRIPTING
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_FRAGMENT_INJECTION
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_INTERNAL_INTENT
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_PENDING_INTENT
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_INTENT_REDIRECTION
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_INTENT_SCHEME_HIJACKING
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_JS_INTERFACE_INJECTION
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_LEAKED_GCP_KEYS
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_PATH_TRAVERSAL
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_CIPHER_MODE
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_ENCRYPTION
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_HOSTNAME_VERIFIER
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_SSL_ERROR_HANDLER
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_TRUST_MANAGER
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_WEBVIEW_OAUTH
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_UNSPECIFIED
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS
+import com.android.tools.lint.checks.LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType.SDK_SECURITY_VULNERABILITY_TYPE_ZIP_PATH_TRAVERSAL
 import com.android.tools.lint.detector.api.LintFix
 import java.io.File
 import java.io.InputStream
@@ -51,17 +79,146 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     const val VIEW_DETAILS_MESSAGE = "View details in Google Play SDK Index"
     val POLICY_TYPE_TO_TEXT =
       mapOf(
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_UNKNOWN to "unknown",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS to "Ads",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DEVICE_AND_NETWORK_ABUSE to
-          "Device and Network Abuse",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DECEPTIVE_BEHAVIOR to
-          "Deceptive Behavior",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA to "User Data",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS to "Permissions",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MOBILE_UNWANTED_SOFTWARE to
-          "Mobile Unwanted Software",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE to "Malware",
+        SDK_POLICY_UNKNOWN to "unknown",
+        SDK_POLICY_ADS to "Ads",
+        SDK_POLICY_DEVICE_AND_NETWORK_ABUSE to "Device and Network Abuse",
+        SDK_POLICY_DECEPTIVE_BEHAVIOR to "Deceptive Behavior",
+        SDK_POLICY_USER_DATA to "User Data",
+        SDK_POLICY_PERMISSIONS to "Permissions",
+        SDK_POLICY_MOBILE_UNWANTED_SOFTWARE to "Mobile Unwanted Software",
+        SDK_POLICY_MALWARE to "Malware",
+      )
+
+    data class VulnerabilityDescription(
+      val name: String,
+      val description: String,
+      val link: String?,
+    )
+
+    val SECURITY_VULNERABILITY_TYPE_TO_TEXT =
+      mapOf(
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSPECIFIED to
+          VulnerabilityDescription(
+            name = "unspecified",
+            description = "contains unspecified vulnerability issues",
+            link = null,
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_TRUST_MANAGER to
+          VulnerabilityDescription(
+            name = "Unsafe TrustManager",
+            description = "contains an unsafe implementation of the X509TrustManager interface",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_HOSTNAME_VERIFIER to
+          VulnerabilityDescription(
+            name = "Unsafe HostnameVerifier",
+            description =
+              "contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_SSL_ERROR_HANDLER to
+          VulnerabilityDescription(
+            name = "Unsafe SSL Error Handler",
+            description = "contains an unsafe implementation of the onReceivedSslError handler",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_ZIP_PATH_TRAVERSAL to
+          VulnerabilityDescription(
+            name = "Zip Path Traversal",
+            description = "contains unsafe unzipping patterns",
+            link = "https://support.google.com/faqs/answer/9294009",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_WEBVIEW_OAUTH to
+          VulnerabilityDescription(
+            name = "Unsafe OAuth via WebView",
+            description = "uses WebView for authentication, which is not recommended",
+            link = "https://support.google.com/faqs/answer/12284343",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_CIPHER_MODE to
+          VulnerabilityDescription(
+            name = "Unsafe Encryption Mode Usage",
+            description = "contains encryption employing the less secure mode AES/ECB",
+            link = "https://support.google.com/faqs/answer/10046138",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_ENCRYPTION to
+          VulnerabilityDescription(
+            name = "Unsafe Cryptographic Encryption",
+            description = "contains unsafe encryption patterns",
+            link = "https://support.google.com/faqs/answer/9450925",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_PENDING_INTENT to
+          VulnerabilityDescription(
+            name = "Implicit PendingIntent",
+            description = "contains an Implicit PendingIntent issue",
+            link = "https://support.google.com/faqs/answer/10437428",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_INTERNAL_INTENT to
+          VulnerabilityDescription(
+            name = "Implicit Internal Intent",
+            description = "contains an Implicit Internal Intent issue",
+            link = "https://support.google.com/faqs/answer/10437428",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_CROSS_APP_SCRIPTING to
+          VulnerabilityDescription(
+            name = "Cross-App Scripting",
+            description = "may be vulnerable to WebView Cross-App Scripting",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS to
+          VulnerabilityDescription(
+            name = "File Based XSS",
+            description = "may be vulnerable to File-based Cross-Site Scripting",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_INTENT_SCHEME_HIJACKING to
+          VulnerabilityDescription(
+            name = "Intent Scheme Hijacking",
+            description = "may be vulnerable to Intent-Scheme Hijacking",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_JS_INTERFACE_INJECTION to
+          VulnerabilityDescription(
+            name = "JavaScript Interface Injection",
+            description = "may be vulnerable to JavaScript Interface Injection",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_INTENT_REDIRECTION to
+          VulnerabilityDescription(
+            name = "Intent Redirection",
+            description = "may be vulnerable to Intent Redirection",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_FRAGMENT_INJECTION to
+          VulnerabilityDescription(
+            name = "Fragment Injection",
+            description =
+              "contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_PATH_TRAVERSAL to
+          VulnerabilityDescription(
+            name = "ContentProvider Path Traversal",
+            description = "may be vulnerable to ContentProvider Path Traversal",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION to
+          VulnerabilityDescription(
+            name = "ContentProvider SQL Injection",
+            description = "may be vulnerable to ContentProvider SQL Injection",
+            link = "https://support.google.com/googleplay/android-developer/answer/9888379",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_LEAKED_GCP_KEYS to
+          VulnerabilityDescription(
+            name = "Leaked GCP keys",
+            description = "contains exposed Google Cloud Platform (GCP) API key(s)",
+            link = "https://support.google.com/faqs/answer/9287711",
+          ),
+        SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS to
+          VulnerabilityDescription(
+            name = "Known Vulnerable Library (JS)",
+            description = "contains one or more JavaScript libraries with known security issues",
+            link = "https://support.google.com/faqs/answer/9464300",
+          ),
       )
   }
 
@@ -225,6 +382,30 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       logHasCriticalIssues(groupId, artifactId, versionString, buildFile)
     }
     return hasCriticalIssues
+  }
+
+  /**
+   * Does this library have security vulnerabilities?
+   *
+   * @param groupId: group id for library coordinates
+   * @param artifactId: artifact id for library coordinates
+   * @param versionString: version to check
+   * @param buildFile: build file in which this dependency is declared, for logging purposes
+   * @return true if the index has information about this particular version, and it has security
+   *   vulnerabilities reported.
+   */
+  fun hasLibraryVulnerabilityIssues(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+    buildFile: File?,
+  ): Boolean {
+    val hasVulnerabilities =
+      getLabels(groupId, artifactId, versionString)?.hasSecurityVulnerabilitiesInfo() ?: false
+    if (hasVulnerabilities) {
+      logVulnerability(groupId, artifactId, versionString, buildFile)
+    }
+    return hasVulnerabilities
   }
 
   /**
@@ -440,6 +621,24 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     return "$groupId:$artifactId version $versionString has been reported as outdated by its author$recommendedVersions"
   }
 
+  /**
+   * Generate a list of messages for a library that has vulnerability issues, with a link for more
+   * information (can be null)
+   */
+  fun generateVulnerabilityMessages(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+  ): List<VulnerabilityDescription> {
+    return getVulnerabilityLabels(getLabels(groupId, artifactId, versionString)).map { message ->
+      VulnerabilityDescription(
+        message.name,
+        description = "$groupId:$artifactId version $versionString ${message.description}.",
+        message.link,
+      )
+    }
+  }
+
   protected open fun logHasCriticalIssues(
     groupId: String,
     artifactId: String,
@@ -455,6 +654,13 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   ) {}
 
   protected open fun logOutdated(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+    file: File?,
+  ) {}
+
+  protected open fun logVulnerability(
     groupId: String,
     artifactId: String,
     versionString: String,
@@ -592,5 +798,42 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       if (isThirdParty) "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. Carefully evaluate any third-party SDKs before integrating them into your app."
       else ""
     }"
+  }
+
+  private fun getVulnerabilityLabels(
+    labels: LibraryVersionLabels?
+  ): List<VulnerabilityDescription> {
+    val defaultDetails = "has unspecified vulnerability issues"
+    val defaultName = "unspecified vulnerability"
+    val vulnerabilities = extractVulnerabilities(labels)
+    val result = mutableListOf<VulnerabilityDescription>()
+    var hasUnknown = false
+    for (vulnerability in vulnerabilities) {
+      val details = SECURITY_VULNERABILITY_TYPE_TO_TEXT.getOrDefault(vulnerability, null)
+      if (details != null) {
+        result.add(details)
+      } else {
+        hasUnknown = true
+      }
+    }
+    if (hasUnknown || result.isEmpty()) {
+      result.add(VulnerabilityDescription(defaultName, defaultDetails, link = null))
+    }
+    return result
+  }
+
+  private fun extractVulnerabilities(
+    labels: LibraryVersionLabels?
+  ): Set<LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType> {
+    val result =
+      mutableSetOf<LibraryVersionLabels.SecurityVulnerabilitiesInfo.SdkSecurityVulnerabilityType>()
+    if (labels == null || !labels.hasSecurityVulnerabilitiesInfo()) {
+      return result
+    }
+    val types = labels.securityVulnerabilitiesInfo.vulnerabilitiesList
+    if (types != null) {
+      result.addAll(types)
+    }
+    return result
   }
 }

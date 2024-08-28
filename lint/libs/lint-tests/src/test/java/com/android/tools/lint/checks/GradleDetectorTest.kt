@@ -51,6 +51,7 @@ import com.android.tools.lint.checks.GradleDetector.Companion.NOT_INTERPOLATED
 import com.android.tools.lint.checks.GradleDetector.Companion.PATH
 import com.android.tools.lint.checks.GradleDetector.Companion.PLAY_SDK_INDEX_GENERIC_ISSUES
 import com.android.tools.lint.checks.GradleDetector.Companion.PLAY_SDK_INDEX_NON_COMPLIANT
+import com.android.tools.lint.checks.GradleDetector.Companion.PLAY_SDK_INDEX_VULNERABILITY
 import com.android.tools.lint.checks.GradleDetector.Companion.PLUS
 import com.android.tools.lint.checks.GradleDetector.Companion.REMOTE_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.RISKY_LIBRARY
@@ -4965,6 +4966,82 @@ class GradleDetectorTest : AbstractCheckTest() {
         http://another.example.url/
         Show URL for build.gradle line 23: View details in Google Play SDK Index:
         http://another.example.url/
+        Show URL for build.gradle line 25: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 25: Learn more about Unsafe SSL Error Handler vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 25: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 25: Learn more about Zip Path Traversal vulnerability:
+        https://support.google.com/faqs/answer/9294009
+        Show URL for build.gradle line 25: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 25: Learn more about Unsafe OAuth via WebView vulnerability:
+        https://support.google.com/faqs/answer/12284343
+        Show URL for build.gradle line 13: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 13: Learn more about Unsafe TrustManager vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 24: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 24: Learn more about Unsafe HostnameVerifier vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Implicit Internal Intent vulnerability:
+        https://support.google.com/faqs/answer/10437428
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Implicit PendingIntent vulnerability:
+        https://support.google.com/faqs/answer/10437428
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Fragment Injection vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Unsafe Encryption Mode Usage vulnerability:
+        https://support.google.com/faqs/answer/10046138
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Leaked GCP keys vulnerability:
+        https://support.google.com/faqs/answer/9287711
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Known Vulnerable Library (JS) vulnerability:
+        https://support.google.com/faqs/answer/9464300
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Unsafe Cryptographic Encryption vulnerability:
+        https://support.google.com/faqs/answer/9450925
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about ContentProvider Path Traversal vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about ContentProvider SQL Injection vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about File Based XSS vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Intent Redirection vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Intent Scheme Hijacking vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about JavaScript Interface Injection vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 26: Learn more about Cross-App Scripting vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 8: View details in Google Play SDK Index:
         http://index.example.url/
         Show URL for build.gradle line 5: View details in Google Play SDK Index:
@@ -4999,6 +5076,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                     compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple types), non-blocking
                     compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple types), blocking
                     compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple types), no severity
+                    compile 'com.example.ads.third.party:example:7.1.10' // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                    compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                    compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
 
                     compile 'log4j:log4j:latest.release' // OK
                     compile 'log4j:log4j' // OK
@@ -5016,6 +5096,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
         PLAY_SDK_INDEX_GENERIC_ISSUES,
+        PLAY_SDK_INDEX_VULNERABILITY,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5072,6 +5153,63 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:23: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple types), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:25: Error: com.example.ads.third.party:example version 7.1.11 contains an unsafe implementation of the onReceivedSslError handler. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:25: Error: com.example.ads.third.party:example version 7.1.11 contains unsafe unzipping patterns. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:25: Error: com.example.ads.third.party:example version 7.1.11 uses WebView for authentication, which is not recommended. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:24: Warning: com.example.ads.third.party:example version 7.1.10 contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.10' // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit Internal Intent issue. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit PendingIntent issue. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains encryption employing the less secure mode AES/ECB. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains exposed Google Cloud Platform (GCP) API key(s). [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains one or more JavaScript libraries with known security issues. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 contains unsafe encryption patterns. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider Path Traversal. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider SQL Injection. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to File-based Cross-Site Scripting. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent Redirection. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent-Scheme Hijacking. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to JavaScript Interface Injection. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:26: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to WebView Cross-App Scripting. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:8: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console.
           The library author recommends using versions:
             - 1.2.17
@@ -5085,7 +5223,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          6 errors, 14 warnings
+          9 errors, 30 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -5114,6 +5252,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                 exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
                 exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
                 exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
+                exVulHost = "7.1.10"            # Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
 
                 [libraries]
                 critical_log4j = { module = "log4j:log4j", version.ref = "log4Critical"}
@@ -5132,6 +5273,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                 policyMultiNon_ex = { module = "com.example.ads.third.party:example", version.ref = "exPolicyMultiNon"}
                 policyMultiBlock_ex = { module = "com.example.ads.third.party:example", version.ref = "exPolicyMultiBlock"}
                 policyMulti_ex = { module = "com.example.ads.third.party:example", version.ref = "exPolicyMulti"}
+                vulHost = { module = "com.example.ads.third.party:example", version.ref = "exVulHost"}
+                VulMultiBlock = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiBlock"}
+                VulMultiNon = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiNon"}
                 """
         )
       )
@@ -5141,6 +5285,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
         PLAY_SDK_INDEX_GENERIC_ISSUES,
+        PLAY_SDK_INDEX_VULNERABILITY,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5194,6 +5339,63 @@ class GradleDetectorTest : AbstractCheckTest() {
                 ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
                                 exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
                                                 ~~~~~~~
+                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains an unsafe implementation of the onReceivedSslError handler. [PlaySdkIndexVulnerability]
+                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                                                  ~~~~~~~~
+                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains unsafe unzipping patterns. [PlaySdkIndexVulnerability]
+                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                                                  ~~~~~~~~
+                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 uses WebView for authentication, which is not recommended. [PlaySdkIndexVulnerability]
+                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                                                  ~~~~~~~~
+                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
+                                exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
+                                                   ~~~~~~~
+                ../gradle/libs.versions.toml:20: Warning: com.example.ads.third.party:example version 7.1.10 contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier. [PlaySdkIndexVulnerability]
+                                exVulHost = "7.1.10"            # Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                                            ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit Internal Intent issue. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit PendingIntent issue. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains encryption employing the less secure mode AES/ECB. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains exposed Google Cloud Platform (GCP) API key(s). [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains one or more JavaScript libraries with known security issues. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains unsafe encryption patterns. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider Path Traversal. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider SQL Injection. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to File-based Cross-Site Scripting. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent Redirection. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent-Scheme Hijacking. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to JavaScript Interface Injection. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
+                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to WebView Cross-App Scripting. [PlaySdkIndexVulnerability]
+                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                                ~~~~~~~~
                 ../gradle/libs.versions.toml:5: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console.
                 The library author recommends using versions:
                   - 1.2.17
@@ -5204,7 +5406,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
                                 exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
                                                    ~~~~~~~
-                6 errors, 12 warnings
+                9 errors, 28 warnings
                 """
       )
   }
@@ -5226,6 +5428,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         +     compile 'log4j:log4j:1.2.11' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
+        Show URL for build.gradle line 2: View details in Google Play SDK Index:
+        http://another.example.url/
+        Show URL for build.gradle line 2: Learn more about Unsafe TrustManager vulnerability:
+        https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
       """
@@ -5275,6 +5481,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
         PLAY_SDK_INDEX_GENERIC_ISSUES,
+        PLAY_SDK_INDEX_VULNERABILITY,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5289,10 +5496,13 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
+              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 4 warnings
+          0 errors, 5 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -5353,6 +5563,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
         PLAY_SDK_INDEX_GENERIC_ISSUES,
+        PLAY_SDK_INDEX_VULNERABILITY,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5407,6 +5618,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
         PLAY_SDK_INDEX_GENERIC_ISSUES,
+        PLAY_SDK_INDEX_VULNERABILITY,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -8179,7 +8391,8 @@ class GradleDetectorTest : AbstractCheckTest() {
                   .addVersions(
                     LibraryVersion.newBuilder().setVersionString("7.2.1").setIsLatestVersion(false)
                   )
-                  // Outdated & non compliant (user data) & Critical
+                  // Outdated & non compliant (user data) & Critical & Vulnerability
+                  // (UNSAFE_TRUST_MANAGER)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.2.0")
@@ -8192,6 +8405,14 @@ class GradleDetectorTest : AbstractCheckTest() {
                             LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
                               .addViolatedSdkPolicies(
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                              )
+                          )
+                          .setSecurityVulnerabilitiesInfo(
+                            LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_TRUST_MANAGER
                               )
                           )
                       )
@@ -8369,6 +8590,136 @@ class GradleDetectorTest : AbstractCheckTest() {
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                               )
                           )
+                      )
+                  )
+                  // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.10")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setSecurityVulnerabilitiesInfo(
+                            LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_HOSTNAME_VERIFIER
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                      )
+                  )
+                  // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL,
+                  // UNSAFE_WEBVIEW_OAUTH, blocking)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.11")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setSecurityVulnerabilitiesInfo(
+                            LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_SSL_ERROR_HANDLER
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_ZIP_PATH_TRAVERSAL
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_WEBVIEW_OAUTH
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                      )
+                  )
+                  // Vulnerability multiple (non-blocking)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.12")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setSecurityVulnerabilitiesInfo(
+                            LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_CIPHER_MODE
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_ENCRYPTION
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_PENDING_INTENT
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_INTERNAL_INTENT
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_CROSS_APP_SCRIPTING
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_INTENT_SCHEME_HIJACKING
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_JS_INTERFACE_INJECTION
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_INTENT_REDIRECTION
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_FRAGMENT_INJECTION
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_PATH_TRAVERSAL
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_LEAKED_GCP_KEYS
+                              )
+                              .addVulnerabilities(
+                                LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                  .SdkSecurityVulnerabilityType
+                                  .SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
               )

@@ -127,7 +127,7 @@ class GooglePlaySdkIndexTest {
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("7.2.1").setIsLatestVersion(false)
                 )
-                // Outdated & non compliant (user data) & Critical
+                // Outdated & non compliant (user data) & Critical & Vulnerability
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.2.0")
@@ -140,6 +140,14 @@ class GooglePlaySdkIndexTest {
                           LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
                             .addViolatedSdkPolicies(
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                            )
+                        )
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_TRUST_MANAGER
                             )
                         )
                     )
@@ -348,6 +356,365 @@ class GooglePlaySdkIndexTest {
                         )
                     )
                 )
+                // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.11")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_HOSTNAME_VERIFIER
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (UNSAFE_SSL_ERROR_HANDLER, blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.12")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_SSL_ERROR_HANDLER
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (ZIP_PATH_TRAVERSAL, no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.13")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_ZIP_PATH_TRAVERSAL
+                            )
+                        )
+                    )
+                )
+                // Vulnerability (UNSAFE_WEBVIEW_OAUTH, blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.14")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_WEBVIEW_OAUTH
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (UNSAFE_CIPHER_MODE non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.15")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_CIPHER_MODE
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (UNSAFE_ENCRYPTION no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.16")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_UNSAFE_ENCRYPTION
+                            )
+                        )
+                    )
+                )
+                // Vulnerability (IMPLICIT_PENDING_INTENT blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.17")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_PENDING_INTENT
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (IMPLICIT_INTERNAL_INTENT non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.18")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_IMPLICIT_INTERNAL_INTENT
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (CROSS_APP_SCRIPTING no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.19")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_CROSS_APP_SCRIPTING
+                            )
+                        )
+                    )
+                )
+                // Vulnerability (FILE_BASED_XSS blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.20")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (INTENT_SCHEME_HIJACKING non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.21")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_INTENT_SCHEME_HIJACKING
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (JS_INTERFACE_INJECTION no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.22")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_JS_INTERFACE_INJECTION
+                            )
+                        )
+                    )
+                )
+                // Vulnerability (INTENT_REDIRECTION blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.23")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_INTENT_REDIRECTION
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (FRAGMENT_INJECTION non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.24")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_FRAGMENT_INJECTION
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (PATH_TRAVERSAL no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.25")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_PATH_TRAVERSAL
+                            )
+                        )
+                    )
+                )
+                // Vulnerability (SQL_INJECTION blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.26")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (LEAKED_GCP_KEYS non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.27")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_LEAKED_GCP_KEYS
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability (VULNERABLE_LIBS no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.28")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS
+                            )
+                        )
+                    )
+                )
+                // Vulnerability multiple (VULNERABLE_LIBS blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.29")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_FILE_BASED_XSS
+                            )
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_SQL_INJECTION
+                            )
+                            .addVulnerabilities(
+                              LibraryVersionLabels.SecurityVulnerabilitiesInfo
+                                .SdkSecurityVulnerabilityType
+                                .SDK_SECURITY_VULNERABILITY_TYPE_VULNERABLE_LIBS
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Vulnerability not specified (non-blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.30")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setSecurityVulnerabilitiesInfo(
+                          LibraryVersionLabels.SecurityVulnerabilitiesInfo.newBuilder()
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
             )
         )
         // No URL set (causes blank result for indexUrl)
@@ -539,12 +906,17 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `policy issues shown`() {
-    assertThat(countPolicyIssues()).isEqualTo(16)
+    assertThat(countPolicyIssues()).isEqualTo(21)
+  }
+
+  @Test
+  fun `vulnerability issues shown`() {
+    assertThat(countVulnerabilityIssues()).isEqualTo(23)
   }
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(18)
+    assertThat(countHasErrorOrWarning()).isEqualTo(25)
   }
 
   @Test
@@ -761,6 +1133,7 @@ class GooglePlaySdkIndexTest {
       .isEqualTo(expectedMessage)
   }
 
+  @Test
   fun `Outdated issue with recommended versions for first party`() {
     val expectedMessage =
       "android.arch.core:common version 1.1.1 has been reported as outdated by its author.\n" +
@@ -780,6 +1153,169 @@ class GooglePlaySdkIndexTest {
       )
     assertThat(index.generatePolicyMessages("android.arch.core", "common", "1.1.1"))
       .isEqualTo(expectedMessages)
+  }
+
+  @Test
+  fun `No vulnerability type policy issue message`() {
+    assertThat(
+        index.generateVulnerabilityMessages("logj4", "logj4", "1.2.14").map { it.description }
+      )
+      .isEqualTo(listOf("logj4:logj4 version 1.2.14 has unspecified vulnerability issues."))
+  }
+
+  @Test
+  fun `vulnerability with other issues message`() {
+    verifyVulnerabilityMessages(
+      "7.2.0",
+      listOf("contains an unsafe implementation of the X509TrustManager interface"),
+    )
+  }
+
+  @Test
+  fun `UNSAFE_HOSTNAME_VERIFIER vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.11",
+      listOf(
+        "contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier"
+      ),
+    )
+  }
+
+  @Test
+  fun `SSL_ERROR_HANDLER vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.12",
+      listOf("contains an unsafe implementation of the onReceivedSslError handler"),
+    )
+  }
+
+  @Test
+  fun `ZIP_PATH_TRAVERSAL vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.13", listOf("contains unsafe unzipping patterns"))
+  }
+
+  @Test
+  fun `UNSAFE_WEBVIEW_OAUTH vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.14",
+      listOf("uses WebView for authentication, which is not recommended"),
+    )
+  }
+
+  @Test
+  fun `UNSAFE_CIPHER_MODE vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.15",
+      listOf("contains encryption employing the less secure mode AES/ECB"),
+    )
+  }
+
+  @Test
+  fun `UNSAFE_ENCRYPTION vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.16", listOf("contains unsafe encryption patterns"))
+  }
+
+  @Test
+  fun `IMPLICIT_PENDING_INTENT vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.17", listOf("contains an Implicit PendingIntent issue"))
+  }
+
+  @Test
+  fun `IMPLICIT_INTERNAL_INTENT vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.18", listOf("contains an Implicit Internal Intent issue"))
+  }
+
+  @Test
+  fun `CROSS_APP_SCRIPTING vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.19",
+      listOf("may be vulnerable to WebView Cross-App Scripting"),
+    )
+  }
+
+  @Test
+  fun `FILE_BASED_XSS vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.20",
+      listOf("may be vulnerable to File-based Cross-Site Scripting"),
+    )
+  }
+
+  @Test
+  fun `INTENT_SCHEME_HIJACKING vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.21", listOf("may be vulnerable to Intent-Scheme Hijacking"))
+  }
+
+  @Test
+  fun `JS_INTERFACE_INJECTION vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.22",
+      listOf("may be vulnerable to JavaScript Interface Injection"),
+    )
+  }
+
+  @Test
+  fun `INTENT_REDIRECTION vulnerability issue message`() {
+    verifyVulnerabilityMessages("7.1.23", listOf("may be vulnerable to Intent Redirection"))
+  }
+
+  @Test
+  fun `FRAGMENT_INJECTION vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.24",
+      listOf(
+        "contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection"
+      ),
+    )
+  }
+
+  @Test
+  fun `PATH_TRAVERSAL vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.25",
+      listOf("may be vulnerable to ContentProvider Path Traversal"),
+    )
+  }
+
+  @Test
+  fun `SQL_INJECTION vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.26",
+      listOf("may be vulnerable to ContentProvider SQL Injection"),
+    )
+  }
+
+  @Test
+  fun `LEAKED_GCP_KEYS vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.27",
+      listOf("contains exposed Google Cloud Platform (GCP) API key(s)"),
+    )
+  }
+
+  @Test
+  fun `VULNERABLE_LIBS vulnerability issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.28",
+      listOf("contains one or more JavaScript libraries with known security issues"),
+    )
+  }
+
+  @Test
+  fun `multiple vulnerabilities issue message`() {
+    verifyVulnerabilityMessages(
+      "7.1.29",
+      listOf(
+        "may be vulnerable to File-based Cross-Site Scripting",
+        "may be vulnerable to ContentProvider SQL Injection",
+        "contains one or more JavaScript libraries with known security issues",
+      ),
+    )
+  }
+
+  @Test
+  fun `vulnerability not specified issue message`() {
+    verifyVulnerabilityMessages("7.1.30", listOf("has unspecified vulnerability issues"))
   }
 
   private fun countOutdatedIssues(): Int {
@@ -806,7 +1342,7 @@ class GooglePlaySdkIndexTest {
         val artifact = library.libraryId.mavenId.artifactId
         for (version in library.versionsList) {
           if (index.isLibraryNonCompliant(group, artifact, version.versionString, null)) {
-            result++
+            result += index.generatePolicyMessages(group, artifact, version.versionString).size
           }
         }
       }
@@ -823,6 +1359,23 @@ class GooglePlaySdkIndexTest {
         for (version in library.versionsList) {
           if (index.hasLibraryCriticalIssues(group, artifact, version.versionString, null)) {
             result++
+          }
+        }
+      }
+    }
+    return result
+  }
+
+  private fun countVulnerabilityIssues(): Int {
+    var result = 0
+    for (sdk in proto.sdksList) {
+      for (library in sdk.librariesList) {
+        val group = library.libraryId.mavenId.groupId
+        val artifact = library.libraryId.mavenId.artifactId
+        for (version in library.versionsList) {
+          if (index.hasLibraryVulnerabilityIssues(group, artifact, version.versionString, null)) {
+            result +=
+              index.generateVulnerabilityMessages(group, artifact, version.versionString).size
           }
         }
       }
@@ -864,6 +1417,22 @@ class GooglePlaySdkIndexTest {
         "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console in the future$recommendedVersions"
       }
     assertThat(index.generatePolicyMessages("com.example.ads.third.party", "example", version))
+      .isEqualTo(expectedNonBlockingMessages)
+  }
+
+  private fun verifyVulnerabilityMessages(
+    version: String,
+    vulnerabilityDescriptions: List<String>,
+  ) {
+    val expectedNonBlockingMessages =
+      vulnerabilityDescriptions.map { description ->
+        "com.example.ads.third.party:example version $version $description."
+      }
+    assertThat(
+        index.generateVulnerabilityMessages("com.example.ads.third.party", "example", version).map {
+          it.description
+        }
+      )
       .isEqualTo(expectedNonBlockingMessages)
   }
 }
