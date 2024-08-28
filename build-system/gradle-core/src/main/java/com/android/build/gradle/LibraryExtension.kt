@@ -21,7 +21,10 @@ import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import com.android.build.gradle.api.LibraryVariant
+import com.android.build.gradle.internal.CompileOptionsInternal
+import com.android.build.gradle.internal.DependenciesExtension
 import com.android.build.gradle.internal.ExtraModelInfo
+import com.android.build.gradle.internal.LibraryBuildTypeContainer
 import com.android.build.gradle.internal.dependency.SourceSetManager
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
@@ -38,6 +41,46 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.declarative.dsl.model.annotations.Configuring
 import java.util.Collections
+
+open class LibraryExtensionInternal(
+    dslServices: DslServices,
+    bootClasspathConfig: BootClasspathConfig,
+    buildOutputs: NamedDomainObjectContainer<BaseVariantOutput>,
+    sourceSetManager: SourceSetManager,
+    extraModelInfo: ExtraModelInfo,
+    private val publicExtensionImpl: LibraryExtensionImpl,
+    stats: GradleBuildProject.Builder?
+) : LibraryExtension(
+    dslServices,
+    bootClasspathConfig,
+    buildOutputs,
+    sourceSetManager,
+    extraModelInfo,
+    publicExtensionImpl,
+    stats,
+) {
+    @Configuring
+    fun compileOptionsDcl(action: CompileOptionsInternal.() -> Unit) {
+        super.compileOptions(action)
+    }
+
+    private val libraryBuildTypes: LibraryBuildTypeContainer
+        get() = LibraryBuildTypeContainer(publicExtensionImpl.buildTypes)
+
+    @Configuring
+    fun libraryBuildTypes(action: LibraryBuildTypeContainer.() -> Unit) {
+        action.invoke(libraryBuildTypes)
+    }
+
+    val dependenciesDcl: DependenciesExtension by lazy {
+        dslServices.newInstance(DependenciesExtension::class.java)
+    }
+
+    @Configuring
+    fun dependenciesDcl(configure: DependenciesExtension.() -> Unit) {
+        configure.invoke(dependenciesDcl)
+    }
+}
 
 /**
  * The {@code android} extension for {@code com.android.library} projects.
