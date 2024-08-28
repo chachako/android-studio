@@ -30,4 +30,8 @@ public final class Matrix {
             System.arraycopy(transformedPoints, 0, pts, 0, transformedPoints.length);
         }
     }
+
+    public boolean postTranslate(float dx, float dy) {
+        return true;
+    }
 }

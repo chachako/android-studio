@@ -88,7 +88,14 @@ private fun View.toNodeImpl(
 
             val transform = Matrix()
             view.transformMatrixToGlobal(transform)
+
+            // Move the transformation to (0,0) before checking for identity.
+            // An identity would then mean the shape is the same as the bounds
+            // computed above - so no need to send Quad coordinates.
+            // A rotation will typically require Quad coordinates.
+            transform.postTranslate(-absPos.x.toFloat(), -absPos.y.toFloat())
             if (!transform.isIdentity) {
+                transform.postTranslate(absPos.x.toFloat(), absPos.y.toFloat())
                 val w = view.width.toFloat()
                 val h = view.height.toFloat()
                 val corners = floatArrayOf(
