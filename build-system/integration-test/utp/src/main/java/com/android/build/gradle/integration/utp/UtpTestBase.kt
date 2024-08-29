@@ -333,6 +333,71 @@ abstract class UtpTestBase {
 
     @Test
     @Throws(Exception::class)
+    fun additionalTestOutputWithBenchmarkFiles() {
+        selectModule("app", false)
+
+        val testSrc = """
+            package com.example.helloworld
+
+            import android.os.Bundle
+            import android.os.Environment
+            import androidx.test.platform.app.InstrumentationRegistry
+            import androidx.test.ext.junit.runners.AndroidJUnit4
+
+            import org.junit.Test
+            import org.junit.runner.RunWith
+
+            import java.io.File
+
+            @RunWith(AndroidJUnit4::class)
+            class AdditionalTestOutputExampleTest {
+                @Test
+                fun createSampleFileAndReportIt() {
+                    val instrumentation = InstrumentationRegistry.getInstrumentation()
+                    // Tries to report a bundle with additional test output
+                    @Suppress("DEPRECATION")
+                    val outputFolder = instrumentation
+                        .targetContext
+                        .externalMediaDirs.firstOrNull {
+                            Environment.getExternalStorageState(it) == Environment.MEDIA_MOUNTED
+                        }
+                        ?: throw Exception("Cannot get external storage due to not mounted")
+
+                    val sampleFile = File(outputFolder, "sampleFile_1")
+                        .apply { writeText("This is a sample file.") }
+
+                    // Note that the path used here should be relative to outputFolder, so just the filename.
+                    val summary = "[sample file](file://" + sampleFile.name + ")"
+
+                    val bundle = Bundle().apply {
+                        putString("android.studio.display.benchmark", summary)
+                        putString("android.studio.v2display.benchmark", summary)
+                        putString("android.studio.v2display.benchmark.outputDirPath", outputFolder.absolutePath)
+                        putString("additionalTestOutputFile_sampleFile", sampleFile.absolutePath)
+                    }
+                    InstrumentationRegistry
+                        .getInstrumentation()
+                        .sendStatus(2, bundle)
+                }
+            }
+        """.trimIndent()
+        val exampleTest = project.projectDir
+            .toPath()
+            .resolve("app/src/androidTest/java/com/example/helloworld/AdditionalTestOutputExampleTest.kt")
+        Files.createDirectories(exampleTest.parent)
+        Files.write(exampleTest, testSrc.toByteArray())
+
+        executor.run(testTaskName)
+
+        assertThat(project.file("${testAdditionalOutputPath}/sampleFile_1")).contains("This is a sample file.")
+        assertThat(project.file("${testAdditionalOutputPath}/" +
+            "additionaltestoutput.benchmark.message_com.example.helloworld" +
+            ".AdditionalTestOutputExampleTest.createSampleFileAndReportIt.txt"))
+            .contains("[sample file](file://sampleFile_1)")
+    }
+
+    @Test
+    @Throws(Exception::class)
     fun androidTestWithDynamicFeature() {
         selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")

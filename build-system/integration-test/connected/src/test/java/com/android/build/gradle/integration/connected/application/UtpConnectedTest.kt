@@ -248,6 +248,13 @@ class UtpConnectedTest : UtpTestBase() {
         }
     }
 
+    @Test
+    fun additionalTestOutputWithBenchmarkFilesInSecondaryUser() {
+        SecondaryUser().use {
+            additionalTestOutputWithBenchmarkFiles()
+        }
+    }
+
     private fun executor(): GradleTaskExecutor {
         return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }

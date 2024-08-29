@@ -34,9 +34,6 @@ import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestResultProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
-import java.io.File
-import java.util.logging.Level
-import java.util.logging.Logger
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,14 +43,16 @@ import org.junit.runners.JUnit4
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.nullable
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import java.io.File
 import java.time.Duration
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * Unit tests for [AndroidAdditionalTestOutputPlugin].
@@ -239,6 +238,21 @@ class AndroidAdditionalTestOutputPluginTest {
         """.trimIndent()
         val benchmarkOutputDir =
             "/sdcard/Android/media/com.example.macrobenchmark/additional_test_output"
+
+        val traceFiles = listOf(
+            "FrameTimingBenchmark_start_iter000_2021-07-15-21-32-39.trace",
+            "FrameTimingBenchmark_start_iter001_2021-07-15-21-33-09.trace"
+        )
+        `when`(mockDeviceController.execute(
+            eq(listOf("shell", "ls \"${benchmarkOutputDir}\" | cat")),
+            nullable(Duration::class.java)
+        )).thenReturn(CommandResult(0, traceFiles))
+        traceFiles.forEach {
+            `when`(mockDeviceController.execute(
+                eq(listOf("shell", "[[ -d \"${benchmarkOutputDir}/$it\" ]]")),
+                nullable(Duration::class.java)
+            )).thenReturn(CommandResult(1, listOf()))
+        }
 
         val testResultWithBenchmark = TestResultProto.TestResult.newBuilder().apply {
             testCaseBuilder.testClass = "TestClass"

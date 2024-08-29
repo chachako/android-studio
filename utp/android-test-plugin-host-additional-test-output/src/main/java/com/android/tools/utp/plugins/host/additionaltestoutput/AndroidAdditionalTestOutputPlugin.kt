@@ -164,8 +164,8 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         }?.value ?: ""
 
         addBenchmarkMessage(benchmarkMessageWithoutPrefix, builder, testResult)
-        addBenchmarkFiles(benchmarkMessageWithoutPrefix, benchmarkOutputDir, deviceController,
-                          builder)
+        addBenchmarkFiles(
+            benchmarkMessageWithoutPrefix, benchmarkOutputDir, deviceController, builder)
     }
 
     /**
@@ -179,14 +179,13 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             return;
         }
 
-        val benchmarkFileRelativePaths = benchmarkMessage.split("\n")
+        val benchmarkFileRelativePaths = benchmarkMessage.splitToSequence("\n")
             .flatMap { line ->
                 benchmarkUrlRegex.findAll(line)
             }
-            .map { matchResult ->
-                matchResult.groups.get(BENCHMARK_LINK_REGEX_GROUP_INDEX)?.value
+            .mapNotNull { matchResult ->
+                matchResult.groups[BENCHMARK_LINK_REGEX_GROUP_INDEX]?.value
             }
-            .filterNotNull()
             .filter { matchValue ->
                 matchValue.startsWith(BENCHMARK_TRACE_FILE_PREFIX)
             }
@@ -195,23 +194,18 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             }
             .toSet()
 
-        benchmarkFileRelativePaths.forEach { relativeFilePath ->
-            val deviceFilePath = "${benchmarkOutputDir}/${relativeFilePath}"
-            val hostFilePath =
-                File(config.additionalOutputDirectoryOnHost).absolutePath +
-                        "${File.separator}${relativeFilePath}"
-            deviceController.pull(TestArtifactProto.Artifact.newBuilder().apply {
-                destinationPathBuilder.path = deviceFilePath
-                sourcePathBuilder.path = hostFilePath
-            }.build())
+        val hostOutputDir = File(config.additionalOutputDirectoryOnHost).absolutePath
+        copyFilesFromDeviceToHost(
+            deviceController, benchmarkOutputDir, hostOutputDir, benchmarkFileRelativePaths::contains)
 
+        benchmarkFileRelativePaths.forEach { relativeFilePath ->
             builder.addOutputArtifactBuilder().apply {
                 labelBuilder.apply {
                     namespace = "android"
                     label = "additionaltestoutput.benchmark.trace"
                 }
                 sourcePathBuilder.apply {
-                    path = hostFilePath
+                    path = "$hostOutputDir${File.separator}${relativeFilePath}"
                 }
             }
         }
@@ -282,7 +276,9 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
     private fun copyFilesFromDeviceToHost(
         deviceController: DeviceController,
         deviceDir: String,
-        hostDir: String) {
+        hostDir: String,
+        filter: (relativeFilePath: String) -> Boolean = { true },
+    ) {
         logger.info("Copying files from device to host: $deviceDir to $hostDir")
 
         val apiLevel = getApiLevel(deviceController) ?: 0
@@ -290,7 +286,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             val currentAndroidUser = getCurrentAndroidUser(deviceController)
             if (currentAndroidUser != "0") {
                 logger.info("Copying files using content provider.")
-                copyFilesFromDeviceToHostUsingContentProvider(deviceController, deviceDir, hostDir, currentAndroidUser)
+                copyFilesFromDeviceToHostUsingContentProvider(deviceController, deviceDir, hostDir, currentAndroidUser, filter)
                 return
             }
         }
@@ -314,8 +310,8 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
                             it.mkdirs()
                         }
                     }
-                    copyFilesFromDeviceToHost(deviceController, deviceFilePath, hostFilePath)
-                } else {
+                    copyFilesFromDeviceToHost(deviceController, deviceFilePath, hostFilePath, filter)
+                } else if (filter(it)) {
                     deviceController.pull(TestArtifactProto.Artifact.newBuilder().apply {
                         destinationPathBuilder.path = deviceFilePath
                         sourcePathBuilder.path = hostFilePath
@@ -328,7 +324,9 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         deviceController: DeviceController,
         deviceDir: String,
         hostDir: String,
-        androidUser: String) {
+        androidUser: String,
+        filter: (relativeFilePath: String) -> Boolean,
+    ) {
         // Media store's file index might not be up-to-date. b/345801721.
         logger.info("Updating MediaStore's file index")
         deviceController.deviceShellAndCheckSuccess(
@@ -341,17 +339,20 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
                 "--where \"mime_type IS NOT NULL AND _data LIKE '$normalizedDeviceDir%'\"").output.forEach {
             val matchResult = regex.find(it) ?: return@forEach
             val (id, path) = matchResult.destructured
-            val hostFile = File(hostDir + File.separator + path.removePrefix(normalizedDeviceDir))
-            hostFile.parentFile.let { parentFile ->
-                if (!parentFile.exists()) {
-                    parentFile.mkdirs()
+            val relativeFilePath = path.removePrefix(normalizedDeviceDir).removePrefix("/")
+            if (filter(relativeFilePath)) {
+                val hostFile = File(hostDir + File.separator + relativeFilePath)
+                hostFile.parentFile.let { parentFile ->
+                    if (!parentFile.exists()) {
+                        parentFile.mkdirs()
+                    }
                 }
-            }
-            logger.info("Copying $path to ${hostFile.absolutePath}")
-            val result = deviceController.deviceShellAndCheckSuccess(
-                "content read --user $androidUser --uri content://media/external/file/$id")
-            hostFile.outputStream().use { fileOutputStream ->
-                result.byteOutputStream.copyTo(fileOutputStream)
+                logger.info("Copying $path to ${hostFile.absolutePath}")
+                val result = deviceController.deviceShellAndCheckSuccess(
+                    "content read --user $androidUser --uri content://media/external/file/$id")
+                hostFile.outputStream().use { fileOutputStream ->
+                    result.byteOutputStream.copyTo(fileOutputStream)
+                }
             }
         }
     }
