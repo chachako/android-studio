@@ -51,7 +51,7 @@ abstract class SourceDirectoriesImpl(
             wiredWith(it)
         }
         taskProvider.configure { task ->
-            wiredWith.invoke(task).set(
+            wiredWith.invoke(task).convention(
                 variantServices.projectInfo.buildDirectory.dir("${SdkConstants.FD_GENERATED}/$_name/${taskProvider.name}")
             )
         }
