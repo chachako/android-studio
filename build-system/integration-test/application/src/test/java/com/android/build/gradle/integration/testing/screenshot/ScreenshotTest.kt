@@ -660,12 +660,8 @@ class ScreenshotTest {
     fun runScreenshotTestWithEmptyPreview() {
         val testFile = appProject.projectDir.resolve("src/screenshotTest/java/com/TopLevelPreviewTest.kt")
         TestFileUtils.searchAndReplace(testFile, "SimpleComposable()", "")
-        getExecutor().run(":app:tasks")
-
-        val result =
-            getExecutor().expectFailure().run(":app:updateDebugScreenshotTest")
-
-        result.assertErrorContains("Cannot update reference images. Rendering failed for") //Exception thrown in Update task
+        getExecutor().run(":app:updateDebugScreenshotTest")
+        getExecutor().run(":app:validateDebugScreenshotTest")
     }
 
     @Test

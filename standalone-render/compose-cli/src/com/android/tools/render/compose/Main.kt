@@ -95,13 +95,12 @@ private fun render(screenshot: ComposeScreenshot, outputFolderPath: String, rend
             .replace(".", File.separator) + File.separator + imageName
         val screenshotResult = try {
             val imageRendered = postProcessRenderedImage(config, renderResult)
-            if (imageRendered != null) {
-                val imagePath = Paths.get(outputFolderPath, relativeImagePath)
-                Files.createDirectories(imagePath.parent)
-                val imgFile = imagePath.toFile()
-                imgFile.createNewFile()
-                ImageIO.write(imageRendered, "png", imgFile)
-            }
+            val imagePath = Paths.get(outputFolderPath, relativeImagePath)
+            Files.createDirectories(imagePath.parent)
+            val imgFile = imagePath.toFile()
+            imgFile.createNewFile()
+            ImageIO.write(imageRendered, "png", imgFile)
+
             val screenshotError = extractError(renderResult, imageRendered)
             ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, screenshotError)
         } catch (t: Throwable) {
@@ -111,8 +110,8 @@ private fun render(screenshot: ComposeScreenshot, outputFolderPath: String, rend
     }
 }
 
-private fun postProcessRenderedImage(config: Configuration, renderResult: RenderResult): BufferedImage? {
-    val image = renderResult.renderedImage.copy ?: return null
+private fun postProcessRenderedImage(config: Configuration, renderResult: RenderResult): BufferedImage {
+    val image = renderResult.renderedImage.copy ?: BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
     val screenShape = config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
         ?: return image
     return resizeImage(image, screenShape)
