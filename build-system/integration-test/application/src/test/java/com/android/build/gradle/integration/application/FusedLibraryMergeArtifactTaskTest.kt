@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -264,9 +263,7 @@ internal class FusedLibraryMergeArtifactTaskTest {
             )
         }
         try {
-            val result = project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .expectFailure().run(":fusedLib1:bundle")
+            val result = project.executor().expectFailure().run(":fusedLib1:bundle")
             result.stderr.use { out ->
                 assertThat(out).contains("2 files found with path 'my_java_resource.txt'")
             }
@@ -281,9 +278,7 @@ internal class FusedLibraryMergeArtifactTaskTest {
     }
 
     private fun getFusedLibraryAar(): File? {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":fusedLib1:bundle")
+        project.executor().run(":fusedLib1:bundle")
         val fusedLib1 = project.getSubproject("fusedLib1")
         return FileUtils.join(fusedLib1.bundleDir, "bundle.aar")
     }

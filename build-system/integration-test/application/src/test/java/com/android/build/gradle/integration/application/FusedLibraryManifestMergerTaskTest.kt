@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TemporaryProjectModification
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
@@ -177,9 +176,7 @@ internal class FusedLibraryManifestMergerTaskTest {
             it.replaceInFile(
                     androidLib3.buildFile.toRelativeString(androidLib3.projectDir),
                     "minSdk = 18", "minSdk = 20")
-            val result = project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .expectFailure().run(":fusedLib1:mergeManifest")
+            val result = project.executor().expectFailure().run(":fusedLib1:mergeManifest")
             result.stderr.use { scanner ->
                 assertThat(scanner)
                         .contains(
@@ -200,9 +197,7 @@ internal class FusedLibraryManifestMergerTaskTest {
                         "implementation(files(\'${publishedFusedLibrary.invariantSeparatorsPath}\'))" +
                         "}"
         )
-        val result = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .expectFailure().run(":app:processDebugMainManifest")
+        val result = project.executor().expectFailure().run(":app:processDebugMainManifest")
         result.stderr.use { scanner ->
             assertThat(scanner).contains(
                     "uses-sdk:minSdkVersion 19 cannot be smaller than version 20 declared in library [bundle.aar]"
@@ -236,9 +231,7 @@ internal class FusedLibraryManifestMergerTaskTest {
     }
 
     private fun getFusedLibraryAar(): File {
-        project.getSubproject("fusedLib1").executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":fusedLib1:bundle")
+        project.getSubproject("fusedLib1").executor().run(":fusedLib1:bundle")
         return FileUtils.join(project.getSubproject("fusedLib1").buildDir, "bundle", "bundle.aar")
     }
 }
