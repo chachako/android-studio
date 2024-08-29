@@ -214,16 +214,6 @@ local_repository(
     path = "external/python/absl-py",
 )
 
-# Very soon, the Compose compiler plugin will be bundled inside the Kotlin IDE plugin.
-# Until then we have to build the Compose compiler ourselves. The following repository
-# is consumed in //tools/adt/idea/compose-ide-plugin/compose-compiler. See b/265493659
-# for more background and discussion.
-new_local_repository(
-    name = "compose-compiler-sources",
-    build_file = "@//tools/adt/idea/compose-ide-plugin/compose-compiler:compose-compiler-sources.BUILD",
-    path = "external/jetbrains/kotlin/plugins/compose/compiler-hosted/src/main",
-)
-
 http_archive(
     name = "robolectric",
     sha256 = "5bcde5db598f6938c9887a140a0a1249f95d3c16274d40869503d0c322a20d5d",
