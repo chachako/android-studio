@@ -12,15 +12,4 @@
             column="22"/>
     </issue>
 
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                                it.disableSecurityManager()"
-        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/com/android/tools/render/Renderer.kt"
-            line="188"
-            column="36"/>
-    </issue>
-
 </issues>

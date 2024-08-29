@@ -18,6 +18,7 @@ package com.android.tools.render.compose
 
 import com.android.ide.common.rendering.api.Result
 import com.android.sdklib.devices.screenShape
+import com.android.tools.configurations.Configuration
 import com.android.tools.preview.applyTo
 import com.android.tools.render.RenderRequest
 import com.android.tools.render.Renderer
@@ -31,7 +32,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.imageio.ImageIO
-import kotlin.io.path.Path
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -45,9 +45,13 @@ fun main(args: Array<String>) {
     }
 }
 
-fun renderCompose(ComposeRenderingJson: File) {
-    val composeRendering = readComposeRenderingJson(ComposeRenderingJson.reader())
-    val composeRenderingResult = renderCompose(composeRendering)
+fun renderCompose(composeRenderingJson: File) {
+    val composeRendering = readComposeRenderingJson(composeRenderingJson.reader())
+    val composeRenderingResult = try {
+        renderCompose(composeRendering)
+    } catch (t: Throwable) {
+        ComposeRenderingResult(t.stackTraceToString(), emptyList())
+    }
 
     writeComposeRenderingResult(
         File(composeRendering.resultsFilePath).writer(),
@@ -55,17 +59,8 @@ fun renderCompose(ComposeRenderingJson: File) {
     )
 }
 
-fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = try {
-    val screenshotResults = mutableListOf<ComposeScreenshotResult>()
-    val requestToScreenshotInfo = composeRendering.screenshots.mapNotNull { screenshot ->
-        screenshot.toPreviewElement()?.let { previewElement ->
-            RenderRequest(previewElement::applyTo) {
-                previewElement.resolve().map { it.toPreviewXml().buildString() }
-            } to ScreenshotInfo(screenshot.previewId, screenshot.methodFQN)
-        }
-    }.toMap()
-
-    Renderer(
+fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult {
+    return Renderer(
         composeRendering.fontsPath,
         composeRendering.resourceApkPath,
         composeRendering.namespace,
@@ -73,65 +68,72 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
         composeRendering.projectClassPath,
         composeRendering.layoutlibPath,
     ).use { renderer ->
-        renderer.render(requestToScreenshotInfo.keys.asSequence()) { request, config, i, result, usedPaths ->
-            val requestToScreenshotInfoValue = requestToScreenshotInfo[request]!!
-            val previewId = requestToScreenshotInfoValue.previewId
-            val resultId = "${previewId.substringAfterLast(".")}_$i"
-            val imageName = "$resultId.png"
-            val methodFQN = requestToScreenshotInfoValue.methodFQN
-            val relativeImagePath = (methodFQN.substringBeforeLast(".")
-                .replace(".", File.separator)) + File.separator + imageName
-            val screenshotResult = try {
-                val imageRendered = result.renderedImage.copy
-                imageRendered?.let { image ->
-                    val screenShape =
-                        config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
-                    val shapedImage = screenShape?.let { shape ->
-                        val newImage =
-                            BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
-                        val g = newImage.createGraphics()
-                        try {
-                            g.composite = AlphaComposite.Clear
-                            g.fillRect(0, 0, image.width, image.height)
-                            g.composite = AlphaComposite.Src
-                            g.clip = shape
-                            g.drawImage(image, 0, 0, null)
-                        } finally {
-                            g.dispose()
-                        }
-                        newImage
-                    } ?: image
-                    val imagePath = Paths.get(composeRendering.outputFolder, relativeImagePath)
-                    Files.createDirectories(imagePath.parent)
-                    val imgFile = imagePath.toFile()
-
-                    imgFile.createNewFile()
-                    ImageIO.write(shapedImage, "png", imgFile)
-                }
-                val screenshotError =
-                    extractError(result, imageRendered, composeRendering.outputFolder)
-                ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, screenshotError)
-            } catch (t: Throwable) {
-                ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, ScreenshotError(t))
-            }
-            screenshotResults.add(screenshotResult)
-            val classesUsed =
-                Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
-            classesUsed.writer().use { writer ->
-                usedPaths.forEach { path ->
-                    writer.write("$path\n")
-                }
-            }
-        }
+        val screenshotResults = composeRendering.screenshots.flatMap {
+            render(it, composeRendering.outputFolder, renderer)
+        }.sortedBy { it.imagePath }
+        ComposeRenderingResult(globalError = null, screenshotResults)
     }
-
-    ComposeRenderingResult(null, screenshotResults.sortedBy {it.imagePath})
-} catch (t: Throwable) {
-    ComposeRenderingResult(t.stackTraceToString(), emptyList())
 }
 
+private fun render(screenshot: ComposeScreenshot, outputFolderPath: String, renderer: Renderer):
+        Sequence<ComposeScreenshotResult> {
+    val previewElement = screenshot.toPreviewElement()
+    val renderRequest = RenderRequest(
+        configurationModifier = previewElement::applyTo,
+        xmlLayoutsProvider = {
+            previewElement.resolve().map { it.toPreviewXml().buildString() }
+        }
+    )
 
-private fun extractError(renderResult: RenderResult, imageRendered: BufferedImage?, outputFolder: String): ScreenshotError? {
+    return renderer.render(renderRequest).withIndex().map { (index, value) ->
+        val (config, renderResult) = value
+        val previewId = screenshot.previewId
+        val resultId = "${previewId.substringAfterLast(".")}_$index"
+        val imageName = "$resultId.png"
+        val methodFQN = screenshot.methodFQN
+        val relativeImagePath = methodFQN.substringBeforeLast(".")
+            .replace(".", File.separator) + File.separator + imageName
+        val screenshotResult = try {
+            val imageRendered = postProcessRenderedImage(config, renderResult)
+            if (imageRendered != null) {
+                val imagePath = Paths.get(outputFolderPath, relativeImagePath)
+                Files.createDirectories(imagePath.parent)
+                val imgFile = imagePath.toFile()
+                imgFile.createNewFile()
+                ImageIO.write(imageRendered, "png", imgFile)
+            }
+            val screenshotError = extractError(renderResult, imageRendered)
+            ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, screenshotError)
+        } catch (t: Throwable) {
+            ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, ScreenshotError(t))
+        }
+        screenshotResult
+    }
+}
+
+private fun postProcessRenderedImage(config: Configuration, renderResult: RenderResult): BufferedImage? {
+    val image = renderResult.renderedImage.copy ?: return null
+    val screenShape = config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
+        ?: return image
+    return resizeImage(image, screenShape)
+}
+
+private fun resizeImage(image: BufferedImage, shape: java.awt.Shape): BufferedImage {
+    val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
+    val g = newImage.createGraphics()
+    try {
+        g.composite = AlphaComposite.Clear
+        g.fillRect(0, 0, image.width, image.height)
+        g.composite = AlphaComposite.Src
+        g.clip = shape
+        g.drawImage(image, 0, 0, null)
+    } finally {
+        g.dispose()
+    }
+    return newImage
+}
+
+private fun extractError(renderResult: RenderResult, imageRendered: BufferedImage?): ScreenshotError? {
     if (renderResult.renderResult.status == Result.Status.SUCCESS
         && !renderResult.logger.hasErrors() && imageRendered != null) {
         return null
@@ -149,5 +151,3 @@ private fun extractError(renderResult: RenderResult, imageRendered: BufferedImag
         renderResult.logger.missingClasses.toList(),
     )
 }
-
-data class ScreenshotInfo(val previewId: String, val methodFQN: String)

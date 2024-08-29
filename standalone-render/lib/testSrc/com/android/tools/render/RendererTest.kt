@@ -16,34 +16,29 @@
 
 package com.android.tools.render
 
-import com.android.testutils.TestUtils
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-import kotlin.io.path.absolutePathString
-import kotlin.math.abs
-import kotlin.math.max
 import com.android.ide.common.rendering.api.Result
-import com.android.tools.rendering.RenderResult
+import com.android.testutils.TestUtils
 import com.android.tools.rendering.RenderService
 import com.android.tools.sdk.AndroidTargetData
 import com.android.tools.sdk.EmbeddedRenderTarget
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.junit.AfterClass
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import java.awt.image.BufferedImage
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import javax.imageio.ImageIO
+import kotlin.io.path.absolutePathString
+import kotlin.math.abs
+import kotlin.math.max
 
-private const val TEST_DATA_DIR = "tools/base/standalone-render/lib/testData/rendered_images"
-// This is to respect the different rounding on different platforms.
-// TODO(): have different goldens for different platforms
-private const val THRESHOLD = 1
 class RendererTest {
     @JvmField @Rule
     val tmpFolder = TemporaryFolder()
@@ -56,6 +51,9 @@ class RendererTest {
             AppExecutorUtil.getAppScheduledExecutorService().submit { }.get(60, TimeUnit.SECONDS)
             AppExecutorUtil.shutdownApplicationScheduledExecutorService()
         }
+
+        private const val TEST_DATA_DIR = "tools/base/standalone-render/lib/testData/rendered_images"
+        private const val THRESHOLD = 1
     }
 
     @Before
@@ -99,12 +97,10 @@ class RendererTest {
             emptyList(),
             emptyList(),
             layoutlibPath.absolutePathString(),
-            isForTest = true,
-        ).use {
-            it.render(sequenceOf(request)) { _, _, _, result, _ ->
-                assertNull("A single RenderResult is expected", outputImage)
-                outputImage = result.renderedImage.copy
-            }
+        ) { disableSecurityManager() }.use {
+            val (_, result) = it.render(request).single()
+            assertNull("A single RenderResult is expected", outputImage)
+            outputImage = result.renderedImage.copy
         }
 
         assertNotNull(outputImage)
@@ -129,19 +125,16 @@ class RendererTest {
 
     @Test
     fun testIncorrectLayoutlibPath() {
-        val renderResults = mutableListOf<RenderResult>()
-        Renderer(
+        val renderResults = Renderer(
             null,
             null,
             "",
             emptyList(),
             emptyList(),
             "",
-            isForTest = true,
-        ).use {
-            it.render(sequenceOf(RenderRequest({}) { sequenceOf("") })) { _, _, _, result, _ ->
-                renderResults.add(result)
-            }
+        ) { disableSecurityManager() }.use {
+            val invalidRequest = RenderRequest({}) { sequenceOf("") }
+            it.render(invalidRequest).map { it.second }.toList()
         }
 
         assertEquals(1, renderResults.size)
@@ -169,19 +162,15 @@ class RendererTest {
 
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
-        val renderResults = mutableListOf<RenderResult>()
-        Renderer(
+        val renderResults = Renderer(
             null,
             null,
             "",
             emptyList(),
             emptyList(),
             layoutlibPath.absolutePathString(),
-            isForTest = true,
-        ).use {
-            it.render(sequenceOf(RenderRequest({}) { sequenceOf(layout) })) { _, _, _, result, _ ->
-                renderResults.add(result)
-            }
+        ) { disableSecurityManager() }.use {
+            it.render(RenderRequest({}) { sequenceOf(layout) }).map { it.second }.toList()
         }
 
         assertEquals(1, renderResults.size)

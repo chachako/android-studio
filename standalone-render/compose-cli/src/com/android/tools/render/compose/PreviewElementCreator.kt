@@ -26,7 +26,7 @@ import com.android.tools.preview.previewAnnotationToPreviewElement
 import com.android.tools.render.StandaloneRenderContext
 
 /** Creates [ComposePreviewElement] from [ComposeScreenshot] data. */
-internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement<Unit>? {
+internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement<Unit> {
     val attrProvider = DeserializedAnnotationAttributesProvider(this.previewParams)
     val annotatedMethod = DeserializedAnnotatedMethod(this.methodFQN, this.methodParams)
     return previewAnnotationToPreviewElement(

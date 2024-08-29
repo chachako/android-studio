@@ -23,7 +23,6 @@ import com.android.resources.ResourceFolderType
 import com.android.sdklib.AndroidVersion
 import com.android.tools.configurations.Configuration
 import com.android.tools.module.ModuleKey
-import com.android.tools.render.StandaloneModuleClassLoaderManager.Companion.CLASSES_TRACKER_KEY
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
 import com.android.tools.render.environment.StandaloneEnvironmentContext
@@ -32,7 +31,6 @@ import com.android.tools.rendering.RenderLogger
 import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
 import com.android.tools.rendering.api.RenderModelModule
-import com.android.tools.rendering.classloading.ClassesTracker
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
 import com.android.tools.res.LocalResourceRepository
@@ -49,7 +47,9 @@ import java.nio.file.Path
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
-/** The main entry point to invoke rendering. */
+/**
+ * A renderer that can handle [RenderRequest].
+ */
 class Renderer(
     fontsPath: String?,
     resourceApkPath: String?,
@@ -57,12 +57,13 @@ class Renderer(
     classPath: List<String>,
     projectClassPath: List<String>,
     layoutlibPath: String,
-    private val isForTest: Boolean = false,
+    private val renderTaskConfigurator: RenderService.RenderTaskBuilder.() -> Unit = {},
 ) : Closeable {
 
     private val project: Project = IJFramework.createProject()
-    private val configuration: Configuration
+    private val baseConfiguration: Configuration
     private val module: RenderModelModule
+    private val renderService: RenderService
 
     init {
         TimeZone.getDefault()
@@ -119,7 +120,7 @@ class Renderer(
                 androidTarget
             )
 
-        configuration = Configuration.create(configurationSettings, FolderConfiguration())
+        baseConfiguration = Configuration.create(configurationSettings, FolderConfiguration())
 
         module = StandaloneRenderModelModule(
             resourceRepositoryManager,
@@ -132,80 +133,65 @@ class Renderer(
             environment,
             resourceIdManager,
         )
+
+        renderService = RenderService {
+            it.apply {
+                disableDecorations()
+                withRenderingMode(SessionParams.RenderingMode.SHRINK)
+                renderTaskConfigurator()
+            }
+        }
+        Disposer.register(project, renderService)
     }
 
     /**
-     * Renders xml layouts defined by [renderRequests] calling [onRenderResult] for every render
-     * execution.
-     *
-     * * [onRenderResult] callback receives 4 arguments:
-     * * [RenderRequest] the request that triggered the rendering.
-     * * [Int] id of the result to distinguish them fot the cases where a single [RenderRequest]
-     *   triggers several renderings, this could happen when e.g. a Composable is parameterized with
-     *   a ParameterProvider.
-     * * [RenderResult] an instance of the render result containing extended information about the
-     *   rendering, including errors if any.
-     * * [Set]<[String]> paths to all the project (from user code, not from library dependencies)
-     *   classes that were used during the rendering.
+     * Renders xml layouts provided by [request].
      */
-    fun render(
-        renderRequests: Sequence<RenderRequest>,
-        onRenderResult: (RenderRequest, Configuration, Int, RenderResult, Set<String>) -> Unit,
-    ) {
-        renderRequests.forEach { request ->
+    fun render(request: RenderRequest): Sequence<Pair<Configuration, RenderResult>> {
+        return request.xmlLayoutsProvider().map {
+            val configuration = baseConfiguration.clone()
             request.configurationModifier(configuration)
-            request.xmlLayoutsProvider().forEachIndexed { i, layout ->
-                val disposable = Disposer.newDisposable()
-                val logger = RenderLogger()
-                var usedPaths = emptySet<String>()
-                val result = try {
-                    val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
-                        .disableDecorations()
-                        .also {
-                            if (isForTest) {
-                                it.disableSecurityManager()
-                            }
-                        }
-                        .withRenderingMode(SessionParams.RenderingMode.SHRINK)
-                        .build().get()
-                    Disposer.register(disposable) {
-                        renderTask.dispose()
-                    }
+            configuration to render(configuration, it)
+        }
+    }
 
-                    val xmlFile =
-                        RenderXmlFileSnapshot(
-                            project,
-                            "layout.xml",
-                            ResourceFolderType.LAYOUT,
-                            layout
-                        )
-
-                    renderTask.setXmlFile(xmlFile)
-                    val result = renderTask.render().get(100, TimeUnit.SECONDS)
-                    val classesToPaths = (renderTask.classLoader as StandaloneModuleClassLoaderManager.DefaultModuleClassLoader).classesToPaths
-                    usedPaths =
-                        ClassesTracker
-                            .getClasses(CLASSES_TRACKER_KEY)
-                            .mapNotNull { classesToPaths[it.replace("/", ".")] }
-                            .toSet()
-                    result
-                } catch (t: Throwable) {
-                    RenderResult.createRenderTaskErrorResult(
+    private fun render(configuration: Configuration, xmlLayout: String): RenderResult {
+        val disposable = Disposer.newDisposable()
+        val logger = RenderLogger()
+        return try {
+            val renderTask =
+                renderService.taskBuilder(module, configuration, logger).build().get()
+                    ?: return RenderResult.createRenderTaskErrorResult(
                         module,
-                        { throw UnsupportedOperationException() },
-                        t,
+                        { throw NotImplementedError("PsiFile supplier is not supported") },
+                        null,
                         logger
                     )
-                } finally {
-                    ClassesTracker.clear(CLASSES_TRACKER_KEY)
-                    Disposer.dispose(disposable)
-                }
-                try {
-                    onRenderResult(request, configuration, i, result, usedPaths)
-                } catch (t: Throwable) {
-                    t.printStackTrace()
-                }
+
+            Disposer.register(disposable) {
+                renderTask.dispose()
             }
+
+            val xmlFile =
+                RenderXmlFileSnapshot(
+                    project,
+                    "layout.xml",
+                    ResourceFolderType.LAYOUT,
+                    xmlLayout
+                )
+
+            renderTask.setXmlFile(xmlFile)
+
+            renderTask.render().get(100, TimeUnit.SECONDS)
+        } catch (t: Throwable) {
+            RenderResult.createRenderTaskErrorResult(
+                module,
+                { throw NotImplementedError("PsiFile supplier is not supported") },
+                t,
+                logger
+            )
+        } finally {
+            Disposer.dispose(disposable)
         }
     }
 
