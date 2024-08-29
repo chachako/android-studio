@@ -26,7 +26,7 @@ import kotlin.test.assertFailsWith
 
 
 private const val RECOMMENDATION =
-    "Go to the documentation to learn how to <a href=\"d.android.com/r/tools/classpath-sync-errors\">Fix dependency resolution errors</a>."
+    "Learn how to fix dependency resolution errors at https://d.android.com/r/tools/classpath-sync-errors"
 
 class CheckDuplicateClassesDelegateTest {
     @JvmField

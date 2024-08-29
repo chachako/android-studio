@@ -69,7 +69,7 @@ class DuplicateClassesTest {
 
         assertThat(result.failureMessage).contains(
             "Duplicate class com.example.A found in modules jar1.jar -> jar1 (jar1.jar) and " +
-                    "jar2.jar -> jar2 (jar2.jar)$lineSeparator${lineSeparator}Go to the documentation to learn how to " +
-                    "<a href=\"d.android.com/r/tools/classpath-sync-errors\">Fix dependency resolution errors</a>.")
+                    "jar2.jar -> jar2 (jar2.jar)$lineSeparator${lineSeparator}" +
+                    "Learn how to fix dependency resolution errors at https://d.android.com/r/tools/classpath-sync-errors")
     }
 }
