@@ -214,8 +214,8 @@ public class ModelTest {
                 project.getBuildFile(),
                 "\n"
                         + "project.gradle.projectsEvaluated {\n"
-                        + "   if (tasks.names.contains('lintDebug'))\n"
-                        + "     throw new RuntimeException('lintDebug should not be registered')"
+                        + "   if (tasks.names.contains('lintAnalyzeDebug'))\n"
+                        + "     throw new RuntimeException('lintAnalyzeDebug is registered')"
                         + "}\n");
 
         AndroidProject androidProject =
@@ -230,12 +230,22 @@ public class ModelTest {
 
         try {
             project.modelV2().with(BooleanOption.IDE_AVOID_TASK_REGISTRATION, false).fetchModels();
-            fail("Project configuration should throw as Lint tasks are registered.");
+            fail("Project configuration should throw because lintAnalyzeDebug task is registered.");
         } catch (Throwable error) {
             assertThat(error)
                     .hasCauseThat()
                     .hasMessageThat()
-                    .contains("lintDebug should not be registered");
+                    .contains("lintAnalyzeDebug is registered");
+        }
+
+        // Regression test for b/332755363.
+        // lintDebug should be registered even if IDE_AVOID_TASK_REGISTRATION is true.
+        TestFileUtils.searchAndReplace(project.getBuildFile(), "lintAnalyzeDebug", "lintDebug");
+        try {
+            project.modelV2().with(BooleanOption.IDE_AVOID_TASK_REGISTRATION, true).fetchModels();
+            fail("Project configuration should throw because lintDebug task is registered.");
+        } catch (Throwable error) {
+            assertThat(error).hasCauseThat().hasMessageThat().contains("lintDebug is registered");
         }
     }
 }
