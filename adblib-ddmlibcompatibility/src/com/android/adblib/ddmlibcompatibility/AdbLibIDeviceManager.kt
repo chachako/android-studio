@@ -22,7 +22,7 @@ import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager
 import com.android.adblib.ddmlibcompatibility.debugging.AdblibIDeviceWrapper
-import com.android.adblib.scope
+import com.android.adblib.serialNumber
 import com.android.adblib.utils.createChildScope
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
@@ -31,8 +31,10 @@ import com.android.ddmlib.idevicemanager.IDeviceManager
 import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import java.util.IdentityHashMap
@@ -48,10 +50,6 @@ internal class AdbLibIDeviceManager(
 
     private val scope = session.scope.createChildScope(isSupervisor = true)
 
-    // Using `IdentityHashMap` as `connectedDevicesTracker.connectedDevices` guarantees
-    // to return the same instance for the same device
-    private val deviceMap = IdentityHashMap<ConnectedDevice, AdblibIDeviceWrapper>()
-
     private val deviceList = AtomicReference<List<IDevice>>(emptyList())
     private val ddmlibEventQueue =
         AdbLibDeviceClientManager.DdmlibEventQueue(logger, "DeviceUpdates")
@@ -64,6 +62,10 @@ internal class AdbLibIDeviceManager(
         }
 
         scope.launch {
+            // Using `IdentityHashMap` as `connectedDevicesTracker.connectedDevices` guarantees
+            // to return the same instance for the same device
+            val deviceMap = IdentityHashMap<ConnectedDevice, AdblibIDeviceWrapper>()
+            val deviceInfoTrackingJobs = IdentityHashMap<ConnectedDevice, Job>()
             session.connectedDevicesTracker.connectedDevices.collect { value ->
                 run {
                     // Process added devices
@@ -85,6 +87,10 @@ internal class AdbLibIDeviceManager(
                     val removed = deviceMap.keys.filter { !value.contains(it)}
                     val removedIDevices = mutableListOf<IDevice>()
                     for (key in removed) {
+                        deviceInfoTrackingJobs.remove(key)?.also {
+                            it.cancel("Cancelling DeviceInfo tracking for removed device [${key.serialNumber}]")
+                            it.join()
+                        }
                         deviceMap.remove(key)?.also {
                             it.deviceStateHolder.update(DeviceState.DISCONNECTED)
                             removedIDevices.add(it)
@@ -107,20 +113,22 @@ internal class AdbLibIDeviceManager(
 
                         for (addedConnectedDevice in added) {
                             val iDevice = deviceMap.getValue(addedConnectedDevice)
-                            addedConnectedDevice.scope.launch {
-                                addedConnectedDevice.deviceInfoFlow.map { it.deviceState }.collect {
-                                    val stateChanged = iDevice.deviceStateHolder.update(it)
+                            deviceInfoTrackingJobs[addedConnectedDevice] = scope.launch {
+                                addedConnectedDevice.deviceInfoFlow.map { it.deviceState }
                                     // Match ddmlib behavior by not triggering device state
                                     // change event for a `DISCONNECTED` device state value.
-                                    if (stateChanged && it != DeviceState.DISCONNECTED) {
-                                        postAndWaitForCompletion(
-                                            scope,
-                                            "device state changed"
-                                        ) {
-                                            iDeviceManagerListener.deviceStateChanged(iDevice)
+                                    .takeWhile { it != DeviceState.DISCONNECTED }
+                                    .collect {
+                                        val stateChanged = iDevice.deviceStateHolder.update(it)
+                                        if (stateChanged) {
+                                            postAndWaitForCompletion(
+                                                scope,
+                                                "device state changed"
+                                            ) {
+                                                iDeviceManagerListener.deviceStateChanged(iDevice)
+                                            }
                                         }
                                     }
-                                }
                             }
                         }
                     }
