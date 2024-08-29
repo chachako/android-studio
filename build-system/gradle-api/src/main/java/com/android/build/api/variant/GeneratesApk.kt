@@ -47,6 +47,12 @@ interface GeneratesApk {
     val renderscript: Renderscript?
 
     /**
+     * Min SDK version for this variant
+     */
+    @get:Incubating
+    val minSdk: AndroidVersion
+
+    /**
      * Target SDK version for this variant.
      */
     val targetSdk: AndroidVersion

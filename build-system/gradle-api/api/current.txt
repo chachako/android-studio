@@ -2883,6 +2883,7 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.AndroidResources getAndroidResources();
     method public org.gradle.api.provider.Provider<java.lang.String> getApplicationId();
     method @org.gradle.api.Incubating public com.android.build.api.variant.Dexing getDexing();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.AndroidVersion getMinSdk();
     method public com.android.build.api.variant.ApkPackaging getPackaging();
     method public com.android.build.api.variant.Renderscript? getRenderscript();
     method public com.android.build.api.variant.AndroidVersion getTargetSdk();
@@ -2890,6 +2891,7 @@ package com.android.build.api.variant {
     property public abstract com.android.build.api.variant.AndroidResources androidResources;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> applicationId;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.Dexing dexing;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.AndroidVersion minSdk;
     property public abstract com.android.build.api.variant.ApkPackaging packaging;
     property public abstract com.android.build.api.variant.Renderscript? renderscript;
     property public abstract com.android.build.api.variant.AndroidVersion targetSdk;

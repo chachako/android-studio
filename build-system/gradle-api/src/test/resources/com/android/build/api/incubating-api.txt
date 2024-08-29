@@ -738,6 +738,8 @@ https://issuetracker.google.com/350672659
 https://issuetracker.google.com/357083708
   * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTest> ()
   * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.Map<java.lang.String, com.android.build.api.variant.DeviceTestBuilder> ()
+https://issuetracker.google.com/362870092
+  * com.android.build.api.variant.GeneratesApk.getMinSdk: com.android.build.api.variant.AndroidVersion ()
 https://issuetracker.google.com/362941219
   * com.android.build.api.variant.ApkInstallGroup
   * com.android.build.api.variant.ApkInstallGroup.getApks: java.util.List<org.gradle.api.file.RegularFile> ()
