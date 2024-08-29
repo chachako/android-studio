@@ -29474,6 +29474,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.adobe.marketing.mobile.core_1.5.1",
+    pom = "repository/com/adobe/marketing/mobile/core/1.5.1/core-1.5.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/adobe/marketing/mobile/core/1.5.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.application.com.android.application.gradle.plugin_7.2.0",
     pom = "repository/com/android/application/com.android.application.gradle.plugin/7.2.0/com.android.application.gradle.plugin-7.2.0.pom",
     repo_root_path = "repository",
@@ -48076,6 +48084,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.flurry.android.analytics_13.0.0",
+    pom = "repository/com/flurry/android/analytics/13.0.0/analytics-13.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/flurry/android/analytics/13.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.github.ajalt.clikt.clikt-jvm_3.5.3",
     pom = "repository/com/github/ajalt/clikt/clikt-jvm/3.5.3/clikt-jvm-3.5.3.pom",
     repo_root_path = "repository",
@@ -48459,6 +48475,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.gms.play-services-base_10.0.0",
+    pom = "repository/com/google/android/gms/play-services-base/10.0.0/play-services-base-10.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-base/10.0.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_10.0.0",
+        "com.google.android.gms.play-services-tasks_10.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.gms.play-services-base_17.0.0",
     pom = "repository/com/google/android/gms/play-services-base/17.0.0/play-services-base-17.0.0.pom",
     repo_root_path = "repository",
@@ -48566,6 +48594,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.gms.play-services-basement_10.0.0",
+    pom = "repository/com/google/android/gms/play-services-basement/10.0.0/play-services-basement-10.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-basement/10.0.0",
+    deps = [
+        "com.android.support.support-v4_24.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.gms.play-services-basement_12.0.1",
     pom = "repository/com/google/android/gms/play-services-basement/12.0.1/play-services-basement-12.0.1.pom",
     repo_root_path = "repository",
@@ -48582,6 +48621,17 @@ maven_artifact(
     pom = "repository/com/google/android/gms/play-services-basement/15.0.1/play-services-basement-15.0.1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/android/gms/play-services-basement/15.0.1",
+    deps = [
+        "com.android.support.support-v4_26.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-basement_16.0.1",
+    pom = "repository/com/google/android/gms/play-services-basement/16.0.1/play-services-basement-16.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-basement/16.0.1",
     deps = [
         "com.android.support.support-v4_26.1.0",
     ],
@@ -48862,10 +48912,34 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.gms.play-services-safetynet_10.0.0",
+    pom = "repository/com/google/android/gms/play-services-safetynet/10.0.0/play-services-safetynet-10.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-safetynet/10.0.0",
+    deps = [
+        "com.google.android.gms.play-services-base_10.0.0",
+        "com.google.android.gms.play-services-basement_10.0.0",
+        "com.google.android.gms.play-services-tasks_10.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.gms.play-services-tasks-license_12.0.1",
     pom = "repository/com/google/android/gms/play-services-tasks-license/12.0.1/play-services-tasks-license-12.0.1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/android/gms/play-services-tasks-license/12.0.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-tasks_10.0.0",
+    pom = "repository/com/google/android/gms/play-services-tasks/10.0.0/play-services-tasks-10.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-tasks/10.0.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_10.0.0",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -48888,6 +48962,17 @@ maven_artifact(
     repo_path = "com/google/android/gms/play-services-tasks/15.0.1",
     deps = [
         "com.google.android.gms.play-services-basement_15.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-tasks_16.0.1",
+    pom = "repository/com/google/android/gms/play-services-tasks/16.0.1/play-services-tasks-16.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-tasks/16.0.1",
+    deps = [
+        "com.google.android.gms.play-services-basement_16.0.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -49379,6 +49464,31 @@ maven_artifact(
         "androidx.vectordrawable.vectordrawable_1.1.0",
         "androidx.viewpager2.viewpager2_1.0.0",
         "com.google.errorprone.error_prone_annotations_2.15.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.play.app-update_2.0.0",
+    pom = "repository/com/google/android/play/app-update/2.0.0/app-update-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/play/app-update/2.0.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_16.0.1",
+        "com.google.android.gms.play-services-tasks_16.0.1",
+        "com.google.android.play.core-common_2.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.play.core-common_2.0.0",
+    pom = "repository/com/google/android/play/core-common/2.0.0/core-common-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/play/core-common/2.0.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_16.0.1",
+        "com.google.android.gms.play-services-tasks_16.0.1",
     ],
     visibility = ["//visibility:public"],
 )

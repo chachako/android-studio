@@ -516,6 +516,7 @@ DATA = [
     "androidx.wear.watchface:watchface-guava:1.2.1",
     "androidx.wear:wear:1.2.0",
     "androidx.wear:wear-tooling-preview:1.0.0",
+    "com.adobe.marketing.mobile:core:1.5.1",  # Used by SdkIndexIssuesSyncListenerTest
     "com.android.application:com.android.application.gradle.plugin:pom:7.2.0",
     "com.android.application:com.android.application.gradle.plugin:pom:7.4.0",  # Dependency of architecture-samples
     "com.android.application:com.android.application.gradle.plugin:pom:7.4.1",
@@ -724,6 +725,7 @@ DATA = [
     "com.android.tools.utp:android-test-plugin-result-listener-gradle:jar:30.2.0",
     "com.android.tools.utp:android-test-plugin-result-listener-gradle:jar:31.1.0",
     "com.crashlytics.sdk.android:crashlytics:2.6.8",
+    "com.flurry.android:analytics:13.0.0",  # Used by SdkIndexIssuesSyncListenerTest
     "com.github.bumptech.glide:glide:4.11.0",
     "com.google.accompanist:accompanist-appcompat-theme:0.28.0",  # Dependency of architecture-samples
     "com.google.accompanist:accompanist-swiperefresh:0.28.0",  # Dependency of architecture-samples
@@ -740,6 +742,7 @@ DATA = [
     "com.google.android.gms:play-services-maps:18.1.0",
     "com.google.android.gms:play-services-pay:16.0.3",
     "com.google.android.gms:play-services-pay:16.1.0",
+    "com.google.android.gms:play-services-safetynet:10.0.0",  # Used by SdkIndexIssuesSyncListenerTest
     "com.google.android.gms:play-services-wallet:19.1.0",
     "com.google.android.gms:play-services-wearable:17.1.0",
     "com.google.android.gms:play-services-wearable:18.0.0",
@@ -756,6 +759,7 @@ DATA = [
     "com.google.android.material:material:1.7.0",
     "com.google.android.material:material:1.8.0",
     "com.google.android.material:material:1.9.0",
+    "com.google.android.play:app-update:2.0.0",  # Used by SdkIndexIssuesSyncListenerTest
     "com.google.android.support:wearable:2.9.0",
     "com.google.android.wearable:wearable:2.9.0",
     "com.google.apis:google-api-services-cloudresourcemanager:v1beta1-rev20240128-2.0.0",
