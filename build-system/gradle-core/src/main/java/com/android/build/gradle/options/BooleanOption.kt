@@ -43,8 +43,8 @@ enum class BooleanOption(
     val stage: Stage
 ) : Option<Boolean> {
 
-    /* ----------
-     * STABLE API
+    /* -----------
+     * STABLE APIs
      */
 
     // IDE properties
@@ -155,12 +155,30 @@ enum class BooleanOption(
     ENABLE_LEGACY_API("android.compatibility.enableLegacyApi", true, FeatureStage.Supported),
     FULL_R8("android.enableR8.fullMode", true, FeatureStage.Supported),
 
-    /* ---------------------
-     * EXPERIMENTAL FEATURES
+    /* -----------------
+     * EXPERIMENTAL APIs
      */
 
     BUILD_FEATURE_MLMODELBINDING("android.defaults.buildfeatures.mlmodelbinding", false, ApiStage.Experimental),
     ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG("android.experimental.useDefaultDebugSigningConfigForProfileableBuildtypes", false, ApiStage.Experimental),
+
+    /**
+     * Enables compile classpath and runtime classpath alignment (i.e., if the version of a
+     * dependency on compile classpath is lower than its version on runtime classpath, the version
+     * on compile classpath will be promoted to match the version on runtime classpath; if the
+     * version on compile classpath is higher than the version on runtime classpath, the build will
+     * fail).
+     *
+     * This option is enabled by default. The users can disable it if it causes issues (e.g., when
+     * the dependencies involve `com.google.guava:guava` and `com.google.guava:listenablefuture` --
+     * see bug 300760566 for details).
+     */
+    ENABLE_COMPILE_RUNTIME_CLASSPATH_ALIGNMENT("android.enableCompileRuntimeClasspathAlignment", true, ApiStage.Experimental),
+
+    /* ---------------------
+     * EXPERIMENTAL FEATURES
+     */
+
     ENABLE_PROFILE_JSON("android.enableProfileJson", false, FeatureStage.Experimental),
     DISALLOW_DEPENDENCY_RESOLUTION_AT_CONFIGURATION("android.dependencyResolutionAtConfigurationTime.disallow", false, FeatureStage.Experimental),
     VERSION_CHECK_OVERRIDE_PROPERTY("android.overrideVersionCheck", false, FeatureStage.Experimental),

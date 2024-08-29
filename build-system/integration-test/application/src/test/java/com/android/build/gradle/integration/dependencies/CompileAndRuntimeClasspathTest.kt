@@ -18,15 +18,27 @@ package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
-import com.android.build.gradle.integration.common.truth.ScannerSubject
+import com.android.build.gradle.options.BooleanOption
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class CompileAndRuntimeClasspathTest {
+@RunWith(Parameterized::class)
+class CompileAndRuntimeClasspathTest(private val enableAlignment: Boolean) {
+
+    companion object {
+
+        @Parameterized.Parameters(name = "enableAlignment_{0}")
+        @JvmStatic
+        fun parameters() = listOf(true, false)
+    }
+
     @JvmField
     @Rule
     val project: GradleTestProject = GradleTestProject.builder()
         .fromTestApp(HelloWorldApp.forPlugin("com.android.application"))
+        .addGradleProperties("${BooleanOption.ENABLE_COMPILE_RUNTIME_CLASSPATH_ALIGNMENT.propertyName}=$enableAlignment")
         .create()
 
     @Test
@@ -39,9 +51,9 @@ class CompileAndRuntimeClasspathTest {
             |}""".trimMargin()
         )
 
-        val result = project.executor().expectFailure().run("assembleDebug")
-        result.stderr.use {
-            ScannerSubject.assertThat(it).contains(
+        if (enableAlignment) {
+            val result = project.executor().expectFailure().run("assembleDebug")
+            result.assertErrorContains(
                 "> Could not resolve all files for configuration ':debugCompileClasspath'.\n" +
                         "   > Could not resolve com.google.guava:guava:20.0.\n" +
                         "     Required by:\n" +
@@ -50,6 +62,14 @@ class CompileAndRuntimeClasspathTest {
                         "           Dependency path ':project:unspecified' --> 'com.google.guava:guava:20.0'\n" +
                         "           Constraint path ':project:unspecified' --> 'com.google.guava:guava:{strictly 19.0}' because of the following reason:" +
                         " version resolved in configuration ':debugRuntimeClasspath' by consistent resolution\n"
+            )
+        } else {
+            val result = project.executor().run("dependencies")
+            result.assertOutputContains(
+                """
+                debugCompileClasspath - Resolved configuration for compilation for variant: debug
+                \--- com.google.guava:guava:20.0
+                """.trimIndent()
             )
         }
     }
@@ -76,11 +96,20 @@ class CompileAndRuntimeClasspathTest {
         )
 
         val result = project.executor().run("dependencies")
-        result.stdout.use {
-            ScannerSubject.assertThat(it).contains(
-                """debugCompileClasspath - Resolved configuration for compilation for variant: debug
-+--- com.google.guava:guava:19.0 -> 20.0
-\--- com.google.guava:guava:{strictly 20.0}"""
+        if (enableAlignment) {
+            result.assertOutputContains(
+                """
+                debugCompileClasspath - Resolved configuration for compilation for variant: debug
+                +--- com.google.guava:guava:19.0 -> 20.0
+                \--- com.google.guava:guava:{strictly 20.0}
+                """.trimIndent()
+            )
+        } else {
+            result.assertOutputContains(
+                """
+                debugCompileClasspath - Resolved configuration for compilation for variant: debug
+                \--- com.google.guava:guava:19.0
+                """.trimIndent()
             )
         }
     }
