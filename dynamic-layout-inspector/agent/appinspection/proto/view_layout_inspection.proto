@@ -176,6 +176,8 @@ message AppContext {
     int32 main_display_orientation = 4;
     // The type of the display in which the app is running
     DisplayType display_type = 5;
+    // Window bounds including insets
+    Rect window_bounds = 6;
 }
 
 // Describes the type of a display, whether it's the main display or a secondary display.

@@ -19,6 +19,7 @@ package com.android.tools.agent.appinspection
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Picture
+import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -30,6 +31,8 @@ import android.view.ViewGroup
 import android.view.ViewRootImpl
 import android.view.WindowManager
 import android.view.WindowManagerGlobal
+import android.view.WindowManagerImpl
+import android.view.WindowMetrics
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
@@ -37,6 +40,7 @@ import checkNextEventMatching
 import com.android.testutils.PropertySetterRule
 import com.android.tools.agent.appinspection.proto.StringTable
 import com.android.tools.agent.appinspection.proto.createResource
+import com.android.tools.agent.appinspection.proto.toRect
 import com.android.tools.agent.appinspection.testutils.FrameworkStateRule
 import com.android.tools.agent.appinspection.testutils.MainLooperRule
 import com.android.tools.agent.appinspection.testutils.inspection.InspectorRule
@@ -456,6 +460,8 @@ abstract class ViewLayoutInspectorTestBase {
         val packageName = "view.inspector.test"
         val resources = createResources(packageName)
         val context = Context(packageName, resources)
+        val windowManager = context.windowManager as WindowManagerImpl
+        windowManager.mMetrics = WindowMetrics(Rect(100, 200, 1540, 3320))
         val tree1 = View(context).apply { setAttachInfo(View.AttachInfo() )}
         val tree2 = View(context).apply { setAttachInfo(View.AttachInfo() )}
         val tree3 = View(context).apply { setAttachInfo(View.AttachInfo() )}
@@ -507,6 +513,7 @@ abstract class ViewLayoutInspectorTestBase {
                 assertThat(layoutEvent.appContext.mainDisplayHeight).isEqualTo(3120)
                 assertThat(layoutEvent.appContext.mainDisplayWidth).isEqualTo(1440)
                 assertThat(layoutEvent.appContext.mainDisplayOrientation).isEqualTo(90)
+                assertThat(layoutEvent.appContext.windowBounds).isEqualTo(Rect(100, 200, 1540, 3320).toRect())
             }
         }
 
