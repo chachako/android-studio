@@ -15,14 +15,30 @@
  */
 package com.android.tools.lint.client.api
 
+import com.android.SdkConstants.DOT_CLASS
+import com.android.testutils.TestUtils
+import com.android.tools.lint.checks.infrastructure.BytecodeTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.BinaryTestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.base64gzip
+import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.jar
+import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.TestLintResult.Companion.getDiff
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import com.android.tools.lint.checks.infrastructure.parseFirst
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.isClassReference
+import com.intellij.openapi.util.Disposer
 import java.io.File
+import kotlin.math.min
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.toUElement
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -77,130 +93,741 @@ class LintJarApiMigrationTest {
   }
 
   @Test
-  fun testMigrateKtTypeProviderMixIn() {
+  fun testMigrateAnalyze() {
     val file =
-      base64gzip(
-        "runtime-android-1.7.0-beta07-lint.jar-androidx/lifecycle/lint/NonNullableMutableLiveDataDetector\$createUastHandler\$1.visitCallExpression.class",
+      bytecode(
+        "code.jar",
+        kotlin(
+            """
+            package test.pkg
+
+            import org.jetbrains.kotlin.analysis.api.analyze
+            import org.jetbrains.kotlin.psi.KtExpression
+
+            fun testAnalyze(element: KtExpression): Boolean {
+                analyze(element) {
+                    return element.getKtType()?.canBeNull ?: false
+                }
+            }
+            """
+          )
+          .indented(),
+        // To compute this, use
+        // lint().files(file, *getLintClassPath(),
+        //  LibraryReferenceTestFile(File("/downloaded/kotlin-compiler-31.7.0-alpha03.jar")),
+        // ).createProjects(tempFolder)
+        0xcf74546,
         """
-        H4sIAAAAAAAA/+1YXWwU1xX+7szujne8tpfFEMYEamABs9her38WsEnAAZNs
-        /ANhidPwEzJej83g9ay9M+vYtGkIaUOg4Uep1Jb+pS1pIBFRI1VCUKmpG6lU
-        6kP70odWkfLQt0p5bl5a3HNnZrHXXsqSmrSVItlzv7n3nPOde865P7O/v/3L
-        DwA8gosMXaoxmM3og5PRVGZ0LGNq0WzOsPRRLZrWDSvam7PUgbS2K5NOaylL
-        zxhuR9JSLW23ZlFnJtttSWAMwePqhBpNq8ZwdO/AcRqRIDLUlWSiccRiWNIz
-        krGINtqrWeqgaqkdDMLohEi+Mv4o4w8wsBEOBBqc1DlqIjQYY9g/fXKFPH1S
-        FoKVsrBCsKHbBMupqVkepIdnBWtiEaFJaPYFxRqhyfOEUFMd9BLyFfZ+eNUn
-        ccvNDOLQuME4dVtPJjscPa5ZA1lVN8yo67BqqOkpUzej6pge7bY63dekZpo0
-        YZqGb8Q6MDWmMTSVYMAiSZPMcA3SXaqbC2LIEHDz1MDzxBDJx+74xGiUerQs
-        WYwmM7lsioI8kBvumrQ0w/XGO6GmcxoT6pK9nfvkUhMkd9sMciRZm0d75M21
-        sdqSDSxKrRFlc+3RWSmTW3Ynn5rtjc6R6LaOHj1a8C5HeuTYulh9rK25PSbH
-        trRuWddc39Iea2uZ+xKf+7Jtzku8ee5L29yXrbPxseP+XwoSn19LfF2MT6me
-        JtWyxcZxG2+18TaOW5s5jjfbuMXGbTZutfFWwpEumeFY3Weq/Put9k0HC/aR
-        pJXVjWEJqxhWObqNc1LcOBuFMnyJYXkRkV51rAxrGGrvVSES1tEyTeumtXeI
-        YX3doZ7521nHJqcrZ+npaA8JdgSwHhtkhLGRIVyMfH6yyrCp+ExcSdvbzQzV
-        nKiRExXMsYGhYnbEFo4yhGYdTdC653YkxFwjjrezRiS0MEi62TU6Zk3Rxla3
-        6WAAbYiXoxVbGFo+Q5IlbGNovL9ES6BtqLIwnBIeYSjT+RSohimddXMDnnD7
-        Keg7sLMczejMT71gXMIumuAx1ezTJq0AuvjUdmMPg8egDopK3urczAbwBBJc
-        7kmGqc+p0nvmlzl5EUKPDAG9DKuLbecJgwuaesqUsJdipWa1rvGcmmbYWLdw
-        UkUKmHL9FPbL2Ickw857e2xvQYZmWHm392UzE/qglu3VJxOU+KcZVgxrVmc6
-        ncyNaVkuYYYHtSE1l6ZQf7eUSP57ivsO68FESev2GXy5HP14luHxsB5Www2q
-        MdVQ4t4aLnIeh2m9sQTdFnSad2hhahlkLa2N0jTD+kShhOskpZM8GQqTI3S4
-        h61jusmxLV7ds3CJdyya682LZom2lsTiWGrlAV0kr1pp7Vv25WuRnGtbROfa
-        Fs2r+CJ6Faeac5ZaYnTUGbXXNh3O89cSFbMj2Vsox8UKu2ST7xGW86I4FV70
-        aructpSuyTG6CGmDu9KqaSanRgcytMuZpWwo83bZeyuYtnWuYpPtzTor0iGl
-        vcKEJaMdOYYd/6ExCS9QYGl29lhiMDHUlzF6Mim+g6+vu4uvhkp3P1eBvJnC
-        CRmT+ArDmnuKS3iRTlnV3DPeR73OVjT/BLxz9ryEkzK+hpcZ/E5u7G+eGjWV
-        ohOuWKICeAgP8+PqG1wlq6U0fUKjc9uzKzNIi62CCi01QpeUA1yNoapHN7S+
-        3OgAnRNOT8ieer+a1e0qcTpl55tlj85fqot9wFDx7HeuxP26qZNSp2FkqKj5
-        RYphpTuWMCYWjCJG3nr4RyRE1HD36ZPuNcD/PLx09kI84/0VVvc1iKHaZIMn
-        tDbZcIO+X3lfu0fxiKFIUvF4QvX0pP4+u9+reMVQY1LxekJN9KT+dk/DNJrb
-        vWLcp3h/g9ZLqFa802i9ia0MlyCJV9CheG/iMYZ2SZFu4nHevZGjbuoqU8qm
-        ya5fjMuKP7L5Bvpu4MClmb94rsAjXoLXc63+QZoXrymeB+t+ZBr9m0UPu4GD
-        PHqczCfGJcXnkvkKyc4pPoeMLLtkUxxxMr/in8b2dlmMl9sxD4jxCiXg2gkU
-        2tmuBBw7lUqla6eOI26nSqniTgfF+BIlGFHkvNd/tr3GpZnTs+4vmsf1n4/H
-        Ygken1/o8YkiHjuV8cBcfnU2yOI1e4meAYQLiMxgGJJE5YbtEh7N/9G1Bf9A
-        mYTdDTMkXVSAMc+aEmTWliAzgygXmjdW4McMHkVlcREaleChATZXoZETlqbB
-        2Awk+O8qC3Bbd3Nwdo7/Hz7u+N/1EWcBFsGTJDWFAE6gitogncjVdHiuo1N0
-        A7V1eBH1eAUd+DrF+xXsxCn6En0NfbQghvE9nCP8HWp/hO/jTcJvUam/hx/g
-        Fn6ITwj/ndp/0uhtnGEizrIKvMk24Mesh3A/tUfwE/Yc4RTOsTGcZyfwU/Yt
-        XGY3CX9I+CNcFhjOCwFql+ItoZrwMsIPE15FeC0uCPX4mdCFt4URwhbhc4R/
-        QfgDan+LK8Itwr8j/AfCfyT8J1wUPsZV4VO8I67CRXEjroo7CQ8RHqd2Eu+K
-        U4RPEH6Z8CnCp/EGvkmLGGihOcs4hMP0PIsKHMFz8FNkVuIonkcZReYpqDTq
-        QzcOYAApOpE/IdlBW+NvdzT+ekfjvTsa7+Y1KD4yNK7BEnkN9lheg6LoajA5
-        r0FRKscQ9S1ht1FpawTZp3Qv4BpVFMv9tkYF+zWetjUCFOPDlMPDKGfXSeoY
-        lhPbzzFqa/gpE5dtDYm9gLdtDR9FtRw65xDez3MI7+Q5KPYuhzCe56CcHMZx
-        ziEcy3MIap6DMudyCJvyHJSFcnCtJWIqzyEeznNQrlwOMZznoBweQZpziDUk
-        Y3OIS2G4HB9TTTocH+GKw4FqMUc+GJTOevEIMoREdIm7MUbIw8YEBeOEvPwe
-        hSytB9hoGVmmeyT/bcO5bRGvwEsCSmTzdUw8ewvB6/gqNf7rOHUF3mfY+/nd
-        n9Ip9NPy7ZSwmi88coIWPb7Ni4rM2kaoiGwqQjZVUKFF517s6NruUPn4VeRV
-        fqoId+wI9D9rx4fTrh2f67IHr9vyXipdfPFb+Re/lZf2WznOU9XsovrxUeVI
-        hyAmUJaAP0G1XJ6gE6MiQQu06hCYScfGkkMoMxEysdREtYllJpabeMh+XYEL
-        /FQjQwpfP7bCyn8BqjNN0bsbAAA=""",
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuLiKEktLtEryE4XYgsBsrxLlBi0
+        GAAvgr4WLAAAAA==
+        """,
+        """
+        test/pkg/TestKt.class:
+        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
+        /we5oQ7XfQ8AAA==
+        """,
       )
+
     checkBytecodeMigration(
       file,
-      "isMutableCollection",
+      "testAnalyze",
       """
-      @@ -112 +112
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
-      @@ -175 +175
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
-      @@ -238 +238
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
-      @@ -259 +259
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn
-      @@ -262 +261
-      -  ICONST_1
-      -  ACONST_NULL
-      -  INVOKESTATIC org/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn.getAllSuperTypes＄default (Lorg/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn;Lorg/jetbrains/kotlin/analysis/api/types/KtType;ZILjava/lang/Object;)Ljava/util/List; (itf)
-      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.allSupertypes (Lorg/jetbrains/kotlin/analysis/api/types/KaType;Z)Lkotlin/sequences/Sequence; (itf)
-      @@ -301 +298
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KtType
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KaType
-      @@ -351 +348
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
-      @@ -417 +414
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KtType
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KaType
-      @@ -467 +464
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
-      @@ -533 +530
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KtType
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KaType
-      @@ -583 +580
-      -  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Ljava/lang/String;
-      +  INVOKESTATIC androidx/compose/runtime/lint/MutableCollectionMutableStateDetectorKt.fqn (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Ljava/lang/String;
+      @@ -15 +15
+      -  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion;
+      +  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion;
+      @@ -22 +22
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider;
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider;
+      @@ -37 +37
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KaSession;
+      @@ -45 +45
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.beforeEnteringAnalysisContext ()V
+      - L12
+      -  LINENUMBER 15 L12
+      -  ALOAD 4
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
+      @@ -52 +46
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.beforeEnteringAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
+      +  ALOAD 0
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.beforeEnteringAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
+      @@ -68 +63
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getKtType (Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/types/KtType;
+      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.getKtType (Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/types/KaType; (itf)
+      @@ -70 +65
+      -  IFNULL L16
+      +  IFNULL L15
+      @@ -73 +68
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getCanBeNull (Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Z
+      -  GOTO L17
+      - L16
+      - FRAME FULL [org/jetbrains/kotlin/psi/KtExpression I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I] [org/jetbrains/kotlin/analysis/api/types/KtType]
+      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.getCanBeNull (Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Z (itf)
+      +  GOTO L16
+      + L15
+      + FRAME FULL [org/jetbrains/kotlin/psi/KtExpression I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I] [org/jetbrains/kotlin/analysis/api/types/KaType]
+      @@ -85 +80
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
+      @@ -87 +81
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
+      - L18
+      -  LINENUMBER 20 L18
+      -  ALOAD 4
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.afterLeavingAnalysisContext ()V
+      +  ALOAD 0
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.afterLeavingAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
+      + L17
+      +  LINENUMBER 20 L17
+      @@ -102 +93
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
+      @@ -104 +94
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
+      - L19
+      -  LINENUMBER 20 L19
+      -  ALOAD 4
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.afterLeavingAnalysisContext ()V
+      +  ALOAD 0
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.afterLeavingAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
+      + L18
+      +  LINENUMBER 20 L18
       """,
       true,
+      checkSource =
+        kotlin(
+          """
+          fun self1(s: String) = s
+          fun self2(s: String?) = s
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        // This method is invoked with ktFile containing the PSI representation of the above
+        // `checkSource`source field, and migratedClass containing the bytecode migrated version
+        // of the original source above.
+        //
+        // In this case, our migrated code is performing analysis API lookups to see if a Kotlin
+        // expression is nullable. To make sure that the modified code is actually executing
+        // correctly, we'll use reflection to call into this migrated code, passing in valid KT
+        // elements, and checking that the results are correct. In this specific case, we'll
+        // use the kotlin expression method bodies, where the first one is not nullable and the
+        // second one is.
+        fun canBeNull(ktExpression: KtExpression): Boolean {
+          val method = migratedClass.declaredMethods[0]
+          return method.invoke(null, ktExpression) as Boolean
+        }
+        val func1 = ktFile.declarations[0] as KtNamedFunction
+        val func2 = ktFile.declarations[1] as KtNamedFunction
+        val exp1 = func1.bodyExpression as KtExpression
+        val exp2 = func2.bodyExpression as KtExpression
+
+        assertEquals(false, canBeNull(exp1))
+        assertEquals(true, canBeNull(exp2))
+      },
     )
   }
 
   @Test
-  fun verifyNavigationClassReferenceUtility() {
-    // Checks the rewriting of the androidx/navigation/common/lint/LintUtilKt.class isClassReference
-    // method body
-    val file = getNavigationLintUtilsClass()
+  fun testMigrateToInvokeInterface() {
+    // resolveCall should be moved from INVOKESTATIC to INVOKEINTERFACE.
+    // Also, isNothing was renamed to isNothingType.
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            """
+            package test.pkg
+
+            import org.jetbrains.kotlin.analysis.api.analyze
+            import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+            import org.jetbrains.kotlin.analysis.api.calls.symbol
+            import org.jetbrains.kotlin.psi.KtCallExpression
+
+            fun returnsString(element: KtCallExpression): Boolean {
+                analyze(element) {
+                    return element.resolveCall()?.singleFunctionCallOrNull()?.symbol?.returnType?.isString ?: false
+                }
+            }
+            """
+          )
+          .indented(),
+        0x9d1d5f7f,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuLiKEktLtEryE4XYgsBsrxLlBi0
+        GAAvgr4WLAAAAA==
+        """,
+        """
+        test/pkg/TestKt.class:
+        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
+        """,
+      )
+
+    checkBytecodeMigration(
+      file,
+      "returnsString",
+      """
+      ...
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/calls/KtCallInfo;
+      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/resolution/KaCallInfo; (itf)
+      ...
+      """,
+      skipFirst = 22,
+      maxLines = 2,
+      showDiff = true,
+      checkSource =
+        kotlin(
+          """
+          fun stringMethod(): String = "hello"
+          fun intMethod(): Int = 42
+          fun call1() = stringMethod()
+          fun call2() = intMethod()
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun isString(ktExpression: KtExpression): Boolean {
+          val method = migratedClass.declaredMethods[0]
+          return method.invoke(null, ktExpression) as Boolean
+        }
+        val call1 = (ktFile.declarations[2] as KtNamedFunction).bodyExpression as KtCallExpression
+        val call2 = (ktFile.declarations[3] as KtNamedFunction).bodyExpression as KtCallExpression
+
+        assertEquals(true, isString(call1))
+        assertEquals(false, isString(call2))
+      },
+    )
+  }
+
+  @Test
+  fun testRenameIsNothing() {
+    // isNothing was renamed to isNothingType.
+
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            """
+            package test.pkg
+
+            import org.jetbrains.kotlin.analysis.api.analyze
+            import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+            import org.jetbrains.kotlin.analysis.api.calls.symbol
+            import org.jetbrains.kotlin.psi.KtCallExpression
+
+            fun isNothingType(element: KtCallExpression): Boolean {
+                analyze(element) {
+                    return element.resolveCall()?.singleFunctionCallOrNull()?.symbol?.returnType?.isNothing ?: false
+                }
+            }
+            """
+          )
+          .indented(),
+        0x58432e00,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuLiKEktLtEryE4XYgsBsrxLlBi0
+        GAAvgr4WLAAAAA==
+        """,
+        """
+        test/pkg/TestKt.class:
+        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
+        """,
+      )
+
+    checkBytecodeMigration(
+      file,
+      "isNothingType",
+      """
+      @@ -15 +15
+      -  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion;
+      +  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion;
+      @@ -22 +22
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider;
+      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider;
+      @@ -37 +37
+      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;
+      ...
+      """,
+      maxLines = 8,
+      showDiff = true,
+      checkSource =
+        kotlin(
+          """
+          fun method1(): String = "hello"
+          fun method2(): Nothing = TODO()
+          fun call1() = method1()
+          fun call2() = method2()
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun isNothing(ktExpression: KtExpression): Boolean {
+          val method = migratedClass.declaredMethods[0]
+          return method.invoke(null, ktExpression) as Boolean
+        }
+        val call1 = (ktFile.declarations[2] as KtNamedFunction).bodyExpression as KtCallExpression
+        val call2 = (ktFile.declarations[3] as KtNamedFunction).bodyExpression as KtCallExpression
+
+        assertEquals(false, isNothing(call1))
+        assertEquals(true, isNothing(call2))
+      },
+    )
+  }
+
+  @Test
+  fun testSuperTypes() {
+    // Check getAllSuperTypes renaming and type providers
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            """
+            package test.pkg
+
+            import org.jetbrains.kotlin.analysis.api.analyze
+            import org.jetbrains.kotlin.psi.KtExpression
+
+            fun getExpressionTypes(expression: KtExpression): Any? {
+                analyze(expression) {
+                    val ktType = expression.getKtType()
+                    return ktType?.getAllSuperTypes()
+                }
+            }
+            """
+          )
+          .indented(),
+        0x36d63860,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuLiKEktLtEryE4XYgsBsrxLlBi0
+        GAAvgr4WLAAAAA==
+        """,
+        """
+        test/pkg/TestKt.class:
+        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
+        suG3KXIibq20+RE9yxWmlf8AmOlRJfwQAAA=
+        """,
+      )
+
+    checkBytecodeMigration(
+      file,
+      "getExpressionTypes",
+      """
+        ...
+        @@ -69 +64
+        -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getKtType (Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/types/KtType;
+        +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.getKtType (Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/types/KaType; (itf)
+        @@ -74 +69
+        -   IFNULL L17
+        +   IFNULL L16
+        @@ -76 +71
+        -   CHECKCAST org/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn
+        @@ -79 +73
+        -   ICONST_1
+        +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.getAllSuperTypes (Lorg/jetbrains/kotlin/analysis/api/types/KaType;Z)Ljava/util/List; (itf)
+        +   GOTO L17
+        +  L16
+        +  FRAME FULL [org/jetbrains/kotlin/psi/KtExpression I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/types/KaType] []
+        @@ -81 +78
+        -   INVOKESTATIC org/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn.getAllSuperTypes＄default (Lorg/jetbrains/kotlin/analysis/api/components/KtTypeProviderMixIn;Lorg/jetbrains/kotlin/analysis/api/types/KtType;ZILjava/lang/Object;)Ljava/util/List; (itf)
+        -   GOTO L18
+        ...
+      """,
+      skipFirst = 21,
+      maxLines = 17,
+      showDiff = true,
+      checkSource =
+        kotlin(
+          """
+          fun method1(): String = "hello"
+          fun method2(): List<String> = emptyList()
+          fun call1() = method1()
+          fun call2() = method2()
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun getFirstSuperTypeName(ktExpression: KtExpression): Any? {
+          val method = migratedClass.declaredMethods[0]
+          return (method.invoke(null, ktExpression))
+        }
+        val call1 = (ktFile.declarations[2] as KtNamedFunction).bodyExpression as KtCallExpression
+        val call2 = (ktFile.declarations[3] as KtNamedFunction).bodyExpression as KtCallExpression
+
+        assertEquals(
+          "[kotlin/Comparable<kotlin/String>, kotlin/CharSequence, java/io/Serializable, kotlin/Any]",
+          getFirstSuperTypeName(call1).toString(),
+        )
+        assertEquals(
+          "[kotlin/collections/Collection<kotlin/String>, kotlin/collections/Iterable<kotlin/String>, kotlin/Any]",
+          getFirstSuperTypeName(call2).toString(),
+        )
+      },
+    )
+  }
+
+  @Test
+  fun testMigrateLintUtil1() {
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            "src/androidx/navigation/lint/common/LintUtil.kt",
+            // Old version of this utility: no parameters
+            """
+            package androidx.navigation.lint.common
+
+            import org.jetbrains.uast.UExpression
+
+            fun UExpression.isClassReference(
+            ): Pair<Boolean, String?> {
+                TODO() // implementation doesn't matter
+            }
+            """,
+          )
+          .indented(),
+        0x1f81deac,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg0uWST8xLKcrPTKnQy0ssy0xPLMnM
+        z9PLycwr0UvOz83NzxPi8gFyQksyc7xLlBi0GAC8YwKBRwAAAA==
+        """,
+        """
+        androidx/navigation/lint/common/LintUtilKt.class:
+        H4sIAAAAAAAA/5VSUU8TQRD+9lpaKCDlFCxFEaVKqcoV45MlJAqYXCxIQJoY
+        nrbXpSy92yN7ew2P/CuNJsqzP8o4V4poITEmu7PfzM7MN7M7P35++QbgJaoM
+        Fa5aOpStU0fxrmxzI0Pl+FIZxwuDgHCd8L6R/juTBWPIH/Mud3yu2s775rHw
+        yJoiq4zWfR5Fu+JQaKE8weCU66FuO8fCNDWXKnJiHhlnf/P0RIsoIpbaUr0T
+        GqJydrjUNYbG/0Ws1q9KeROGvuCq9odpz2ip2rU1SrwwkJcrFZpep5GzHZrt
+        2PfJK7NqjmS0NowRhrk+z3E3cKh/oRX3HVclKSPpRVmMMkx5R8Lr9ON3uOaB
+        IEeGxXJ98I1uqGupMYZx3MphDBMMxT4fZXODE18Egkhbm1qHOovJpDappFlj
+        2ChfT+XWb6p2Qxzy2Dfr1KTRsWdCvcV1R+ge823cycHGFMN0Kem6dP3/5v/1
+        GQyTl8RbwvAWN5xsVtBN0WyxRIwkAgyskwCLLk9lgmjsrNYKw8r5mZ07P8tZ
+        BStn5Udp30pwsZA/Pyvm7bRtVS07Y6cLrJqqsopVTSeBLxjGByaHOEYv53S5
+        YxjS62GLepggo9iOg6bQH3jTJ4tdDz3uN7iWid43juzJtuIm1oRnd2NlZCBc
+        1ZWRpOvXV8PCUBq8/f3vf7nl9sJYe+KtTLLP9GMa1/JhBRbSuHikGQwhQ1qZ
+        tBph6gqTFTv3GfmvsD+yNPuE6e/JO2KJZIYcMsiiQnjswhl3UaDzac8ni2d9
+        r2E6n9POsr5iYbknF+HQ+arPXTxAysWsi3su7mPOxQPMu3iIRwdgERZQOsBQ
+        lKzHEZ70VuEXRwdRL0gEAAA=
+        """,
+      )
+
     checkBytecodeMigration(
       file,
       "isClassReference",
       """
-      @Lorg/jetbrains/annotations/NotNull;([]) // invisible
-        // annotable parameter count: 1 (invisible)
-        @Lorg/jetbrains/annotations/NotNull;([]) // invisible, parameter 0
-       L0
-        ALOAD 0
-        INVOKESTATIC com/android/tools/lint/detector/api/UastLintUtilsKt.isClassReference (Lorg/jetbrains/uast/UExpression;)Lkotlin/Pair;
-        ARETURN
-       L1
-        LOCALVARIABLE ＄this＄isClassReference Lorg/jetbrains/uast/UExpression; L0 L1 0
-        MAXSTACK = 1
-        MAXLOCALS = 1
+        @Lorg/jetbrains/annotations/NotNull;([]) // invisible
+          // annotable parameter count: 1 (invisible)
+          @Lorg/jetbrains/annotations/NotNull;([]) // invisible, parameter 0
+         L0
+          ALOAD 0
+          ICONST_1
+          ICONST_1
+          ICONST_1
+          INVOKESTATIC com/android/tools/lint/detector/api/UastLintUtilsKt.isClassReference (Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;
+          ARETURN
+         L1
+          LOCALVARIABLE ＄this＄isClassReference Lorg/jetbrains/uast/UExpression; L0 L1 0
+          MAXSTACK = 4
+          MAXLOCALS = 1
+        """,
+      showDiff = false,
+      checkSource =
+        kotlin(
+          """
+          class MyClass {
+            companion object {}
+          }
+          class MyInterface
+          object MyObject {
+            val prop = 1
+          }
+          fun test1() = MyObject
+          fun test2() = MyObject.prop
+          fun test3() = MyObject::class
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun UExpression.isClassReferenceReflection(): Pair<Boolean, String?> {
+          val method = migratedClass.declaredMethods[0]
+          @Suppress("UNCHECKED_CAST") return method.invoke(null, this) as Pair<Boolean, String?>
+        }
+
+        val functions = ktFile.declarations.filterIsInstance<KtNamedFunction>()
+        val expression1 = functions[0].bodyExpression.toUElement() as UExpression
+        val expression2 = functions[1].bodyExpression.toUElement() as UExpression
+        val expression3 = functions[2].bodyExpression.toUElement() as UExpression
+
+        // The real implementation in LintUtils:
+        assertEquals(false to "MyObject", expression1.isClassReference())
+        assertEquals(false to null, expression2.isClassReference())
+        assertEquals(false to null, expression3.isClassReference())
+
+        // The migrated, reflection wrapped version
+        assertEquals(false to "MyObject", expression1.isClassReferenceReflection())
+        assertEquals(false to null, expression2.isClassReferenceReflection())
+        assertEquals(false to null, expression3.isClassReferenceReflection())
+      },
+    )
+  }
+
+  @Test
+  fun testMigrateLintUtil2() {
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            "src/androidx/navigation/lint/common/LintUtil.kt",
+            // New version of this class: added multiple parameters and defaults
+            """
+            package androidx.navigation.lint.common
+
+            import org.jetbrains.uast.UExpression
+
+            fun UExpression.isClassReference(
+                checkClass: Boolean = true,
+                checkInterface: Boolean = true,
+                checkCompanion: Boolean = true
+            ): Pair<Boolean, String?> {
+                TODO() // implementation doesn't matter
+            }
+
+            fun usageExample1(expression: UExpression): Pair<Boolean, String?> {
+                return expression.isClassReference()
+            }
+            fun usageExample2(expression: UExpression): Pair<Boolean, String?> {
+                return expression.isClassReference(checkClass = true)
+            }
+            """,
+          )
+          .indented(),
+        0xb00733eb,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg0uWST8xLKcrPTKnQy0ssy0xPLMnM
+        z9PLycwr0UvOz83NzxPi8gFyQksyc7xLlBi0GAC8YwKBRwAAAA==
+        """,
+        """
+        androidx/navigation/lint/common/LintUtilKt.class:
+        H4sIAAAAAAAA/51UXW8bRRQ9s15/bex0bUhx7DS0xFDHQNcNpXw4TSlpkFY4
+        oWpopCQS0sSeuBuvd6OddZQnlN/AG/+ib0QgQZ75UYg7k21K7UBbLO/MmXtn
+        zr3nzt39869ffwdwBw8YmjzoRaHXO3YCfuT1eeyFgeN7Qex0w+GQcIfwk9jz
+        v42zYAz2AT/ijs+DvvPd3oHokjVFVk+u+lzKx2JfRCLoCoalRieM+s6BiPci
+        7gXSGXEZO0/Wjg8jISVFae/s7Cx2BmFM0ZxH3IvaDNtvfGi58yKhr8PQFzxo
+        /8O0GUde0G+vEPfCGDUPgjDWeqWzEcYbI9+nXZnl+KknV3LIM8wncQ6Ohg5V
+        QUQB9x03UJTS68osphhmuk9Fd5Ccf8QjPhS0keFmozNeqUvyWtwqoIhpCwVc
+        Yagm8YjNHR76YigoaG8tisIoi5LKzQu8eIXhYWOSyu1clu1Dsc9HfrxKIuNo
+        1I3DaJ1HAxHpyG/hbQtlzDBcrSvV9clbvP6q+2CwdAX0QQa2wzCtDa5KYZ8r
+        knPDajg85AGdYaiMB6r3zvNkWHudDnAna/tyJxWQRsaCgXcZiiPJ+2LtmKuS
+        3mZwXhlhvCu33uzE67ekJS4ocqgXcA3zKukPxpJeYig9D7AuYt7jMafTxvAo
+        Ra8xU0NeDaD6DxQwyHnsKdQi1CPRP52dVKyzE8uoGJZhT9EzfbHMpatz9tlJ
+        1S6bZaNllDNls8JaqRZbythm1Wgpd+Y/vHft7KS3SZ6lXM6wc7TH0Ch/gSyF
+        VGakrDhWbBIx9fybc2tAHWGuhj1qoitkFBuj4Z6Ivud7PlnKnbDL/S0eeWqd
+        GPObXj/g8SgiXHs8CmJvKNzgyJMeuR+8eOUZ6uPei7f3pW3FzZh3B+v8MAlg
+        bYajqCu+8dRiNuHYmuDHbbpIU10KjbOqHWn+nFbbhJW91Cxbp7B/Q3mbmewX
+        XP1DXRy+oDFDNcjAwpeEm+eb8Q4qmqxEZFXyK1QjZGg0RyiFtmbIYjnhyNF8
+        j56imSz0z86rPiOLyuYHos/QvDBjmj/+jLS5PGOmNbg3Y2Y1WGnW5q6d4voz
+        zb5CYxqpfC6nU52ncMqQJZY8zTahMs2zFK+m5xt4L1He1klp5e+T8mYqlbKz
+        7BQ3n40pn9bKC4nKulZ+rm1hQluWJYtZNP41kkmRMpdFKv2fSAbu6/EzfEVz
+        h6yLpLS5i5SLD1185OJj3HLhoOVSFyztgkl8gju7mJK4IfGpxF39r0tUJBoS
+        aYlZiZrE3N9oxKqtmgcAAA==
+        """,
+      )
+
+    checkBytecodeMigration(
+      file,
+      "isClassReference\$default",
+      """
+      @@ -40 +40
+      -  INVOKESTATIC androidx/navigation/lint/common/LintUtilKt.isClassReference (Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;
+      +  INVOKESTATIC com/android/tools/lint/detector/api/UastLintUtilsKt.isClassReference (Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;
       """,
-      false,
+      showDiff = true,
+      checkSource =
+        kotlin(
+          """
+          class MyClass {
+            companion object {}
+          }
+          class MyInterface
+          object MyObject {
+            val prop = 1
+          }
+          fun test1() = MyObject
+          fun test2() = MyObject.prop
+          fun test3() = MyObject::class
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun UExpression.isClassReferenceReflection1(): Pair<Boolean, String?> {
+          val method = migratedClass.declaredMethods.find { it.name == "usageExample1" }
+          @Suppress("UNCHECKED_CAST") return method!!.invoke(null, this) as Pair<Boolean, String?>
+        }
+        fun UExpression.isClassReferenceReflection2(): Pair<Boolean, String?> {
+          val method = migratedClass.declaredMethods.find { it.name == "usageExample2" }
+          @Suppress("UNCHECKED_CAST") return method!!.invoke(null, this) as Pair<Boolean, String?>
+        }
+
+        val functions = ktFile.declarations.filterIsInstance<KtNamedFunction>()
+        val expression1 = functions[0].bodyExpression.toUElement() as UExpression
+        val expression2 = functions[1].bodyExpression.toUElement() as UExpression
+        val expression3 = functions[2].bodyExpression.toUElement() as UExpression
+
+        // The real implementation in LintUtils:
+        assertEquals(false to "MyObject", expression1.isClassReference())
+        assertEquals(false to null, expression2.isClassReference())
+        assertEquals(false to null, expression3.isClassReference())
+
+        // The migrated, reflection wrapped version
+        assertEquals(false to "MyObject", expression1.isClassReferenceReflection1())
+        assertEquals(false to null, expression2.isClassReferenceReflection1())
+        assertEquals(false to null, expression3.isClassReferenceReflection1())
+        // Using different sets of default parameters at the call site
+        assertEquals(false to "MyObject", expression1.isClassReferenceReflection2())
+        assertEquals(false to null, expression2.isClassReferenceReflection2())
+        assertEquals(false to null, expression3.isClassReferenceReflection2())
+      },
     )
   }
 
@@ -266,449 +893,6 @@ class LintJarApiMigrationTest {
           hByscbDW+1vnMMxlCBRRxV18SjzW8H8BcrXIZAUZAAA=""",
       )
     return file
-  }
-
-  @Test
-  fun verifyAnalyzeRewriting() {
-    // Checks the rewriting of the androidx/navigation/common/lint/LintUtilKt.class isClassReference
-    // method body
-    val file =
-      base64gzip(
-        "ui-android-1.7.0-alpha02-lint.jar-androidx/compose/ui/lint/SuspiciousModifierThenDetector.visitMethodCall.class",
-        """
-        H4sIAAAAAAAA/+1Z+1cc1R3/XBYYGDYEo02yebnKqkASBojBBKoGEXTDBhOB
-        RE1jMiwDDCwzdGaWELU2fbfWat822lZr1fhIrU0tjWmraK229mlf5/QcT/+B
-        /gN9WO3nzuyG17LZYM7pL56wM3fu/b7v93Vv3njn9IsArsZfBeK6NeDY5sCk
-        lrTHxm3X0NKmljItT+tJu+Nm0rTT7i57wBw0Dad32LCuNzwj6dlObMJ0TW+X
-        4Q3bA+16KhVrVCAE6m1nSBsxvH5HNy1XS+uup/mQtqO19bueoye9Pk7uDeYU
-        hAQuyc+pftQTuGqJYiooFVg+T1YBryZBOlqGqObZdsoNyA1kEDV93NR26hN6
-        u215xqTXmsihWZ+k1jE57hiua9pWq0+UVIxUyhzRxl1T2+2aAd/W2r1hlKFc
-        4ILEqO2Rl8YFfUD39FaBorGJEHdEyEeZfEBAjHJ+0pRfDRwNNApcM310lTp9
-        VC1aXeS/qipmvurE9NEydfX00aaiBrGzqqpoTVFDqKm0qpjvkhtXvvJkaamk
-        0iTQkEuVPJtE+S70l+dqK6SQxZY9YAjECrGOgJI2N0srC9RljTAyEVjMsfSU
-        1mOnnaRxvdGfHuqY9Awrg1YyoafShija0LOrbbd6Vm9Ru3zSal1PNDvqVDdG
-        G6NnxzxvwUB+TVGdOh25w5CE55ono7u/7pqu72ttAXCXR9Qt0S6vLbPYE1hv
-        t2NPmAOGUxgxN0DSFiWj1iXUxurGTY3NW1sa1abm6qZNTS2Nzc3q1ubqLRxs
-        U69qqN6yaRuH22cM6e/M/8OalHZbQ3WjlHBTU3a4LTvYvmmbWtehCmxYwNFn
-        162PGW6sz1RwscDaPDAKLmGM9JkCbUuVvZ3gukVLK4gJlJ/5FFgXs71hw8li
-        tTlD6THD8gKfF1ifM3l0pAwJxCAoiyWDTCTQeM7JS+CKmkJCtPY2gep5gLpl
-        2Z7ucdnVum2vO51Kkd6lZ6emYDNz75Dh3WwkDXOChjoyTkXX1dTmVFWutoah
-        oaEC9WC2K4t39/S2dbd3CEQT+XeWeFtwZTmi2CpQQZZZK9MnyG5xZCJehW0q
-        EbeTS244ytbnmSm3y1NAzcOmxW00PbfTsccEttcsrk0+xrW3hVmBr1HxQVwr
-        sHoxGgraAo2yRqTpqVEu68/axzDacb00I20XJnLgZCQpcPEi5s96Whg34EaJ
-        GheozZlpJEKXN3+vuxhaeegq2CXQfh4yl4KbBG5KnAdKM7FKpS/HnnLsxs0L
-        PHuO0meU6RVQaVeSGmHECdTMt6o9blhSivEAQstAktNe7KtAH24JYiMzX1Nf
-        X19bBobfhlyFMW55DoUxk0xRH5KGHjaSo5lgnNmEvX6ZlKE+wtjXUro1pN3U
-        77OdNdMjSQ35/cjtOKjiAA4J7Dqv9lTQHzht3HI93ZLpbaymMPvMd+0lSUIr
-        D8BQkcSgwArKMQ9OYP/8dJhrmwsSZoEQZD4MU6UzjbAxIvNuex/ThdGWlDk0
-        bgXghoyfdrmNMqT7FoR0LlYpc9DwzDFDM8fGU9pZyVKQFMakIFR4z3knr2Cc
-        VavfGLQdo0M6Kr0qa4r2bKkK1Ug/c+Cq+DC8wOV77VHD6tRloToi0HFuqnd5
-        icxwNhmqOoHDUtVJgS1L2DQFd7DgZIVjp/2epKI4d+EjKu7E3Wwl3rN2Co4K
-        XLuIxxYmULALH1fxMXxC4LJ8vj8rp3+K5W2JjZAslp9htdGTSVKTYRCnVxH+
-        TCHLZKuHC9FrYZDlDd9ZDU0BxJP0aZdoOQXkVn4O96j4LD5Pb19cG7+2HipE
-        l/zszlacv4D7pDD30yHeIysFX5Ld8CAjN2HoEwujN4yvBB7zVTnyI/jrPArO
-        VJLeYcc+rPenSOobYVyBmnIU4UEGYCHtqTxgJjh7prX6JrOD6V5npOzDsQFj
-        UE+nmC/25O6usvbIu3hbfGEdlF3Xt/Gwim/hkTBqUSdFfpSdycJW7Vwbfr+J
-        eKwcCh4XiMimKyeiwOZMr3A2C8Vd1/e/43hSxWV4iruVs+3L9iTPCGjneDBQ
-        8L0gJ8uWNGEn/Taf3UDuw8JMWSyETZYcNfg+nlPxLH4g0N3n0tGiWYPU80Rk
-        RQ+b3nBUPzMZHQzSXnQwbfnVJwNgRc2MH0edjCOX4YcClY4xbjvejNO8vYTb
-        ncI3JK9pzs0yC7uywvA502lOtubyb+b5H2FKWvvHAkbMjOmxzZl7iM3neuyO
-        5bj1iZnzckmMJzXBs0JNzBs23VwoB9NNV6b0sf4BXY4aBLYuKePzJEN1BmMB
-        GCtHpWR4MGZOBH9sJc5L78jDmD53aRaLilk85wh0BwVaNayfsezcM69gY1+V
-        Ju9sJu4lGU6NLrhT25ivsC24UKuavxsCxZ5PumvJCW2BG5BPcbt/zbesx9OT
-        o7v08V6Z9Zk56IlGd3qsnySCmRXSt1N7dceU35nJ2M1pS7YicUvS5tRu3WG+
-        YeFpm7lboDXjlmU47SndpaFIvMNKpmyZLgJheOIKjrGdpiR6Ua7LQibeDK+9
-        Aac5DNbOl2PWKhpZCIoBFFVVyVIG8M36EFzFYhU2cv3XQGgNyrCck00bX0CT
-        wK2vYfVJNE+h5RR2FD8Cpfg4ykPHUbIvdDUhOgVe9+eKQ9esOwZl/YMoCZ3g
-        wk6BltJI6ctIHENFpHQaCcKIW19H6b7QiZbiUHPpSfREiqfR9wJuJZsV+09B
-        n8JQi4JQc1lEaSmPKP7yFEZb1FBzRaR8CvYU0vJ9JKJO4aNT+CQiaks41Lws
-        Epawnz6Feylv+Sl8UQooWipnA38tQ+GB41jfEs65Egm/FKmkRVpKIiV1z+Oh
-        UIk4he8ckyrx87sn8cQUnt44Df9LvqdwcsXzoqqKYKdCJ2jBx/Aq3iKFt/B3
-        /x3Cb/h8FMvXtiu4rk28jWViB59lQrxDo7OYdu9QkOjk712e6SoVFCmoF4Lf
-        4GO3/Cm4U8ifnPhyGzHeRQThxSDlx7F3EAmwCLsKy2fBcmo+XU5Rxt/ydw8u
-        5fMGXIJOjm6kz+zEdnShlRAHePg4hCcwyXp9F57E/XgKD+BpavwMHscJ/tuD
-        V/h8lan5TVbEv+E5WuBZ/IPjfxLmX8T5N3H/Qzr/xT4Rxi2iEvvFCh74V+OA
-        WIfbxRU4KGo518CT7e8oyX2oJMWVeAGnsYz8IvgJfooweY/gZ5yrwL0Yw4t4
-        CeX+aJqrKqW7218twxE2dy9zVaHkD1G60yjFpaIKP6eURWgUAr/gKETd/oLX
-        6MjFlGwrfsnoKJERgF/hDf//KprIeQ2j5Pf8UGS4bOKgFH/gcw3RozRWNUEu
-        I6PL+S6SSHy/yWcx51T8UQYeif6Jr/dv+d+/5c9zy48/01d20Mcq6C/h/QjF
-        sSyOyjiTchWHuCCOFbhwP4SLi/CB/VBcOVzpYpWL1S4iLta4WEuHBoNHYB1/
-        633oDf8DzkPXZxcdAAA=""",
-      )
-    checkBytecodeMigration(
-      file,
-      "visitCallExpression",
-      """
-      @@ -85 +85
-      -  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion;
-      +  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion;
-      @@ -92 +92
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider;
-      @@ -107 +107
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KaSession;
-      @@ -115 +115
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.beforeEnteringAnalysisContext ()V
-      - L24
-      -  LINENUMBER 170 L24
-      -  ALOAD 9
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -122 +116
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.beforeEnteringAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      +  ALOAD 4
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.beforeEnteringAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      @@ -139 +134
-      -  INVOKESTATIC androidx/compose/ui/lint/SuspiciousModifierThenDetectorKt.access＄getImplicitReceiverValue (Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/calls/KtImplicitReceiverValue;
-      +  INVOKESTATIC androidx/compose/ui/lint/SuspiciousModifierThenDetectorKt.access＄getImplicitReceiverValue (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtExpression;)Lorg/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue;
-      @@ -141 +136
-      -  IFNULL L28
-      -  INVOKESTATIC androidx/compose/ui/lint/SuspiciousModifierThenDetectorKt.access＄getImplicitReceiverPsi (Lorg/jetbrains/kotlin/analysis/api/calls/KtImplicitReceiverValue;)Lcom/intellij/psi/PsiElement;
-      -  GOTO L29
-      - L28
-      - FRAME FULL [androidx/compose/ui/lint/SuspiciousModifierThenDetector＄visitMethodCall＄1 org/jetbrains/uast/UCallExpression I I org/jetbrains/kotlin/psi/KtCallExpression T I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I] [org/jetbrains/kotlin/analysis/api/calls/KtImplicitReceiverValue]
-      +  IFNULL L27
-      +  INVOKESTATIC androidx/compose/ui/lint/SuspiciousModifierThenDetectorKt.access＄getImplicitReceiverPsi (Lorg/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue;)Lcom/intellij/psi/PsiElement;
-      +  GOTO L28
-      + L27
-      + FRAME FULL [androidx/compose/ui/lint/SuspiciousModifierThenDetector＄visitMethodCall＄1 org/jetbrains/uast/UCallExpression I I org/jetbrains/kotlin/psi/KtCallExpression T I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I] [org/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue]
-      @@ -155 +150
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -157 +151
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      - L30
-      -  LINENUMBER 175 L30
-      -  ALOAD 9
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.afterLeavingAnalysisContext ()V
-      - L31
-      -  LINENUMBER 176 L31
-      -  GOTO L32
-      +  ALOAD 4
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.afterLeavingAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      + L29
-      +  LINENUMBER 175 L29
-      +  LINENUMBER 176 L29
-      +  GOTO L30
-      @@ -173 +163
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -175 +164
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      - L33
-      -  LINENUMBER 175 L33
-      -  ALOAD 9
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.afterLeavingAnalysisContext ()V
-      +  ALOAD 4
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.afterLeavingAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      + L31
-      +  LINENUMBER 175 L31
-      @@ -208 +194
-      -  IFEQ L39
-      - L40
-      -  LINENUMBER 88 L40
-      +  IFEQ L37
-      + L38
-      +  LINENUMBER 88 L38
-      """,
-      true,
-    )
-  }
-
-  @Test
-  fun verifyAnalyzeRewriting2() {
-    // This also tests replacing methods from classes to interfaces (INVOKEVIRTUAL to INVOKESTATIC)
-    val file =
-      base64gzip(
-        "ui-android-1.7.0-beta07-lint.jar-androidx/compose/ui/lint/ModifierDeclarationDetectorKt\$ensureReceiverIsReferenced\$1.visitCallExpression.class",
-        """
-        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
-        50SHpuQ/En3G6/cjAAA=""",
-      )
-    checkBytecodeMigration(
-      file,
-      "visitCallExpression",
-      """
-      @@ -53 +53
-      -  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion;
-      +  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion;
-      @@ -60 +60
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider;
-      @@ -75 +75
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KaSession;
-      @@ -83 +83
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.beforeEnteringAnalysisContext ()V
-      - L21
-      -  LINENUMBER 378 L21
-      -  ALOAD 7
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -90 +84
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.beforeEnteringAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      +  ALOAD 2
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.beforeEnteringAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      @@ -107 +102
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/calls/KtCallInfo;
-      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/resolution/KaCallInfo; (itf)
-      @@ -109 +104
-      -  IFNULL L25
-      +  IFNULL L24
-      @@ -117 +112
-      -  INVOKESTATIC org/jetbrains/kotlin/analysis/api/calls/KtCallKt.getCalls (Lorg/jetbrains/kotlin/analysis/api/calls/KtCallInfo;)Ljava/util/List;
-      +  INVOKESTATIC org/jetbrains/kotlin/analysis/api/calls/KaCallKt.getCalls (Lorg/jetbrains/kotlin/analysis/api/resolution/KaCallInfo;)Ljava/util/List;
-      @@ -140 +135
-      -  IFEQ L33
-      +  IFEQ L32
-      @@ -147 +142
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCall
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      @@ -155 +150
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/calls/KtCall
-      +  INSTANCEOF org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      + L36
-      +  LINENUMBER 385 L36
-      +  IFEQ L31
-      @@ -157 +155
-      -  LINENUMBER 385 L37
-      -  IFEQ L32
-      - L38
-      -  LINENUMBER 386 L38
-      +  LINENUMBER 386 L37
-      @@ -162 +157
-      -  IFEQ L39
-      +  IFEQ L38
-      @@ -164 +159
-      -  GOTO L40
-      - L39
-      -  LINENUMBER 387 L39
-      - FRAME APPEND [java/lang/Object org/jetbrains/kotlin/analysis/api/calls/KtCall I]
-      +  GOTO L39
-      + L38
-      +  LINENUMBER 387 L38
-      + FRAME APPEND [java/lang/Object org/jetbrains/kotlin/analysis/api/resolution/KaCall I]
-      @@ -174 +169
-      - L42
-      -  GOTO L32
-      - L33
-      -  LINENUMBER 391 L33
-      + L41
-      +  GOTO L31
-      + L32
-      +  LINENUMBER 391 L32
-      @@ -180 +175
-      -  IFNE L43
-      +  IFNE L42
-      @@ -182 +177
-      -  GOTO L40
-      - L43
-      -  LINENUMBER 392 L43
-      +  GOTO L39
-      + L42
-      +  LINENUMBER 392 L42
-      @@ -189 +184
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCall
-      - L44
-      -  LINENUMBER 381 L44
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      + L43
-      +  LINENUMBER 381 L43
-      @@ -193 +188
-      - L45
-      -  GOTO L46
-      - L25
-      -  LINENUMBER 242 L25
-      - FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I] [org/jetbrains/kotlin/analysis/api/calls/KtCallInfo]
-      + L44
-      +  GOTO L45
-      + L24
-      +  LINENUMBER 242 L24
-      + FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I] [org/jetbrains/kotlin/analysis/api/resolution/KaCallInfo]
-      @@ -206 +201
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      -  IFEQ L48
-      +  INSTANCEOF org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      +  IFEQ L47
-      @@ -209 +204
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      -  GOTO L49
-      - L48
-      - FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall] []
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      +  GOTO L48
-      + L47
-      + FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall] []
-      @@ -217 +212
-      -  IFNULL L50
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall.getPartiallyAppliedSymbol ()Lorg/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol;
-      -  GOTO L51
-      - L50
-      - FRAME SAME1 org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      +  IFNULL L49
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall.getPartiallyAppliedSymbol ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol;
-      +  GOTO L50
-      + L49
-      + FRAME SAME1 org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      @@ -231 +226
-      -  IFNULL L53
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol.getExtensionReceiver ()Lorg/jetbrains/kotlin/analysis/api/calls/KtReceiverValue;
-      +  IFNULL L52
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol.getExtensionReceiver ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue;
-      @@ -234 +229
-      -  IFNONNULL L54
-      - L53
-      - FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] [java/lang/Object]
-      +  IFNONNULL L53
-      + L52
-      + FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] [java/lang/Object]
-      @@ -240 +235
-      -  IFNULL L55
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol.getDispatchReceiver ()Lorg/jetbrains/kotlin/analysis/api/calls/KtReceiverValue;
-      -  GOTO L54
-      - L55
-      - FRAME SAME1 org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol
-      +  IFNULL L54
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol.getDispatchReceiver ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue;
-      +  GOTO L53
-      + L54
-      + FRAME SAME1 org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol
-      @@ -254 +249
-      -  IFNULL L57
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KtType;
-      +  IFNULL L56
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KaType;
-      @@ -257 +252
-      -  IFNULL L57
-      +  IFNULL L56
-      @@ -260 +255
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getExpandedClassSymbol (Lorg/jetbrains/kotlin/analysis/api/types/KtType;)Lorg/jetbrains/kotlin/analysis/api/symbols/KtClassOrObjectSymbol;
-      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.getExpandedClassSymbol (Lorg/jetbrains/kotlin/analysis/api/types/KaType;)Lorg/jetbrains/kotlin/analysis/api/symbols/KaClassSymbol; (itf)
-      @@ -262 +257
-      -  IFNULL L57
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KtClassOrObjectSymbol.getClassIdIfNonLocal ()Lorg/jetbrains/kotlin/name/ClassId;
-      -  GOTO L58
-      - L57
-      - FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] [java/lang/Object]
-      +  IFNULL L56
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KaClassSymbol.getClassIdIfNonLocal ()Lorg/jetbrains/kotlin/name/ClassId;
-      +  GOTO L57
-      + L56
-      + FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] [java/lang/Object]
-      @@ -276 +271
-      -  IFNULL L60
-      +  IFNULL L59
-      @@ -278 +273
-      -  GOTO L61
-      - L60
-      - FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue org/jetbrains/kotlin/name/ClassId T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] [org/jetbrains/kotlin/name/ClassId]
-      +  GOTO L60
-      + L59
-      + FRAME FULL [androidx/compose/ui/lint/ModifierDeclarationDetectorKt＄ensureReceiverIsReferenced＄1 org/jetbrains/uast/UCallExpression org/jetbrains/kotlin/psi/KtCallExpression kotlin/jvm/internal/Ref＄BooleanRef I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue org/jetbrains/kotlin/name/ClassId T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] [org/jetbrains/kotlin/name/ClassId]
-      @@ -303 +298
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -305 +299
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      - L65
-      -  LINENUMBER 394 L65
-      -  ALOAD 7
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.afterLeavingAnalysisContext ()V
-      +  ALOAD 2
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.afterLeavingAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      + L64
-      +  LINENUMBER 394 L64
-      @@ -326 +317
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -328 +318
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.afterLeavingAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      - L68
-      -  LINENUMBER 394 L68
-      -  ALOAD 7
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      ...
-      """,
-      true,
-    )
   }
 
   @Test
@@ -922,339 +1106,62 @@ class LintJarApiMigrationTest {
     )
   }
 
-  @Test
-  fun verifyAnalyzeRewriting4() {
-    val file =
-      base64gzip(
-        "lifecycle-livedata-core-2.9.0-alpha01-lint.jar-androidx/lifecycle/lint/NonNullableMutableLiveDataDetector\$createUastHandler\$1.visitCallExpression.class",
-        """
-        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
-        hswqnaIGzqDwy+UKHavkSpcsVPcqJclsPJrM3LJCxaWArJz+0mVCIpHVY7TS
-        PiOtmirFZ/qQ5BavrNVljVTbkTIpl6Als05GnXaq2j8zk1qpY9yVekb/bLE0
-        WWd7txpNbA/2qXiTnvK3BROHOEzqDeJX1Ddwn4xNc0qTjYL12d31ZQr+C2WT
-        DodsZnVNOQRXZIp3GQoEuUaaXHK1bKF97IhpXWiGI2GTh9u7pj1ajdfcjO82
-        s7vXdMtWuVapbBtjQGW4Mli5Or0QWp06bVXao6pjz1QSmqdpCQhyw6bVXjvD
-        A5iyUvLbJfEtEqWTdSiYRbm6K8fXZ8lyLYXn6o71R7tSPbmBUbTSumBOx0pN
-        z8mUs+lTaWzG1skTSjqlNAUoUnUXc+ak9Gbaps9OceMKcZ7KbVslvxquvsgv
-        Dxk+51Zy++cdMe2zf56S3WAkuebdn8NYN8VHs1PDRZ+UqLz4uNS7cQbKm3Sq
-        ILkq27wZVHGwv6YuEuzt7AqqVq2g/qIu/Cix5Vk2GCUuUgwP2t5oeVHzJbnV
-        pM8Hx0+lsXCl8Rwn0O0UaHZ/wugIm8bodY4FNPE3ARnvfQRR2xMjhnkpvTCS
-        RFRGqgyOZmjlnY4wt8yS6fM0C61pP27QGVNf2ZjtgmkVQPmFkrj6eMNjoxnv
-        VwtK/x3EyukUNum3FAXhxLVG1IiHQ8wNRyb9qCJD0s34jYSUll4gP9Pe6eoU
-        5ChnEOx4F1/eMhmSjHKarJ+TFHaYwdAR5t3dtoaLWa0Zbf2quk6OlLbGuL9T
-        9koOVu7qj6pLyUBUuYRaZqrQbRz72MbVBKLUm7U+g93i5mgoElPh2T6n0KD2
-        Z66tYUV0TqYflzCqJ3nttTmNY7Bwohxps6jmyS0HgKOkRJ0tAb55oLN/roSl
-        aGCdcAfgKiDUQsB57crSDWfQ6Ny48iyuFfhzPbnnEBiEy5M7jMBp5Mj+8ygY
-        xvbTWL4vCZPnyTuHdgWTN4z2cTC5+55rWz2Mnf4cpy/3eez15JwF093+0hvP
-        4OAQDH8enD7Nk+fP9+R5coYQ9hc4fbonfwi9Q0io922egiHcMYS74Cnwu5w+
-        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
-        8amwSFT+N3KwCvXvNQAA""",
-      )
-    checkBytecodeMigration(
-      file,
-      "visitCallExpression",
-      """
-      @@ -77 +77
-      -  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion;
-      +  GETSTATIC org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.Companion : Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion;
-      @@ -83 +83
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider＄Companion.getInstance (Lcom/intellij/openapi/project/Project;)Lorg/jetbrains/kotlin/analysis/api/session/KaSessionProvider;
-      @@ -97 +97
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KtAnalysisSession;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.getAnalysisSession (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/KaSession;
-      @@ -105 +105
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getNoWriteActionInAnalyseCallChecker ()Lorg/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/impl/NoWriteActionInAnalyseCallChecker.beforeEnteringAnalysisContext ()V
-      - L23
-      -  LINENUMBER 341 L23
-      -  ALOAD 8
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider.getTokenFactory ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory;
-      @@ -112 +106
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.getToken ()Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory.beforeEnteringAnalysisContext (Lorg/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken;)V
-      +  ALOAD 4
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/session/KaSessionProvider.beforeEnteringAnalysis (Lorg/jetbrains/kotlin/analysis/api/KaSession;Lorg/jetbrains/kotlin/psi/KtElement;)V
-      @@ -129 +124
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtAnalysisSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/calls/KtCallInfo;
-      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/KaSession.resolveCall (Lorg/jetbrains/kotlin/psi/KtElement;)Lorg/jetbrains/kotlin/analysis/api/resolution/KaCallInfo; (itf)
-      @@ -131 +126
-      -  IFNULL L27
-      +  IFNULL L26
-      @@ -139 +134
-      -  INVOKESTATIC org/jetbrains/kotlin/analysis/api/calls/KtCallKt.getCalls (Lorg/jetbrains/kotlin/analysis/api/calls/KtCallInfo;)Ljava/util/List;
-      +  INVOKESTATIC org/jetbrains/kotlin/analysis/api/calls/KaCallKt.getCalls (Lorg/jetbrains/kotlin/analysis/api/resolution/KaCallInfo;)Ljava/util/List;
-      @@ -162 +157
-      -  IFEQ L35
-      +  IFEQ L34
-      @@ -169 +164
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCall
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      @@ -177 +172
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/calls/KtCall
-      +  INSTANCEOF org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      + L38
-      +  LINENUMBER 348 L38
-      +  IFEQ L33
-      @@ -179 +177
-      -  LINENUMBER 348 L39
-      -  IFEQ L34
-      - L40
-      -  LINENUMBER 349 L40
-      +  LINENUMBER 349 L39
-      @@ -184 +179
-      -  IFEQ L41
-      +  IFEQ L40
-      @@ -186 +181
-      -  GOTO L42
-      - L41
-      -  LINENUMBER 350 L41
-      - FRAME APPEND [java/lang/Object org/jetbrains/kotlin/analysis/api/calls/KtCall I]
-      +  GOTO L41
-      + L40
-      +  LINENUMBER 350 L40
-      + FRAME APPEND [java/lang/Object org/jetbrains/kotlin/analysis/api/resolution/KaCall I]
-      @@ -196 +191
-      - L44
-      -  GOTO L34
-      - L35
-      -  LINENUMBER 354 L35
-      + L43
-      +  GOTO L33
-      + L34
-      +  LINENUMBER 354 L34
-      @@ -202 +197
-      -  IFNE L45
-      +  IFNE L44
-      @@ -204 +199
-      -  GOTO L42
-      - L45
-      -  LINENUMBER 355 L45
-      +  GOTO L41
-      + L44
-      +  LINENUMBER 355 L44
-      @@ -211 +206
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCall
-      - L46
-      -  LINENUMBER 344 L46
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCall
-      + L45
-      +  LINENUMBER 344 L45
-      @@ -215 +210
-      - L47
-      -  GOTO L48
-      - L27
-      -  LINENUMBER 137 L27
-      - FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I] [org/jetbrains/kotlin/analysis/api/calls/KtCallInfo]
-      + L46
-      +  GOTO L47
-      + L26
-      +  LINENUMBER 137 L26
-      + FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I] [org/jetbrains/kotlin/analysis/api/resolution/KaCallInfo]
-      @@ -228 +223
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      -  IFEQ L50
-      +  INSTANCEOF org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      +  IFEQ L49
-      @@ -231 +226
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      -  GOTO L51
-      - L50
-      - FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall] []
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      +  GOTO L50
-      + L49
-      + FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall] []
-      @@ -239 +234
-      -  IFNULL L52
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall.getPartiallyAppliedSymbol ()Lorg/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol;
-      -  GOTO L53
-      - L52
-      - FRAME SAME1 org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall
-      +  IFNULL L51
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall.getPartiallyAppliedSymbol ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol;
-      +  GOTO L52
-      + L51
-      + FRAME SAME1 org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall
-      @@ -253 +248
-      -  IFNULL L55
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol.getExtensionReceiver ()Lorg/jetbrains/kotlin/analysis/api/calls/KtReceiverValue;
-      +  IFNULL L54
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol.getExtensionReceiver ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue;
-      @@ -256 +251
-      -  IFNONNULL L56
-      - L55
-      - FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] [java/lang/Object]
-      +  IFNONNULL L55
-      + L54
-      + FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I T T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] [java/lang/Object]
-      @@ -262 +257
-      -  IFNULL L57
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol.getDispatchReceiver ()Lorg/jetbrains/kotlin/analysis/api/calls/KtReceiverValue;
-      -  GOTO L56
-      - L57
-      - FRAME SAME1 org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol
-      +  IFNULL L56
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol.getDispatchReceiver ()Lorg/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue;
-      +  GOTO L55
-      + L56
-      + FRAME SAME1 org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol
-      @@ -276 +271
-      -  IFNULL L59
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KtType;
-      -  GOTO L60
-      - L59
-      - FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue T T T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] [org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue]
-      +  IFNULL L58
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KaType;
-      +  GOTO L59
-      + L58
-      + FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue T T T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] [org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue]
-      @@ -287 +282
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/types/KtNonErrorClassType
-      -  IFEQ L61
-      +  INSTANCEOF org/jetbrains/kotlin/analysis/api/types/KaClassType
-      +  IFEQ L60
-      @@ -290 +285
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KtNonErrorClassType
-      -  GOTO L62
-      - L61
-      - FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider I org/jetbrains/kotlin/analysis/api/session/KtAnalysisSessionProvider org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/KtAnalysisSession I org/jetbrains/kotlin/analysis/api/calls/KtReceiverValue T org/jetbrains/kotlin/analysis/api/types/KtType T T T T T T T org/jetbrains/kotlin/analysis/api/calls/KtCall org/jetbrains/kotlin/analysis/api/calls/KtPartiallyAppliedSymbol] []
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KaClassType
-      +  GOTO L61
-      + L60
-      + FRAME FULL [androidx/lifecycle/lint/NonNullableMutableLiveDataDetector＄createUastHandler＄1 org/jetbrains/uast/UCallExpression I com/intellij/psi/NavigatablePsiElement org/jetbrains/kotlin/psi/KtElement I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider I org/jetbrains/kotlin/analysis/api/session/KaSessionProvider org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/KaSession I org/jetbrains/kotlin/analysis/api/resolution/KaReceiverValue T org/jetbrains/kotlin/analysis/api/types/KaType T T T T T T T org/jetbrains/kotlin/analysis/api/resolution/KaCall org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol] []
-      @@ -302 +297
-      -  IFNE L64
-      +  IFNE L63
-      @@ -304 +299
-      -  IFNULL L64
-      - L65
-      -  LINENUMBER 142 L65
-      +  IFNULL L63
-      + L64
-      +  LINENUMBER 142 L64
-      @@ -308 +303
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/types/KtNonErrorClassType.getOwnTypeArguments ()Ljava/util/List;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/types/KaClassType.getOwnTypeArguments ()Ljava/util/List;
-      @@ -310 +305
-      -  CHECKCAST org/jetbrains/kotlin/analysis/api/KtTypeProjection
-      +  CHECKCAST org/jetbrains/kotlin/analysis/api/types/KaTypeProjection
-      @@ -312 +307
-      -  IFNULL L66
-      -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/KtTypeProjection.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KtType;
-      -  GOTO L67
-      - L66
-      - FRAME SAME1 org/jetbrains/kotlin/analysis/api/KtTypeProjection
-      +  IFNULL L65
-      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/types/KaTypeProjection.getType ()Lorg/jetbrains/kotlin/analysis/api/types/KaType; (itf)
-      +  GOTO L66
-      + L65
-      + FRAME SAME1 org/jetbrains/kotlin/analysis/api/types/KaTypeProjection
-      @@ -325 +320
-      -  INSTANCEOF org/jetbrains/kotlin/analysis/api/types/KtTypeParameterType
-      -  IFEQ L69
-      ...
-      """,
-      true,
-    )
-  }
-
   private fun String.escapeDollar(): String {
     return replace('$', '＄')
   }
 
+  private fun checkMigratedFunction(
+    kotlinTestSource: TestFile,
+    bytecode: ByteArray,
+    checks: (KtFile, Class<*>) -> Unit,
+  ) {
+    val (context, disposable) =
+      parseFirst(
+        temporaryFolder = temporaryFolder,
+        sdkHome = TestUtils.getSdk().toFile(),
+        testFiles = arrayOf(kotlinTestSource.indented()),
+      )
+    val psiFile = context.psiFile as KtFile
+
+    val cr = ClassReader(bytecode)
+    val cn = ClassNode(ASM9)
+    cr.accept(cn, 0)
+    val className = cn.name.replace("/", ".").replace("$", ".")
+
+    val classLoader =
+      object : ClassLoader(this.javaClass.classLoader) {
+        override fun findClass(name: String): Class<*> {
+          return defineClass(name, bytecode, 0, bytecode.size)
+        }
+      }
+
+    val clazz = classLoader.loadClass(className)
+
+    checks(psiFile, clazz)
+    Disposer.dispose(disposable)
+  }
+
   private fun checkBytecodeMigration(
-    file: BinaryTestFile,
+    file: TestFile,
     methodName: String,
     expected: String,
     showDiff: Boolean,
+    skipFirst: Int = 0,
     maxLines: Int = 200,
+    checkSource: TestFile? = null,
+    checks: ((KtFile, Class<*>) -> Unit)? = null,
   ) {
-    val bytes = file.binaryContents
+    val bytes =
+      if (file is BinaryTestFile) file.binaryContents
+      else if (file is BytecodeTestFile) {
+        (file
+            .getBytecodeFiles()
+            .map { it as BinaryTestFile }
+            .single() { it.targetRelativePath.endsWith(DOT_CLASS) })
+          .binaryContents
+      } else {
+        error("Unsupported test file type")
+      }
     val before = prettyPrint(bytes, methodName).trimIndent()
     val client =
       object : TestLintClient() {
@@ -1314,14 +1221,29 @@ class LintJarApiMigrationTest {
         after.escapeDollar().trim()
       }
 
-    val truncated =
-      if (maxLines > 0) {
-        val lines = output.lines()
-        if (lines.size > maxLines) lines.take(maxLines).joinToString("\n") + "\n..." else output
-      } else {
-        output
-      }
+    val truncated = getTruncatedOutput(output, skipFirst, maxLines)
     assertEquals(trimmedExpected.trim(), truncated.trim())
+
+    if (checks != null && checkSource != null) {
+      checkMigratedFunction(checkSource, newBytes, checks)
+    } else if (checks != null || checkSource != null) {
+      fail("Must specify both test file and checks lambda together")
+    }
+  }
+
+  private fun getTruncatedOutput(output: String, skipFirst: Int, maxLines: Int): String {
+    val lines = output.lines()
+    val truncate = lines.size > maxLines - skipFirst
+    val sb = StringBuilder(output.length)
+    if (skipFirst > 0) {
+      sb.append("...\n")
+    }
+    sb.append(lines.subList(skipFirst, min(lines.size, skipFirst + maxLines)).joinToString("\n"))
+    if (truncate) {
+      sb.append("\n...")
+    }
+    val truncated = sb.toString()
+    return truncated
   }
 
   private fun prettyPrint(classBytes: ByteArray, methodName: String): String {

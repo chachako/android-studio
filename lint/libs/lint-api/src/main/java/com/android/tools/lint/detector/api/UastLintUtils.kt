@@ -44,6 +44,7 @@ import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
 import org.jetbrains.kotlin.analysis.api.resolution.symbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
@@ -1172,7 +1173,12 @@ fun UCallExpression.isSyntheticJavaGetterSetterCallForPropertyAccess(): Boolean 
  * Returns whether this expression is a simple class or interface reference, and if so, maps to its
  * name.
  */
-fun UExpression.isClassReference(): Pair<Boolean, String?> {
+@Suppress("unused") // See LintJarApiMigration#migrateAnalyzeCall
+fun UExpression.isClassReference(
+  checkClass: Boolean = true,
+  checkInterface: Boolean = true,
+  checkCompanion: Boolean = true,
+): Pair<Boolean, String?> {
   //  True if:
   //  1. reference to object (i.e. val myStart = TestStart(), startDest =
   //     myStart)
@@ -1205,6 +1211,9 @@ fun UExpression.isClassReference(): Pair<Boolean, String?> {
       }
         as? KaClassSymbol ?: return false to null
 
-    (symbol.classKind.isClass || symbol.classKind.name == "INTERFACE") to symbol.name?.asString()
+    ((checkClass && symbol.classKind.isClass) ||
+      (checkInterface && symbol.classKind == KaClassKind.INTERFACE) ||
+      (checkCompanion && symbol.classKind == KaClassKind.COMPANION_OBJECT)) to
+      symbol.name?.asString()
   }
 }

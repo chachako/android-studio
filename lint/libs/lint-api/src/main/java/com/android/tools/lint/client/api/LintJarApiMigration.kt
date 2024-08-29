@@ -952,41 +952,11 @@ class LintJarApiMigration(private val client: LintClient) {
       if (
         (cn.name == "androidx/navigation/lint/common/LintUtilKt" ||
           cn.name == "androidx/navigation/common/lint/LintUtilKt") &&
-          method.name == "isClassReference"
+          (method.name == "isClassReference" || method.name == "isClassReference\$default")
       ) {
-        // Special case: get rid of this AndroidX utility method implementation and
-        // just delegate to the built-in one
-        val instructions = method.instructions
-        instructions.clear()
-        val startLabel = LabelNode()
-        instructions.add(startLabel)
-        instructions.add(VarInsnNode(Opcodes.ALOAD, 0))
-        instructions.add(
-          MethodInsnNode(
-            Opcodes.INVOKESTATIC,
-            "com/android/tools/lint/detector/api/UastLintUtilsKt",
-            "isClassReference",
-            "(Lorg/jetbrains/uast/UExpression;)Lkotlin/Pair;",
-          )
-        )
-        instructions.add(InsnNode(Opcodes.ARETURN))
-        val endLabel = LabelNode()
-        instructions.add(endLabel)
-        method.maxStack = 2
-        method.maxLocals = 2
-        method.tryCatchBlocks.clear()
-        method.localVariables.clear()
-        method.localVariables.add(
-          LocalVariableNode(
-            "\$this\$isClassReference",
-            "Lorg/jetbrains/uast/UExpression;",
-            null,
-            startLabel,
-            endLabel,
-            0,
-          )
-        )
-        modified = true
+        if (handleLintUtilRedirection(method)) {
+          modified = true
+        }
       }
     }
 
@@ -998,6 +968,77 @@ class LintJarApiMigration(private val client: LintClient) {
     cn.accept(cw)
     val result = cw.toByteArray()
     return result
+  }
+
+  private fun handleLintUtilRedirection(method: MethodNode): Boolean {
+    if (
+      method.name == "isClassReference" &&
+        (method.desc == "(Lorg/jetbrains/uast/UExpression;)Lkotlin/Pair;" ||
+          method.desc == "(Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;")
+    ) {
+      // Map isClassReference() to LintUtils isClassReference(true, true, true) in lint
+
+      // Special case: get rid of this AndroidX utility method implementation and
+      // just delegate to the built-in one
+      val instructions = method.instructions
+      instructions.clear()
+      val startLabel = LabelNode()
+      instructions.add(startLabel)
+      instructions.add(VarInsnNode(Opcodes.ALOAD, 0))
+      if (method.desc == "(Lorg/jetbrains/uast/UExpression;)Lkotlin/Pair;") {
+        instructions.add(InsnNode(Opcodes.ICONST_1))
+        instructions.add(InsnNode(Opcodes.ICONST_1))
+        instructions.add(InsnNode(Opcodes.ICONST_1))
+      } else if (method.desc == "(Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;") {
+        instructions.add(VarInsnNode(Opcodes.ILOAD, 1))
+        instructions.add(VarInsnNode(Opcodes.ILOAD, 2))
+        instructions.add(VarInsnNode(Opcodes.ILOAD, 3))
+      } else {
+        return false
+      }
+      instructions.add(
+        MethodInsnNode(
+          Opcodes.INVOKESTATIC,
+          "com/android/tools/lint/detector/api/UastLintUtilsKt",
+          method.name,
+          "(Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;",
+        )
+      )
+      instructions.add(InsnNode(Opcodes.ARETURN))
+      val endLabel = LabelNode()
+      instructions.add(endLabel)
+      method.maxStack = 2
+      method.maxLocals = 4
+      method.tryCatchBlocks.clear()
+      method.localVariables.clear()
+      method.localVariables.add(
+        LocalVariableNode(
+          "\$this\$isClassReference",
+          "Lorg/jetbrains/uast/UExpression;",
+          null,
+          startLabel,
+          endLabel,
+          0,
+        )
+      )
+      return true
+    } else if (
+      method.name == "isClassReference\$default" &&
+        method.desc == "(Lorg/jetbrains/uast/UExpression;ZZZILjava/lang/Object;)Lkotlin/Pair;"
+    ) {
+      val replace =
+        method.instructions.firstOrNull {
+          it.isStaticCall(
+            "isClassReference",
+            "androidx/navigation/lint/common/LintUtilKt",
+            "(Lorg/jetbrains/uast/UExpression;ZZZ)Lkotlin/Pair;",
+          )
+        } ?: return false
+      (replace as MethodInsnNode).owner = "com/android/tools/lint/detector/api/UastLintUtilsKt"
+      return true
+    }
+
+    return false
   }
 
   private fun AbstractInsnNode.isCall(name: String, owner: String, desc: String? = null): Boolean {
@@ -1296,8 +1337,8 @@ class LintJarApiMigration(private val client: LintClient) {
           MethodInsnNode(
             Opcodes.INVOKEINTERFACE,
             "org/jetbrains/kotlin/analysis/api/KaSession",
-            "allSupertypes",
-            "(Lorg/jetbrains/kotlin/analysis/api/types/KaType;Z)Lkotlin/sequences/Sequence;",
+            "getAllSuperTypes",
+            "(Lorg/jetbrains/kotlin/analysis/api/types/KaType;Z)Ljava/util/List;",
             true,
           )
         instructions.insert(shouldApproximateLoad, newCall)
