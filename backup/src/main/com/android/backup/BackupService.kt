@@ -92,5 +92,18 @@ interface BackupService {
         )
       }
     }
+
+    fun getApplicationId(backupFile: Path): String {
+      val zipFile = try {
+        ZipFile(backupFile.toFile())
+      } catch (e: Exception) {
+        throw BackupException(
+          INVALID_BACKUP_FILE,
+          "File is not a valid backup file: $backupFile",
+          e,
+        )
+      }
+      return zipFile.getApplicationId()
+    }
   }
 }
