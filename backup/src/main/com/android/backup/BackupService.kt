@@ -42,6 +42,8 @@ interface BackupService {
 
   suspend fun sendUpdateGmsIntent(serialNumber: String): BackupResult
 
+  suspend fun getForegroundApplicationId(serialNumber: String): String
+
   companion object {
 
     fun getInstance(adbSession: AdbSession, logger: Logger, minGmsVersion: Int): BackupService =
@@ -94,15 +96,16 @@ interface BackupService {
     }
 
     fun getApplicationId(backupFile: Path): String {
-      val zipFile = try {
-        ZipFile(backupFile.toFile())
-      } catch (e: Exception) {
-        throw BackupException(
-          INVALID_BACKUP_FILE,
-          "File is not a valid backup file: $backupFile",
-          e,
-        )
-      }
+      val zipFile =
+        try {
+          ZipFile(backupFile.toFile())
+        } catch (e: Exception) {
+          throw BackupException(
+            INVALID_BACKUP_FILE,
+            "File is not a valid backup file: $backupFile",
+            e,
+          )
+        }
       return zipFile.getApplicationId()
     }
   }

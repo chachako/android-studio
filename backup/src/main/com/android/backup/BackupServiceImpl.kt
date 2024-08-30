@@ -100,6 +100,10 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
     }
   }
 
+  override suspend fun getForegroundApplicationId(serialNumber: String): String {
+    return factory.createAdbServices(serialNumber, null, 1).getForegroundApplicationId()
+  }
+
   private suspend fun pullBackup(
     adbServices: AdbServices,
     applicationId: String,

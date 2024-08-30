@@ -140,4 +140,13 @@ class AbstractAdbServicesTest {
       }
     assertThat(exception.errorCode).isEqualTo(PLAY_STORE_NOT_INSTALLED)
   }
+
+  @Test
+  fun getForegroundApplicationId() = runBlocking {
+    val adbServices = FakeAdbServices("serial", 10)
+
+    val applicationId = adbServices.getForegroundApplicationId()
+
+    assertThat(applicationId).isEqualTo("com.app")
+  }
 }

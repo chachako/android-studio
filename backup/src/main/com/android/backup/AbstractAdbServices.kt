@@ -29,10 +29,12 @@ import com.android.backup.ErrorCode.TRANSPORT_INIT_FAILED
 import com.android.backup.ErrorCode.TRANSPORT_NOT_SELECTED
 import com.android.backup.ErrorCode.UNEXPECTED_ERROR
 import com.android.tools.environment.Logger
+import kotlin.text.RegexOption.IGNORE_CASE
 
 private val TRANSPORT_COMMAND_REGEX =
   "Selected transport [^ ]+ \\(formerly (?<old>[^ ]+)\\)".toRegex()
 private val PACKAGE_VERSION_CODE_REGEX = "^ {4}versionCode=(?<version>\\d+).*$".toRegex()
+private val APPLICATION_ID_REGEX = "^([a-z][a-z\\d_]*\\.)+[a-z][a-z\\d_]*$".toRegex(IGNORE_CASE)
 
 abstract class AbstractAdbServices(
   protected val serialNumber: String,
@@ -75,7 +77,8 @@ abstract class AbstractAdbServices(
     val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED).stdout
     when {
       out.isBackupSuccess(applicationId) -> return
-      out.isBackupNotAllowd() -> throw BackupException(BACKUP_NOT_ALLOWED, "Backup of '$applicationId` is not allowed")
+      out.isBackupNotAllowd() ->
+        throw BackupException(BACKUP_NOT_ALLOWED, "Backup of '$applicationId` is not allowed")
       else -> throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
     }
   }
@@ -110,6 +113,24 @@ abstract class AbstractAdbServices(
         "Failed to update GmsCore. Unexpected output: '$stdout\n$stderr'",
       )
     }
+  }
+
+  override suspend fun getForegroundApplicationId(): String {
+    val line =
+      executeCommand("dumpsys activity").stdout.lineSequence().find {
+        it.startsWith("  ResumedActivity")
+      }
+    if (line == null) {
+      throw BackupException(
+        UNEXPECTED_ERROR,
+        "Could not detect foreground app. Dumpsys does not contain a 'ResumedActivity'",
+      )
+    }
+    val applicationId = line.substringBefore('/').substringAfterLast(' ')
+    if (!APPLICATION_ID_REGEX.matches(applicationId)) {
+      throw BackupException(UNEXPECTED_ERROR, "Unexpected application id found in: '$line'.")
+    }
+    return applicationId
   }
 
   private suspend fun withBmgr(block: suspend () -> Unit) {
@@ -223,11 +244,13 @@ abstract class AbstractAdbServices(
 private fun MatchResult.getGroup(name: String) =
   groups[name]?.value ?: throw BackupException(UNEXPECTED_ERROR, "Group $name not found")
 
-private fun String.isBackupSuccess(applicationId: String) = endsWith(
-  """
+private fun String.isBackupSuccess(applicationId: String) =
+  endsWith(
+    """
     Package $applicationId with result: Success
     Backup finished with result: Success
-  """.trimIndent()
-)
+  """
+      .trimIndent()
+  )
 
 private fun String.isBackupNotAllowd() = contains(" with result: Backup is not allowed")

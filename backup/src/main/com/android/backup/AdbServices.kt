@@ -82,5 +82,7 @@ interface AdbServices {
 
   suspend fun sendUpdateGmsIntent()
 
+  suspend fun getForegroundApplicationId(): String
+
   class AdbOutput(val stdout: String, val stderr: String)
 }
