@@ -579,7 +579,8 @@ public class NativeSoPackagingTest {
 
     // ---- SO ALIGNMENT ----
     private void checkBundleAlignment(
-            Config.UncompressNativeLibraries.PageAlignment expectedPageAlignment) throws Exception {
+            Config.UncompressNativeLibraries.PageAlignment expectedPageAlignment, String pageSize)
+            throws Exception {
         File apkSelectConfig = project.file("apkSelectConfig.json");
         FilesKt.writeText(
                 apkSelectConfig,
@@ -608,13 +609,10 @@ public class NativeSoPackagingTest {
                                 .filter(it -> it.getName().startsWith("base-master"))
                                 .findFirst()
                                 .orElseThrow())) {
-            PackagingTests.checkZipAlignWithPageAlignedSoFiles(
-                    extractedBase); // TODO (b/310027241): validate using the relevant page size
-            // once zipalign is updated
+            PackagingTests.checkZipAlignWithPageAlignedSoFiles(extractedBase, pageSize);
         }
     }
 
-    // TODO (b/310027241): validate using the relevant page size once zipalign is updated
     @Test
     public void testSharedObjectFilesAlignment4k() throws Exception {
         TestFileUtils.searchAndReplace(
@@ -632,8 +630,8 @@ public class NativeSoPackagingTest {
                         + "}");
         execute("app:assembleDebug");
         checkApk(appProject, "libapp.so", "app:abcd");
-        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
-        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_4K);
+        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"), "4");
+        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_4K, "4");
     }
 
     @Test
@@ -646,8 +644,9 @@ public class NativeSoPackagingTest {
         execute("app:assembleDebug");
 
         checkApk(appProject, "libapp.so", "app:abcd");
-        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
-        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K);
+        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"), "16");
+        checkBundleAlignment(
+                Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K, "16");
     }
 
     @Test
@@ -668,8 +667,9 @@ public class NativeSoPackagingTest {
         execute("app:assembleDebug");
 
         checkApk(appProject, "libapp.so", "app:abcd");
-        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
-        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_64K);
+        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"), "64");
+        checkBundleAlignment(
+                Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_64K, "64");
     }
 
     @Test

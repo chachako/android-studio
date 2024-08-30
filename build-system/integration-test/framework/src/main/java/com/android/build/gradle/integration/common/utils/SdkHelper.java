@@ -30,8 +30,10 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.testutils.TestUtils;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
 import java.io.File;
 
 /**
@@ -68,6 +70,13 @@ public class SdkHelper {
             throw new RuntimeException("Unable to find adb.");
         }
         return adb;
+    }
+
+    // TODO (b/365798973): remove once latest build tool is updated to 35.0.0
+    @NonNull
+    public static File getBuildToolVersion35(@NonNull BuildToolInfo.PathId pathId) {
+        Revision revision = Revision.parseRevision("35.0.0", Revision.Precision.MICRO);
+        return getBuildTool(revision, pathId);
     }
 
     @NonNull
