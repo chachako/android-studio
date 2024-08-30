@@ -254,6 +254,9 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
     var useStableIds: Boolean = false
         internal set
 
+    @get:Input
+    abstract val dynamicFeature: Property<Boolean>
+
     @get:Nested
     abstract val outputsHandler: Property<MultiOutputHandler>
 
@@ -343,6 +346,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
             parameters.incrementalDirectory.set(incrementalDirectory)
             parameters.inputResourcesDirectory.set(inputResourcesDir)
             parameters.inputStableIdsFile.set(inputStableIdsFile)
+            parameters.dynamicFeature.set(dynamicFeature)
             parameters.library.set(isLibrary)
             parameters.localResourcesFile.set(localResourcesFile)
             parameters.manifestFiles.set(if (aaptFriendlyManifestFiles.isPresent) aaptFriendlyManifestFiles else manifestFiles)
@@ -388,6 +392,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
         abstract val incrementalDirectory: DirectoryProperty
         abstract val inputResourcesDirectory: DirectoryProperty
         abstract val inputStableIdsFile: RegularFileProperty
+        abstract val dynamicFeature: Property<Boolean>
         abstract val library: Property<Boolean>
         abstract val localResourcesFile: RegularFileProperty
         abstract val manifestFiles: DirectoryProperty
@@ -413,6 +418,16 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
         abstract val workerExecutor: WorkerExecutor
 
         override fun run() {
+            if (!parameters.dynamicFeature.get() && !parameters.featureResourcePackages.isEmpty) {
+            throw IllegalStateException(
+                    """
+                    This application (${parameters.applicationId.get()}) is not configured to use dynamic features.
+                    Please ensure dynamic features are configured in the build file.
+                    Refer to https://developer.android.com/guide/playcore/feature-delivery#base_feature_relationship
+                    """.trimIndent()
+                )
+        }
+
             val manifestBuiltArtifacts = BuiltArtifactsLoaderImpl().load(parameters.manifestFiles)
                 ?: throw RuntimeException("Cannot load processed manifest files, please file a bug.")
             // 'Incremental' runs should only preserve the stable IDs file.
@@ -623,6 +638,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                 task.resOffset.disallowChanges()
             }
 
+            task.dynamicFeature.setDisallowChanges(componentType.isDynamicFeature)
             task.projectBaseName.setDisallowChanges(baseName)
             task.isLibrary = isLibrary
 
