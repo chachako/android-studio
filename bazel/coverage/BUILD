@@ -301,26 +301,6 @@ coverage_report(
     ],
 )
 
-# Coverage report for "Device Manager" tool window
-coverage_report(
-    name = "device-manager",
-    srcpath_exclude = [
-        # "Groups" tab is currently disabled via a feature flag
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/groupstab",
-        # "CycleAction" is not used
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/CycleAction.kt",
-        # "Preconfigured virtual devices" tab is not enabled yet
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayList.kt",
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayListModel.kt",
-    ],
-    srcpath_include = [
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager",
-    ],
-    tests = [
-        "//tools/adt/idea/android:intellij.android.core.tests_tests",
-    ],
-)
-
 coverage_report(
     name = "directaccess",
     srcpath_include = [
@@ -957,7 +937,6 @@ combine_report_definitions(
         "dagger-editing",
         "databinding",
         "designtools",
-        "device-manager",
         "directaccess",
         "dsl",
         "dynamic-layout-inspector",
@@ -1080,7 +1059,6 @@ coverage_report(
         "//tools/adt/idea/device-explorer:intellij.android.device-explorer.tests_tests",
         "//tools/adt/idea/device-explorer-files:intellij.android.device-explorer-files.tests_tests",
         "//tools/adt/idea/device-explorer-monitor:intellij.android.device-explorer-monitor.tests_tests",
-        "//tools/adt/idea/device-manager:intellij.android.device-manager.tests_tests",
         "//tools/adt/idea/device-manager-v2:intellij.android.device-manager-v2_tests",
         "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
         "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
