@@ -20,7 +20,7 @@ import com.android.tools.leakcanarylib.data.Analysis
 /**
  * This class provides a method to parse LeakCanary logcat messages into structured `Analysis` object.
  */
-class LeakCanarySerializer {
+class LeakCanaryParser {
 
     /**
      * Parses a LeakCanary logcat message into an `Analysis` object.
