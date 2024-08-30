@@ -210,7 +210,7 @@ internal class FakeAdbServices(
     return """
       ACTIVITY MANAGER SETTINGS (dumpsys activity settings) activity_manager_constants:
       ...
-        ResumedActivity: ActivityRecord{c9d4d43 u0 com.app/.MainActivity t198}
+        mFocusedApp=ActivityRecord{b47d1f u0 com.app/.MainActivity t224}
       ...
     """
       .trimIndent()

@@ -118,7 +118,7 @@ abstract class AbstractAdbServices(
   override suspend fun getForegroundApplicationId(): String {
     val line =
       executeCommand("dumpsys activity").stdout.lineSequence().find {
-        it.startsWith("  ResumedActivity")
+        it.contains("mFocusedApp=ActivityRecord")
       }
     if (line == null) {
       throw BackupException(
