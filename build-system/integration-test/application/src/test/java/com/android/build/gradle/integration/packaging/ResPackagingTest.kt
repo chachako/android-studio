@@ -437,6 +437,37 @@ class ResPackagingTest {
         }
     }
 
+    @Test
+    fun testAppProjectWithMultipleFlavors() {
+        appProject.buildFile.appendText(
+            """
+                android {
+                    flavorDimensions = ["color"]
+                    productFlavors {
+                        red {
+                            dimension = "color"
+                        }
+                        blue {
+                            dimension = "color"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        File(appProject.projectDir, "src/red/res/raw").mkdirs()
+        File(appProject.projectDir, "src/red/res/raw/red.txt").writeText("Red Text")
+        File(appProject.projectDir, "src/blue/res/raw").mkdirs()
+        File(appProject.projectDir, "src/blue/res/raw/blue.txt").writeText("Blue Text")
+
+        execute("app:assembleDebug")
+
+        check(assertThat(appProject.getApk("red", "debug")), "red.txt", "Red Text")
+        check(assertThat(appProject.getApk("red", "debug")), "blue.txt", null)
+        check(assertThat(appProject.getApk("blue", "debug")), "blue.txt", "Blue Text")
+        check(assertThat(appProject.getApk("blue", "debug")), "red.txt", null)
+    }
+
     // ---- LIB DEFAULT ---
     @Test
     fun testLibProjectWithNewResFile() {
