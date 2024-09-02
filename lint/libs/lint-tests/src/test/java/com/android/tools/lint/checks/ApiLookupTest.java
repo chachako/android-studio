@@ -32,7 +32,16 @@ import com.android.tools.lint.client.api.PlatformLookup;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.utils.Pair;
+
 import com.google.common.base.Charsets;
+
+import kotlin.io.FilesKt;
+import kotlin.text.StringsKt;
+
+import org.intellij.lang.annotations.Language;
+import org.junit.Assert;
+import org.junit.rules.TemporaryFolder;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -41,10 +50,6 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import kotlin.io.FilesKt;
-import org.intellij.lang.annotations.Language;
-import org.junit.Assert;
-import org.junit.rules.TemporaryFolder;
 
 @SuppressWarnings({"ConstantConditions"})
 public class ApiLookupTest extends AbstractCheckTest {
@@ -207,10 +212,16 @@ public class ApiLookupTest extends AbstractCheckTest {
                 24,
                 getMethodDeprecatedIn(
                         "android/app/Activity", "setProgressBarIndeterminate", "(Z)V"));
+        String apiVersionString =
+                StringsKt.substringAfterLast(
+                        mDb.xmlFile.getParentFile().getParentFile().getPath(), "-", "");
+        int apiDatabaseLevel = Integer.parseInt(apiVersionString);
         assertEquals(
-                -1,
+                // Deprecated in API level 35, which we know once the API database is 35 or later
+                apiDatabaseLevel >= 35 ? 35 : -1,
                 getMethodDeprecatedIn(
                         "android/app/Activity", "getParent", "()Landroid/app/Activity;"));
+        assertEquals(-1, getMethodDeprecatedIn("android/app/Activity", "getTaskId", "()I"));
         // Deprecated
         assertEquals(
                 17,
@@ -530,14 +541,14 @@ public class ApiLookupTest extends AbstractCheckTest {
             assertSameApi(className, classSince, getClassVersion(className));
 
             for (String method : cls.getAllMethods(info)) {
-                int since = cls.getMethod(method, info);
+                int since = cls.getMethodSince(method, info);
                 int index = method.indexOf('(');
                 String name = method.substring(0, index);
                 String desc = method.substring(index);
                 assertSameApi(method, since, getMethodVersion(className, name, desc));
             }
             for (String method : cls.getAllFields(info)) {
-                int since = cls.getField(method, info);
+                int since = cls.getFieldSince(method, info);
                 assertSameApi(method, since, getFieldVersion(className, method));
             }
 

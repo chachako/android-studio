@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks;
 
 import static com.android.SdkConstants.CONSTRUCTOR_NAME;
+import static com.android.tools.lint.detector.api.ExtensionSdk.ANDROID_SDK_ID;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -40,9 +41,9 @@ import java.util.Set;
  *
  * <p>{@link #getSince()} gives the API level it was introduced.
  *
- * <p>{@link #getMethod} returns the API level when the method was introduced.
+ * <p>{@link #getMethodSince} returns the API level when the method was introduced.
  *
- * <p>{@link #getField} returns the API level when the field was introduced.
+ * <p>{@link #getFieldSince} returns the API level when the field was introduced.
  */
 public final class ApiClass extends ApiClassBase {
 
@@ -60,6 +61,7 @@ public final class ApiClass extends ApiClassBase {
      * <p>Reduces the database size from 3.30MB down to 0.94M as of API level 33.
      */
     public static final boolean USE_HASH_CODES = true;
+
     /**
      * Bit set in member offset indicating that the entries are hash codes. (Only used with {@link
      * #USE_HASH_CODES})
@@ -79,6 +81,7 @@ public final class ApiClass extends ApiClassBase {
     private final Map<String, String> mMemberSdks = new HashMap<>();
     /* Deprecated fields and methods and the API levels when they were deprecated. */
     @Nullable private Map<String, Integer> mMembersDeprecatedIn;
+
     /**
      * Removed fields, methods, superclasses and interfaces and the API levels when they were
      * removed.
@@ -144,7 +147,7 @@ public final class ApiClass extends ApiClassBase {
      * @param name the name of the field.
      * @param info the information about the rest of the API
      */
-    int getField(String name, Api<? extends ApiClassBase> info) {
+    int getFieldSince(String name, Api<? extends ApiClassBase> info) {
         // The field can come from this class or from a super class or an interface
         // The value can never be lower than this introduction of this class.
         // When looking at super classes and interfaces, it can never be lower than when the
@@ -166,17 +169,26 @@ public final class ApiClass extends ApiClassBase {
         // (We can use MultiApiConstraint.describe to merge vectors back into Strings.)
 
         // Look at the super classes and interfaces.
+        ApiClassBase maxFrom = null;
         for (Pair<String, Integer> superClassPair : Iterables.concat(mSuperClasses, mInterfaces)) {
             ApiClassBase superClass = info.getClass(superClassPair.getFirst());
             if (superClass instanceof ApiClass) {
-                int i = ((ApiClass) superClass).getField(name, info);
+                int i = ((ApiClass) superClass).getFieldSince(name, info);
                 if (i != 0) {
                     int tmp = Math.max(superClassPair.getSecond(), i);
                     if (apiLevel == 0 || tmp < apiLevel) {
                         apiLevel = tmp;
+                        maxFrom = superClass;
                     }
                 }
             }
+        }
+
+        if (apiLevel > mSince
+                && mSdks != null
+                && maxFrom != null
+                && ((ApiClass) maxFrom).getMemberSdks(name, info) == null) {
+            mMemberSdks.put(name, ANDROID_SDK_ID + ":" + apiLevel);
         }
 
         return apiLevel;
@@ -271,7 +283,7 @@ public final class ApiClass extends ApiClassBase {
      * @param methodSignature the method signature
      * @param info the information about the rest of the API
      */
-    int getMethod(String methodSignature, Api<? extends ApiClassBase> info) {
+    int getMethodSince(String methodSignature, Api<? extends ApiClassBase> info) {
         // The method can come from this class or from a super class.
         // The value can never be lower than this introduction of this class.
         // When looking at super classes, it can never be lower than when the super class became
@@ -288,18 +300,31 @@ public final class ApiClass extends ApiClassBase {
         int apiLevel = getValueWithDefault(mMethods, methodSignature, 0);
         // Constructors aren't inherited.
         if (!methodSignature.startsWith(CONSTRUCTOR_NAME)) {
+            ApiClassBase maxFrom = null;
             // Look at the super classes and interfaces.
             for (Pair<String, Integer> pair : Iterables.concat(mSuperClasses, mInterfaces)) {
                 ApiClassBase superClass = info.getClass(pair.getFirst());
                 if (superClass instanceof ApiClass) {
-                    int i = ((ApiClass) superClass).getMethod(methodSignature, info);
+                    int i = ((ApiClass) superClass).getMethodSince(methodSignature, info);
                     if (i != 0) {
                         int tmp = Math.max(pair.getSecond(), i);
                         if (apiLevel == 0 || tmp < apiLevel) {
+                            maxFrom = superClass;
                             apiLevel = tmp;
                         }
                     }
                 }
+            }
+
+            // If the method requires a more recent API level than the current class inheriting
+            // it defaults to, but there is an SDKs attribute on the current class, override that
+            // SDK
+            // attribute for this method.
+            if (apiLevel > mSince
+                    && mSdks != null
+                    && maxFrom != null
+                    && ((ApiClass) maxFrom).getMemberSdks(methodSignature, info) == null) {
+                mMemberSdks.put(methodSignature, ANDROID_SDK_ID + ":" + apiLevel);
             }
         }
 
@@ -531,7 +556,7 @@ public final class ApiClass extends ApiClassBase {
         for (String fieldName : fields) {
             int removedIn = getMemberRemovedIn(fieldName, info);
             if (removedIn > 0) {
-                int since = getField(fieldName, info);
+                int since = getFieldSince(fieldName, info);
                 assert since > 0;
                 int deprecatedIn = getMemberDeprecatedIn(fieldName, info);
                 removedFields.add(new ApiMember(fieldName, since, deprecatedIn, removedIn));
@@ -557,7 +582,7 @@ public final class ApiClass extends ApiClassBase {
         for (String methodSignature : methods) {
             int removedIn = getMemberRemovedIn(methodSignature, info);
             if (removedIn > 0) {
-                int since = getMethod(methodSignature, info);
+                int since = getMethodSince(methodSignature, info);
                 assert since > 0;
                 int deprecatedIn = getMemberDeprecatedIn(methodSignature, info);
                 removedMethods.add(new ApiMember(methodSignature, since, deprecatedIn, removedIn));
@@ -667,7 +692,7 @@ public final class ApiClass extends ApiClassBase {
 
         if (STRIP_MEMBERS) {
             for (String member : allMethods) {
-                if (getMethod(member, info) != getSince()
+                if (getMethodSince(member, info) != getSince()
                         || getMemberDeprecatedIn(member, info) != getDeprecatedIn()
                         || getMemberRemovedIn(member, info) != getRemovedIn()
                         || getMemberSdks(member, info) != null) {
@@ -676,7 +701,7 @@ public final class ApiClass extends ApiClassBase {
             }
 
             for (String member : allFields) {
-                if (getField(member, info) != getSince()
+                if (getFieldSince(member, info) != getSince()
                         || getMemberDeprecatedIn(member, info) != getDeprecatedIn()
                         || getMemberRemovedIn(member, info) != getRemovedIn()
                         || getMemberSdks(member, info) != null) {
@@ -738,9 +763,9 @@ public final class ApiClass extends ApiClassBase {
     void writeMemberData(Api<? extends ApiClassBase> info, String member, ByteBuffer buffer) {
         int since;
         if (member.indexOf('(') >= 0) {
-            since = getMethod(member, info);
+            since = getMethodSince(member, info);
         } else {
-            since = getField(member, info);
+            since = getFieldSince(member, info);
         }
         if (since == 0) {
             assert false : getName() + ':' + member;
