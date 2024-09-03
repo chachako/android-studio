@@ -84,5 +84,7 @@ interface AdbServices {
 
   suspend fun getForegroundApplicationId(): String
 
+  suspend fun isInstalled(applicationId: String): Boolean
+
   class AdbOutput(val stdout: String, val stderr: String)
 }

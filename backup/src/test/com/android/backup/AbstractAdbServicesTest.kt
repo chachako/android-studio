@@ -149,4 +149,19 @@ class AbstractAdbServicesTest {
 
     assertThat(applicationId).isEqualTo("com.app")
   }
+
+  @Test
+  fun isInstalled_installed() = runBlocking {
+    val adbServices = FakeAdbServices("serial", 10)
+    adbServices.addCommandOverride(Output("pm list packages com.app", "package:com.app"))
+
+    assertThat(adbServices.isInstalled("com.app")).isTrue()
+  }
+
+  @Test
+  fun isInstalled_not_installed() = runBlocking {
+    val adbServices = FakeAdbServices("serial", 10)
+
+    assertThat(adbServices.isInstalled("com.app")).isFalse()
+  }
 }

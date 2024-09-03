@@ -171,6 +171,11 @@ abstract class AbstractAdbServices(
     }
   }
 
+  override suspend fun isInstalled(applicationId: String): Boolean {
+    val lines = executeCommand("pm list packages $applicationId").stdout.lines()
+    return lines.firstOrNull() == "package:$applicationId"
+  }
+
   private suspend fun withTestMode(block: suspend () -> Unit) {
     reportProgress("Enabling test mode")
     enableTestMode(true)

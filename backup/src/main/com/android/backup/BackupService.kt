@@ -44,6 +44,8 @@ interface BackupService {
 
   suspend fun getForegroundApplicationId(serialNumber: String): String
 
+  suspend fun isInstalled(serialNumber: String, applicationId: String): Boolean
+
   companion object {
 
     fun getInstance(adbSession: AdbSession, logger: Logger, minGmsVersion: Int): BackupService =
