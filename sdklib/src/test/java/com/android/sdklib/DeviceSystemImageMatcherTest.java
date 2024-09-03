@@ -23,7 +23,10 @@ import com.android.annotations.Nullable;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.Hardware;
 import com.android.sdklib.devices.Screen;
+import com.android.sdklib.devices.Software;
 import com.android.sdklib.repository.IdDisplay;
+
+import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -264,6 +267,14 @@ public final class DeviceSystemImageMatcherTest {
     }
 
     @Test
+    public void matchesApiLevelIncompatible() {
+        Device device = mockDevice("default", 34, Integer.MAX_VALUE);
+        ISystemImage image = mockImage(Collections.emptyList(), 33);
+
+        assertFalse(DeviceSystemImageMatcher.matches(device, image));
+    }
+
+    @Test
     public void matches() {
         // Arrange
         Device device = mockDevice("android-wear");
@@ -282,6 +293,10 @@ public final class DeviceSystemImageMatcherTest {
 
     @NonNull
     private static Device mockDevice(@Nullable String tagId) {
+        return mockDevice(tagId, 30, 34);
+    }
+
+    private static Device mockDevice(@Nullable String tagId, int minApiLevel, int maxApiLevel) {
         Screen screen = Mockito.mock(Screen.class);
 
         Hardware hardware = Mockito.mock(Hardware.class);
@@ -291,13 +306,25 @@ public final class DeviceSystemImageMatcherTest {
         Mockito.when(device.getTagId()).thenReturn(tagId);
         Mockito.when(device.getDefaultHardware()).thenReturn(hardware);
 
+        Software software = Mockito.mock(Software.class);
+        Mockito.when(software.getMinSdkLevel()).thenReturn(minApiLevel);
+        Mockito.when(software.getMaxSdkLevel()).thenReturn(maxApiLevel);
+        Mockito.when(device.getSoftware(0)).thenReturn(software);
+        Mockito.when(device.getAllSoftware()).thenReturn(ImmutableList.of(software));
+
         return device;
     }
 
     @NonNull
     private static ISystemImage mockImage(@NonNull List<IdDisplay> tags) {
+        return mockImage(tags, 33);
+    }
+
+    @NonNull
+    private static ISystemImage mockImage(@NonNull List<IdDisplay> tags, int apiLevel) {
         ISystemImage image = Mockito.mock(ISystemImage.class);
         Mockito.when(image.getTags()).thenReturn(tags);
+        Mockito.when(image.getAndroidVersion()).thenReturn(new AndroidVersion(apiLevel));
 
         return image;
     }
