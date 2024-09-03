@@ -30,10 +30,32 @@ private const val StopTimeoutMillis: Long = 5000
 private val WhileUiSubscribed: SharingStarted = SharingStarted.WhileSubscribed(StopTimeoutMillis)
 
 internal class MainViewModel(application: Application) : ViewModel() {
-  private val db = Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
+
+  private val cloudDb =
+    Room.databaseBuilder(application, AppDatabase::class.java, "database-cloud.db").build()
+
+  private val d2dDb =
+    Room.databaseBuilder(application, AppDatabase::class.java, "database-d2d.db").build()
+
+  private val db =
+    Room.databaseBuilder(application, AppDatabase::class.java, "database-both.db").build()
+
+  val cloudUsers: StateFlow<List<User>> =
+    cloudDb.userDao().observeAll().stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+
+  val d2dUsers: StateFlow<List<User>> =
+    d2dDb.userDao().observeAll().stateIn(viewModelScope, WhileUiSubscribed, emptyList())
 
   val users: StateFlow<List<User>> =
     db.userDao().observeAll().stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+
+  fun addCloudUser(name: String) {
+    viewModelScope.launch { cloudDb.userDao().insert(User(name)) }
+  }
+
+  fun addD2dUser(name: String) {
+    viewModelScope.launch { d2dDb.userDao().insert(User(name)) }
+  }
 
   fun addUser(name: String) {
     viewModelScope.launch { db.userDao().insert(User(name)) }

@@ -33,6 +33,7 @@ import com.example.backuprestore.db.User
 import com.example.backuprestore.ui.theme.BackupRestoreTheme
 
 internal class MainActivity : ComponentActivity() {
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
@@ -41,9 +42,15 @@ internal class MainActivity : ComponentActivity() {
       BackupRestoreTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
           val users by viewModel.users.collectAsStateWithLifecycle()
+          val cloudUsers by viewModel.cloudUsers.collectAsStateWithLifecycle()
+          val d2dUsers by viewModel.d2dUsers.collectAsStateWithLifecycle()
           App(
             users,
             { name: String -> viewModel.addUser(name) },
+            cloudUsers,
+            { name: String -> viewModel.addCloudUser(name) },
+            d2dUsers,
+            { name: String -> viewModel.addD2dUser(name) },
             modifier = Modifier.padding(innerPadding),
           )
         }
@@ -52,11 +59,22 @@ internal class MainActivity : ComponentActivity() {
   }
 
   @Composable
-  private fun App(users: List<User>, onAddUser: (String) -> Unit, modifier: Modifier = Modifier) {
+  private fun App(
+    users: List<User>,
+    onAddUser: (String) -> Unit,
+    cloudUsers: List<User>,
+    onAddCloudUser: (String) -> Unit,
+    d2dUsers: List<User>,
+    onAddD2dUser: (String) -> Unit,
+    modifier: Modifier = Modifier,
+  ) {
     Column(modifier = modifier) {
-      Text("Num users: ${users.size}")
-
-      TextButton(onClick = { onAddUser("Foo") }) { Text("Add user") }
+      Text("Num users (Global): ${users.size}")
+      TextButton(onClick = { onAddUser("Foo") }) { Text("Add global user") }
+      Text("Num users (Cloud): ${cloudUsers.size}")
+      TextButton(onClick = { onAddCloudUser("Foo") }) { Text("Add cloud user") }
+      Text("Num users (D2D): ${d2dUsers.size}")
+      TextButton(onClick = { onAddD2dUser("Foo") }) { Text("Add d2d user") }
     }
   }
 }
