@@ -45,7 +45,6 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
-import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
 import java.util.Locale
 import java.util.Properties
@@ -516,6 +515,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 }
             callback(isPresent)
         }
+    }
+
+    private fun String.capitalized(): String {
+        return replaceFirstChar { it.uppercase() }
     }
 
 }
