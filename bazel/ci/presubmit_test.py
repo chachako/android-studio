@@ -1,10 +1,12 @@
 """Tests for presubmit."""
 
 import pathlib
-from typing import List, Tuple
+import subprocess
+from typing import Iterable, List
 from unittest import mock
 
 from absl.testing import absltest
+from absl.testing import parameterized
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import bazel_diff
@@ -14,24 +16,19 @@ from tools.base.bazel.ci import gce
 from tools.base.bazel.ci import presubmit
 
 
-# --build_metadata flags that are always generated but do not change for tests.
-DEFAULT_BUILD_METADATA_FLAGS = [
-    '--build_metadata=gerrit_owner=owner@google.com',
-    '--build_metadata=gerrit_change_id=changeid0',
-    '--build_metadata=gerrit_change_number=0',
-    '--build_metadata=gerrit_change_patchset=0',
-]
-
-
-class PresubmitTest(absltest.TestCase):
+class PresubmitTest(parameterized.TestCase):
   """Tests for the presubmit module."""
 
   def _mock_generate_hash_file(self, contents: str) -> mock.Mock:
-    def func(build_env: bazel.BuildEnv, path: str) -> None:
-      del build_env
+    def func(
+        build_env: bazel.BuildEnv,
+        external_repos: Iterable[str],
+        path: str,
+    ) -> None:
+      del build_env, external_repos
       pathlib.Path(path).write_text(contents)
     return self.enter_context(
-        mock.patch.object(bazel_diff, 'generate_hash_file', func))
+        mock.patch.object(bazel_diff, 'generate_hash_file', side_effect=func))
 
   def _mock_get_impacted_targets(self, targets: List[str]) -> mock.Mock:
     def func(
@@ -43,17 +40,7 @@ class PresubmitTest(absltest.TestCase):
       del build_env, starting_hashes_path, final_hashes_path
       output_path.write_text('\n'.join(targets))
     return self.enter_context(
-        mock.patch.object(bazel_diff, 'get_impacted_targets', func))
-
-  def _setup_for_bazel_diff(self, tags: List[Tuple[str,str]]) -> None:
-    parent_hash_path = self.build_env.tmp_path / 'parent.json'
-    parent_hash_path.write_text('parent-hash-file')
-    gce.upload_to_gcs(
-        parent_hash_path,
-        'adt-byob',
-        'bazel-diff-hashes/789-studio-test.json',
-    )
-    self.gce.add_change('owner', 'message', tags)
+        mock.patch.object(bazel_diff, 'get_impacted_targets', side_effect=func))
 
   def setUp(self):
     super().setUp()
@@ -61,7 +48,7 @@ class PresubmitTest(absltest.TestCase):
     self.gce = self.enter_context(fake_gce.make_fake_gce(self, self.build_env))
 
   def test_generate_and_upload_hash_file(self):
-    self._mock_generate_hash_file('hash-file')
+    mock_generate = self._mock_generate_hash_file('hash-file')
     presubmit.generate_and_upload_hash_file(self.build_env)
     downloaded = self.build_env.tmp_path / 'downloaded'
     gce.download_from_gcs(
@@ -70,16 +57,74 @@ class PresubmitTest(absltest.TestCase):
         downloaded,
     )
     self.assertEqual(downloaded.read_text(), 'hash-file')
+    mock_generate.assert_called_once_with(
+        self.build_env,
+        presubmit._LOCAL_REPOSITORIES,
+        mock.ANY,
+    )
 
-  def test_find_test_targets(self):
-    self._setup_for_bazel_diff([])
-    self._mock_get_impacted_targets([
-        'target1',
-        'target2',
-        'target3',
-        'target4',
-    ])
-    self.build_env.bazel_query.return_value.stdout = b'target2\ntarget3'
+  @parameterized.named_parameters(
+      dict(
+          testcase_name='basic',
+          tags=[],
+          impacted_targets=['target1', 'target2', 'target3', 'target4'],
+          query_targets=['target2', 'target3'],
+          expected_found=True,
+          expected_targets=['target2', 'target3'],
+          expected_selected_target_count=2,
+      ),
+      dict(
+          testcase_name='with_default_presubmit_test',
+          tags=[('Presubmit-Test', 'default')],
+          impacted_targets=['target1', 'target2'],
+          query_targets=['target2'],
+          expected_found=False,
+          expected_targets=['base_target1', 'base_target2'],
+          expected_selected_target_count=0,
+      ),
+      dict(
+          testcase_name='with_other_target_name',
+          tags=[('Presubmit-Test', 'studio-other:target3')],
+          impacted_targets=['target1', 'target2'],
+          query_targets=['target2'],
+          expected_found=True,
+          expected_targets=['target2'],
+          expected_selected_target_count=1,
+      ),
+      dict(
+          testcase_name='with_multiple_explicit_targets',
+          tags=[
+              ('Presubmit-Test', 'target3'),
+              ('Presubmit-Test', 'target4'),
+          ],
+          impacted_targets=['target1', 'target2'],
+          query_targets=['target2'],
+          expected_found=True,
+          expected_targets=['target2', 'target3', 'target4'],
+          expected_selected_target_count=1,
+      ),
+  )
+  def test_find_test_targets(
+      self,
+      tags,
+      impacted_targets,
+      query_targets,
+      expected_found,
+      expected_targets,
+      expected_selected_target_count,
+  ):
+    self._mock_generate_hash_file('hash-file')
+    self._mock_get_impacted_targets(impacted_targets)
+    self.build_env.bazel_query.return_value.stdout = '\n'.join(query_targets).encode('utf-8')
+
+    parent_hash_path = self.build_env.tmp_path / 'parent.json'
+    parent_hash_path.write_text('parent-hash-file')
+    gce.upload_to_gcs(
+        parent_hash_path,
+        'adt-byob',
+        'bazel-diff-hashes/789-studio-test.json',
+    )
+    self.gce.add_change('owner', 'message', tags)
     self.gce.changes[0].topic = 'topic'
 
     targets = presubmit.find_test_targets(
@@ -87,71 +132,33 @@ class PresubmitTest(absltest.TestCase):
         ['base_target1', 'base_target2'],
         'includefilter,-excludefilter',
     )
-    self.assertTrue(targets.found)
-    self.assertEqual(set(targets.targets), set(['target2', 'target3']))
+    self.assertEqual(targets.found, expected_found)
+    self.assertEqual(set(targets.targets), set(expected_targets))
     self.assertEqual(targets.flags, [
-        '--build_metadata=selective_presubmit_found=True',
-        '--build_metadata=selective_presubmit_impacted_target_count=2',
-    ] + DEFAULT_BUILD_METADATA_FLAGS + [
+        f'--build_metadata=selective_presubmit_found={expected_found}',
+        f'--build_metadata=selective_presubmit_impacted_target_count={expected_selected_target_count}',
+        '--build_metadata=gerrit_owner=owner@google.com',
+        '--build_metadata=gerrit_change_id=changeid0',
+        '--build_metadata=gerrit_change_number=0',
+        '--build_metadata=gerrit_change_patchset=0',
         '--build_metadata=gerrit_topic=topic',
     ])
-    self.build_env.bazel_query.assert_called_once_with(
-        'base_target1 union '
-        'attr(tags, "includefilter", base_target1) union '
-        'base_target2 union '
-        'attr(tags, "includefilter", base_target2) except '
-        'attr(tags, "excludefilter", base_target1) except '
-        'attr(tags, "manual", base_target1) except '
-        'attr(target_compatible_with, "@platforms//:incompatible", base_target1) except '
-        'attr(tags, "excludefilter", base_target2) except '
-        'attr(tags, "manual", base_target2) except '
-        'attr(target_compatible_with, "@platforms//:incompatible", base_target2)',
-    )
-
-  def test_find_test_targets_with_default_tag(self):
-    self._setup_for_bazel_diff([('Presubmit-Test', 'default')])
-    self._mock_get_impacted_targets(['target1', 'target2'])
-    self.build_env.bazel_query.return_value.stdout = b'target2'
-
-    targets = presubmit.find_test_targets(self.build_env, ['base_target'], '')
-    self.assertFalse(targets.found)
-    self.assertEqual(targets.targets, ['base_target'])
-    self.assertEqual(targets.flags, [
-        '--build_metadata=selective_presubmit_found=False',
-        '--build_metadata=selective_presubmit_impacted_target_count=0',
-    ] + DEFAULT_BUILD_METADATA_FLAGS)
-
-  def test_find_test_targets_with_other_build_target(self):
-    self._setup_for_bazel_diff([('Presubmit-Test', 'studio-other:target3')])
-    self._mock_get_impacted_targets(['target1', 'target2'])
-    self.build_env.bazel_query.return_value.stdout = b'target2'
-
-    targets = presubmit.find_test_targets(self.build_env, ['base_target'], '')
-    self.assertTrue(targets.found)
-    self.assertEqual(targets.targets, ['target2'])
-    self.assertEqual(targets.flags, [
-        '--build_metadata=selective_presubmit_found=True',
-        '--build_metadata=selective_presubmit_impacted_target_count=1',
-    ] + DEFAULT_BUILD_METADATA_FLAGS)
-
-  def test_find_test_targets_with_explicit_targets(self):
-    self._setup_for_bazel_diff([
-        ('Presubmit-Test', 'target3'),
-        ('Presubmit-Test', 'target4'),
-    ])
-    self._mock_get_impacted_targets(['target1', 'target2'])
-    self.build_env.bazel_query.return_value.stdout = b'target2'
-
-    targets = presubmit.find_test_targets(self.build_env, ['base_target'], '')
-    self.assertTrue(targets.found)
-    self.assertEqual(targets.targets, ['target2', 'target3', 'target4'])
-    self.assertEqual(targets.flags, [
-        '--build_metadata=selective_presubmit_found=True',
-        '--build_metadata=selective_presubmit_impacted_target_count=1',
-    ] + DEFAULT_BUILD_METADATA_FLAGS)
+    if expected_found:
+      self.build_env.bazel_query.assert_called_once_with(
+          'base_target1 union '
+          'attr(tags, "includefilter", base_target1) union '
+          'base_target2 union '
+          'attr(tags, "includefilter", base_target2) except '
+          'attr(tags, "excludefilter", base_target1) except '
+          'attr(tags, "manual", base_target1) except '
+          'attr(target_compatible_with, "@platforms//:incompatible", base_target1) except '
+          'attr(tags, "excludefilter", base_target2) except '
+          'attr(tags, "manual", base_target2) except '
+          'attr(target_compatible_with, "@platforms//:incompatible", base_target2)',
+      )
 
   def test_generate_runs_per_test_flags(self):
-    self._setup_for_bazel_diff([
+    self.gce.add_change('owner', 'message', [
         ('Presubmit-Runs-Per-Test', 'studio-test:target1@10'),
         ('Presubmit-Runs-Per-Test', 'target2@20'),
         ('Presubmit-Runs-Per-Test', 'studio-other:target3@30'),

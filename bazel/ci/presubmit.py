@@ -16,6 +16,9 @@ from tools.base.bazel.ci import gce
 _HASH_FILE_BUCKET = 'adt-byob'
 _HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
 _MAX_RUNS_PER_TEST = 200
+_LOCAL_REPOSITORIES = [
+    'intellij'
+]
 
 
 @dataclasses.dataclass
@@ -29,7 +32,11 @@ class SelectivePresubmitResult:
 def _generate_hash_file(build_env: bazel.BuildEnv) -> str:
   """Generates the hash file for the current build."""
   hash_file_path = os.path.join(build_env.dist_dir, 'bazel-diff-hashes.json')
-  bazel_diff.generate_hash_file(build_env, hash_file_path)
+  bazel_diff.generate_hash_file(
+      build_env,
+      _LOCAL_REPOSITORIES,
+      hash_file_path,
+  )
   return hash_file_path
 
 

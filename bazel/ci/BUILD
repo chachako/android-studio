@@ -160,5 +160,6 @@ py_test(
         ":gce",
         ":presubmit",
         "@absl-py//absl/testing:absltest",
+        "@absl-py//absl/testing:parameterized",
     ],
 )
