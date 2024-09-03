@@ -147,7 +147,7 @@
       <xsd:element name="abi"               type= "c:abiType"
                    minOccurs="0" />
       <xsd:element name="abis"              type= "c:abiType"
-                                            maxOccurs="unbounded"/>
+                   minOccurs="0"            maxOccurs="unbounded"/>
       <xsd:element name="translatedAbis"    type= "c:abiType"
                    minOccurs="0"            maxOccurs="unbounded" />
       <xsd:element name="dock"              type= "c:dockType" />

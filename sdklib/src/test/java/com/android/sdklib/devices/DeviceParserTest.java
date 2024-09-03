@@ -16,6 +16,8 @@
 
 package com.android.sdklib.devices;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.android.dvlib.DeviceSchemaTest;
 import com.android.resources.Density;
 import com.android.resources.Keyboard;
@@ -334,6 +336,23 @@ public class DeviceParserTest extends TestCase {
             assertTrue(!device1.getDefaultHardware().hasSdCard());
         } finally {
             stream.close();
+        }
+    }
+
+    public void testDevicesV8Abis() throws Exception {
+        try (InputStream stream = DeviceSchemaTest.class.getResourceAsStream("devices_v8.xml")) {
+            Table<String, String, Device> devices = DeviceParser.parse(stream);
+            assertEquals(
+                    "Parsing devices.xml produces the wrong number of devices", 2, devices.size());
+
+            Device device0 = devices.get("no_abis", "Generic");
+            assertThat(device0.getDefaultHardware().getSupportedAbis()).isEmpty();
+
+            Device device1 = devices.get("various_abis", "Generic");
+            assertThat(device1.getDefaultHardware().getSupportedAbis())
+                    .containsExactly(Abi.ARM64_V8A, Abi.ARMEABI_V7A);
+            assertThat(device1.getDefaultHardware().getTranslatedAbis())
+                    .containsExactly(Abi.RISCV64);
         }
     }
 
