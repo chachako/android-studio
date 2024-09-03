@@ -21,21 +21,25 @@ import com.android.SdkConstants.ATTR_AUTO_VERIFY
 import com.android.SdkConstants.ATTR_EXPORTED
 import com.android.SdkConstants.ATTR_HOST
 import com.android.SdkConstants.ATTR_MIME_TYPE
+import com.android.SdkConstants.ATTR_ORDER
 import com.android.SdkConstants.ATTR_PATH
 import com.android.SdkConstants.ATTR_PATH_ADVANCED_PATTERN
 import com.android.SdkConstants.ATTR_PATH_PATTERN
 import com.android.SdkConstants.ATTR_PATH_PREFIX
 import com.android.SdkConstants.ATTR_PATH_SUFFIX
 import com.android.SdkConstants.ATTR_PORT
+import com.android.SdkConstants.ATTR_PRIORITY
 import com.android.SdkConstants.ATTR_SCHEME
 import com.android.SdkConstants.PREFIX_RESOURCE_REF
 import com.android.SdkConstants.PREFIX_THEME_REF
+import com.android.SdkConstants.TAG_ACTION
 import com.android.SdkConstants.TAG_ACTIVITY
 import com.android.SdkConstants.TAG_ACTIVITY_ALIAS
 import com.android.SdkConstants.TAG_CATEGORY
 import com.android.SdkConstants.TAG_DATA
 import com.android.SdkConstants.TAG_INTENT_FILTER
 import com.android.SdkConstants.TOOLS_URI
+import com.android.SdkConstants.VALUE_0
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
@@ -433,34 +437,25 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     // Validation
     // autoVerify means this is an Android App Link:
     // https://developer.android.com/training/app-links#android-app-links
-    if (isAutoVerify(intentFilter)) {
-      // Report an error if required elements/attributes are missing.
-      if (
-        !actionView ||
-          !hasCategoryDefault(intentFilter) ||
-          !browsable ||
-          (!isHttp && !hasSubstitutedScheme) ||
-          hostPortPairs.isEmpty()
-      ) {
-        // If we are in Studio then add quick-fix data so that Studio adds the
-        // "Launch App Links Assistant" quick-fix.
-        val fix =
-          if (LintClient.isStudio) {
-            fix().data(KEY_SHOW_APP_LINKS_ASSISTANT, true)
-          } else {
-            null
-          }
+    if (shouldDisplayLaunchAppLinksAssistantQuickFix(ElementWrapper(intentFilter, context))) {
+      // If we are in Studio then add quick-fix data so that Studio adds the
+      // "Launch App Links Assistant" quick-fix.
+      val fix =
+        if (LintClient.isStudio) {
+          fix().data(KEY_SHOW_APP_LINKS_ASSISTANT, true)
+        } else {
+          null
+        }
 
-        // --- Check "valid app link" (has autoVerify (i.e. is Android App Link) but is missing a
-        // required element / attribute) ---
-        reportUrlError(
-          context,
-          intentFilter,
-          context.getLocation(intentFilter),
-          "Missing required elements/attributes for Android App Links",
-          fix,
-        )
-      }
+      // --- Check "valid app link" (has autoVerify (i.e. is Android App Link) but is missing a
+      // required element / attribute) ---
+      reportUrlError(
+        context,
+        intentFilter,
+        context.getLocation(intentFilter),
+        "Missing required elements/attributes for Android App Links",
+        fix,
+      )
     }
 
     val showMissingSchemeCheck = !hasExplicitScheme && (paths != null || hostPortPairs.isNotEmpty())
@@ -783,25 +778,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     return false
   }
 
-  private fun replaceUrlWithValue(context: XmlContext?, str: String): String {
-    if (context == null) {
-      return str
-    }
-    val client = context.client
-    val url = ResourceUrl.parse(str)
-    if (url == null || url.isFramework) {
-      return str
-    }
-    val project = context.project
-    val resources = client.getResources(project, ResourceRepositoryScope.ALL_DEPENDENCIES)
-    val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, url.name)
-    if (items.isEmpty()) {
-      return str
-    }
-    val resourceValue = items[0].resourceValue ?: return str
-    return if (resourceValue.value == null) str else resourceValue.value!!
-  }
-
   /** URL information from an intent filter */
   class UriInfo(
     private val schemes: List<String>?,
@@ -889,6 +865,169 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   }
 
   companion object {
+    internal const val ACTION_VIEW = "android.intent.action.VIEW"
+    internal const val CATEGORY_BROWSABLE = "android.intent.category.BROWSABLE"
+    internal const val CATEGORY_DEFAULT = "android.intent.category.DEFAULT"
+    internal val PATH_ATTRIBUTES =
+      listOf(
+        ATTR_PATH,
+        ATTR_PATH_PREFIX,
+        ATTR_PATH_PATTERN,
+        ATTR_PATH_ADVANCED_PATTERN,
+        ATTR_PATH_SUFFIX,
+      )
+    private const val HTTP = "http"
+    private const val HTTPS = "https"
+
+    private fun replaceUrlWithValue(context: XmlContext?, str: String): String {
+      if (context == null) {
+        return str
+      }
+      val client = context.client
+      val url = ResourceUrl.parse(str)
+      if (url == null || url.isFramework) {
+        return str
+      }
+      val project = context.project
+      val resources = client.getResources(project, ResourceRepositoryScope.ALL_DEPENDENCIES)
+      val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, url.name)
+      if (items.isEmpty()) {
+        return str
+      }
+      val resourceValue = items[0].resourceValue ?: return str
+      return if (resourceValue.value == null) str else resourceValue.value!!
+    }
+
+    internal fun attrToAndroidPatternMatcher(attr: String): Int {
+      return when (attr) {
+        ATTR_PATH -> PATTERN_LITERAL
+        ATTR_PATH_PREFIX -> PATTERN_PREFIX
+        ATTR_PATH_PATTERN -> PATTERN_SIMPLE_GLOB
+        ATTR_PATH_ADVANCED_PATTERN -> PATTERN_ADVANCED_GLOB
+        ATTR_PATH_SUFFIX -> PATTERN_SUFFIX
+        else ->
+          throw AssertionError(
+            "Input was required to be one of the <data> path attributes, but was $attr"
+          )
+      }
+    }
+
+    fun androidPatternMatcherToAttr(androidPatternMatcherConstant: Int): String {
+      return when (androidPatternMatcherConstant) {
+        PATTERN_LITERAL -> ATTR_PATH
+        PATTERN_PREFIX -> ATTR_PATH_PREFIX
+        PATTERN_SIMPLE_GLOB -> ATTR_PATH_PATTERN
+        PATTERN_ADVANCED_GLOB -> ATTR_PATH_ADVANCED_PATTERN
+        PATTERN_SUFFIX -> ATTR_PATH_SUFFIX
+        else ->
+          throw AssertionError(
+            "Input was required to be an AndroidPatternMatcher constant but was $androidPatternMatcherConstant"
+          )
+      }
+    }
+
+    fun isWebScheme(scheme: String): Boolean {
+      return scheme == HTTP || scheme == HTTPS
+    }
+
+    interface TagWrapper {
+      val name: String
+      val subTags: Sequence<TagWrapper>
+
+      /** Get the attribute value after applying string substitutions. */
+      fun getAttributeValueWithSubstitution(attrName: String): String?
+    }
+
+    class ElementWrapper(private val element: Element, private val context: XmlContext) :
+      TagWrapper {
+      override val name: String = element.tagName
+
+      override fun getAttributeValueWithSubstitution(attrName: String): String? {
+        val value = element.getAttributeNodeNS(ANDROID_URI, attrName)?.value ?: return null
+        if (value.startsWith(PREFIX_RESOURCE_REF) || value.startsWith(PREFIX_THEME_REF)) {
+          return replaceUrlWithValue(context, value)
+        }
+        return value
+      }
+
+      // Use asSequence for performance improvement
+      override val subTags =
+        XmlUtils.getSubTags(element).asSequence().map { ElementWrapper(it, context) }
+    }
+
+    data class IntentFilterData(
+      val autoVerify: Boolean,
+      val order: Int,
+      val priority: Int,
+      val actions: Set<String>, // These strings may be blank.
+      val categories: Set<String>, // These strings may be blank.
+      val schemes: Set<String>, // These strings may be blank.
+      val hostPortPairs: Set<Pair<String, String?>>, // These strings may be blank.
+      val paths: Set<AndroidPatternMatcher>,
+      val mimeTypes: Set<String>,
+    )
+
+    fun getIntentFilterData(intentFilter: TagWrapper): IntentFilterData {
+      val autoVerify =
+        intentFilter.getAttributeValueWithSubstitution(ATTR_AUTO_VERIFY) == VALUE_TRUE
+      val order =
+        intentFilter.getAttributeValueWithSubstitution(ATTR_ORDER)?.ifEmpty { VALUE_0 }?.toInt()
+          ?: 0
+      val priority =
+        intentFilter.getAttributeValueWithSubstitution(ATTR_PRIORITY)?.ifEmpty { VALUE_0 }?.toInt()
+          ?: 0
+      val actions = mutableSetOf<String>()
+      val categories = mutableSetOf<String>()
+      val schemes = mutableSetOf<String>()
+      val hostPortPairs = mutableSetOf<Pair<String, String?>>()
+      val paths = mutableSetOf<AndroidPatternMatcher>()
+      val mimeTypes = mutableSetOf<String>()
+      for (subTag in intentFilter.subTags) {
+        when (subTag.name) {
+          TAG_ACTION ->
+            subTag.getAttributeValueWithSubstitution(ATTRIBUTE_NAME)?.let { actions.add(it) }
+          TAG_CATEGORY ->
+            subTag.getAttributeValueWithSubstitution(ATTRIBUTE_NAME)?.let { categories.add(it) }
+          TAG_DATA -> {
+            subTag.getAttributeValueWithSubstitution(ATTR_SCHEME)?.let { schemes.add(it) }
+            subTag.getAttributeValueWithSubstitution(ATTR_HOST)?.let {
+              hostPortPairs.add(Pair(it, subTag.getAttributeValueWithSubstitution(ATTR_PORT)))
+            }
+            for (pathAttribute in PATH_ATTRIBUTES) {
+              subTag.getAttributeValueWithSubstitution(pathAttribute)?.let {
+                paths.add(AndroidPatternMatcher(it, attrToAndroidPatternMatcher(pathAttribute)))
+              }
+            }
+            subTag.getAttributeValueWithSubstitution(ATTR_MIME_TYPE)?.let { mimeTypes.add(it) }
+          }
+        }
+      }
+      return IntentFilterData(
+        autoVerify,
+        order,
+        priority,
+        actions,
+        categories,
+        schemes,
+        hostPortPairs,
+        paths,
+        mimeTypes,
+      )
+    }
+
+    fun shouldDisplayLaunchAppLinksAssistantQuickFix(intentFilter: TagWrapper): Boolean {
+      val data = getIntentFilterData(intentFilter)
+      return (data.autoVerify &&
+        (!data.actions.contains(ACTION_VIEW) ||
+          !data.categories.contains(CATEGORY_DEFAULT) ||
+          !data.categories.contains(CATEGORY_BROWSABLE) ||
+          // All schemes in the intent filter must be web schemes for domain verification to be
+          // requested.
+          // This is a bug in Android, but they have no intent to fix it.
+          (!data.schemes.all { isWebScheme(it) || isSubstituted(it) }) ||
+          data.hostPortPairs.isEmpty()))
+    }
+
     private val IMPLEMENTATION =
       Implementation(AppLinksValidDetector::class.java, Scope.MANIFEST_SCOPE)
 
@@ -1000,15 +1139,15 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     // <scheme>://<host>:<port>[<path>|<pathPrefix>|<pathPattern>|<pathSuffix>|<pathAdvancedPattern>]
     private val INTENT_FILTER_DATA_SORT_REFERENCE =
       listOf(
-        "scheme",
-        "host",
-        "port",
-        "path",
-        "pathPrefix",
-        "pathPattern",
-        "pathSuffix",
-        "pathAdvancedPattern",
-        "mimeType",
+        ATTR_SCHEME,
+        ATTR_HOST,
+        ATTR_PORT,
+        ATTR_PATH,
+        ATTR_PATH_PREFIX,
+        ATTR_PATH_PATTERN,
+        ATTR_PATH_SUFFIX,
+        ATTR_PATH_ADVANCED_PATTERN,
+        ATTR_MIME_TYPE,
       )
 
     private fun isSubstituted(expression: String): Boolean {
