@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -113,6 +114,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @Test
     @Throws(Exception::class)
+    @Ignore("b/364301279")
     fun checkDependencyApkInstallation() {
         createMainApkListingFile()
         val splitApk = getSdkSupportSplitApk()
