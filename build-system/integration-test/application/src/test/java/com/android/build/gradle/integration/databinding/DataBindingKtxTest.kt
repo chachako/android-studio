@@ -70,7 +70,6 @@ class DataBindingKtxTest(
         GradleTestProject
             .builder()
             .fromTestApp(app)
-            .withMetaspace(METASPACE)
             .create()
 
     @Test
@@ -96,9 +95,3 @@ class DataBindingKtxTest(
 private const val ERROR_MESSAGE = "The `android.dataBinding.addKtx` DSL option has no effect " +
         "because the `android.useAndroidX` property is not enabled or the project " +
         "does not use Kotlin."
-
-/**
- * [METASPACE] is chosen so that the build fails after about 7 runs without the memory leak fix.
- * This gives some headroom in an attempt to avoid the test being flaky.
- */
-private const val METASPACE = "256M"
