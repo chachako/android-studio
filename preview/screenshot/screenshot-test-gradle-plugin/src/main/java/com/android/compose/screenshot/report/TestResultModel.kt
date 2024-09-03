@@ -16,8 +16,6 @@
 
 package com.android.compose.screenshot.report
 
-import org.gradle.api.tasks.testing.TestResult.ResultType
-
 abstract class TestResultModel {
     abstract val duration: Long
     abstract val title: String
@@ -28,7 +26,6 @@ abstract class TestResultModel {
             ResultType.FAILURE -> "failures"
             ResultType.ERROR -> "errors"
             ResultType.SKIPPED -> "skipped"
-            else -> throw IllegalStateException()
         }
 
     abstract fun getResultType(): ResultType
@@ -43,7 +40,6 @@ abstract class TestResultModel {
             ResultType.FAILURE -> "failed"
             ResultType.ERROR -> "error"
             ResultType.SKIPPED -> "ignored"
-            else -> throw IllegalStateException()
         }
     }
 
