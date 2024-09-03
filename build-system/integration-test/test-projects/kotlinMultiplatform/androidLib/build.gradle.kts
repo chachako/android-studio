@@ -4,11 +4,11 @@ plugins {
 android {
   namespace = "com.example.androidlib"
 
-  compileSdk = property("latestCompileSdk") as Int
+  compileSdk = libs.versions.latestCompileSdk.get().toInt()
 
   defaultConfig {
     minSdk = 21
-    targetSdk = property("latestCompileSdk") as Int
+    targetSdk = libs.versions.latestCompileSdk.get().toInt()
   }
 
   flavorDimensions("type", "mode")

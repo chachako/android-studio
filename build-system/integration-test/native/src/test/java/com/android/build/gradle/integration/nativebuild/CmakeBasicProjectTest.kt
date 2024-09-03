@@ -214,8 +214,8 @@ class CmakeBasicProjectTest(
             }
 
             dependencies {
-                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
-                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:runner:${"$"}{libs.versions.testSupportLibVersion.get()}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{libs.versions.testSupportLibVersion.get()}"
             }
         """.trimIndent()
     }
@@ -264,8 +264,8 @@ class CmakeBasicProjectTest(
             }
 
             dependencies {
-                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
-                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:runner:${"$"}{libs.versions.testSupportLibVersion.get()}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{libs.versions.testSupportLibVersion.get()}"
             }
         """.trimIndent()
     }
@@ -358,8 +358,8 @@ class CmakeBasicProjectTest(
             }
 
             dependencies {
-                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
-                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:runner:${"$"}{libs.versions.testSupportLibVersion.get()}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{libs.versions.testSupportLibVersion.get()}"
             }
         """.trimIndent()
     }

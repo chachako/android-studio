@@ -76,7 +76,7 @@ kotlin {
 androidComponents {
     finalizeDsl { extension ->
         extension.namespace = "com.example.kmpfirstlib"
-        extension.compileSdk = property("latestCompileSdk") as Int
+        extension.compileSdk = libs.versions.latestCompileSdk.get().toInt()
         extension.minSdk = 22
     }
     onVariant { variant ->

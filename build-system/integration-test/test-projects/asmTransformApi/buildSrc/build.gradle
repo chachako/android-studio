@@ -14,7 +14,7 @@ apply plugin: 'kotlin'
 
 dependencies {
     api gradleApi()
-    api "com.android.tools.build:gradle:$rootProject.buildVersion"
+    api "com.android.tools.build:gradle:${libs.versions.buildVersion.get()}"
 }
 
 gradlePlugin {

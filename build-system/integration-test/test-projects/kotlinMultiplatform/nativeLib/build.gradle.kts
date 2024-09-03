@@ -20,7 +20,7 @@ plugins {
 
 android {
     namespace = "com.example.nativelib"
-    compileSdk = property("latestCompileSdk") as Int
+    compileSdk = libs.versions.latestCompileSdk.get().toInt()
     defaultConfig {
         minSdk = 21
     }

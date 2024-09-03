@@ -58,9 +58,6 @@ internal enum class BuildSystem {
     ): String {
         val script = StringBuilder()
         script.append("def commonScriptFolder = buildscript.sourceFile.parent\n")
-        script.append(
-            "apply from: \"\$commonScriptFolder/commonVersions.gradle\", to: rootProject.ext\n\n"
-        )
         script.append("project.buildscript { buildscript ->\n")
         script.append(
             "    apply from: \"\$commonScriptFolder/commonLocalRepo.gradle\", to:buildscript\n"
@@ -72,7 +69,7 @@ internal enum class BuildSystem {
         script.append("    dependencies {\n")
         if (withAndroidGradlePlugin) {
             script.append(
-                "        classpath \"com.android.tools.build:gradle:\$rootProject.buildVersion\"\n"
+                "        classpath \"com.android.tools.build:gradle:\${libs.versions.buildVersion.get()}\"\n"
             )
         }
         if (withKotlinGradlePlugin) {
@@ -92,7 +89,7 @@ internal enum class BuildSystem {
         }
         if (withBuiltInKotlinSupport) {
             script.append(
-                "        classpath \"com.android.tools.build:gradle-kotlin:\$rootProject.buildVersion\"\n"
+                "        classpath \"com.android.tools.build:gradle-kotlin:\${libs.versions.buildVersion.get()}\"\n"
             )
         }
         script.append("    }\n")

@@ -12,7 +12,7 @@ kotlin {
 
 android {
     namespace = "com.example.kmplibraryplugin"
-    compileSdk = property("latestCompileSdk") as Int
+    compileSdk = libs.versions.latestCompileSdk.get().toInt()
 
     defaultConfig {
       minSdk = 20

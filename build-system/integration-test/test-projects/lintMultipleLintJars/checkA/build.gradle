@@ -1,8 +1,8 @@
 apply plugin: 'java-library'
 
 dependencies {
-    compileOnly "com.android.tools.lint:lint-api:$baseVersion"
-    compileOnly "com.android.tools.lint:lint-checks:$baseVersion"
+    compileOnly "com.android.tools.lint:lint-api:${libs.versions.baseVersion.get()}"
+    compileOnly "com.android.tools.lint:lint-checks:${libs.versions.baseVersion.get()}"
 }
 
 java {

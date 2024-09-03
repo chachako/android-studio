@@ -4,11 +4,11 @@ plugins {
 android {
   namespace = "com.example.app"
 
-  compileSdk = property("latestCompileSdk") as Int
+  compileSdk = libs.versions.latestCompileSdk.get().toInt()
 
   defaultConfig {
     minSdk = 22
-    targetSdk = property("latestCompileSdk") as Int
+    targetSdk = libs.versions.latestCompileSdk.get().toInt()
     missingDimensionStrategy("type", "typeone")
     missingDimensionStrategy("mode", "modetwo")
   }

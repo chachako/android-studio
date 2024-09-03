@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.lib"
-    compileSdk = property("latestCompileSdk") as Int
+    compileSdk = libs.versions.latestCompileSdk.get().toInt()
     flavorDimensions += "color"
     productFlavors {
         create("yellow") {

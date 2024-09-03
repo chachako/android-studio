@@ -26,7 +26,7 @@ androidComponents {
     finalizeDsl { extension ->
         extension.namespace = "com.example.kmpsecondlib"
         extension.minSdk = 22
-        extension.compileSdk = property("latestCompileSdk") as Int
+        extension.compileSdk = libs.versions.latestCompileSdk.get().toInt()
     }
     onVariant { variant ->
         if (variant.name == null || variant.name.isEmpty()) {

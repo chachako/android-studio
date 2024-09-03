@@ -4,9 +4,9 @@ apply plugin: 'com.android.lint'
 apply plugin: 'idea'
 
 dependencies {
-    compileOnly "com.android.tools:annotations:$baseVersion"
-    compileOnly "com.android.tools.lint:lint-api:$baseVersion"
-    compileOnly "com.android.tools.lint:lint-checks:$baseVersion"
+    compileOnly "com.android.tools:annotations:${libs.versions.baseVersion.get()}"
+    compileOnly "com.android.tools.lint:lint-api:${libs.versions.baseVersion.get()}"
+    compileOnly "com.android.tools.lint:lint-checks:${libs.versions.baseVersion.get()}"
 }
 
 lintOptions {
