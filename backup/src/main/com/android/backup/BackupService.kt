@@ -30,6 +30,7 @@ interface BackupService {
   suspend fun backup(
     serialNumber: String,
     applicationId: String,
+    type: BackupType,
     backupFile: Path,
     listener: BackupProgressListener?,
   ): BackupResult

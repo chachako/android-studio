@@ -30,23 +30,22 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.pathString
 
-private const val TRANSPORT_D2D = "com.google.android.gms/.backup.migrate.service.D2dTransport"
-private const val TRANSPORT_CLOUD = "com.google.android.gms/.backup.BackupTransportService"
-
 internal class BackupServiceImpl(private val factory: AdbServicesFactory) : BackupService {
 
   override suspend fun backup(
     serialNumber: String,
     applicationId: String,
+    type: BackupType,
     backupFile: Path,
     listener: BackupProgressListener?,
   ): BackupResult {
     val adbServices = factory.createAdbServices(serialNumber, listener, BACKUP_STEPS)
     return try {
       with(adbServices) {
-        withSetup(TRANSPORT_D2D) {
+        val transport = type.transport
+        withSetup(transport) {
           reportProgress("Initializing backup transport")
-          initializeTransport(TRANSPORT_D2D)
+          initializeTransport(transport)
           try {
             reportProgress("Running backup")
             adbServices.backupNow(applicationId)
@@ -76,7 +75,8 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
       val (token, applicationId) = pushBackup(adbServices, backupFile)
       with(adbServices) {
         try {
-          withSetup(TRANSPORT_CLOUD) {
+          // Restore is always handled by the Cloud transport
+          withSetup(BackupType.CLOUD.transport) {
             reportProgress("Restoring $applicationId")
             adbServices.restore(token, applicationId)
           }

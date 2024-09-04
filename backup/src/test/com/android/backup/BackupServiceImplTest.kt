@@ -18,6 +18,8 @@ package com.android.backup
 
 import com.android.backup.BackupResult.Error
 import com.android.backup.BackupResult.Success
+import com.android.backup.BackupType.CLOUD
+import com.android.backup.BackupType.DEVICE_TO_DEVICE
 import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.BACKUP_NOT_ALLOWED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
@@ -55,12 +57,12 @@ class BackupServiceImplTest {
   @get:Rule val temporaryFolder = TemporaryFolder()
 
   @Test
-  fun backup(): Unit = runBlocking {
+  fun backup_d2d(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
     val adbServicesFactory = FakeAdbServicesFactory()
     val backupService = BackupServiceImpl(adbServicesFactory)
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     val adbServices = adbServicesFactory.adbServices
     assertThat(result).isEqualTo(Success)
@@ -91,12 +93,47 @@ class BackupServiceImplTest {
   }
 
   @Test
+  fun backup_cloud(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val adbServicesFactory = FakeAdbServicesFactory()
+    val backupService = BackupServiceImpl(adbServicesFactory)
+
+    val result = backupService.backup("serial", "com.app", CLOUD, backupFile, null)
+
+    val adbServices = adbServicesFactory.adbServices
+    assertThat(result).isEqualTo(Success)
+    assertThat(adbServices.getCommands())
+      .containsExactly(
+        "dumpsys package com.google.android.gms",
+        "bmgr enabled",
+        "bmgr enable true",
+        "settings put secure backup_enable_android_studio_mode 1",
+        "bmgr transport com.google.android.gms/.backup.BackupTransportService",
+        "bmgr list transports",
+        "bmgr init com.google.android.gms/.backup.BackupTransportService",
+        "bmgr backupnow com.app",
+        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
+        "settings put secure backup_enable_android_studio_mode 0",
+        "bmgr enable false",
+      )
+      .inOrder()
+    assertThat(adbServices.testMode).isEqualTo(0)
+    assertThat(backupFile.exists()).isTrue()
+    assertThat(backupFile.unzip())
+      .containsExactly(
+        "@pm@" to "${AdbServices.BACKUP_DIR}/@pm@",
+        "restore_token_file" to "${AdbServices.BACKUP_DIR}/restore_token_file",
+        "com.app" to "${AdbServices.BACKUP_DIR}/com.app",
+      )
+  }
+
+  @Test
   fun backup_bmgrAlreadyEnabled(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
     val adbServicesFactory = FakeAdbServicesFactory { it.bmgrEnabled = true }
     val backupServices = BackupServiceImpl(adbServicesFactory)
 
-    val result = backupServices.backup("serial", "com.app", backupFile, null)
+    val result = backupServices.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     val adbServices = adbServicesFactory.adbServices
     assertThat(result).isEqualTo(Success)
@@ -124,7 +161,7 @@ class BackupServiceImplTest {
     }
     val backupService = BackupServiceImpl(adbServicesFactory)
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     val adbServices = adbServicesFactory.adbServices
     assertThat(result).isEqualTo(Success)
@@ -151,7 +188,7 @@ class BackupServiceImplTest {
     val adbServicesFactory = FakeAdbServicesFactory()
     val backupService = BackupServiceImpl(adbServicesFactory)
 
-    backupService.backup("serial", "com.app", backupFile, null)
+    backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     val adbServices = adbServicesFactory.adbServices
     assertThat(adbServices.getProgress())
@@ -180,7 +217,7 @@ class BackupServiceImplTest {
     backupFile.createFile()
     val backupService = BackupServiceImpl(FakeAdbServicesFactory { it.transports = emptyList() })
 
-    backupService.backup("serial", "com.app", backupFile, null)
+    backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(backupFile.notExists()).isTrue()
   }
@@ -190,7 +227,7 @@ class BackupServiceImplTest {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
     val backupService = BackupServiceImpl(FakeAdbServicesFactory { it.failSync = true })
 
-    backupService.backup("serial", "com.app", backupFile, null)
+    backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(backupFile.notExists()).isTrue()
   }
@@ -207,7 +244,7 @@ class BackupServiceImplTest {
         }
       )
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(result).isEqualTo(TRANSPORT_INIT_FAILED.asBackupResult())
   }
@@ -227,7 +264,7 @@ class BackupServiceImplTest {
         }
       )
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(result)
       .isEqualTo(GMSCORE_NOT_FOUND.asBackupResult("Google Services not found on device"))
@@ -241,7 +278,7 @@ class BackupServiceImplTest {
         FakeAdbServicesFactory { it.addCommandOverride(Output("bmgr backupnow com.app", "Error")) }
       )
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(result).isEqualTo(BACKUP_FAILED.asBackupResult("Failed to backup 'com.app`: Error"))
   }
@@ -253,17 +290,15 @@ class BackupServiceImplTest {
       BackupServiceImpl(
         FakeAdbServicesFactory {
           it.addCommandOverride(
-            Output(
-              "bmgr backupnow com.app",
-              "Package com.app with result: Backup is not allowed"
-            )
+            Output("bmgr backupnow com.app", "Package com.app with result: Backup is not allowed")
           )
         }
       )
 
-    val result = backupService.backup("serial", "com.app", backupFile, null)
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
-    assertThat(result).isEqualTo(BACKUP_NOT_ALLOWED.asBackupResult("Backup of 'com.app` is not allowed"))
+    assertThat(result)
+      .isEqualTo(BACKUP_NOT_ALLOWED.asBackupResult("Backup of 'com.app` is not allowed"))
   }
 
   @Test
