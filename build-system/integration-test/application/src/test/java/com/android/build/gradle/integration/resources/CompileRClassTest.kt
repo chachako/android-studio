@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.resources
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -51,7 +50,6 @@ class CompileRClassTest {
         )
 
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":lib:compileDebugAndroidTestKotlin")
     }
 
@@ -65,7 +63,6 @@ class CompileRClassTest {
         )
 
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":lib:compileDebugAndroidTestKotlin")
     }
 }

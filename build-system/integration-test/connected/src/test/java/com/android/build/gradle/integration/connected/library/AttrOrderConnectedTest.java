@@ -16,15 +16,16 @@
 
 package com.android.build.gradle.integration.connected.library;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import java.io.IOException;
 
 public class AttrOrderConnectedTest {
 
@@ -40,15 +41,11 @@ public class AttrOrderConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("uninstallAll");
+        project.executor().run("uninstallAll");
     }
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("connectedCheck");
+        project.executor().run("connectedCheck");
     }
 }

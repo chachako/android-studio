@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.connected.feature
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.TEST_SUPPORT_LIB_VERSION
@@ -146,24 +145,18 @@ class DynamicFeatureConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("uninstallAll")
+        project.executor().run("uninstallAll")
     }
 
     @Test
     fun runTestInDynamicFeature() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":dynamicFeature:connectedAndroidTest")
+        project.executor().run(":dynamicFeature:connectedAndroidTest")
     }
 
     // Regression test for b/314731501
     @Test
     fun testInstallAppWithDynamicFeatureInstall() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":app:installDebug")
+        project.executor().run(":app:installDebug")
     }
 
 }

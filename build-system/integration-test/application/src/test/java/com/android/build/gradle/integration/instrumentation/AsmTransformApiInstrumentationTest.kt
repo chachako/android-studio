@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.instrumentation
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.AsmApiApiTestUtils.appClassesDescriptorPrefix
@@ -456,6 +455,6 @@ class AsmTransformApiInstrumentationTest {
     }
 
     private fun executor(): GradleTaskExecutor {
-       return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+       return project.executor()
     }
 }

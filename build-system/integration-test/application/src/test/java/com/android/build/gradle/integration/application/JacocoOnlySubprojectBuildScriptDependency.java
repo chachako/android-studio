@@ -16,8 +16,8 @@
 
 package com.android.build.gradle.integration.application;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,8 +33,6 @@ public class JacocoOnlySubprojectBuildScriptDependency {
 
     @Test
     public void build() throws Exception {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("jacocoDebug");
+        project.executor().run("jacocoDebug");
     }
 }

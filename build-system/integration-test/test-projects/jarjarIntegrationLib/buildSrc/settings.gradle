@@ -1,1 +1,1 @@
-apply from: "../settings.gradle.kts"
+apply from: "../settings.gradle"

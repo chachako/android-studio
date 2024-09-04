@@ -68,7 +68,7 @@ class LintStandaloneTest(
         assertThat(file).exists()
         assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
         assertThat(file).contains("build.gradle:4: Warning: no Java language level directives")
-        assertThat(file).contains("0 errors, 2 warnings")
+        assertThat(file).contains("0 errors, 3 warnings")
 
         // Check that lint copies the result to the new location if that is changed
         // But the analysis itself is not re-run in the new integration
@@ -85,7 +85,7 @@ class LintStandaloneTest(
         assertThat(secondFile).exists()
         assertThat(secondFile).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
         assertThat(secondFile).contains("build.gradle:4: Warning: no Java language level directives")
-        assertThat(secondFile).contains("0 errors, 2 warnings")
+        assertThat(secondFile).contains("0 errors, 3 warnings")
     }
 
     @Test
@@ -139,7 +139,7 @@ class LintStandaloneTest(
         assertThat(file).exists()
         assertThat(file).contains("build.gradle:4: Warning: no Java language level directives")
         assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
-        assertThat(file).contains("0 errors, 2 warnings")
+        assertThat(file).contains("0 errors, 3 warnings")
     }
 
     /**

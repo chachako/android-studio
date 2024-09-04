@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.connected.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
@@ -175,16 +174,12 @@ class D8DesugaringConnectedTest {
 
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("uninstallAll")
+        project.executor().run("uninstallAll")
     }
 
     @Test
     fun runAndroidTest() {
-        val result = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("app:connectedBaseDebugAndroidTest")
+        val result = project.executor().run("app:connectedBaseDebugAndroidTest")
         result.stdout.use { stdout -> assertThat(stdout).contains("Starting 2 tests on") }
     }
 }

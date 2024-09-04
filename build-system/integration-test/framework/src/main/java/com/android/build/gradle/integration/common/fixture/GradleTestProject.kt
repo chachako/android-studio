@@ -810,11 +810,12 @@ allprojects { proj ->
 
     private fun getSettingsFile(projectDir: File): File {
         val settingsGradle = File(projectDir, "settings.gradle")
+        val settingsGradleKts = File(projectDir, "settings.gradle.kts")
 
-        return if (settingsGradle.exists()) {
-            settingsGradle
+        return if (settingsGradleKts.exists() && !settingsGradle.exists()) {
+            settingsGradleKts
         } else {
-            File(projectDir, "settings.gradle.kts")
+            settingsGradle
         }
     }
 
@@ -1520,7 +1521,7 @@ allprojects { proj ->
             val applyCommonLocalRepo = if (settingsFile.name.endsWith(".kts")) {
                 "apply(from = \"$commonLocalRepoPath\", to=pluginManagement)"
             } else {
-                "apply from: \"$commonLocalRepoPath\", to: this"
+                "apply from: \"$commonLocalRepoPath\", to: pluginManagement"
             }
             settingsContent = """
             pluginManagement {
@@ -1667,10 +1668,14 @@ buildCache {
      */
     @JvmOverloads
     fun addAdbTimeout(timeout: Duration = Duration.ofSeconds(30)) {
-        TestFileUtils.appendToFile(
-                buildFile,
+        if (settingsFile.name.endsWith(".kts")) {
+            throw Exception("Adding adb timeout in kts file is not supported, " +
+                    "please configure it in each project using kotlin dsl")
+        } else {
+            TestFileUtils.appendToFile(
+                settingsFile,
                 """
-                allprojects { proj ->
+                gradle.lifecycle.beforeProject { proj ->
                     proj.plugins.withId('com.android.application') {
                         android.adbOptions.timeOutInMs ${timeout.toMillis()}
                     }
@@ -1682,7 +1687,8 @@ buildCache {
                     }
                 }
                 """.trimIndent()
-        )
+            )
+        }
     }
 
     fun setIncludedProjects(vararg projects: String) {
