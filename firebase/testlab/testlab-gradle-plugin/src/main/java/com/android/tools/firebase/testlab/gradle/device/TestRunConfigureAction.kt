@@ -17,51 +17,50 @@
 package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
-import com.android.tools.firebase.testlab.gradle.TestLabGradlePlugin
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
+import com.android.tools.firebase.testlab.gradle.TestLabGradlePlugin
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.android.tools.firebase.testlab.gradle.tasks.ExtraDeviceFilesUploadTask
 import com.google.firebase.testlab.gradle.ManagedDevice
+import javax.inject.Inject
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ProviderFactory
-import javax.inject.Inject
 
-open class TestRunConfigureAction @Inject constructor(
-    private val objectFactory: ObjectFactory,
-    private val providerFactory: ProviderFactory,
-    private val project: Project,
-): DeviceTestRunConfigureAction<ManagedDevice, DeviceTestRunInput> {
+open class TestRunConfigureAction
+@Inject
+constructor(
+  private val objectFactory: ObjectFactory,
+  private val providerFactory: ProviderFactory,
+  private val project: Project,
+) : DeviceTestRunConfigureAction<ManagedDevice, DeviceTestRunInput> {
 
-    override fun configureTaskInput(deviceDSL: ManagedDevice): DeviceTestRunInput =
-        objectFactory.newInstance(DeviceTestRunInput::class.java).apply {
-            device.set(deviceDSL.device)
-            device.disallowChanges()
+  override fun configureTaskInput(deviceDSL: ManagedDevice): DeviceTestRunInput =
+    objectFactory.newInstance(DeviceTestRunInput::class.java).apply {
+      device.set(deviceDSL.device)
+      device.disallowChanges()
 
-            apiLevel.set(deviceDSL.apiLevel)
-            apiLevel.disallowChanges()
+      apiLevel.set(deviceDSL.apiLevel)
+      apiLevel.disallowChanges()
 
-            orientation.set(ManagedDeviceImpl.Orientation.valueOf(deviceDSL.orientation))
-            orientation.disallowChanges()
+      orientation.set(ManagedDeviceImpl.Orientation.valueOf(deviceDSL.orientation))
+      orientation.disallowChanges()
 
-            locale.set(deviceDSL.locale)
-            locale.disallowChanges()
+      locale.set(deviceDSL.locale)
+      locale.disallowChanges()
 
-            buildService.set(
-                TestLabBuildService.RegistrationAction.getBuildService(project))
-            buildService.disallowChanges()
+      buildService.set(TestLabBuildService.RegistrationAction.getBuildService(project))
+      buildService.disallowChanges()
 
-            numUniformShards.set(
-                providerFactory.provider { buildService.get().numUniformShards })
-            numUniformShards.disallowChanges()
+      numUniformShards.set(providerFactory.provider { buildService.get().numUniformShards })
+      numUniformShards.disallowChanges()
 
-            extraDeviceUrlsFile.set(
-                project.tasks.named(
-                    TestLabGradlePlugin.EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME
-                ).flatMap { task ->
-                    (task as ExtraDeviceFilesUploadTask).outputFile
-                }
-            )
-            extraDeviceUrlsFile.disallowChanges()
+      extraDeviceUrlsFile.set(
+        project.tasks.named(TestLabGradlePlugin.EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME).flatMap { task
+          ->
+          (task as ExtraDeviceFilesUploadTask).outputFile
         }
+      )
+      extraDeviceUrlsFile.disallowChanges()
+    }
 }

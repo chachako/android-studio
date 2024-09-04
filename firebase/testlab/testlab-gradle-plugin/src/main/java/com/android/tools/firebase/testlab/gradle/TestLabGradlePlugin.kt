@@ -32,71 +32,65 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- * An entry point for Firebase Test Lab Gradle plugin that extends Gradle Managed Device
- * and adds support for Firebase Test Lab devices.
+ * An entry point for Firebase Test Lab Gradle plugin that extends Gradle Managed Device and adds
+ * support for Firebase Test Lab devices.
  */
 class TestLabGradlePlugin : Plugin<Project> {
 
-    companion object {
-        const val EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME = "firebaseUploadExtraDeviceFiles"
-        const val FTL_OUTPUT_DIRECTORY = "firebase/testlab/outputs"
-        const val EXTRA_DEVICE_FILES_LOCATION = "EXTRA_DEVICE_FILES"
-    }
+  companion object {
+    const val EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME = "firebaseUploadExtraDeviceFiles"
+    const val FTL_OUTPUT_DIRECTORY = "firebase/testlab/outputs"
+    const val EXTRA_DEVICE_FILES_LOCATION = "EXTRA_DEVICE_FILES"
+  }
 
-    override fun apply(project: Project) {
-        project.plugins.withType(AndroidBasePlugin::class.java) {
-            val agpVersion =
-                project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
-            if (agpVersion.previewType != "dev" &&
-                    (agpVersion < AndroidPluginVersion(8, 3, 0).alpha(1) ||
-                    agpVersion >= AndroidPluginVersion(8, 9, 0).alpha(1))) {
-                error("Firebase TestLab plugin is an experimental feature. It requires Android " +
-                        "Gradle plugin version between 8.3 and 8.8. Current version is $agpVersion.")
-            }
+  override fun apply(project: Project) {
+    project.plugins.withType(AndroidBasePlugin::class.java) {
+      val agpVersion =
+        project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
+      if (
+        agpVersion.previewType != "dev" &&
+          (agpVersion < AndroidPluginVersion(8, 3, 0).alpha(1) ||
+            agpVersion >= AndroidPluginVersion(8, 9, 0).alpha(1))
+      ) {
+        error(
+          "Firebase TestLab plugin is an experimental feature. It requires Android " +
+            "Gradle plugin version between 8.3 and 8.8. Current version is $agpVersion."
+        )
+      }
 
-            // Registering with the Device registry will take care of the test options binding.
-            project.extensions.getByType(AndroidComponentsExtension::class.java).apply {
-                managedDeviceRegistry.registerDeviceType(ManagedDevice::class.java) {
-                    dslImplementationClass = ManagedDeviceImpl::class.java
-                    setSetupActions(
-                        SetupConfigureAction::class.java,
-                        SetupTaskAction::class.java
-                    )
-                    setTestRunActions(
-                        TestRunConfigureAction::class.java,
-                        TestRunTaskAction::class.java
-                    )
-                }
-            }
-
-            val androidExtension = project.extensions.getByType(CommonExtension::class.java)
-            val extension = project.extensions.create(
-                TestLabGradlePluginExtension::class.java,
-                "firebaseTestLab",
-                TestLabGradlePluginExtensionImpl::class.java,
-                project.objects,
-                androidExtension.testOptions.managedDevices
-            )
-
-            val uploadTask = project.tasks.register(
-                EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME,
-                ExtraDeviceFilesUploadTask::class.java
-            ) { task ->
-                task.projectPath.set(project.path)
-                task.buildService.set(
-                    TestLabBuildService.RegistrationAction.getBuildService(project)
-                )
-                task.extraFiles.set(
-                    extension.testOptions.fixture.extraDeviceFiles
-                )
-                task.outputFile.set(
-                    project.layout.buildDirectory.file(
-                        "$FTL_OUTPUT_DIRECTORY/$EXTRA_DEVICE_FILES_LOCATION"
-                    )
-                )
-            }
-
-            TestLabBuildService.RegistrationAction(project).registerIfAbsent()
+      // Registering with the Device registry will take care of the test options binding.
+      project.extensions.getByType(AndroidComponentsExtension::class.java).apply {
+        managedDeviceRegistry.registerDeviceType(ManagedDevice::class.java) {
+          dslImplementationClass = ManagedDeviceImpl::class.java
+          setSetupActions(SetupConfigureAction::class.java, SetupTaskAction::class.java)
+          setTestRunActions(TestRunConfigureAction::class.java, TestRunTaskAction::class.java)
         }
+      }
+
+      val androidExtension = project.extensions.getByType(CommonExtension::class.java)
+      val extension =
+        project.extensions.create(
+          TestLabGradlePluginExtension::class.java,
+          "firebaseTestLab",
+          TestLabGradlePluginExtensionImpl::class.java,
+          project.objects,
+          androidExtension.testOptions.managedDevices,
+        )
+
+      val uploadTask =
+        project.tasks.register(
+          EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME,
+          ExtraDeviceFilesUploadTask::class.java,
+        ) { task ->
+          task.projectPath.set(project.path)
+          task.buildService.set(TestLabBuildService.RegistrationAction.getBuildService(project))
+          task.extraFiles.set(extension.testOptions.fixture.extraDeviceFiles)
+          task.outputFile.set(
+            project.layout.buildDirectory.file("$FTL_OUTPUT_DIRECTORY/$EXTRA_DEVICE_FILES_LOCATION")
+          )
+        }
+
+      TestLabBuildService.RegistrationAction(project).registerIfAbsent()
     }
+  }
 }

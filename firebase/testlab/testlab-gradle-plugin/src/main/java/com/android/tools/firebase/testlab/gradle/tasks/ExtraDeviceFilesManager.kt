@@ -28,60 +28,46 @@ import java.io.File
  */
 class ExtraDeviceFilesManager(deviceFile: File? = null) {
 
-    private data class FileInfo(
-        val gsUrl: String,
-        val md5Hash: String
-    ) {
-        override fun toString(): String = "$gsUrl\t$md5Hash"
+  private data class FileInfo(val gsUrl: String, val md5Hash: String) {
+    override fun toString(): String = "$gsUrl\t$md5Hash"
+  }
+
+  private val devicePathToInfo = mutableMapOf<String, FileInfo>()
+
+  init {
+    deviceFile?.forEachLine { line ->
+      val pair = line.split("\t")
+      devicePathToInfo[pair[0]] = FileInfo(pair[1], pair[2])
+    }
+  }
+
+  /** Two managers are considered equal if their internal maps are equal */
+  override fun equals(other: Any?): Boolean {
+    return other != null &&
+      other is ExtraDeviceFilesManager &&
+      devicePathToInfo == other.devicePathToInfo
+  }
+
+  /** Hashing is done via the internal mapping as well */
+  override fun hashCode(): Int = devicePathToInfo.hashCode()
+
+  fun add(devicePath: String, storageObject: StorageObject) {
+    devicePathToInfo[devicePath] = FileInfo(storageObject.toUrl(), storageObject.md5Hash)
+  }
+
+  fun devicePathsToUrls(): Map<String, String> =
+    devicePathToInfo.entries.associate { it.key to it.value.gsUrl }
+
+  fun toFile(file: File) {
+    if (devicePathToInfo.isEmpty()) {
+      file.writeText("")
+      return
     }
 
-    private val devicePathToInfo = mutableMapOf<String, FileInfo>()
-
-    init {
-        deviceFile?.forEachLine { line ->
-            val pair = line.split("\t")
-            devicePathToInfo[pair[0]] = FileInfo(
-                pair[1],
-                pair[2]
-            )
-        }
+    val outputContents = StringBuilder()
+    devicePathToInfo.toSortedMap().forEach { entry ->
+      outputContents.appendLine("${entry.key}\t${entry.value}")
     }
-
-    /** Two managers are considered equal if their internal maps are equal */
-    override fun equals(other: Any?): Boolean {
-        return other != null &&
-                other is ExtraDeviceFilesManager &&
-                devicePathToInfo == other.devicePathToInfo
-    }
-
-    /** Hashing is done via the internal mapping as well */
-    override fun hashCode(): Int = devicePathToInfo.hashCode()
-
-    fun add(devicePath: String, storageObject: StorageObject) {
-        devicePathToInfo[devicePath] = FileInfo(
-            storageObject.toUrl(),
-            storageObject.md5Hash
-        )
-    }
-
-    fun devicePathsToUrls(): Map<String, String> = devicePathToInfo.entries.associate {
-        it.key to it.value.gsUrl
-    }
-
-    fun toFile(file: File) {
-        if (devicePathToInfo.isEmpty()) {
-            file.writeText("")
-            return
-        }
-
-        val outputContents = StringBuilder()
-        devicePathToInfo.toSortedMap().forEach { entry ->
-            outputContents.appendLine(
-                "${entry.key}\t${entry.value}"
-            )
-        }
-        file.writeText(
-            outputContents.substring(0, outputContents.length - 1)
-        )
-    }
+    file.writeText(outputContents.substring(0, outputContents.length - 1))
+  }
 }

@@ -18,10 +18,8 @@ package com.android.tools.firebase.testlab.gradle.services.testrunner
 
 import java.io.File
 
-/**
- * Interface used for updating test results xml pulled from a FTL Matrix run.
- */
+/** Interface used for updating test results xml pulled from a FTL Matrix run. */
 interface TestResultsXmlHandler {
 
-    fun updateXml(xml: File, variantName: String, projectPath: String)
+  fun updateXml(xml: File, variantName: String, projectPath: String)
 }

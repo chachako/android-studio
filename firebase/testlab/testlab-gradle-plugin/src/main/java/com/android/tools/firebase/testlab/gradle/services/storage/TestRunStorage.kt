@@ -28,19 +28,20 @@ import java.io.File
  * @param historyId the id associated with the test history this run should belong to.
  * @param storageManager the storage manager that the uploads and downloads are delegated to.
  */
-class TestRunStorage (
-    private val testRunId: String,
-    private val bucketName: String,
-    val historyId: String,
-    private val storageManager: StorageManager) {
+class TestRunStorage(
+  private val testRunId: String,
+  private val bucketName: String,
+  val historyId: String,
+  private val storageManager: StorageManager,
+) {
 
-    val resultStoragePath: String = "gs://$bucketName/$testRunId/results"
+  val resultStoragePath: String = "gs://$bucketName/$testRunId/results"
 
-    fun uploadToStorage(file: File): StorageObject =
-        storageManager.uploadFile(file, bucketName, prefix = "${testRunId}_")
+  fun uploadToStorage(file: File): StorageObject =
+    storageManager.uploadFile(file, bucketName, prefix = "${testRunId}_")
 
-    fun downloadFromStorage(fileUri: String, destination: (objectName: String) -> File): File? =
-        storageManager.downloadFile(fileUri) { objectName ->
-            destination(objectName.removePrefix("$testRunId/"))
-        }
+  fun downloadFromStorage(fileUri: String, destination: (objectName: String) -> File): File? =
+    storageManager.downloadFile(fileUri) { objectName ->
+      destination(objectName.removePrefix("$testRunId/"))
+    }
 }

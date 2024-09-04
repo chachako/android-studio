@@ -19,34 +19,28 @@ package com.google.firebase.testlab.gradle
 import org.gradle.api.Incubating
 import org.gradle.api.provider.MapProperty
 
-/**
- * A DSL for configuring test fixture.
- */
+/** A DSL for configuring test fixture. */
 @Incubating
 interface Fixture {
-    /**
-     * Whether to grant permissions on the device before tests begin.
-     *
-     * Value must be "all" or "none". By default, all permissions are granted.
-     */
-    @get:Incubating
-    @set:Incubating
-    var grantedPermissions: String
+  /**
+   * Whether to grant permissions on the device before tests begin.
+   *
+   * Value must be "all" or "none". By default, all permissions are granted.
+   */
+  @get:Incubating @set:Incubating var grantedPermissions: String
 
-    /**
-     * Map of files to push to the device before starting the test.
-     *
-     * The key is location on the device.
-     * The value is the location of the file, either local or in Google Cloud.
-     */
-    @get:Incubating
-    val extraDeviceFiles: MapProperty<String, String>
+  /**
+   * Map of files to push to the device before starting the test.
+   *
+   * The key is location on the device. The value is the location of the file, either local or in
+   * Google Cloud.
+   */
+  @get:Incubating val extraDeviceFiles: MapProperty<String, String>
 
-    /**
-     * The name of the network traffic profile
-     *
-     * Specifies network conditions to emulate when running tests.
-     */
-    @get:Incubating
-    var networkProfile: String
+  /**
+   * The name of the network traffic profile
+   *
+   * Specifies network conditions to emulate when running tests.
+   */
+  @get:Incubating var networkProfile: String
 }

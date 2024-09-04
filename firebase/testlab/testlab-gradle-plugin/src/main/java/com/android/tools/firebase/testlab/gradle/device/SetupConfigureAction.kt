@@ -19,28 +19,28 @@ package com.android.tools.firebase.testlab.gradle.device
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
+import javax.inject.Inject
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
-import javax.inject.Inject
 
-open class SetupConfigureAction @Inject constructor(
-    private val objectFactory: ObjectFactory,
-    private val project: Project,
-) : DeviceSetupConfigureAction<ManagedDevice, DeviceSetupInput> {
+open class SetupConfigureAction
+@Inject
+constructor(private val objectFactory: ObjectFactory, private val project: Project) :
+  DeviceSetupConfigureAction<ManagedDevice, DeviceSetupInput> {
 
-    override fun configureTaskInput(deviceDsl: ManagedDevice): DeviceSetupInput {
-        return objectFactory.newInstance(DeviceSetupInput::class.java).apply {
-            deviceName.set(deviceDsl.name)
-            deviceName.disallowChanges()
+  override fun configureTaskInput(deviceDsl: ManagedDevice): DeviceSetupInput {
+    return objectFactory.newInstance(DeviceSetupInput::class.java).apply {
+      deviceName.set(deviceDsl.name)
+      deviceName.disallowChanges()
 
-            device.set(deviceDsl.device)
-            device.disallowChanges()
+      device.set(deviceDsl.device)
+      device.disallowChanges()
 
-            apiLevel.set(deviceDsl.apiLevel)
-            apiLevel.disallowChanges()
+      apiLevel.set(deviceDsl.apiLevel)
+      apiLevel.disallowChanges()
 
-            buildService.set(TestLabBuildService.RegistrationAction.getBuildService(project))
-            buildService.disallowChanges()
-        }
+      buildService.set(TestLabBuildService.RegistrationAction.getBuildService(project))
+      buildService.disallowChanges()
     }
+  }
 }

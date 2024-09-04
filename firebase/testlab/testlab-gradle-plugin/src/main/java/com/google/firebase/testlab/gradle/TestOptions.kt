@@ -18,35 +18,21 @@ package com.google.firebase.testlab.gradle
 
 import org.gradle.api.Incubating
 
-/**
- * A DSL for configuring test options.
- */
+/** A DSL for configuring test options. */
 @Incubating
 interface TestOptions {
-    /**
-     * A configuration block for test setup options.
-     */
-    @get:Incubating
-    val fixture: Fixture
+  /** A configuration block for test setup options. */
+  @get:Incubating val fixture: Fixture
 
-    @Incubating
-    fun fixture(action: Fixture.() -> Unit)
+  @Incubating fun fixture(action: Fixture.() -> Unit)
 
-    /**
-     * A configuration block for test execution options.
-     */
-    @get:Incubating
-    val execution: Execution
+  /** A configuration block for test execution options. */
+  @get:Incubating val execution: Execution
 
-    @Incubating
-    fun execution(action: Execution.() -> Unit)
+  @Incubating fun execution(action: Execution.() -> Unit)
 
-    /**
-     * A configuration block for test results options.
-     */
-    @get:Incubating
-    val results: Results
+  /** A configuration block for test results options. */
+  @get:Incubating val results: Results
 
-    @Incubating
-    fun results(action: Results.() -> Unit)
+  @Incubating fun results(action: Results.() -> Unit)
 }

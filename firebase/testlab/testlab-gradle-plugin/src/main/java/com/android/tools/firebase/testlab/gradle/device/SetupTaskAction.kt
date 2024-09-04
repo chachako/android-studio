@@ -22,36 +22,37 @@ import org.gradle.api.file.Directory
 
 open class SetupTaskAction : DeviceSetupTaskAction<DeviceSetupInput> {
 
-    override fun setup(setupInput: DeviceSetupInput, outputDir: Directory) {
-        val deviceId = setupInput.device.get()
-        val apiLevel = setupInput.apiLevel.get()
+  override fun setup(setupInput: DeviceSetupInput, outputDir: Directory) {
+    val deviceId = setupInput.device.get()
+    val apiLevel = setupInput.apiLevel.get()
 
-       val androidDeviceCatalogModels = setupInput.buildService.get().catalog().models
-        val ftlDeviceModel = androidDeviceCatalogModels.firstOrNull {
-            it.id == deviceId
-        }
-        requireNotNull(ftlDeviceModel) {
-            val availableDeviceNames = androidDeviceCatalogModels
-                .filter {
-                    it.supportedVersionIds?.contains(apiLevel.toString()) == true
-                }
-                .joinToString(", ") {
-                    "${it.id} (${it.name})"
-                }
-            """
+    val androidDeviceCatalogModels = setupInput.buildService.get().catalog().models
+    val ftlDeviceModel = androidDeviceCatalogModels.firstOrNull { it.id == deviceId }
+    requireNotNull(ftlDeviceModel) {
+      val availableDeviceNames =
+        androidDeviceCatalogModels
+          .filter { it.supportedVersionIds?.contains(apiLevel.toString()) == true }
+          .joinToString(", ") { "${it.id} (${it.name})" }
+      """
                 Device: $deviceId is not a valid input. Available devices for API level $apiLevel are:
                 [$availableDeviceNames]
-            """.trimIndent()
-        }
+            """
+        .trimIndent()
+    }
 
-        if (!ftlDeviceModel.supportedVersionIds.contains(apiLevel.toString())) {
-            error("""
+    if (!ftlDeviceModel.supportedVersionIds.contains(apiLevel.toString())) {
+      error(
+        """
                 apiLevel: $apiLevel is not supported by device: $deviceId. Available Api levels are:
                 ${ftlDeviceModel.supportedVersionIds}
-            """.trimIndent())
-        }
-
-        outputDir.file("${setupInput.deviceName.get()}.json").asFile
-                .writeText(Gson().toJson(ftlDeviceModel))
+            """
+          .trimIndent()
+      )
     }
+
+    outputDir
+      .file("${setupInput.deviceName.get()}.json")
+      .asFile
+      .writeText(Gson().toJson(ftlDeviceModel))
+  }
 }

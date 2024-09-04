@@ -20,15 +20,13 @@ import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.google.api.services.testing.model.AndroidModel
 import java.util.Locale
 
-/**
- * Contains all data for a given device associated with a test run.
- */
-data class TestDeviceData (
-    val name: String,
-    val deviceId: String,
-    val apiLevel: Int,
-    val locale: Locale,
-    val orientation: ManagedDeviceImpl.Orientation,
-    val ftlModel: AndroidModel,
-    val extraDeviceFileUrls: Map<String, String>
+/** Contains all data for a given device associated with a test run. */
+data class TestDeviceData(
+  val name: String,
+  val deviceId: String,
+  val apiLevel: Int,
+  val locale: Locale,
+  val orientation: ManagedDeviceImpl.Orientation,
+  val ftlModel: AndroidModel,
+  val extraDeviceFileUrls: Map<String, String>,
 )

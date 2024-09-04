@@ -20,9 +20,9 @@ import com.google.firebase.testlab.gradle.Results
 
 abstract class ResultsImpl : Results {
 
-    init {
-        recordVideo = false
+  init {
+    recordVideo = false
 
-        performanceMetrics = false
-    }
+    performanceMetrics = false
+  }
 }

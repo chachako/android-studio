@@ -24,29 +24,29 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.getLastModifiedTime
 
 class FileHashCache(
-    private val hashingFunction: (File) -> String = { file ->
-        asByteSource(file).hash(Hashing.sha256()).toString()
-    }
+  private val hashingFunction: (File) -> String = { file ->
+    asByteSource(file).hash(Hashing.sha256()).toString()
+  }
 ) {
-    private val fileLocks: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
+  private val fileLocks: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
-    private val hashingCache: MutableMap<String, MutableMap<FileTime, String>> = mutableMapOf()
+  private val hashingCache: MutableMap<String, MutableMap<FileTime, String>> = mutableMapOf()
 
-    fun retrieveOrGenerateHash(file: File): String {
-        val filePath = file.absolutePath
-        val lastModified = file.toPath().getLastModifiedTime()
+  fun retrieveOrGenerateHash(file: File): String {
+    val filePath = file.absolutePath
+    val lastModified = file.toPath().getLastModifiedTime()
 
-        return retrieveHash(filePath, lastModified) ?:
-            synchronized(fileLocks.computeIfAbsent(filePath) { Any() }) {
-                computeHash(file, filePath, lastModified)
-            }
-    }
+    return retrieveHash(filePath, lastModified)
+      ?: synchronized(fileLocks.computeIfAbsent(filePath) { Any() }) {
+        computeHash(file, filePath, lastModified)
+      }
+  }
 
-    private fun retrieveHash(filePath: String, lastModified: FileTime): String? =
-        hashingCache[filePath]?.get(lastModified)
+  private fun retrieveHash(filePath: String, lastModified: FileTime): String? =
+    hashingCache[filePath]?.get(lastModified)
 
-    private fun computeHash(file: File, filePath: String, lastModified: FileTime): String =
-        hashingCache.getOrPut(filePath) { mutableMapOf() }.getOrPut(lastModified) {
-            hashingFunction(file)
-        }
+  private fun computeHash(file: File, filePath: String, lastModified: FileTime): String =
+    hashingCache
+      .getOrPut(filePath) { mutableMapOf() }
+      .getOrPut(lastModified) { hashingFunction(file) }
 }

@@ -22,6 +22,7 @@ import com.android.build.api.dsl.TestOptions
 import com.android.tools.firebase.testlab.gradle.TestLabGradlePluginExtensionImpl
 import com.google.common.truth.Truth.assertThat
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
+import java.io.File
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -33,152 +34,132 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import java.io.File
 
-/**
- * Tests for [TestLabBuildService.RegistrationAction]
- */
+/** Tests for [TestLabBuildService.RegistrationAction] */
 class RegistrationActionTest {
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    @Mock(answer = Answers.RETURNS_MOCKS)
-    lateinit var androidManagedDevices: ManagedDevices
+  @Mock(answer = Answers.RETURNS_MOCKS) lateinit var androidManagedDevices: ManagedDevices
 
-    @Mock
-    lateinit var androidExtension: CommonExtension<*, *, *, *, *, *>
+  @Mock lateinit var androidExtension: CommonExtension<*, *, *, *, *, *>
 
-    @Mock
-    lateinit var mockAndroidTestOptions: TestOptions
+  @Mock lateinit var mockAndroidTestOptions: TestOptions
 
-    lateinit var projectPath: File
+  lateinit var projectPath: File
 
-    lateinit var fakeCredentialFile: File
+  lateinit var fakeCredentialFile: File
 
-    lateinit var fakeStubFile: File
+  lateinit var fakeStubFile: File
 
-    lateinit var project: Project
+  lateinit var project: Project
 
-    lateinit var extension: TestLabGradlePluginExtension
+  lateinit var extension: TestLabGradlePluginExtension
 
-    lateinit var buildServiceParameters: TestLabBuildService.Parameters
+  lateinit var buildServiceParameters: TestLabBuildService.Parameters
 
-    lateinit var testExecution: String
+  lateinit var testExecution: String
 
-    @Before
-    fun setup() {
-        projectPath = temporaryFolderRule.newFolder("testProject")
-        project = ProjectBuilder.builder()
-            .withName("testProject")
-            .withProjectDir(projectPath)
-            .build()
+  @Before
+  fun setup() {
+    projectPath = temporaryFolderRule.newFolder("testProject")
+    project = ProjectBuilder.builder().withName("testProject").withProjectDir(projectPath).build()
 
-        extension = project.extensions.create(
-            TestLabGradlePluginExtension::class.java,
-            "firebaseTestLab",
-            TestLabGradlePluginExtensionImpl::class.java,
-            project.objects,
-            androidManagedDevices
-        ) as TestLabGradlePluginExtension
+    extension =
+      project.extensions.create(
+        TestLabGradlePluginExtension::class.java,
+        "firebaseTestLab",
+        TestLabGradlePluginExtensionImpl::class.java,
+        project.objects,
+        androidManagedDevices,
+      ) as TestLabGradlePluginExtension
 
-        buildServiceParameters = project.objects.newInstance(
-            TestLabBuildService.Parameters::class.java
-        )
+    buildServiceParameters = project.objects.newInstance(TestLabBuildService.Parameters::class.java)
 
-        testExecution = "androidx_test_orchestrator"
+    testExecution = "androidx_test_orchestrator"
 
-        mockAndroidTestOptions.apply {
-            `when`(execution).thenAnswer { testExecution }
-        }
+    mockAndroidTestOptions.apply { `when`(execution).thenAnswer { testExecution } }
 
-        androidExtension.apply {
-            `when`(testOptions).thenReturn(mockAndroidTestOptions)
-            project.extensions.add(
-                CommonExtension::class.java,
-                "Android",
-                this
-            )
-        }
+    androidExtension.apply {
+      `when`(testOptions).thenReturn(mockAndroidTestOptions)
+      project.extensions.add(CommonExtension::class.java, "Android", this)
+    }
 
-        fakeCredentialFile = temporaryFolderRule.newFile().apply {
-            writeText(
-                """
+    fakeCredentialFile =
+      temporaryFolderRule.newFile().apply {
+        writeText(
+          """
                 {
                     "client_id": "test_client_id",
                     "quota_project_id": "test_quota_project_id"
                 }
-                """.trimIndent()
-            )
+                """
+            .trimIndent()
+        )
+      }
+  }
+
+  @Test
+  fun configureBuildService() {
+
+    extension.apply {
+      serviceAccountCredentials.set(fakeCredentialFile)
+
+      testOptions.apply {
+        fixture.apply {
+          grantedPermissions = "all"
+
+          extraDeviceFiles.apply {
+            put("path/on/device", "local/path")
+            put("other/path/on/device", "gs://storage/link")
+          }
+
+          networkProfile = "lte"
         }
+
+        execution.apply {
+          timeoutMinutes = 20
+
+          maxTestReruns = 1
+
+          failFast = false
+
+          numUniformShards = 5
+        }
+
+        results.apply {
+          cloudStorageBucket = "my_bucket"
+
+          resultsHistoryName = "history_for_project"
+
+          directoriesToPull.add("some/path/on/device")
+
+          recordVideo = true
+
+          performanceMetrics = true
+        }
+      }
     }
 
-    @Test
-    fun configureBuildService() {
+    TestLabBuildService.RegistrationAction(project).configure(buildServiceParameters)
 
-        extension.apply {
-            serviceAccountCredentials.set(fakeCredentialFile)
-
-            testOptions.apply {
-
-                fixture.apply {
-                    grantedPermissions = "all"
-
-                    extraDeviceFiles.apply {
-                        put("path/on/device", "local/path")
-                        put("other/path/on/device", "gs://storage/link")
-                    }
-
-                    networkProfile = "lte"
-                }
-
-                execution.apply {
-                    timeoutMinutes = 20
-
-                    maxTestReruns = 1
-
-                    failFast = false
-
-                    numUniformShards = 5
-                }
-
-                results.apply {
-                    cloudStorageBucket = "my_bucket"
-
-                    resultsHistoryName = "history_for_project"
-
-                    directoriesToPull.add("some/path/on/device")
-
-                    recordVideo = true
-
-                    performanceMetrics = true
-                }
-            }
-        }
-
-        TestLabBuildService.RegistrationAction(project).configure(buildServiceParameters)
-
-        buildServiceParameters.apply {
-            assertThat(credentialFile.get().asFile)
-                .isEqualTo(fakeCredentialFile)
-            assertThat(cloudStorageBucket.get()).isEqualTo("my_bucket")
-            assertThat(timeoutMinutes.get()).isEqualTo(20)
-            assertThat(maxTestReruns.get()).isEqualTo(1)
-            assertThat(failFast.get()).isFalse()
-            assertThat(numUniformShards.get()).isEqualTo(5)
-            assertThat(targetedShardDurationMinutes.get()).isEqualTo(0)
-            assertThat(grantedPermissions.get()).isEqualTo("ALL")
-            assertThat(networkProfile.get()).isEqualTo("lte")
-            assertThat(directoriesToPull.get()).containsExactly(
-                "some/path/on/device"
-            )
-            assertThat(recordVideo.get()).isTrue()
-            assertThat(performanceMetrics.get()).isTrue()
-            // Presently cannot properly mock out Configurations, so can't acertain stubApk.
-            assertThat(useOrchestrator.get()).isTrue()
-        }
+    buildServiceParameters.apply {
+      assertThat(credentialFile.get().asFile).isEqualTo(fakeCredentialFile)
+      assertThat(cloudStorageBucket.get()).isEqualTo("my_bucket")
+      assertThat(timeoutMinutes.get()).isEqualTo(20)
+      assertThat(maxTestReruns.get()).isEqualTo(1)
+      assertThat(failFast.get()).isFalse()
+      assertThat(numUniformShards.get()).isEqualTo(5)
+      assertThat(targetedShardDurationMinutes.get()).isEqualTo(0)
+      assertThat(grantedPermissions.get()).isEqualTo("ALL")
+      assertThat(networkProfile.get()).isEqualTo("lte")
+      assertThat(directoriesToPull.get()).containsExactly("some/path/on/device")
+      assertThat(recordVideo.get()).isTrue()
+      assertThat(performanceMetrics.get()).isTrue()
+      // Presently cannot properly mock out Configurations, so can't acertain stubApk.
+      assertThat(useOrchestrator.get()).isTrue()
     }
+  }
 }

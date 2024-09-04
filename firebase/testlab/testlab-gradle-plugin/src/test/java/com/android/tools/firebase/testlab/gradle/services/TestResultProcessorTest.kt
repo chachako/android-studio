@@ -25,6 +25,9 @@ import com.google.api.services.toolresults.model.Step
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.core.TestResultProto
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.nio.charset.StandardCharsets
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -33,149 +36,146 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.nio.charset.StandardCharsets
 
 class TestResultProcessorTest {
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    val parser: JsonObjectParser = JsonObjectParser(Utils.getDefaultJsonFactory())
+  val parser: JsonObjectParser = JsonObjectParser(Utils.getDefaultJsonFactory())
 
-    @Mock
-    lateinit var mockStorage: TestRunStorage
+  @Mock lateinit var mockStorage: TestRunStorage
 
-    lateinit var processor: TestResultProcessor
+  lateinit var processor: TestResultProcessor
 
-    lateinit var resultsOutDir: File
+  lateinit var resultsOutDir: File
 
-    lateinit var deviceInfoFile: File
+  lateinit var deviceInfoFile: File
 
-    @Before
-    fun setup() {
-        processor = TestResultProcessor(listOf())
+  @Before
+  fun setup() {
+    processor = TestResultProcessor(listOf())
 
-        `when`(mockStorage.downloadFromStorage(any(), any())).thenAnswer {
-            temporaryFolderRule.newFile()
-        }
-
-        resultsOutDir = temporaryFolderRule.newFolder("results")
-
-        deviceInfoFile = temporaryFolderRule.newFile("device_info.pb")
+    `when`(mockStorage.downloadFromStorage(any(), any())).thenAnswer {
+      temporaryFolderRule.newFile()
     }
 
-    @Test
-    fun toUtpResult_testSingleCase() {
-        val result = processor.toUtpResult(
-            resultsOutDir,
-            parseStep(buildStep()),
-            null,
-            mockStorage,
-            deviceInfoFile,
-            parseTestCases(testCases())
-        )
+    resultsOutDir = temporaryFolderRule.newFolder("results")
 
-        // General Validation
-        assertThat(result.passed()).isTrue()
+    deviceInfoFile = temporaryFolderRule.newFile("device_info.pb")
+  }
 
-        // Validate the test cases
-        assertThat(result.testResultList).hasSize(1)
-        verifyTestResultsArtifacts(result.testResultList)
-        // TODO(b/278583488): add verification for build artifacts.
-    }
+  @Test
+  fun toUtpResult_testSingleCase() {
+    val result =
+      processor.toUtpResult(
+        resultsOutDir,
+        parseStep(buildStep()),
+        null,
+        mockStorage,
+        deviceInfoFile,
+        parseTestCases(testCases()),
+      )
 
-    @Test
-    fun toUtpResult_testMultipleDevices() {
-        val result = processor.toUtpResult(
-                resultsOutDir,
-                parseStep(buildStep()),
-                null,
-                mockStorage,
-                deviceInfoFile,
-                parseTestCases(multipleDeviceTestCases())
-        )
+    // General Validation
+    assertThat(result.passed()).isTrue()
 
-        // General Validation
-        assertThat(result.passed()).isTrue()
+    // Validate the test cases
+    assertThat(result.testResultList).hasSize(1)
+    verifyTestResultsArtifacts(result.testResultList)
+    // TODO(b/278583488): add verification for build artifacts.
+  }
 
-        // Validate the test cases
-        assertThat(result.testResultList).hasSize(2)
-        verifyTestResultsArtifacts(result.testResultList)
-    }
+  @Test
+  fun toUtpResult_testMultipleDevices() {
+    val result =
+      processor.toUtpResult(
+        resultsOutDir,
+        parseStep(buildStep()),
+        null,
+        mockStorage,
+        deviceInfoFile,
+        parseTestCases(multipleDeviceTestCases()),
+      )
 
-    @Test
-    fun toUtpResult_testSingleCaseFailure() {
-        val result = processor.toUtpResult(
-            resultsOutDir,
-            parseStep(buildStep(summaryStatus = "failure")),
-            null,
-            mockStorage,
-            deviceInfoFile,
-            parseTestCases(testCases(testStatus = "failed"))
-        )
+    // General Validation
+    assertThat(result.passed()).isTrue()
 
-        // General Validation
-        assertThat(result.passed()).isFalse()
+    // Validate the test cases
+    assertThat(result.testResultList).hasSize(2)
+    verifyTestResultsArtifacts(result.testResultList)
+  }
 
-        // Validate the test cases
-        assertThat(result.testResultList).hasSize(1)
-        assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.FAILED)
-        verifyTestResultsArtifacts(result.testResultList)
-        // TODO(b/278583488): add verification for build artifacts.
-    }
+  @Test
+  fun toUtpResult_testSingleCaseFailure() {
+    val result =
+      processor.toUtpResult(
+        resultsOutDir,
+        parseStep(buildStep(summaryStatus = "failure")),
+        null,
+        mockStorage,
+        deviceInfoFile,
+        parseTestCases(testCases(testStatus = "failed")),
+      )
 
-    @Test
-    fun toUtpResult_testSingleCaseUnspecifiedIsFailure() {
-        val result = processor.toUtpResult(
-            resultsOutDir,
-            parseStep(buildStep(summaryStatus = "success")),
-            null,
-            mockStorage,
-            deviceInfoFile,
-            parseTestCases(testCases(testStatus = "unknown"))
-        )
+    // General Validation
+    assertThat(result.passed()).isFalse()
 
-        // General Validation
-        assertThat(result.passed()).isFalse()
+    // Validate the test cases
+    assertThat(result.testResultList).hasSize(1)
+    assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.FAILED)
+    verifyTestResultsArtifacts(result.testResultList)
+    // TODO(b/278583488): add verification for build artifacts.
+  }
 
-        // Validate the test cases
-        assertThat(result.testResultList).hasSize(1)
-        assertThat(result.testResultList[0].testStatus)
-            .isEqualTo(TestStatus.TEST_STATUS_UNSPECIFIED)
-        verifyTestResultsArtifacts(result.testResultList)
-        // TODO(b/278583488): add verification for build artifacts.
-    }
+  @Test
+  fun toUtpResult_testSingleCaseUnspecifiedIsFailure() {
+    val result =
+      processor.toUtpResult(
+        resultsOutDir,
+        parseStep(buildStep(summaryStatus = "success")),
+        null,
+        mockStorage,
+        deviceInfoFile,
+        parseTestCases(testCases(testStatus = "unknown")),
+      )
 
-    @Test
-    fun toUtpResult_testSingleCasePlatformErrorCausesFailure() {
-        val result = processor.toUtpResult(
-            resultsOutDir,
-            parseStep(buildStep(summaryStatus = "success")),
-            null,
-            mockStorage,
-            deviceInfoFile,
-            parseTestCases(testCases(testStatus = "passed")),
-            "NO_SIGNATURE" // Matrix error message will cause the test result to fail.
-        )
+    // General Validation
+    assertThat(result.passed()).isFalse()
 
-        // General Validation
-        assertThat(result.passed()).isFalse()
+    // Validate the test cases
+    assertThat(result.testResultList).hasSize(1)
+    assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.TEST_STATUS_UNSPECIFIED)
+    verifyTestResultsArtifacts(result.testResultList)
+    // TODO(b/278583488): add verification for build artifacts.
+  }
 
-        // Validate the test cases
-        assertThat(result.testResultList).hasSize(1)
-        assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.PASSED)
-        verifyTestResultsArtifacts(result.testResultList)
-        // TODO(b/278583488): add verification for build artifacts.
-    }
+  @Test
+  fun toUtpResult_testSingleCasePlatformErrorCausesFailure() {
+    val result =
+      processor.toUtpResult(
+        resultsOutDir,
+        parseStep(buildStep(summaryStatus = "success")),
+        null,
+        mockStorage,
+        deviceInfoFile,
+        parseTestCases(testCases(testStatus = "passed")),
+        "NO_SIGNATURE", // Matrix error message will cause the test result to fail.
+      )
 
-    private fun buildStep(
-        summaryStatus: String = "success"
-    ): String = """
+    // General Validation
+    assertThat(result.passed()).isFalse()
+
+    // Validate the test cases
+    assertThat(result.testResultList).hasSize(1)
+    assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.PASSED)
+    verifyTestResultsArtifacts(result.testResultList)
+    // TODO(b/278583488): add verification for build artifacts.
+  }
+
+  private fun buildStep(summaryStatus: String = "success"): String =
+    """
         {
             "completionTime":{
                 "nanos":577000000,
@@ -251,11 +251,11 @@ class TestResultProcessorTest {
                 }
             }
         }
-    """.trimIndent()
+    """
+      .trimIndent()
 
-    private fun testCases(
-        testStatus: String? = null
-    ) = """
+  private fun testCases(testStatus: String? = null) =
+    """
         {
             "testCases": [
                 {
@@ -286,11 +286,11 @@ class TestResultProcessorTest {
                 }
             ]
         }
-    """.trimIndent()
+    """
+      .trimIndent()
 
-    private fun multipleDeviceTestCases(
-        testStatus: String? = null
-    ) = """
+  private fun multipleDeviceTestCases(testStatus: String? = null) =
+    """
         {
             "testCases": [
                 {
@@ -347,32 +347,29 @@ class TestResultProcessorTest {
                 }
             ]
         }
-    """.trimIndent()
+    """
+      .trimIndent()
 
-    private fun parseStep(json: String): Step =
-        ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8)).use { stream ->
-            parser.parseAndClose<Step>(
-                stream, StandardCharsets.UTF_8, Step::class.java
-            )
-        }
-
-    private fun parseTestCases(json: String): TestCases =
-        ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8)).use { stream ->
-            parser.parseAndClose<TestCases>(
-                stream, StandardCharsets.UTF_8, TestCases::class.java
-            )
-        }
-
-    private fun verifyTestResultsArtifacts(testResultList: List<TestResultProto.TestResult>) {
-        // Validate outputArtifact for logcat message and device info per test case
-        testResultList.forEach { testResult ->
-            val case = testResult.testCase
-            assertThat(case.testPackage).isEqualTo("com.example.ftltest")
-            assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
-
-            val artifactList = testResult.outputArtifactList
-            assert(artifactList.any{ it.label.label == "device-info" && it.destinationPath != null })
-            assert(artifactList.any{ it.label.label == "logcat" && it.destinationPath != null })
-        }
+  private fun parseStep(json: String): Step =
+    ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8)).use { stream ->
+      parser.parseAndClose<Step>(stream, StandardCharsets.UTF_8, Step::class.java)
     }
+
+  private fun parseTestCases(json: String): TestCases =
+    ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8)).use { stream ->
+      parser.parseAndClose<TestCases>(stream, StandardCharsets.UTF_8, TestCases::class.java)
+    }
+
+  private fun verifyTestResultsArtifacts(testResultList: List<TestResultProto.TestResult>) {
+    // Validate outputArtifact for logcat message and device info per test case
+    testResultList.forEach { testResult ->
+      val case = testResult.testCase
+      assertThat(case.testPackage).isEqualTo("com.example.ftltest")
+      assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
+
+      val artifactList = testResult.outputArtifactList
+      assert(artifactList.any { it.label.label == "device-info" && it.destinationPath != null })
+      assert(artifactList.any { it.label.label == "logcat" && it.destinationPath != null })
+    }
+  }
 }

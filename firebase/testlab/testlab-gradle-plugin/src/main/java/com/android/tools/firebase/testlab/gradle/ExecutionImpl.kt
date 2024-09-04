@@ -19,15 +19,15 @@ package com.android.tools.firebase.testlab.gradle
 import com.google.firebase.testlab.gradle.Execution
 
 abstract class ExecutionImpl : Execution {
-    init {
-        timeoutMinutes = 15
+  init {
+    timeoutMinutes = 15
 
-        maxTestReruns = 0
+    maxTestReruns = 0
 
-        failFast = false
+    failFast = false
 
-        numUniformShards = 0
+    numUniformShards = 0
 
-        targetedShardDurationMinutes = 0
-    }
+    targetedShardDurationMinutes = 0
+  }
 }

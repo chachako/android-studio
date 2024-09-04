@@ -21,37 +21,32 @@ import com.google.api.services.testing.Testing.Projects.TestMatrices
 import com.google.api.services.testing.model.AndroidDeviceCatalog
 import com.google.api.services.testing.model.TestMatrix
 
-/**
- * Class to handle all [Testing] related requests made by the [TestLabBuildService]
- */
-class TestingManager(
-    private val testingClient: Testing
-) {
+/** Class to handle all [Testing] related requests made by the [TestLabBuildService] */
+class TestingManager(private val testingClient: Testing) {
 
-    private val testMatricesClient: TestMatrices = testingClient.projects().testMatrices()
+  private val testMatricesClient: TestMatrices = testingClient.projects().testMatrices()
 
-    fun createTestMatrixRun(
-        projectName: String,
-        testMatrix: TestMatrix,
-        runRequestId: String
-    ): TestMatrix =
-        testMatricesClient.create(projectName, testMatrix).apply {
-            this.requestId = runRequestId
-        }.execute()
+  fun createTestMatrixRun(
+    projectName: String,
+    testMatrix: TestMatrix,
+    runRequestId: String,
+  ): TestMatrix =
+    testMatricesClient
+      .create(projectName, testMatrix)
+      .apply { this.requestId = runRequestId }
+      .execute()
 
-    fun getTestMatrix(
-        projectName: String,
-        testMatrix: TestMatrix
-    ) = getTestMatrix(projectName, testMatrix.testMatrixId)
+  fun getTestMatrix(projectName: String, testMatrix: TestMatrix) =
+    getTestMatrix(projectName, testMatrix.testMatrixId)
 
-    fun getTestMatrix(
-        projectName: String,
-        testMatrixId: String
-    ): TestMatrix =
-        testMatricesClient.get(projectName, testMatrixId).execute()
+  fun getTestMatrix(projectName: String, testMatrixId: String): TestMatrix =
+    testMatricesClient.get(projectName, testMatrixId).execute()
 
-    fun catalog(projectName: String): AndroidDeviceCatalog =
-        testingClient.testEnvironmentCatalog().get("ANDROID").apply {
-            projectId = projectName
-        }.execute().androidDeviceCatalog
+  fun catalog(projectName: String): AndroidDeviceCatalog =
+    testingClient
+      .testEnvironmentCatalog()
+      .get("ANDROID")
+      .apply { projectId = projectName }
+      .execute()
+      .androidDeviceCatalog
 }

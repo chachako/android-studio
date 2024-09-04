@@ -20,13 +20,11 @@ import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.argThat
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
-import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequest
 import com.google.api.client.http.HttpRequestFactory
 import com.google.api.client.http.HttpResponse
 import com.google.api.client.json.JsonObjectParser
-import com.google.api.client.util.DateTime
 import com.google.api.services.testing.model.ToolResultsStep
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.ToolResults.Projects.Histories.Executions.Steps.Thumbnails
@@ -36,6 +34,8 @@ import com.google.api.services.toolresults.model.ListStepThumbnailsResponse
 import com.google.api.services.toolresults.model.ProjectSettings
 import com.google.api.services.toolresults.model.Step
 import com.google.common.truth.Truth.assertThat
+import java.io.FileInputStream
+import java.nio.charset.StandardCharsets
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -48,273 +48,235 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import java.io.File
-import java.io.FileInputStream
-import java.nio.charset.StandardCharsets
-import java.util.Date
 
-/**
- * Unit tests for [ToolResultsManager]
- */
+/** Unit tests for [ToolResultsManager] */
 class ToolResultsManagerTest {
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @Mock
-    lateinit var toolResultsClient: ToolResults
+  @Mock lateinit var toolResultsClient: ToolResults
 
-    @Mock
-    lateinit var mockProjects: ToolResults.Projects
+  @Mock lateinit var mockProjects: ToolResults.Projects
 
-    @Mock
-    lateinit var mockSettings: ToolResults.Projects.InitializeSettings
+  @Mock lateinit var mockSettings: ToolResults.Projects.InitializeSettings
 
-    @Mock
-    lateinit var mockHistories: ToolResults.Projects.Histories
+  @Mock lateinit var mockHistories: ToolResults.Projects.Histories
 
-    @Mock
-    lateinit var mockHistoryList: ToolResults.Projects.Histories.List
+  @Mock lateinit var mockHistoryList: ToolResults.Projects.Histories.List
 
-    @Mock
-    lateinit var mockHistoryCreate: ToolResults.Projects.Histories.Create
+  @Mock lateinit var mockHistoryCreate: ToolResults.Projects.Histories.Create
 
-    @Mock
-    lateinit var mockSteps: ToolResults.Projects.Histories.Executions.Steps
+  @Mock lateinit var mockSteps: ToolResults.Projects.Histories.Executions.Steps
 
-    @Mock
-    lateinit var mockStepsGet: ToolResults.Projects.Histories.Executions.Steps.Get
+  @Mock lateinit var mockStepsGet: ToolResults.Projects.Histories.Executions.Steps.Get
 
-    @Mock
-    lateinit var mockThumbnails: Thumbnails
+  @Mock lateinit var mockThumbnails: Thumbnails
 
-    @Mock
-    lateinit var mockThumbnailsList: Thumbnails.List
+  @Mock lateinit var mockThumbnailsList: Thumbnails.List
 
-    @Mock
-    lateinit var requestFactory: HttpRequestFactory
+  @Mock lateinit var requestFactory: HttpRequestFactory
 
-    @Mock
-    lateinit var objectParser: JsonObjectParser
+  @Mock lateinit var objectParser: JsonObjectParser
 
-    lateinit var manager: ToolResultsManager
+  lateinit var manager: ToolResultsManager
 
-    private fun requestInfo() = ToolResultsManager.RequestInfo(
-        "project_id",
-        "history_id",
-        "execution_id",
-        "step_id"
-    )
+  private fun requestInfo() =
+    ToolResultsManager.RequestInfo("project_id", "history_id", "execution_id", "step_id")
 
-    @Before
-    fun setup() {
-        `when`(mockThumbnails.list(any(), any(), any(), any())).thenReturn(mockThumbnailsList)
-        mockSteps.apply {
-            `when`(thumbnails()).thenReturn(mockThumbnails)
-            `when`(get(any(), any(), any(), any())).thenReturn(mockStepsGet)
-        }
-        val mockExecutions = mock<ToolResults.Projects.Histories.Executions>().apply {
-            `when`(steps()).thenReturn(mockSteps)
-        }
-        mockHistories.apply {
-            `when`(executions()).thenReturn(mockExecutions)
-            `when`(list(any())).thenReturn(mockHistoryList)
-            `when`(create(any(), any())).thenReturn(mockHistoryCreate)
-        }
-        mockProjects.apply {
-            `when`(histories()).thenReturn(mockHistories)
-            `when`(initializeSettings(any())).thenReturn(mockSettings)
-        }
-        `when`(toolResultsClient.projects()).thenReturn(mockProjects)
+  @Before
+  fun setup() {
+    `when`(mockThumbnails.list(any(), any(), any(), any())).thenReturn(mockThumbnailsList)
+    mockSteps.apply {
+      `when`(thumbnails()).thenReturn(mockThumbnails)
+      `when`(get(any(), any(), any(), any())).thenReturn(mockStepsGet)
+    }
+    val mockExecutions =
+      mock<ToolResults.Projects.Histories.Executions>().apply {
+        `when`(steps()).thenReturn(mockSteps)
+      }
+    mockHistories.apply {
+      `when`(executions()).thenReturn(mockExecutions)
+      `when`(list(any())).thenReturn(mockHistoryList)
+      `when`(create(any(), any())).thenReturn(mockHistoryCreate)
+    }
+    mockProjects.apply {
+      `when`(histories()).thenReturn(mockHistories)
+      `when`(initializeSettings(any())).thenReturn(mockSettings)
+    }
+    `when`(toolResultsClient.projects()).thenReturn(mockProjects)
 
-        manager = ToolResultsManager(
-            toolResultsClient,
-            requestFactory,
-            objectParser
+    manager = ToolResultsManager(toolResultsClient, requestFactory, objectParser)
+  }
+
+  @Test
+  fun test_initializeSettings() {
+    val settings = mock<ProjectSettings>().also { `when`(mockSettings.execute()).thenReturn(it) }
+
+    val result = manager.initializeSettings("project_here")
+
+    assertThat(result).isSameInstanceAs(settings)
+
+    verify(mockProjects).initializeSettings("project_here")
+    verify(mockSettings).execute()
+
+    verifyNoMoreInteractions(mockProjects)
+    verifyNoMoreInteractions(mockSettings)
+  }
+
+  @Test
+  fun test_getOrCreateHistory_returnExistingHistory() {
+    val mockResult = mock<History>().apply { `when`(historyId).thenReturn("history id") }
+    val mockListResponse =
+      mock<ListHistoriesResponse>().apply { `when`(histories).thenReturn(listOf(mockResult)) }
+    mockHistoryList.apply { `when`(execute()).thenReturn(mockListResponse) }
+
+    val result = manager.getOrCreateHistory("this_project", "test_history")
+
+    assertThat(result).isEqualTo("history id")
+
+    verify(mockHistories).list("this_project")
+
+    inOrder(mockHistoryList).also {
+      it.verify(mockHistoryList).setFilterByName("test_history")
+      it.verify(mockHistoryList).execute()
+    }
+
+    verifyNoMoreInteractions(mockHistories)
+    verifyNoMoreInteractions(mockHistoryList)
+  }
+
+  @Test
+  fun test_getOrCreateHistory_createHistoryWhenNoneExist() {
+    val mockListResponse =
+      mock<ListHistoriesResponse>().apply { `when`(histories).thenReturn(listOf()) }
+    mockHistoryList.apply { `when`(execute()).thenReturn(mockListResponse) }
+
+    val mockResponse = mock<History>().apply { `when`(historyId).thenReturn("other history id") }
+    mockHistoryCreate.apply { `when`(execute()).thenReturn(mockResponse) }
+
+    val result = manager.getOrCreateHistory("my_project", "my_other_history")
+
+    assertThat(result).isEqualTo("other history id")
+
+    inOrder(mockHistories).also {
+      it.verify(mockHistories).list("my_project")
+      it
+        .verify(mockHistories)
+        .create(
+          eq("my_project"),
+          argThat { it.name == "my_other_history" && it.displayName == it.name },
         )
     }
 
-    @Test
-    fun test_initializeSettings() {
-        val settings = mock<ProjectSettings>().also {
-            `when`(mockSettings.execute()).thenReturn(it)
-        }
-
-        val result = manager.initializeSettings("project_here")
-
-        assertThat(result).isSameInstanceAs(settings)
-
-        verify(mockProjects).initializeSettings("project_here")
-        verify(mockSettings).execute()
-
-        verifyNoMoreInteractions(mockProjects)
-        verifyNoMoreInteractions(mockSettings)
+    inOrder(mockHistoryList).also {
+      it.verify(mockHistoryList).setFilterByName("my_other_history")
+      it.verify(mockHistoryList).execute()
     }
 
-    @Test
-    fun test_getOrCreateHistory_returnExistingHistory() {
-        val mockResult = mock<History>().apply {
-            `when`(historyId).thenReturn("history id")
-        }
-        val mockListResponse = mock<ListHistoriesResponse>().apply {
-            `when`(histories).thenReturn(listOf(mockResult))
-        }
-        mockHistoryList.apply {
-            `when`(execute()).thenReturn(mockListResponse)
-        }
-
-        val result = manager.getOrCreateHistory("this_project", "test_history")
-
-        assertThat(result).isEqualTo("history id")
-
-        verify(mockHistories).list("this_project")
-
-        inOrder(mockHistoryList).also {
-            it.verify(mockHistoryList).setFilterByName("test_history")
-            it.verify(mockHistoryList).execute()
-        }
-
-        verifyNoMoreInteractions(mockHistories)
-        verifyNoMoreInteractions(mockHistoryList)
+    inOrder(mockHistoryCreate).also {
+      it.verify(mockHistoryCreate).setRequestId(any())
+      it.verify(mockHistoryCreate).execute()
     }
 
-    @Test
-    fun test_getOrCreateHistory_createHistoryWhenNoneExist() {
-        val mockListResponse = mock<ListHistoriesResponse>().apply {
-            `when`(histories).thenReturn(listOf())
-        }
-        mockHistoryList.apply {
-            `when`(execute()).thenReturn(mockListResponse)
-        }
+    verifyNoMoreInteractions(mockHistories)
+    verifyNoMoreInteractions(mockHistoryList)
+    verifyNoMoreInteractions(mockHistoryCreate)
+  }
 
-        val mockResponse = mock<History>().apply {
-            `when`(historyId).thenReturn("other history id")
-        }
-        mockHistoryCreate.apply {
-            `when`(execute()).thenReturn(mockResponse)
-        }
+  @Test
+  fun test_requestStep() {
+    val step: Step = mock()
+    `when`(mockStepsGet.execute()).thenReturn(step)
 
-        val result = manager.getOrCreateHistory("my_project", "my_other_history")
+    val result = manager.requestStep(requestInfo())
 
-        assertThat(result).isEqualTo("other history id")
+    assertThat(result).isSameInstanceAs(step)
 
-        inOrder(mockHistories).also {
-            it.verify(mockHistories).list("my_project")
-            it.verify(mockHistories).create(
-                eq("my_project"),
-                argThat {
-                    it.name == "my_other_history" && it.displayName == it.name
-                })
-        }
+    verify(mockSteps).get("project_id", "history_id", "execution_id", "step_id")
+    verify(mockStepsGet).execute()
 
-        inOrder(mockHistoryList).also {
-            it.verify(mockHistoryList).setFilterByName("my_other_history")
-            it.verify(mockHistoryList).execute()
-        }
+    verifyNoMoreInteractions(mockSteps)
+    verifyNoMoreInteractions(mockStepsGet)
+  }
 
-        inOrder(mockHistoryCreate).also {
-            it.verify(mockHistoryCreate).setRequestId(any())
-            it.verify(mockHistoryCreate).execute()
-        }
+  @Test
+  fun test_requestThumbnails() {
+    val thumbnails: ListStepThumbnailsResponse = mock()
+    `when`(mockThumbnailsList.execute()).thenReturn(thumbnails)
 
-        verifyNoMoreInteractions(mockHistories)
-        verifyNoMoreInteractions(mockHistoryList)
-        verifyNoMoreInteractions(mockHistoryCreate)
-    }
+    val result = manager.requestThumbnails(requestInfo())
 
-    @Test
-    fun test_requestStep() {
-        val step: Step = mock()
-        `when`(mockStepsGet.execute()).thenReturn(step)
+    assertThat(result).isSameInstanceAs(thumbnails)
 
-        val result = manager.requestStep(requestInfo())
+    verify(mockThumbnails).list("project_id", "history_id", "execution_id", "step_id")
+    verify(mockThumbnailsList).execute()
 
-        assertThat(result).isSameInstanceAs(step)
+    verifyNoMoreInteractions(mockThumbnails)
+    verifyNoMoreInteractions(mockThumbnailsList)
+  }
 
-        verify(mockSteps).get("project_id", "history_id", "execution_id", "step_id")
-        verify(mockStepsGet).execute()
+  @Test
+  fun test_requestTestCases() {
+    val testCases = mock<ToolResultsManager.TestCases>()
+    `when`(objectParser.parseAndClose<ToolResultsManager.TestCases>(any(), any(), any()))
+      .thenReturn(testCases)
 
-        verifyNoMoreInteractions(mockSteps)
-        verifyNoMoreInteractions(mockStepsGet)
-    }
+    val file = temporaryFolderRule.newFile()
+    val inputStream = FileInputStream(file)
+    val response = mock<HttpResponse>().apply { `when`(content).thenReturn(inputStream) }
+    val request =
+      mock<HttpRequest>().apply {
+        `when`(execute()).thenReturn(response)
+        `when`(requestFactory.buildGetRequest(any())).thenReturn(this)
+      }
 
-    @Test
-    fun test_requestThumbnails() {
-        val thumbnails: ListStepThumbnailsResponse = mock()
-        `when`(mockThumbnailsList.execute()).thenReturn(thumbnails)
+    val result = manager.requestTestCases(requestInfo())
 
-        val result = manager.requestThumbnails(requestInfo())
+    assertThat(result).isSameInstanceAs(testCases)
 
-        assertThat(result).isSameInstanceAs(thumbnails)
-
-        verify(mockThumbnails).list("project_id", "history_id", "execution_id", "step_id")
-        verify(mockThumbnailsList).execute()
-
-        verifyNoMoreInteractions(mockThumbnails)
-        verifyNoMoreInteractions(mockThumbnailsList)
-    }
-
-    @Test
-    fun test_requestTestCases() {
-        val testCases = mock<ToolResultsManager.TestCases>()
-        `when`(objectParser.parseAndClose<ToolResultsManager.TestCases>(any(), any(), any()))
-            .thenReturn(testCases)
-
-        val file = temporaryFolderRule.newFile()
-        val inputStream = FileInputStream(file)
-        val response = mock<HttpResponse>().apply {
-            `when`(content).thenReturn(inputStream)
-        }
-        val request = mock<HttpRequest>().apply {
-            `when`(execute()).thenReturn(response)
-            `when`(requestFactory.buildGetRequest(any())).thenReturn(this)
-        }
-
-        val result = manager.requestTestCases(requestInfo())
-
-        assertThat(result).isSameInstanceAs(testCases)
-
-        verify(requestFactory).buildGetRequest(
-            eq(
-                GenericUrl(
-                    "https://toolResults.googleapis.com/toolresults/v1beta3/projects/project_id/" +
-                            "histories/history_id/executions/execution_id/steps/step_id/testCases"
-                )
-            )
+    verify(requestFactory)
+      .buildGetRequest(
+        eq(
+          GenericUrl(
+            "https://toolResults.googleapis.com/toolresults/v1beta3/projects/project_id/" +
+              "histories/history_id/executions/execution_id/steps/step_id/testCases"
+          )
         )
+      )
 
-        inOrder(request).also {
-            it.verify(request).setParser(objectParser)
-            it.verify(request).execute()
-        }
-
-        verify(objectParser).parseAndClose<ToolResultsManager.TestCases>(
-            eq(inputStream),
-            eq(StandardCharsets.UTF_8),
-            eq(ToolResultsManager.TestCases::class.java)
-        )
-
-        verifyNoMoreInteractions(requestFactory)
-        verifyNoMoreInteractions(request)
-        verifyNoMoreInteractions(objectParser)
+    inOrder(request).also {
+      it.verify(request).setParser(objectParser)
+      it.verify(request).execute()
     }
 
-    @Test
-    fun testStatic_requestFrom() {
-        val resultStep = mock<ToolResultsStep>().apply {
-            `when`(projectId).thenReturn("some_id")
-            `when`(historyId).thenReturn("another_id")
-            `when`(executionId).thenReturn("yet_another_id")
-            `when`(stepId).thenReturn("one_more_for_good_measure")
-        }
-        val result = ToolResultsManager.requestFrom(resultStep)
+    verify(objectParser)
+      .parseAndClose<ToolResultsManager.TestCases>(
+        eq(inputStream),
+        eq(StandardCharsets.UTF_8),
+        eq(ToolResultsManager.TestCases::class.java),
+      )
 
-        assertThat(result.projectId).isEqualTo("some_id")
-        assertThat(result.historyId).isEqualTo("another_id")
-        assertThat(result.executionId).isEqualTo("yet_another_id")
-        assertThat(result.stepId).isEqualTo("one_more_for_good_measure")
-    }
+    verifyNoMoreInteractions(requestFactory)
+    verifyNoMoreInteractions(request)
+    verifyNoMoreInteractions(objectParser)
+  }
+
+  @Test
+  fun testStatic_requestFrom() {
+    val resultStep =
+      mock<ToolResultsStep>().apply {
+        `when`(projectId).thenReturn("some_id")
+        `when`(historyId).thenReturn("another_id")
+        `when`(executionId).thenReturn("yet_another_id")
+        `when`(stepId).thenReturn("one_more_for_good_measure")
+      }
+    val result = ToolResultsManager.requestFrom(resultStep)
+
+    assertThat(result.projectId).isEqualTo("some_id")
+    assertThat(result.historyId).isEqualTo("another_id")
+    assertThat(result.executionId).isEqualTo("yet_another_id")
+    assertThat(result.stepId).isEqualTo("one_more_for_good_measure")
+  }
 }

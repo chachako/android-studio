@@ -26,34 +26,30 @@ import org.gradle.api.Incubating
 @Incubating
 interface ManagedDevice : Device {
 
-    /**
-     * The model id of the device to be run.
-     *
-     * Specifies the model id to be run in firebase test lab. For a
-     * list of model ids run:
-     *
-     *     gcloud firebase test android models list
-     */
-    var device: String
+  /**
+   * The model id of the device to be run.
+   *
+   * Specifies the model id to be run in firebase test lab. For a list of model ids run:
+   *
+   *     gcloud firebase test android models list
+   */
+  var device: String
 
-    /**
-     * The api level of Android to be run on the device.
-     *
-     * This argument is optional and only some apiLevels are available
-     * for each hardware profile. If no value is specified the latest
-     * available api is used.
-     */
-    var apiLevel: Int
+  /**
+   * The api level of Android to be run on the device.
+   *
+   * This argument is optional and only some apiLevels are available for each hardware profile. If
+   * no value is specified the latest available api is used.
+   */
+  var apiLevel: Int
 
-    /**
-     * The orientation the device should have when tests are run.
-     *
-     * Available options are ["DEFAULT", "PORTRAIT", "LANDSCAPE"]
-     */
-    var orientation: String
+  /**
+   * The orientation the device should have when tests are run.
+   *
+   * Available options are ["DEFAULT", "PORTRAIT", "LANDSCAPE"]
+   */
+  var orientation: String
 
-    /**
-     * The locale that the device should be set to.
-     */
-    var locale: String
+  /** The locale that the device should be set to. */
+  var locale: String
 }

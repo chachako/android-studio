@@ -24,44 +24,47 @@ import com.google.gson.GsonBuilder
 import com.google.gson.ToNumberPolicy
 import java.util.Locale
 
-open class TestRunTaskAction: DeviceTestRunTaskAction<DeviceTestRunInput> {
+open class TestRunTaskAction : DeviceTestRunTaskAction<DeviceTestRunInput> {
 
-    override fun runTests(params: DeviceTestRunParameters<DeviceTestRunInput>): Boolean {
-         val gson = GsonBuilder()
-            .setObjectToNumberStrategy {
-                val number = ToNumberPolicy.LONG_OR_DOUBLE.readNumber(it)
-                if (number is Long) {
-                    number.toInt()
-                } else {
-                    number
-                }
-            }
-            .create()
+  override fun runTests(params: DeviceTestRunParameters<DeviceTestRunInput>): Boolean {
+    val gson =
+      GsonBuilder()
+        .setObjectToNumberStrategy {
+          val number = ToNumberPolicy.LONG_OR_DOUBLE.readNumber(it)
+          if (number is Long) {
+            number.toInt()
+          } else {
+            number
+          }
+        }
+        .create()
 
-        val ftlDeviceModel = gson.fromJson(
-            params.setupResult.file("${params.testRunData.deviceName}.json")
-                .get().asFile.readText(),
-            AndroidModel::class.java
+    val ftlDeviceModel =
+      gson.fromJson(
+        params.setupResult.file("${params.testRunData.deviceName}.json").get().asFile.readText(),
+        AndroidModel::class.java,
+      )
+
+    val extraDeviceFileUrls =
+      ExtraDeviceFilesManager(params.deviceInput.extraDeviceUrlsFile.get().asFile)
+        .devicePathsToUrls()
+
+    val results =
+      params.deviceInput.buildService
+        .get()
+        .runTestsOnDevice(
+          params.testRunData.deviceName,
+          params.deviceInput.device.get(),
+          params.deviceInput.apiLevel.get(),
+          Locale.forLanguageTag(params.deviceInput.locale.get()),
+          params.deviceInput.orientation.get(),
+          ftlDeviceModel,
+          params.testRunData.testData,
+          params.testRunData.outputDirectory.asFile,
+          params.testRunData.projectPath,
+          params.testRunData.variantName,
+          extraDeviceFileUrls,
         )
-
-        val extraDeviceFileUrls = ExtraDeviceFilesManager(
-            params.deviceInput.extraDeviceUrlsFile.get().asFile
-        ).devicePathsToUrls()
-
-
-        val results = params.deviceInput.buildService.get().runTestsOnDevice(
-            params.testRunData.deviceName,
-            params.deviceInput.device.get(),
-            params.deviceInput.apiLevel.get(),
-            Locale.forLanguageTag(params.deviceInput.locale.get()),
-            params.deviceInput.orientation.get(),
-            ftlDeviceModel,
-            params.testRunData.testData,
-            params.testRunData.outputDirectory.asFile,
-            params.testRunData.projectPath,
-            params.testRunData.variantName,
-            extraDeviceFileUrls
-        )
-        return results.all { it.testPassed }
-    }
+    return results.all { it.testPassed }
+  }
 }

@@ -17,47 +17,47 @@
 package com.android.tools.firebase.testlab.gradle
 
 import com.google.firebase.testlab.gradle.Execution
-import com.google.firebase.testlab.gradle.Results
 import com.google.firebase.testlab.gradle.Fixture
+import com.google.firebase.testlab.gradle.Results
 import com.google.firebase.testlab.gradle.TestOptions
+import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
-import javax.inject.Inject
 
 abstract class TestOptionsImpl @Inject constructor(objectFactory: ObjectFactory) : TestOptions {
-    override val fixture: Fixture = objectFactory.newInstance(FixtureImpl::class.java)
+  override val fixture: Fixture = objectFactory.newInstance(FixtureImpl::class.java)
 
-    // (Implementing interface for kotlin)
-    override fun fixture(action: Fixture.() -> Unit) {
-        fixture.action()
-    }
+  // (Implementing interface for kotlin)
+  override fun fixture(action: Fixture.() -> Unit) {
+    fixture.action()
+  }
 
-    // Runtime only for groovy decorator to generate the closure based block.
-    fun fixture(action: Action<Fixture>) {
-        action.execute(fixture)
-    }
+  // Runtime only for groovy decorator to generate the closure based block.
+  fun fixture(action: Action<Fixture>) {
+    action.execute(fixture)
+  }
 
-    override val execution: Execution = objectFactory.newInstance(ExecutionImpl::class.java)
+  override val execution: Execution = objectFactory.newInstance(ExecutionImpl::class.java)
 
-    // (Implementing interface for kotlin)
-    override fun execution(action: Execution.() -> Unit) {
-        execution.action()
-    }
+  // (Implementing interface for kotlin)
+  override fun execution(action: Execution.() -> Unit) {
+    execution.action()
+  }
 
-    // Runtime only for groovy decorator to generate the closure based block.
-    fun execution(action: Action<Execution>) {
-        action.execute(execution)
-    }
+  // Runtime only for groovy decorator to generate the closure based block.
+  fun execution(action: Action<Execution>) {
+    action.execute(execution)
+  }
 
-    override val results: Results = objectFactory.newInstance(ResultsImpl::class.java)
+  override val results: Results = objectFactory.newInstance(ResultsImpl::class.java)
 
-    // (Implementing interface for kotlin)
-    override fun results(action: Results.() -> Unit) {
-        results.action()
-    }
+  // (Implementing interface for kotlin)
+  override fun results(action: Results.() -> Unit) {
+    results.action()
+  }
 
-    // Runtime only for groovy decorator to generate the closure based block.
-    fun results(action: Action<Results>) {
-        action.execute(results)
-    }
+  // Runtime only for groovy decorator to generate the closure based block.
+  fun results(action: Action<Results>) {
+    action.execute(results)
+  }
 }

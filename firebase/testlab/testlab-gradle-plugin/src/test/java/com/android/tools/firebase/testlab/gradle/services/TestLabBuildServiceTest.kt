@@ -26,6 +26,8 @@ import com.google.api.client.testing.http.MockHttpTransport
 import com.google.api.client.testing.http.MockLowLevelHttpResponse
 import com.google.common.truth.Truth.assertThat
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
+import java.io.File
+import java.util.logging.Level
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Transformer
@@ -46,30 +48,25 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import java.io.File
-import java.util.logging.Level
 
-/**
- * Unit tests for [TestLabBuildService].
- */
+/** Unit tests for [TestLabBuildService]. */
 class TestLabBuildServiceTest {
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockExtension: TestLabGradlePluginExtension
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  lateinit var mockExtension: TestLabGradlePluginExtension
 
-    @Mock
-    lateinit var mockProviderFactory: ProviderFactory
+  @Mock lateinit var mockProviderFactory: ProviderFactory
 
-    @Test
-    fun registerIfAbsent() {
-        val credentialFile = temporaryFolderRule.newFile("testCredentialFile").apply {
-            writeText("""
+  @Test
+  fun registerIfAbsent() {
+    val credentialFile =
+      temporaryFolderRule.newFile("testCredentialFile").apply {
+        writeText(
+          """
                     {
                       "client_id": "test_client_id",
                       "client_secret": "test_client_secret",
@@ -77,70 +74,71 @@ class TestLabBuildServiceTest {
                       "refresh_token": "test_refresh_token",
                       "type": "authorized_user"
                     }
-                """.trimIndent())
-        }
-
-        val credentialFileProvider = mock<Provider<File>>()
-        `when`(mockProviderFactory.provider<File>(any()))
-            .thenReturn(credentialFileProvider)
-        val credentialFileRegularFile = mock<RegularFile>()
-        `when`(credentialFileRegularFile.asFile).thenReturn(credentialFile)
-
-        val mockProject = mock<Project>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
-        `when`(mockProject.path).thenReturn("mockProjectPath")
-        `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
-                .thenReturn(mockExtension)
-        `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java)))
-                .thenReturn(mock())
-        `when`(mockProject.providers).thenReturn(mockProviderFactory)
-
-        TestLabBuildService.RegistrationAction(mockProject).registerIfAbsent()
-
-        lateinit var configAction: Action<in BuildServiceSpec<TestLabBuildService.Parameters>>
-        verify(mockProject.gradle.sharedServices).registerIfAbsent(
-            startsWith("com.android.tools.firebase.testlab.gradle.services.TestLabBuildService_"),
-            eq(TestLabBuildService::class.java),
-            argThat {
-                configAction = it
-                true
-            }
+                """
+            .trimIndent()
         )
+      }
 
-        val mockSpec = mock<BuildServiceSpec<TestLabBuildService.Parameters>>()
-        val mockParams = mock<TestLabBuildService.Parameters>(
-            withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
-        `when`(mockSpec.parameters).thenReturn(mockParams)
-        `when`(mockParams.credentialFile.map<String>(any())).then {
-            val file = it.getArgument<Transformer<String, RegularFile>>(0)
-                .transform(credentialFileRegularFile)
-            mock<Provider<String>>().apply {
-                `when`(get()).thenReturn(file)
-            }
-        }
+    val credentialFileProvider = mock<Provider<File>>()
+    `when`(mockProviderFactory.provider<File>(any())).thenReturn(credentialFileProvider)
+    val credentialFileRegularFile = mock<RegularFile>()
+    `when`(credentialFileRegularFile.asFile).thenReturn(credentialFile)
 
-        configAction.execute(mockSpec)
+    val mockProject = mock<Project>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+    `when`(mockProject.path).thenReturn("mockProjectPath")
+    `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
+      .thenReturn(mockExtension)
+    `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java))).thenReturn(mock())
+    `when`(mockProject.providers).thenReturn(mockProviderFactory)
 
-        verify(mockParams.credentialFile).fileProvider(eq(credentialFileProvider))
+    TestLabBuildService.RegistrationAction(mockProject).registerIfAbsent()
+
+    lateinit var configAction: Action<in BuildServiceSpec<TestLabBuildService.Parameters>>
+    verify(mockProject.gradle.sharedServices)
+      .registerIfAbsent(
+        startsWith("com.android.tools.firebase.testlab.gradle.services.TestLabBuildService_"),
+        eq(TestLabBuildService::class.java),
+        argThat {
+          configAction = it
+          true
+        },
+      )
+
+    val mockSpec = mock<BuildServiceSpec<TestLabBuildService.Parameters>>()
+    val mockParams =
+      mock<TestLabBuildService.Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+    `when`(mockSpec.parameters).thenReturn(mockParams)
+    `when`(mockParams.credentialFile.map<String>(any())).then {
+      val file =
+        it.getArgument<Transformer<String, RegularFile>>(0).transform(credentialFileRegularFile)
+      mock<Provider<String>>().apply { `when`(get()).thenReturn(file) }
     }
 
-    @Test
-    fun logLevelShouldBeWarning() {
-        val credentialFile = temporaryFolderRule.newFile("testCredentialFile")
-        val buildService = object: TestLabBuildService() {
-            override fun getParameters(): Parameters {
-                val params = mock<Parameters>(
-                        withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
-                `when`(params.credentialFile.get().asFile).thenReturn(credentialFile)
-                return params
-            }
-        }
-        assertThat(buildService.apiClientLogger.level).isEqualTo(Level.WARNING)
-    }
+    configAction.execute(mockSpec)
 
-    @Test
-    fun catalog() {
-        val testCredentialFile = temporaryFolderRule.newFile("testCredentialFile").apply {
-            writeText("""
+    verify(mockParams.credentialFile).fileProvider(eq(credentialFileProvider))
+  }
+
+  @Test
+  fun logLevelShouldBeWarning() {
+    val credentialFile = temporaryFolderRule.newFile("testCredentialFile")
+    val buildService =
+      object : TestLabBuildService() {
+        override fun getParameters(): Parameters {
+          val params = mock<Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+          `when`(params.credentialFile.get().asFile).thenReturn(credentialFile)
+          return params
+        }
+      }
+    assertThat(buildService.apiClientLogger.level).isEqualTo(Level.WARNING)
+  }
+
+  @Test
+  fun catalog() {
+    val testCredentialFile =
+      temporaryFolderRule.newFile("testCredentialFile").apply {
+        writeText(
+          """
                 {
                   "client_id": "test_client_id",
                   "client_secret": "test_client_secret",
@@ -148,15 +146,23 @@ class TestLabBuildServiceTest {
                   "refresh_token": "test_refresh_token",
                   "type": "authorized_user"
                 }
-            """.trimIndent())
-        }
-        val service = object: TestLabBuildService() {
-            override val credential: GoogleCredential
-                get() = mock()
-            override val httpTransport: HttpTransport
-                get() = MockHttpTransport.Builder().apply {
-                    setLowLevelHttpResponse(MockLowLevelHttpResponse().apply {
-                        setContent("""
+            """
+            .trimIndent()
+        )
+      }
+    val service =
+      object : TestLabBuildService() {
+        override val credential: GoogleCredential
+          get() = mock()
+
+        override val httpTransport: HttpTransport
+          get() =
+            MockHttpTransport.Builder()
+              .apply {
+                setLowLevelHttpResponse(
+                  MockLowLevelHttpResponse().apply {
+                    setContent(
+                      """
                             {
                               "androidDeviceCatalog": {
                                 "models": [
@@ -166,20 +172,25 @@ class TestLabBuildServiceTest {
                                 ]
                               }
                             }
-                        """.trimIndent())
-                    })
-                }.build()
-            override fun getParameters() = mock<Parameters>(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
-                    val mockOffline: Property<Boolean> = mock()
-                    `when`(mockOffline.get()).thenReturn(false)
-                    `when`(offlineMode).thenReturn(mockOffline)
-                    `when`(credentialFile.get().asFile).thenReturn(testCredentialFile)
-                }
-        }
+                        """
+                        .trimIndent()
+                    )
+                  }
+                )
+              }
+              .build()
 
-        val catalog = service.catalog()
-        assertThat(catalog.models).hasSize(1)
-        assertThat(catalog.models[0].id).isEqualTo("test_device_id")
-    }
+        override fun getParameters() =
+          mock<Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+            val mockOffline: Property<Boolean> = mock()
+            `when`(mockOffline.get()).thenReturn(false)
+            `when`(offlineMode).thenReturn(mockOffline)
+            `when`(credentialFile.get().asFile).thenReturn(testCredentialFile)
+          }
+      }
+
+    val catalog = service.catalog()
+    assertThat(catalog.models).hasSize(1)
+    assertThat(catalog.models[0].id).isEqualTo("test_device_id")
+  }
 }

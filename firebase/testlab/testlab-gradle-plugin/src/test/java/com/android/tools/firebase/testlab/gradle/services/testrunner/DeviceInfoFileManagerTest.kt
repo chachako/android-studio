@@ -18,6 +18,7 @@ package com.android.tools.firebase.testlab.gradle.services.testrunner
 
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto.AndroidTestDeviceInfo
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -26,46 +27,40 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import java.io.File
 
 class DeviceInfoFileManagerTest {
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    lateinit var resultsOutDir: File
+  lateinit var resultsOutDir: File
 
-    @Mock
-    lateinit var device: TestDeviceData
+  @Mock lateinit var device: TestDeviceData
 
-    @Before
-    fun setup() {
-        `when`(device.name).thenReturn("device_name")
-        `when`(device.apiLevel).thenReturn(33)
-        `when`(device.deviceId).thenReturn("b0q")
+  @Before
+  fun setup() {
+    `when`(device.name).thenReturn("device_name")
+    `when`(device.apiLevel).thenReturn(33)
+    `when`(device.deviceId).thenReturn("b0q")
 
-        resultsOutDir = temporaryFolderRule.newFolder("results")
-    }
+    resultsOutDir = temporaryFolderRule.newFolder("results")
+  }
 
-    @Test
-    fun test_createFile() {
-        val result = DeviceInfoFileManager().createFile(resultsOutDir, device)
+  @Test
+  fun test_createFile() {
+    val result = DeviceInfoFileManager().createFile(resultsOutDir, device)
 
-        assertThat(result.absolutePath).isEqualTo(
-            resultsOutDir.resolve("device-info.pb").absolutePath)
+    assertThat(result.absolutePath).isEqualTo(resultsOutDir.resolve("device-info.pb").absolutePath)
 
-        result.inputStream().use {
-            AndroidTestDeviceInfo.parseFrom(it)
-        }.apply {
-            assertThat(name).isEqualTo("device_name")
-            assertThat(apiLevel).isEqualTo("33")
-            assertThat(gradleDslDeviceName).isEqualTo("device_name")
-            assertThat(model).isEqualTo("b0q")
-        }
-    }
-
-
+    result
+      .inputStream()
+      .use { AndroidTestDeviceInfo.parseFrom(it) }
+      .apply {
+        assertThat(name).isEqualTo("device_name")
+        assertThat(apiLevel).isEqualTo("33")
+        assertThat(gradleDslDeviceName).isEqualTo("device_name")
+        assertThat(model).isEqualTo("b0q")
+      }
+  }
 }

@@ -17,37 +17,29 @@
 package com.google.firebase.testlab.gradle
 
 import com.android.build.api.dsl.ManagedDevices
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Incubating
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.RegularFileProperty
 
-/**
- * A DSL for Firebase Test Lab Gradle plugin.
- */
+/** A DSL for Firebase Test Lab Gradle plugin. */
 @Incubating
 interface TestLabGradlePluginExtension {
-    /**
-     * A path to a JSON file that contains service account credentials to access to
-     * a Firebase TestLab project.
-     */
-    @get:Incubating
-    val serviceAccountCredentials: RegularFileProperty
+  /**
+   * A path to a JSON file that contains service account credentials to access to a Firebase TestLab
+   * project.
+   */
+  @get:Incubating val serviceAccountCredentials: RegularFileProperty
 
-    /**
-     * Convenience container for specifying FTL managed devices of the type [ManagedDevice].
-     *
-     * Any devices created as a part of this container are automatically added to the list of
-     * devices contained in the [managedDevices Block][ManagedDevices.devices].
-     */
-    @get:Incubating
-    val managedDevices: NamedDomainObjectContainer<ManagedDevice>
+  /**
+   * Convenience container for specifying FTL managed devices of the type [ManagedDevice].
+   *
+   * Any devices created as a part of this container are automatically added to the list of devices
+   * contained in the [managedDevices Block][ManagedDevices.devices].
+   */
+  @get:Incubating val managedDevices: NamedDomainObjectContainer<ManagedDevice>
 
-    /**
-     * A configuration block for test options.
-     */
-    @get:Incubating
-    val testOptions: TestOptions
+  /** A configuration block for test options. */
+  @get:Incubating val testOptions: TestOptions
 
-    @Incubating
-    fun testOptions(action: TestOptions.() -> Unit)
+  @Incubating fun testOptions(action: TestOptions.() -> Unit)
 }

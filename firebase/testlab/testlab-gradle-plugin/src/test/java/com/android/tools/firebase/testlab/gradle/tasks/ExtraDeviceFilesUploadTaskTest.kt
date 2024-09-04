@@ -16,13 +16,16 @@
 
 package com.android.tools.firebase.testlab.gradle.tasks
 
-import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.argThat
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
+import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.api.services.storage.model.StorageObject
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.lang.IllegalStateException
+import java.nio.charset.StandardCharsets
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertThrows
@@ -31,146 +34,135 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mock
-import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
-import java.io.File
-import java.lang.IllegalStateException
-import java.nio.charset.StandardCharsets
 
 private const val tab = "\t"
 
 class ExtraDeviceFilesUploadTaskTest {
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @get:Rule
-    val mockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoRule = MockitoJUnit.rule()
 
-    lateinit var projectPath: File
+  lateinit var projectPath: File
 
-    lateinit var project: Project
+  lateinit var project: Project
 
-    lateinit var task: ExtraDeviceFilesUploadTask
+  lateinit var task: ExtraDeviceFilesUploadTask
 
-    lateinit var outputFile: File
+  lateinit var outputFile: File
 
-    @Mock
-    lateinit var mockBuildService: TestLabBuildService
+  @Mock lateinit var mockBuildService: TestLabBuildService
 
-    @Before
-    fun setup() {
-        projectPath = temporaryFolderRule.newFolder("project")
-        project = ProjectBuilder.builder().withProjectDir(projectPath).build()
+  @Before
+  fun setup() {
+    projectPath = temporaryFolderRule.newFolder("project")
+    project = ProjectBuilder.builder().withProjectDir(projectPath).build()
 
-        task = project.tasks.register(
-            "firebaseUploadExtraDeviceFiles",
-            ExtraDeviceFilesUploadTask::class.java
-        ).get()
+    task =
+      project.tasks
+        .register("firebaseUploadExtraDeviceFiles", ExtraDeviceFilesUploadTask::class.java)
+        .get()
 
-        outputFile = temporaryFolderRule.newFile("output")
+    outputFile = temporaryFolderRule.newFile("output")
 
-        task.projectPath.set("my_gradle_module")
-        task.buildService.set(mockBuildService)
-        task.outputFile.set(outputFile)
-    }
+    task.projectPath.set("my_gradle_module")
+    task.buildService.set(mockBuildService)
+    task.outputFile.set(outputFile)
+  }
 
-    @Test
-    fun taskAction_noExtraFiles() {
-        task.extraFiles.set(mapOf())
+  @Test
+  fun taskAction_noExtraFiles() {
+    task.extraFiles.set(mapOf())
 
-        task.validateOrUploadExtraFiles()
+    task.validateOrUploadExtraFiles()
 
-        verifyNoInteractions(mockBuildService)
+    verifyNoInteractions(mockBuildService)
 
-        assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEmpty()
-    }
+    assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEmpty()
+  }
 
-    @Test
-    fun taskAction_SimpleExtraFiles() {
-        val testFile = temporaryFolderRule.newFile("testFile")
-        task.extraFiles.set(
-            mapOf(
-                "devicePath1" to testFile.path,
-                "devicePath2" to "gs://bucket/testPath"
-            )
+  @Test
+  fun taskAction_SimpleExtraFiles() {
+    val testFile = temporaryFolderRule.newFile("testFile")
+    task.extraFiles.set(
+      mapOf("devicePath1" to testFile.path, "devicePath2" to "gs://bucket/testPath")
+    )
+
+    val localUploadedStorageObject: StorageObject =
+      mock<StorageObject>().apply {
+        `when`(this.bucket).thenReturn("project-bucket")
+        `when`(this.name).thenReturn("my_gradle_module/hash-testFile")
+        `when`(this.md5Hash).thenReturn("aabbcc")
+      }
+    val cloudStorageObject: StorageObject =
+      mock<StorageObject>().apply {
+        `when`(this.bucket).thenReturn("bucket")
+        `when`(this.name).thenReturn("testPath")
+        `when`(this.md5Hash).thenReturn("ddeeff")
+      }
+
+    `when`(
+        mockBuildService.uploadSharedFile(
+          eq("my_gradle_module"),
+          argThat { file -> file.path == testFile.path },
+          any(),
         )
+      )
+      .thenReturn(localUploadedStorageObject)
 
-        val localUploadedStorageObject: StorageObject = mock<StorageObject>().apply {
-            `when`(this.bucket).thenReturn("project-bucket")
-            `when`(this.name).thenReturn("my_gradle_module/hash-testFile")
-            `when`(this.md5Hash).thenReturn("aabbcc")
-        }
-        val cloudStorageObject: StorageObject = mock<StorageObject>().apply {
-            `when`(this.bucket).thenReturn("bucket")
-            `when`(this.name).thenReturn("testPath")
-            `when`(this.md5Hash).thenReturn("ddeeff")
-        }
+    `when`(mockBuildService.getStorageObject(eq("gs://bucket/testPath")))
+      .thenReturn(cloudStorageObject)
 
-        `when`(mockBuildService.uploadSharedFile(
-            eq("my_gradle_module"),
-            argThat { file ->
-                file.path == testFile.path
-            },
-            any()
-        )).thenReturn(localUploadedStorageObject)
+    task.validateOrUploadExtraFiles()
 
-        `when`(mockBuildService.getStorageObject(eq("gs://bucket/testPath"))).thenReturn(
-            cloudStorageObject
-        )
-
-        task.validateOrUploadExtraFiles()
-
-        val expectedResult =
-            """
+    val expectedResult =
+      """
                 devicePath1${tab}gs://project-bucket/my_gradle_module/hash-testFile${tab}aabbcc
                 devicePath2${tab}gs://bucket/testPath${tab}ddeeff
-            """.trimIndent()
-
-        assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEqualTo(expectedResult)
-
-        // file order should not affect output.
-        task.extraFiles.set(
-            mapOf(
-                "devicePath2" to "gs://bucket/testPath",
-                "devicePath1" to testFile.path
-            )
-        )
-
-        task.validateOrUploadExtraFiles()
-
-        assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEqualTo(expectedResult)
-    }
-
-    @Test
-    fun taskAction_testFailures() {
-        val folder = temporaryFolderRule.newFolder("folder-to-upload")
-
-        task.extraFiles.set(
-            mapOf(
-                "devicePath1" to folder.path,
-                "devicePath2" to "not/a/file",
-                "devicePath3" to "gs://bucket/testPath"
-            )
-        )
-
-        val error = assertThrows(IllegalStateException::class.java) {
-            task.validateOrUploadExtraFiles()
-        }
-
-        assertThat(error.message).isEqualTo(
             """
+        .trimIndent()
+
+    assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEqualTo(expectedResult)
+
+    // file order should not affect output.
+    task.extraFiles.set(
+      mapOf("devicePath2" to "gs://bucket/testPath", "devicePath1" to testFile.path)
+    )
+
+    task.validateOrUploadExtraFiles()
+
+    assertThat(outputFile.readText(StandardCharsets.UTF_8)).isEqualTo(expectedResult)
+  }
+
+  @Test
+  fun taskAction_testFailures() {
+    val folder = temporaryFolderRule.newFolder("folder-to-upload")
+
+    task.extraFiles.set(
+      mapOf(
+        "devicePath1" to folder.path,
+        "devicePath2" to "not/a/file",
+        "devicePath3" to "gs://bucket/testPath",
+      )
+    )
+
+    val error =
+      assertThrows(IllegalStateException::class.java) { task.validateOrUploadExtraFiles() }
+
+    assertThat(error.message)
+      .isEqualTo(
+        """
                 Could not upload extraDeviceFiles for Firebase Test Lab.
                     Local file path: ${folder.path} must be a file. Cannot be uploaded.
                     Local file path: not/a/file does not exist. Cannot upload file.
                     Google Storage link: gs://bucket/testPath does not reference a valid Storage Object.
 
-            """.trimIndent()
-        )
-    }
+            """
+          .trimIndent()
+      )
+  }
 }

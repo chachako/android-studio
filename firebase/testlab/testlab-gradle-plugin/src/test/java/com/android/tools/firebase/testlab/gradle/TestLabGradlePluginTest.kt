@@ -39,76 +39,75 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 
-/**
- * Unit tests for [TestLabGradlePlugin]
- */
+/** Unit tests for [TestLabGradlePlugin] */
 class TestLabGradlePluginTest {
 
-    @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+  @get:Rule val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockProject: Project
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS) lateinit var mockProject: Project
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockAndroidPlugin: AndroidComponentsExtension<*, *, *>
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  lateinit var mockAndroidPlugin: AndroidComponentsExtension<*, *, *>
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockCommonExtension: CommonExtension<*, *, *, *, *, *>
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  lateinit var mockCommonExtension: CommonExtension<*, *, *, *, *, *>
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockTestLabExtension: TestLabGradlePluginExtension
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  lateinit var mockTestLabExtension: TestLabGradlePluginExtension
 
-    @Before
-    fun setupMocks() {
-        `when`(mockProject.extensions.getByType(eq(AndroidComponentsExtension::class.java))).thenReturn(mockAndroidPlugin)
-        `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java))).thenReturn(mockCommonExtension)
-        `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java))).thenReturn(mockTestLabExtension)
-    }
+  @Before
+  fun setupMocks() {
+    `when`(mockProject.extensions.getByType(eq(AndroidComponentsExtension::class.java)))
+      .thenReturn(mockAndroidPlugin)
+    `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java)))
+      .thenReturn(mockCommonExtension)
+    `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
+      .thenReturn(mockTestLabExtension)
+  }
 
-    private fun applyFtlPlugin(
-            agpVersion: AndroidPluginVersion = AndroidPluginVersion(8, 1)) {
-        `when`(mockAndroidPlugin.pluginVersion).thenReturn(agpVersion)
+  private fun applyFtlPlugin(agpVersion: AndroidPluginVersion = AndroidPluginVersion(8, 1)) {
+    `when`(mockAndroidPlugin.pluginVersion).thenReturn(agpVersion)
 
-        val plugin = TestLabGradlePlugin()
-        plugin.apply(mockProject)
+    val plugin = TestLabGradlePlugin()
+    plugin.apply(mockProject)
 
-        val captor = argumentCaptor<Action<AndroidBasePlugin>>()
-        verify(mockProject.plugins, atLeastOnce())
-                .withType(eq(AndroidBasePlugin::class.java), capture(captor))
+    val captor = argumentCaptor<Action<AndroidBasePlugin>>()
+    verify(mockProject.plugins, atLeastOnce())
+      .withType(eq(AndroidBasePlugin::class.java), capture(captor))
 
-        captor.value.execute(AndroidBasePlugin())
-    }
+    captor.value.execute(AndroidBasePlugin())
+  }
 
-    @Test
-    fun agpVersionCheck() {
-        val unsupportedVersions = listOf(
-                AndroidPluginVersion(8, 1, 0).alpha(9),
-                AndroidPluginVersion(8, 1),
-                AndroidPluginVersion(8, 2),
-                AndroidPluginVersion(8, 2, 0).alpha(9),
-                AndroidPluginVersion(8, 9),
+  @Test
+  fun agpVersionCheck() {
+    val unsupportedVersions =
+      listOf(
+        AndroidPluginVersion(8, 1, 0).alpha(9),
+        AndroidPluginVersion(8, 1),
+        AndroidPluginVersion(8, 2),
+        AndroidPluginVersion(8, 2, 0).alpha(9),
+        AndroidPluginVersion(8, 9),
+      )
+    val supportedVersions =
+      listOf(
+        AndroidPluginVersion(8, 1).dev(),
+        AndroidPluginVersion(8, 3, 0).dev(),
+        AndroidPluginVersion(8, 3, 0).alpha(1),
+        AndroidPluginVersion(8, 3),
+        AndroidPluginVersion(8, 4),
+        AndroidPluginVersion(8, 5, 0).dev(),
+      )
+
+    unsupportedVersions.forEach {
+      val e = assertThrows(IllegalStateException::class.java) { applyFtlPlugin(it) }
+      assertThat(e)
+        .hasMessageThat()
+        .contains(
+          "Firebase TestLab plugin is an experimental feature. It requires Android " +
+            "Gradle plugin version between 8.3 and 8.8."
         )
-        val supportedVersions = listOf(
-                AndroidPluginVersion(8, 1).dev(),
-                AndroidPluginVersion(8, 3, 0).dev(),
-                AndroidPluginVersion(8, 3, 0).alpha(1),
-                AndroidPluginVersion(8, 3),
-                AndroidPluginVersion(8, 4),
-                AndroidPluginVersion(8, 5, 0).dev(),
-        )
-
-        unsupportedVersions.forEach {
-            val e = assertThrows(IllegalStateException::class.java) {
-                applyFtlPlugin(it)
-            }
-            assertThat(e).hasMessageThat()
-                    .contains("Firebase TestLab plugin is an experimental feature. It requires Android " +
-                            "Gradle plugin version between 8.3 and 8.8.")
-        }
-
-        supportedVersions.forEach {
-            applyFtlPlugin(it)
-        }
     }
+
+    supportedVersions.forEach { applyFtlPlugin(it) }
+  }
 }

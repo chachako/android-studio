@@ -23,143 +23,136 @@ import com.google.api.client.http.HttpResponseException
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
-import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
-import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentHashMap
+import org.gradle.api.logging.LogLevel
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 /**
  * class to handle all [Storage] related requests made by the [TestLabBuildService]
  *
  * @param storageClient The underlying storage api object
  */
-class StorageManager (
-    private val storageClient: Storage,
-    private val hashingCache: FileHashCache = FileHashCache(),
-    private val logger: Logger = Logging.getLogger(StorageManager::class.java)
+class StorageManager(
+  private val storageClient: Storage,
+  private val hashingCache: FileHashCache = FileHashCache(),
+  private val logger: Logger = Logging.getLogger(StorageManager::class.java),
 ) {
-    private val fileLocks: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
+  private val fileLocks: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
-    companion object {
-        val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
-    }
+  companion object {
+    val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
+  }
 
-    fun testRunStorage(testRunId: String, bucketName: String, historyId: String): TestRunStorage =
-        TestRunStorage(
-            testRunId,
+  fun testRunStorage(testRunId: String, bucketName: String, historyId: String): TestRunStorage =
+    TestRunStorage(testRunId, bucketName, historyId, this)
+
+  fun uploadFile(
+    file: File,
+    bucketName: String,
+    prefix: String = "",
+    uploadFileName: String = file.name,
+  ): StorageObject {
+    val storageObject =
+      FileInputStream(file).use { fileInputStream ->
+        storageClient
+          .objects()
+          .insert(
             bucketName,
-            historyId,
-            this
-        )
+            StorageObject(),
+            InputStreamContent("application/octet-stream", fileInputStream).apply {
+              length = file.length()
+            },
+          )
+          .apply { name = "$prefix${uploadFileName}" }
+          .execute()
+      }
+    return storageObject
+  }
 
-    fun uploadFile(
-        file: File,
-        bucketName: String,
-        prefix: String = "",
-        uploadFileName: String = file.name
-    ): StorageObject {
-        val storageObject = FileInputStream(file).use { fileInputStream ->
-            storageClient.objects().insert(
-                bucketName,
-                StorageObject(),
-                InputStreamContent("application/octet-stream", fileInputStream).apply {
-                    length = file.length()
-                }
-            ).apply {
-                name = "$prefix${uploadFileName}"
-            }.execute()
-        }
-        return storageObject
-    }
+  /**
+   * Checks whether the given shared file exists as a shared file in the cloud. Otherwise uploads
+   * the file to the cloud.
+   *
+   * The file's sha256 hash is used for shared files, as multiple versions of shared files are
+   * expected to uploaded to the cloud at the same time.
+   *
+   * Firstly, the sha256 is retrieved or computed from the file hash cache.
+   *
+   * Then the file will be retrieved from [bucketName]/[moduleName]/<computed-hash>-[file]. If it
+   * exists, has not been modified, it is returned, otherwise the file is uploaded to the above
+   * location.
+   *
+   * @return the StorageObject for the given shared file.
+   */
+  fun retrieveOrUploadSharedFile(
+    file: File,
+    bucketName: String,
+    moduleName: String,
+    uploadFileName: String = file.name,
+  ): StorageObject {
+    return lockOnFile(file) {
+      val hash = hashingCache.retrieveOrGenerateHash(file)
+      val hashQualifiedPrefix = "$moduleName/$hash-"
+      val hashQualifiedName = hashQualifiedPrefix + uploadFileName
 
-    /**
-     * Checks whether the given shared file exists as a shared file in the cloud. Otherwise
-     * uploads the file to the cloud.
-     *
-     * The file's sha256 hash is used for shared files, as multiple versions of shared files are
-     * expected to uploaded to the cloud at the same time.
-     *
-     * Firstly, the sha256 is retrieved or computed from the file hash cache.
-     *
-     * Then the file will be retrieved from [bucketName]/[moduleName]/<computed-hash>-[file]. If it
-     * exists, has not been modified, it is returned, otherwise the file is uploaded to the above
-     * location.
-     *
-     * @return the StorageObject for the given shared file.
-     */
-    fun retrieveOrUploadSharedFile(
-        file: File,
-        bucketName: String,
-        moduleName: String,
-        uploadFileName: String = file.name
-    ): StorageObject {
-        return lockOnFile(file) {
-            val hash = hashingCache.retrieveOrGenerateHash(file)
-            val hashQualifiedPrefix = "$moduleName/$hash-"
-            val hashQualifiedName = hashQualifiedPrefix + uploadFileName
-
-            val storageObject = try {
-                storageClient.objects().get(bucketName, hashQualifiedName).execute()
-            } catch (e: GoogleJsonResponseException) {
-                null
-            }
-            if (storageObject != null && storageObject.isNotModified()) {
-                // TODO (b/276517167): check if storage object has become stale.
-                storageObject
-            } else {
-                uploadFile(file, bucketName, hashQualifiedPrefix, uploadFileName)
-            }
-        }
-    }
-
-    fun retrieveFile(fileUri: String): StorageObject? {
-        val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
-        val (bucketName, objectName) = matchResult.destructured
-        return try {
-            storageClient.objects().get(bucketName, objectName).execute()
-        } catch (e: GoogleJsonResponseException) {
-            null
-        }
-    }
-
-    fun downloadFile(
-        storageObject: StorageObject,
-        destination: (objectName: String) -> File
-    ): File? =
-        download(storageObject.bucket, storageObject.name, destination(storageObject.name))
-
-    fun downloadFile(fileUri: String, destination: (objectName: String) -> File): File? {
-        val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
-        val (bucketName, objectName) = matchResult.destructured
-        return download(bucketName, objectName, destination(objectName))
-    }
-
-    private fun download(bucketName: String, objectName: String, destination: File): File? =
+      val storageObject =
         try {
-            destination.apply {
-                parentFile.mkdirs()
-                outputStream().use {
-                    storageClient.objects()
-                        .get(bucketName, objectName)
-                        .executeMediaAndDownloadTo(it)
-                }
-            }
-        } catch (e: HttpResponseException) {
-            logger.log(
-                LogLevel.WARN,
-                "Failed to download storage object $objectName to file $destination")
-            null
+          storageClient.objects().get(bucketName, hashQualifiedName).execute()
+        } catch (e: GoogleJsonResponseException) {
+          null
         }
+      if (storageObject != null && storageObject.isNotModified()) {
+        // TODO (b/276517167): check if storage object has become stale.
+        storageObject
+      } else {
+        uploadFile(file, bucketName, hashQualifiedPrefix, uploadFileName)
+      }
+    }
+  }
 
-    private fun <V> lockOnFile(file: File, execution: () -> V) =
-        synchronized(fileLocks.computeIfAbsent(file.absolutePath) { Any() }) {
-            execution.invoke()
+  fun retrieveFile(fileUri: String): StorageObject? {
+    val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
+    val (bucketName, objectName) = matchResult.destructured
+    return try {
+      storageClient.objects().get(bucketName, objectName).execute()
+    } catch (e: GoogleJsonResponseException) {
+      null
+    }
+  }
+
+  fun downloadFile(storageObject: StorageObject, destination: (objectName: String) -> File): File? =
+    download(storageObject.bucket, storageObject.name, destination(storageObject.name))
+
+  fun downloadFile(fileUri: String, destination: (objectName: String) -> File): File? {
+    val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
+    val (bucketName, objectName) = matchResult.destructured
+    return download(bucketName, objectName, destination(objectName))
+  }
+
+  private fun download(bucketName: String, objectName: String, destination: File): File? =
+    try {
+      destination.apply {
+        parentFile.mkdirs()
+        outputStream().use {
+          storageClient.objects().get(bucketName, objectName).executeMediaAndDownloadTo(it)
         }
+      }
+    } catch (e: HttpResponseException) {
+      logger.log(
+        LogLevel.WARN,
+        "Failed to download storage object $objectName to file $destination",
+      )
+      null
+    }
+
+  private fun <V> lockOnFile(file: File, execution: () -> V) =
+    synchronized(fileLocks.computeIfAbsent(file.absolutePath) { Any() }) { execution.invoke() }
 }
 
 fun StorageObject.toUrl() = "gs://$bucket/$name"
 
 fun StorageObject.isNotModified(): Boolean =
-    getUpdated() == null || getUpdated() == getTimeCreated()
+  getUpdated() == null || getUpdated() == getTimeCreated()

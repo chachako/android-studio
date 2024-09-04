@@ -19,6 +19,8 @@ package com.android.tools.firebase.testlab.gradle.device
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.lang.IllegalStateException
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.testfixtures.ProjectBuilder
@@ -27,89 +29,76 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
-import java.lang.IllegalStateException
 
 class SetupConfigureActionTest {
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    lateinit var projectPath: File
+  lateinit var projectPath: File
 
-    lateinit var appProjectPath: File
+  lateinit var appProjectPath: File
 
-    lateinit var project: Project
+  lateinit var project: Project
 
-    lateinit var appProject: Project
+  lateinit var appProject: Project
 
-    @Before
-    fun setup() {
-        projectPath = temporaryFolderRule.newFolder("testProject")
-        appProjectPath = projectPath.resolve("app").apply {
-            mkdir()
-        }
+  @Before
+  fun setup() {
+    projectPath = temporaryFolderRule.newFolder("testProject")
+    appProjectPath = projectPath.resolve("app").apply { mkdir() }
 
-        project = ProjectBuilder.builder()
-            .withName("testProject")
-            .withProjectDir(projectPath)
-            .build()
+    project = ProjectBuilder.builder().withName("testProject").withProjectDir(projectPath).build()
 
-        appProject = ProjectBuilder.builder()
-            .withName("app")
-            .withParent(project)
-            .withProjectDir(appProjectPath)
-            .build()
+    appProject =
+      ProjectBuilder.builder()
+        .withName("app")
+        .withParent(project)
+        .withProjectDir(appProjectPath)
+        .build()
 
-        appProject.gradle.sharedServices.registerIfAbsent(
-            TestLabBuildService.RegistrationAction.getBuildServiceName(
-                TestLabBuildService::class.java,
-                appProject
-            ),
-            TestLabBuildService::class.java
-        ) {
-            // no configure needed for test.
-        }
+    appProject.gradle.sharedServices.registerIfAbsent(
+      TestLabBuildService.RegistrationAction.getBuildServiceName(
+        TestLabBuildService::class.java,
+        appProject,
+      ),
+      TestLabBuildService::class.java,
+    ) {
+      // no configure needed for test.
     }
+  }
 
-    fun <T> assertNoModify(property: Property<T>, value: T) {
-        val error = assertThrows(IllegalStateException::class.java) {
-            property.set(value)
-        }
-        assertThat(error.message).isEqualTo(
-            "The value for ${property.toString()} cannot be changed any further."
-        )
+  fun <T> assertNoModify(property: Property<T>, value: T) {
+    val error = assertThrows(IllegalStateException::class.java) { property.set(value) }
+    assertThat(error.message)
+      .isEqualTo("The value for ${property.toString()} cannot be changed any further.")
+  }
+
+  @Test
+  fun test_configureTaskInput() {
+    val deviceImpl =
+      ManagedDeviceImpl("testDeviceName").apply {
+        device = "Pixel 3"
+        apiLevel = 32
+        orientation = "portrait"
+        locale = "pl-PL"
+      }
+
+    SetupConfigureAction(appProject.objects, appProject).configureTaskInput(deviceImpl).apply {
+      assertThat(deviceName.get()).isEqualTo("testDeviceName")
+      assertThat(device.get()).isEqualTo("Pixel 3")
+      assertThat(apiLevel.get()).isEqualTo(32)
+      assertThat(buildService.get())
+        .isSameInstanceAs(TestLabBuildService.RegistrationAction.getBuildService(appProject).get())
+
+      assertNoModify(deviceName, "hello")
+      assertNoModify(device, "hello")
+      assertNoModify(apiLevel, 24)
+      assertNoModify(
+        buildService,
+        appProject.gradle.sharedServices
+          .registerIfAbsent("newService", TestLabBuildService::class.java) {}
+          .get(),
+      )
     }
-
-    @Test
-    fun test_configureTaskInput() {
-        val deviceImpl = ManagedDeviceImpl("testDeviceName").apply {
-            device = "Pixel 3"
-            apiLevel = 32
-            orientation = "portrait"
-            locale = "pl-PL"
-        }
-
-        SetupConfigureAction(appProject.objects, appProject)
-            .configureTaskInput(deviceImpl).apply {
-
-                assertThat(deviceName.get()).isEqualTo("testDeviceName")
-                assertThat(device.get()).isEqualTo("Pixel 3")
-                assertThat(apiLevel.get()).isEqualTo(32)
-                assertThat(buildService.get()).isSameInstanceAs(
-                    TestLabBuildService.RegistrationAction.getBuildService(appProject).get()
-                )
-
-                assertNoModify(deviceName, "hello")
-                assertNoModify(device, "hello")
-                assertNoModify(apiLevel, 24)
-                assertNoModify(
-                    buildService,
-                    appProject.gradle.sharedServices.registerIfAbsent(
-                        "newService",
-                        TestLabBuildService::class.java
-                    ) {}.get()
-                )
-            }
-    }
+  }
 }

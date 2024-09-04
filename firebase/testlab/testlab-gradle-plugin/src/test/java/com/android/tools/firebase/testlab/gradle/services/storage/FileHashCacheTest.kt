@@ -17,84 +17,84 @@
 package com.android.tools.firebase.testlab.gradle.services.storage
 
 import com.google.common.truth.Truth.assertThat
+import java.nio.file.attribute.FileTime
+import kotlin.io.path.setLastModifiedTime
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.nio.file.attribute.FileTime
-import kotlin.io.path.setLastModifiedTime
 
 class FileHashCacheTest {
 
-    @get:Rule
-    val temporaryFolderRule = TemporaryFolder()
+  @get:Rule val temporaryFolderRule = TemporaryFolder()
 
-    @Test
-    fun testSameFileGeneratesHashOnce() {
-        val file = temporaryFolderRule.newFile("hello")
-        file.writeText("a")
+  @Test
+  fun testSameFileGeneratesHashOnce() {
+    val file = temporaryFolderRule.newFile("hello")
+    file.writeText("a")
 
-        var hashRunCount = 0
-        val cache = FileHashCache({ file ->
-            ++hashRunCount
-            file.name
-        })
+    var hashRunCount = 0
+    val cache =
+      FileHashCache({ file ->
+        ++hashRunCount
+        file.name
+      })
 
-        var hash = cache.retrieveOrGenerateHash(file)
+    var hash = cache.retrieveOrGenerateHash(file)
 
-        assertThat(hashRunCount).isEqualTo(1)
-        assertThat(hash).isEqualTo("hello")
+    assertThat(hashRunCount).isEqualTo(1)
+    assertThat(hash).isEqualTo("hello")
 
-        hash = cache.retrieveOrGenerateHash(file)
+    hash = cache.retrieveOrGenerateHash(file)
 
-        assertThat(hashRunCount).isEqualTo(1)
-        assertThat(hash).isEqualTo("hello")
-    }
+    assertThat(hashRunCount).isEqualTo(1)
+    assertThat(hash).isEqualTo("hello")
+  }
 
-    @Test
-    fun testDifferentFileDifferentHash() {
-        val file1 = temporaryFolderRule.newFile("hello")
-        val file2 = temporaryFolderRule.newFile("world")
+  @Test
+  fun testDifferentFileDifferentHash() {
+    val file1 = temporaryFolderRule.newFile("hello")
+    val file2 = temporaryFolderRule.newFile("world")
 
-        var hashRunCount = 0
-        val cache = FileHashCache({ fileToCache ->
-            ++hashRunCount
-            fileToCache.name
-        })
+    var hashRunCount = 0
+    val cache =
+      FileHashCache({ fileToCache ->
+        ++hashRunCount
+        fileToCache.name
+      })
 
-        val hash1 = cache.retrieveOrGenerateHash(file1)
-        val hash2 = cache.retrieveOrGenerateHash(file2)
+    val hash1 = cache.retrieveOrGenerateHash(file1)
+    val hash2 = cache.retrieveOrGenerateHash(file2)
 
-        assertThat(hashRunCount).isEqualTo(2)
-        assertThat(hash1).isEqualTo("hello")
-        assertThat(hash2).isEqualTo("world")
-    }
+    assertThat(hashRunCount).isEqualTo(2)
+    assertThat(hash1).isEqualTo("hello")
+    assertThat(hash2).isEqualTo("world")
+  }
 
-    @Test
-    fun testFileModificationGeneratesDifferentHash() {
-        val file = temporaryFolderRule.newFile("test").apply {
-            writeText("a")
-        }
-        // Need to set last modified manually, as the test may run too quick for
-        // the timestamp to change.
-        file.toPath().setLastModifiedTime(FileTime.fromMillis(2000000))
+  @Test
+  fun testFileModificationGeneratesDifferentHash() {
+    val file = temporaryFolderRule.newFile("test").apply { writeText("a") }
+    // Need to set last modified manually, as the test may run too quick for
+    // the timestamp to change.
+    file.toPath().setLastModifiedTime(FileTime.fromMillis(2000000))
 
-        var hashRunCount = 0
-        val cache = FileHashCache({ fileToCache ->
-            ++hashRunCount
-            fileToCache.readLines().first()
-        })
+    var hashRunCount = 0
+    val cache =
+      FileHashCache({ fileToCache ->
+        ++hashRunCount
+        fileToCache.readLines().first()
+      })
 
-        var hash = cache.retrieveOrGenerateHash(file)
+    var hash = cache.retrieveOrGenerateHash(file)
 
-        assertThat(hashRunCount).isEqualTo(1)
-        assertThat(hash).isEqualTo("a")
+    assertThat(hashRunCount).isEqualTo(1)
+    assertThat(hash).isEqualTo("a")
 
-        file.writeText("b")
-        file.toPath().setLastModifiedTime(FileTime.fromMillis(2000001))
+    file.writeText("b")
+    file.toPath().setLastModifiedTime(FileTime.fromMillis(2000001))
 
-        hash = cache.retrieveOrGenerateHash(file)
+    hash = cache.retrieveOrGenerateHash(file)
 
-        assertThat(hashRunCount).isEqualTo(2)
-        assertThat(hash).isEqualTo("b")
-    }
+    assertThat(hashRunCount).isEqualTo(2)
+    assertThat(hash).isEqualTo("b")
+  }
 }

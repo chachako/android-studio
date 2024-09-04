@@ -20,25 +20,19 @@ import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInf
 import java.io.File
 import java.io.FileOutputStream
 
-/**
- * Handles the creation of device info files to be used by the test results proto.
- */
+/** Handles the creation of device info files to be used by the test results proto. */
 class DeviceInfoFileManager() {
 
-    fun createFile(
-        resultsOutDir: File,
-        device: TestDeviceData
-    ): File {
-        val deviceInfoFile = File(resultsOutDir, "device-info.pb")
-        val androidTestDeviceInfo = AndroidTestDeviceInfoProto.AndroidTestDeviceInfo.newBuilder()
-            .setName(device.name)
-            .setApiLevel(device.apiLevel.toString())
-            .setGradleDslDeviceName(device.name)
-            .setModel(device.deviceId)
-            .build()
-        FileOutputStream(deviceInfoFile).use {
-            androidTestDeviceInfo.writeTo(it)
-        }
-        return deviceInfoFile
-    }
+  fun createFile(resultsOutDir: File, device: TestDeviceData): File {
+    val deviceInfoFile = File(resultsOutDir, "device-info.pb")
+    val androidTestDeviceInfo =
+      AndroidTestDeviceInfoProto.AndroidTestDeviceInfo.newBuilder()
+        .setName(device.name)
+        .setApiLevel(device.apiLevel.toString())
+        .setGradleDslDeviceName(device.name)
+        .setModel(device.deviceId)
+        .build()
+    FileOutputStream(deviceInfoFile).use { androidTestDeviceInfo.writeTo(it) }
+    return deviceInfoFile
+  }
 }

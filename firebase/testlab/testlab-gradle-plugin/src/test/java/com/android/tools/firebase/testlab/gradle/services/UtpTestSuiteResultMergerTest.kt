@@ -23,17 +23,19 @@ import com.google.testing.platform.proto.api.core.TestStatusProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import org.junit.Test
 
-/**
- * Unit tests for [UtpTestSuiteResultMerger].
- */
+/** Unit tests for [UtpTestSuiteResultMerger]. */
 class UtpTestSuiteResultMergerTest {
-    private fun merge(vararg results: TestSuiteResultProto.TestSuiteResult): TestSuiteResultProto.TestSuiteResult {
-        val merger = UtpTestSuiteResultMerger()
-        results.forEach(merger::merge)
-        return merger.result
-    }
+  private fun merge(
+    vararg results: TestSuiteResultProto.TestSuiteResult
+  ): TestSuiteResultProto.TestSuiteResult {
+    val merger = UtpTestSuiteResultMerger()
+    results.forEach(merger::merge)
+    return merger.result
+  }
 
-    private val passedResult = TextFormat.parse("""
+  private val passedResult =
+    TextFormat.parse(
+      """
             test_suite_meta_data {
               scheduled_test_case_count: 1
             }
@@ -46,9 +48,14 @@ class UtpTestSuiteResultMergerTest {
               }
               test_status: PASSED
             }
-        """.trimIndent(), TestSuiteResultProto.TestSuiteResult::class.java)
+        """
+        .trimIndent(),
+      TestSuiteResultProto.TestSuiteResult::class.java,
+    )
 
-    private val skippedResult = TextFormat.parse("""
+  private val skippedResult =
+    TextFormat.parse(
+      """
             test_suite_meta_data {
               scheduled_test_case_count: 1
             }
@@ -61,9 +68,14 @@ class UtpTestSuiteResultMergerTest {
               }
               test_status: SKIPPED
             }
-        """.trimIndent(), TestSuiteResultProto.TestSuiteResult::class.java)
+        """
+        .trimIndent(),
+      TestSuiteResultProto.TestSuiteResult::class.java,
+    )
 
-    private val failedResult = TextFormat.parse("""
+  private val failedResult =
+    TextFormat.parse(
+      """
             test_suite_meta_data {
               scheduled_test_case_count: 1
             }
@@ -76,28 +88,31 @@ class UtpTestSuiteResultMergerTest {
               }
               test_status: FAILED
             }
-        """.trimIndent(), TestSuiteResultProto.TestSuiteResult::class.java)
+        """
+        .trimIndent(),
+      TestSuiteResultProto.TestSuiteResult::class.java,
+    )
 
-    @Test
-    fun mergeZeroResults() {
-        Truth.assertThat(merge()).isEqualTo(TestSuiteResultProto.TestSuiteResult.getDefaultInstance())
-    }
+  @Test
+  fun mergeZeroResults() {
+    Truth.assertThat(merge()).isEqualTo(TestSuiteResultProto.TestSuiteResult.getDefaultInstance())
+  }
 
-    @Test
-    fun mergePassedAndFailedResults() {
-        val mergedResult = merge(passedResult, failedResult)
+  @Test
+  fun mergePassedAndFailedResults() {
+    val mergedResult = merge(passedResult, failedResult)
 
-        Truth.assertThat(mergedResult.testStatus).isEqualTo(TestStatusProto.TestStatus.FAILED)
-        Truth.assertThat(mergedResult.testSuiteMetaData.scheduledTestCaseCount).isEqualTo(2)
-        Truth.assertThat(mergedResult.testResultList).hasSize(2)
-    }
+    Truth.assertThat(mergedResult.testStatus).isEqualTo(TestStatusProto.TestStatus.FAILED)
+    Truth.assertThat(mergedResult.testSuiteMetaData.scheduledTestCaseCount).isEqualTo(2)
+    Truth.assertThat(mergedResult.testResultList).hasSize(2)
+  }
 
-    @Test
-    fun mergePassedAndSkippedResults() {
-        val mergedResult = merge(passedResult, skippedResult)
+  @Test
+  fun mergePassedAndSkippedResults() {
+    val mergedResult = merge(passedResult, skippedResult)
 
-        Truth.assertThat(mergedResult.testStatus).isEqualTo(TestStatusProto.TestStatus.PASSED)
-        Truth.assertThat(mergedResult.testSuiteMetaData.scheduledTestCaseCount).isEqualTo(2)
-        Truth.assertThat(mergedResult.testResultList).hasSize(2)
-    }
+    Truth.assertThat(mergedResult.testStatus).isEqualTo(TestStatusProto.TestStatus.PASSED)
+    Truth.assertThat(mergedResult.testSuiteMetaData.scheduledTestCaseCount).isEqualTo(2)
+    Truth.assertThat(mergedResult.testResultList).hasSize(2)
+  }
 }

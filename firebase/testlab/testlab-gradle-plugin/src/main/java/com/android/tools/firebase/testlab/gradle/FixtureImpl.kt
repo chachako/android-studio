@@ -19,30 +19,27 @@ package com.android.tools.firebase.testlab.gradle
 import com.google.firebase.testlab.gradle.Fixture
 
 abstract class FixtureImpl : Fixture {
-    private var _grantedPermissions: GrantedPermissions = GrantedPermissions.ALL
-    override var grantedPermissions: String
-        set(value) {
-            _grantedPermissions = try {
-                GrantedPermissions.valueOf(value.uppercase())
-            } catch (_: IllegalArgumentException) {
-                error("$value is invalid. Available options are " +
-                        "[${GrantedPermissions.values().joinToString(", ")}].")
-            }
+  private var _grantedPermissions: GrantedPermissions = GrantedPermissions.ALL
+  override var grantedPermissions: String
+    set(value) {
+      _grantedPermissions =
+        try {
+          GrantedPermissions.valueOf(value.uppercase())
+        } catch (_: IllegalArgumentException) {
+          error(
+            "$value is invalid. Available options are " +
+              "[${GrantedPermissions.values().joinToString(", ")}]."
+          )
         }
-        get() = _grantedPermissions.name
-
-    /**
-     * Supported options for [grantedPermissions].
-     */
-    enum class GrantedPermissions {
-        /**
-         * All permissions are granted.
-         */
-        ALL,
-
-        /**
-         * No permissions are granted.
-         */
-        NONE,
     }
+    get() = _grantedPermissions.name
+
+  /** Supported options for [grantedPermissions]. */
+  enum class GrantedPermissions {
+    /** All permissions are granted. */
+    ALL,
+
+    /** No permissions are granted. */
+    NONE,
+  }
 }
