@@ -20,9 +20,11 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.utils.FileUtils;
-import java.util.Scanner;
+
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.Scanner;
 
 /**
  * Tests for the sourceSets task.
@@ -33,6 +35,15 @@ public class SourceSetsTaskTest {
             GradleTestProject.builder()
                     .fromTestApp(HelloWorldApp.forPlugin("com.android.application"))
                     .create();
+
+    @Test
+    public void testDeprecationMessage() throws Exception {
+        project.execute("sourceSets");
+        try (Scanner scanner = project.getBuildResult().getStdout()) {
+            ScannerSubject.assertThat(scanner)
+                    .contains("SourceSetsTask has been deprecated and will be removed in AGP 9.0");
+        }
+    }
 
     @Test
     public void runsSuccessfully() throws Exception {
