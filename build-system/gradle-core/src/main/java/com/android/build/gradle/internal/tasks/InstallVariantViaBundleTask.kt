@@ -29,6 +29,7 @@ import com.android.build.gradle.internal.utils.BundleApkFetcher
 import com.android.build.gradle.internal.utils.SdkApkInstallGroup
 import com.android.build.gradle.internal.utils.ViaBundleDeviceApkOutput
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
@@ -49,6 +50,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
+import java.io.File
 import java.util.stream.Collectors
 
 /**
@@ -145,10 +147,8 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
                                 parameters.projectPath.get(),
                                 parameters.variantName.get()
                             )
-                            device.installPackages(apks,
-                                parameters.installOptions.get(),
-                                parameters.timeOutInMs.get(),
-                                iLogger)
+                            installPackages(device, apks, iLogger)
+                            successfulInstallCount++
                         } else {
                             if(apkFiles.isEmpty()) {
                                 logger.lifecycle(
@@ -165,12 +165,7 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
                                     parameters.projectPath.get(),
                                     parameters.variantName.get()
                                 )
-
-                                if (apkFiles.size > 1) {
-                                    device.installPackages(apkFiles, parameters.installOptions.get(), parameters.timeOutInMs.get(), iLogger)
-                                } else {
-                                    device.installPackage(apkFiles[0], parameters.installOptions.get(), parameters.timeOutInMs.get(), iLogger)
-                                }
+                                installPackages(device, apkFiles, iLogger)
                                 successfulInstallCount++
                             }
                         }
@@ -186,6 +181,14 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
                         if (successfulInstallCount == 1) "device" else "devices"
                     )
                 }
+            }
+        }
+
+        private fun installPackages(device: DeviceConnector, apkFiles: List<File>, iLogger: ILogger) {
+            if (apkFiles.size > 1) {
+                device.installPackages(apkFiles, parameters.installOptions.get(), parameters.timeOutInMs.get(), iLogger)
+            } else {
+                device.installPackage(apkFiles[0], parameters.installOptions.get(), parameters.timeOutInMs.get(), iLogger)
             }
         }
 

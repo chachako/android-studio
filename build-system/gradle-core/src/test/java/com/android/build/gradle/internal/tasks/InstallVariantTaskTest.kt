@@ -25,29 +25,25 @@ import com.android.build.gradle.internal.utils.ApkSources
 import com.android.build.gradle.internal.utils.DefaultDeviceApkOutput
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
-import com.android.ddmlib.AndroidDebugBridge
-import com.android.ddmlib.internal.FakeAdbTestRule
-import com.android.fakeadbserver.DeviceState
-import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
-import com.android.utils.StdLogger
+import com.android.testutils.MockitoKt.whenever
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.mockito.Mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -74,12 +70,8 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     lateinit var logger: FakeLogger
 
-    @get:Rule
-    val fakeAdb = FakeAdbTestRule(deviceVersion)
-
     @Mock
     private lateinit var deviceConnector: DeviceConnector
-    private lateinit var deviceState: DeviceState
     private lateinit var mainOutputFileApk: File
 
     private var sandboxSupported: Boolean = false
@@ -88,20 +80,14 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @Before
     fun setUp() {
-        deviceState = fakeAdb.connectAndWaitForDevice()
-        deviceState.setActivityManager(PackageManager())
         sandboxSupported = deviceVersion.apiLevel >= 34
-        if (sandboxSupported) {
-            deviceState.serviceManager.setService("sdk_sandbox") { _, _ -> }
-        }
+        whenever(deviceConnector.name).thenReturn("Test Device")
+        whenever(deviceConnector.apiLevel).thenReturn(deviceVersion.apiLevel)
+        whenever(deviceConnector.apiCodeName).thenReturn(deviceVersion.codename)
+        whenever(deviceConnector.abis).thenReturn(listOf("x86_64"))
+        whenever(deviceConnector.density).thenReturn(-1)
+        whenever(deviceConnector.supportsPrivacySandbox).thenReturn(sandboxSupported)
         logger = FakeLogger()
-        val device = AndroidDebugBridge.getBridge()!!.devices.single()
-        deviceConnector = CustomConnectedDevice(
-                device,
-                StdLogger(StdLogger.Level.VERBOSE),
-                10000,
-                TimeUnit.MILLISECONDS,
-                deviceVersion)
 
         privacySandboxLegacyApkSplitsDirectory = temporaryFolder.newFolder("privacysandbox-legacy-split-apks")
     }
@@ -114,7 +100,6 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @Test
     @Throws(Exception::class)
-    @Ignore("b/364301279")
     fun checkDependencyApkInstallation() {
         createMainApkListingFile()
         val splitApk = getSdkSupportSplitApk()
@@ -140,22 +125,22 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
         )
 
 
-        val packageInstalls =
-            deviceState.abbLogs.filter { it.startsWith("package\u0000install-write") }
-        if (deviceConnector.supportsPrivacySandbox) {
-            assertThat(logger.lifeCycles).containsExactly(
-                "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
-                "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
-                "Installing APK '{}' on '{}' for {}:{}"
-            )
-            assertThat(packageInstalls.count()).isEqualTo(2)
+        var apkArgumentCaptor = argumentCaptor<File>()
+        var timeoutArgumentCaptor = argumentCaptor<Int>()
+        var optionsArgumentCaptor = argumentCaptor<Collection<String>>()
+        var loggerArgumentCaptor = argumentCaptor<LoggerWrapper>()
+        if (sandboxSupported) {
+            verify(deviceConnector, times(3)).installPackage(apkArgumentCaptor.capture(), optionsArgumentCaptor.capture(), timeoutArgumentCaptor.capture(), loggerArgumentCaptor.capture())
+            assertThat(apkArgumentCaptor.allValues).contains(mainOutputFileApk)
+            assertThat(apkArgumentCaptor.allValues.filter { it.name.contains("extracted-apk") }.size).isEqualTo(2)
+            assertThat(optionsArgumentCaptor.allValues).containsExactly(ImmutableSet.of<String>(), ImmutableSet.of<String>(), ImmutableSet.of<String>())
+            assertThat((timeoutArgumentCaptor.allValues)).containsExactly(4000, 4000, 4000)
         } else {
-            assertThat(logger.lifeCycles).containsExactly(
-                "Installing APK '{}' on '{}' for {}:{}")
-            assertThat(packageInstalls.count()).isEqualTo(0)
+            verify(deviceConnector, times(1)).installPackage(apkArgumentCaptor.capture(), optionsArgumentCaptor.capture(), timeoutArgumentCaptor.capture(), loggerArgumentCaptor.capture())
+            assertThat(apkArgumentCaptor.allValues).contains(mainOutputFileApk)
+            assertThat(optionsArgumentCaptor.allValues).containsExactly(ImmutableSet.of<String>())
+            assertThat((timeoutArgumentCaptor.allValues)).containsExactly(4000)
         }
-        assertThat(deviceState.pmLogs)
-            .containsExactly("install -r -t \"/data/local/tmp/main.apk\"")
     }
 
     private fun getSdkSupportSplitApk(): File {
@@ -186,11 +171,16 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
                 4000,
                 logger
         )
-        assert(deviceState.pmLogs.any {
-            it.startsWith("install -r -t") && it.contains("main.apk")
-        })
         assertThat(logger.quiets)
             .containsExactly("Installed on {} {}.")
+        var apkArgumentCaptor = argumentCaptor<File>()
+        var timeoutArgumentCaptor = argumentCaptor<Int>()
+        var optionsArgumentCaptor = argumentCaptor<Collection<String>>()
+        var loggerArgumentCaptor = argumentCaptor<LoggerWrapper>()
+        verify(deviceConnector, times(1)).installPackage(apkArgumentCaptor.capture(), optionsArgumentCaptor.capture(), timeoutArgumentCaptor.capture(), loggerArgumentCaptor.capture())
+        assertThat(apkArgumentCaptor.allValues).contains(mainOutputFileApk)
+        assertThat(optionsArgumentCaptor.allValues).containsExactly(ImmutableSet.of<String>())
+        assertThat((timeoutArgumentCaptor.allValues)).containsExactly(4000)
     }
 
     internal class FakeDeviceProvider(private val devices: List<DeviceConnector>) : DeviceProvider() {

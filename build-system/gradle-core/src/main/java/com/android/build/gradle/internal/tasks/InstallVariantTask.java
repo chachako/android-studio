@@ -98,7 +98,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
 
     @Override
     protected void doTaskAction() throws DeviceException, ExecutionException {
-        final ILogger iLogger = new LoggerWrapper(getLogger());
+        final LoggerWrapper iLogger = new LoggerWrapper(getLogger());
         DeviceProvider deviceProvider =
                 new ConnectedDeviceProvider(
                         getBuildTools().adbExecutable(),
@@ -120,7 +120,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                     minSdkVersion,
                                     variantName,
                                     getProjectPath().get(),
-                                    new LoggerWrapper(getLogger()));
+                                    iLogger);
                     install(
                             deviceApkOutput,
                             getProjectPath().get(),
@@ -184,12 +184,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                 device.getName(),
                                 projectPath,
                                 variantName);
-
-                        if (apkFiles.size() > 1) {
-                            device.installPackages(apkFiles, extraArgs, timeOutInMs, iLogger);
-                        } else {
-                            device.installPackage(apkFiles.get(0), extraArgs, timeOutInMs, iLogger);
-                        }
+                        installPackages(device, apkFiles, extraArgs, timeOutInMs, iLogger);
                         successfulInstallCount++;
                     }
                 }
@@ -203,6 +198,20 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                     "Installed on {} {}.",
                     successfulInstallCount,
                     successfulInstallCount == 1 ? "device" : "devices");
+        }
+    }
+
+    private static void installPackages(
+            @NonNull DeviceConnector device,
+            @NonNull List<File> apkFiles,
+            @NonNull Collection<String> extraArgs,
+            @NonNull int timeOutInMs,
+            @NonNull ILogger iLogger)
+            throws DeviceException {
+        if (apkFiles.size() > 1) {
+            device.installPackages(apkFiles, extraArgs, timeOutInMs, iLogger);
+        } else {
+            device.installPackage(apkFiles.get(0), extraArgs, timeOutInMs, iLogger);
         }
     }
 
@@ -223,7 +232,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                     device.getName(),
                     projectPath,
                     variantName);
-            device.installPackages(sdkApkFiles, extraArgs, timeOutInMs, iLogger);
+            installPackages(device, sdkApkFiles, extraArgs, timeOutInMs, iLogger);
         } catch (DeviceException e) {
             logger.error(
                     String.format(
