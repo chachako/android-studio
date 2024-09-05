@@ -24,7 +24,6 @@ import com.android.build.gradle.integration.manageddevice.utils.addManagedDevice
 import org.junit.Rule
 import org.junit.Test
 
-@org.junit.Ignore("b/359341674")
 class UtpManagedDeviceSetupTest {
 
     @get:Rule

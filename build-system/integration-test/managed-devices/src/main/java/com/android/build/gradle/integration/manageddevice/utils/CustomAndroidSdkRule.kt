@@ -95,6 +95,7 @@ class CustomAndroidSdkRule : ExternalResource() {
             .with(IntegerOption.ANDROID_SDK_CHANNEL, 3)
             .with(StringOption.GRADLE_MANAGED_DEVICE_EMULATOR_GPU_MODE, "swiftshader_indirect")
             .with(BooleanOption.GRADLE_MANAGED_DEVICE_EMULATOR_SHOW_KERNEL_LOGGING, true)
+            .with(IntegerOption.GRADLE_MANAGED_DEVICE_SETUP_TIMEOUT_MINUTES, 2)
             .withArgument("-D${AndroidSdkHandler.SDK_TEST_BASE_URL_PROPERTY}=file:///${customSdkRepo.absolutePath}/")
     }
 
