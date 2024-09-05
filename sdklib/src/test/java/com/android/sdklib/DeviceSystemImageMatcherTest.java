@@ -269,7 +269,15 @@ public final class DeviceSystemImageMatcherTest {
     @Test
     public void matchesApiLevelIncompatible() {
         Device device = mockDevice("default", 34, Integer.MAX_VALUE);
-        ISystemImage image = mockImage(Collections.emptyList(), 33);
+        ISystemImage image = mockImage(Collections.emptyList(), 33, false);
+
+        assertFalse(DeviceSystemImageMatcher.matches(device, image));
+    }
+
+    @Test
+    public void matchesPlayImageRequiresPlayDevice() {
+        Device device = mockDevice("default");
+        ISystemImage image = mockImage(Collections.emptyList(), 33, true);
 
         assertFalse(DeviceSystemImageMatcher.matches(device, image));
     }
@@ -317,14 +325,17 @@ public final class DeviceSystemImageMatcherTest {
 
     @NonNull
     private static ISystemImage mockImage(@NonNull List<IdDisplay> tags) {
-        return mockImage(tags, 33);
+        return mockImage(tags, 33, false);
     }
 
     @NonNull
-    private static ISystemImage mockImage(@NonNull List<IdDisplay> tags, int apiLevel) {
+    private static ISystemImage mockImage(
+            @NonNull List<IdDisplay> tags, int apiLevel, boolean hasPlayStore) {
         ISystemImage image = Mockito.mock(ISystemImage.class);
         Mockito.when(image.getTags()).thenReturn(tags);
         Mockito.when(image.getAndroidVersion()).thenReturn(new AndroidVersion(apiLevel));
+
+        Mockito.when(image.hasPlayStore()).thenReturn(hasPlayStore);
 
         return image;
     }
