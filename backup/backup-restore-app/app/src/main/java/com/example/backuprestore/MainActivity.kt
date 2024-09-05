@@ -27,7 +27,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.backuprestore.db.User
 import com.example.backuprestore.ui.theme.BackupRestoreTheme
@@ -69,12 +73,23 @@ internal class MainActivity : ComponentActivity() {
     modifier: Modifier = Modifier,
   ) {
     Column(modifier = modifier) {
-      Text("Num users (Global): ${users.size}")
+      Text(
+        "Num users (Global): ${users.size}",
+        modifier = Modifier.setTagAndId("numGlobalUsersText"),
+      )
       TextButton(onClick = { onAddUser("Foo") }) { Text("Add global user") }
-      Text("Num users (Cloud): ${cloudUsers.size}")
+      Text(
+        "Num users (Cloud): ${cloudUsers.size}",
+        modifier = Modifier.setTagAndId("numCloudUsersText"),
+      )
       TextButton(onClick = { onAddCloudUser("Foo") }) { Text("Add cloud user") }
-      Text("Num users (D2D): ${d2dUsers.size}")
+      Text("Num users (D2D): ${d2dUsers.size}", modifier = Modifier.setTagAndId("numD2DUsersText"))
       TextButton(onClick = { onAddD2dUser("Foo") }) { Text("Add d2d user") }
     }
   }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.setTagAndId(tag: String): Modifier {
+  return this.semantics { this.testTagsAsResourceId = true }.testTag(tag)
 }
