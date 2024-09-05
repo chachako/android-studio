@@ -31,9 +31,11 @@ import com.android.tools.lint.checks.infrastructure.parseFirst
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.isClassReference
 import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiElement
 import java.io.File
 import kotlin.math.min
 import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -367,6 +369,187 @@ class LintJarApiMigrationTest {
 
         assertEquals(true, isString(call1))
         assertEquals(false, isString(call2))
+      },
+    )
+  }
+
+  @Test
+  fun testSuspiciousModifierSnippet() {
+    // Verify code which tripped up bytecode verifier in google3
+    @Suppress("KotlinConstantConditions")
+    val file =
+      bytecode(
+        "code.jar",
+        kotlin(
+            "src/test/pkg/test.kt",
+            """
+            package test.pkg
+            import com.intellij.psi.PsiElement
+            import org.jetbrains.kotlin.analysis.api.analyze
+            import org.jetbrains.kotlin.analysis.api.calls.KtCall
+            import org.jetbrains.kotlin.analysis.api.calls.KtCallableMemberCall
+            import org.jetbrains.kotlin.analysis.api.calls.KtCompoundAccessCall
+            import org.jetbrains.kotlin.analysis.api.calls.KtImplicitReceiverValue
+            import org.jetbrains.kotlin.analysis.api.calls.singleCallOrNull
+            import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+            import org.jetbrains.kotlin.analysis.api.symbols.KtReceiverParameterSymbol
+            import org.jetbrains.kotlin.psi.KtExpression
+
+            fun getPsiForReceiver(ktCallExpression: KtExpression): PsiElement? =
+                analyze(ktCallExpression) {
+                    getImplicitReceiverValue(ktCallExpression)?.getImplicitReceiverPsi()
+                }
+
+            fun KtImplicitReceiverValue.getImplicitReceiverPsi(): PsiElement? {
+                return when (val receiverParameterSymbol = this.symbol) {
+                    // the owning lambda expression
+                    is KtReceiverParameterSymbol -> receiverParameterSymbol.owningCallableSymbol.psi
+                    // the class that we are in, calling a method
+                    is KtClassOrObjectSymbol -> receiverParameterSymbol.psi
+                    else -> null
+                }
+            }
+
+            fun getImplicitReceiverValue(
+                ktExpression: KtExpression
+            ): KtImplicitReceiverValue? {
+                analyze(ktExpression) {
+                    val partiallyAppliedSymbol =
+                        when (val call = ktExpression.resolveCall()?.singleCallOrNull<KtCall>()) {
+                            is KtCompoundAccessCall -> call.compoundAccess.operationPartiallyAppliedSymbol
+                            is KtCallableMemberCall<*, *> -> call.partiallyAppliedSymbol
+                            else -> null
+                        } ?: return null
+
+                    return partiallyAppliedSymbol.extensionReceiver as? KtImplicitReceiverValue
+                        ?: partiallyAppliedSymbol.dispatchReceiver as? KtImplicitReceiverValue
+                }
+            }
+            """,
+          )
+          .indented(),
+        0x4899033,
+        """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuLiKEktLtEryE4XYgsBsrxLlBi0
+        GAAvgr4WLAAAAA==""",
+        """
+        test/pkg/TestKt.class:
+        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
+        I2npUnQ179jn+cyXZn/jYT5W5HfHTYM8RCqiu5n1Xa4rNBL26zv1npH+6VzA
+        +amj9tUvqb2ro3G3GpGhttkC1IqukmivRd1Q4imJjs/5xsmx6pKIy8nh89ui
+        0WG2p9aULHjZSEzYee8sXMRb4jhMYhJn1x2cXlvS3RQKBHT7g4gphUSm+Weo
+        7hiONqu7u3vWu1rRrnpKPZXeGp9Hrd5SWl1Z7fN6o73aWrXWU1rj89apdbWl
+        NZWbfd56h1Jb71C8vtrNan0VezW+eq9aW1Pq9dVVc2xLaW2lx+Orq5kxl23l
+        89lM4vGWegiislqtITSCYM+h1UXa+srNkbH6SLu50uv06r2VNWpNDXuE4bQ1
+        BKJWNKvMRk2hXt6IsrsszT/YoQ3vkQlRYFm7EdR3jciTMELJaw9R2Xu1sCHf
+        I8RVN44E5eeL1uCoYRokNc58lRYomzs6XXrPYlMdj28xpMSCeO7PPBwRtXfe
+        MrzhJyFFhj2S4UIq0tj+nklgklSV1Psr8tRTyE3e+iSKKqZQfBqXCezPu+IU
+        1kxiXQeSt1X6UirlyCQ2+FKT69JcKZNwT6JWtltcqZO4ZhI74Ur1Kcl16RWn
+        cN3+F5BxCu0TSN0nfBmxbJ2RuTdM4HKfEnfEpTznyiCuk8TdwgvkGPtjvKOM
+        2Tv4A39bkHIOh5Ch4BahIE8+ChqEfMDfw40Kes5xr8ocBjnYexYuh7kHf6Ss
+        XcinRnKQjkpcgY1Yg03UmBtbUMV1PLgW1eRZhlvYHoaX98RajKCOaLwstGtZ
+        +XpwD+fcy7n3IRd/okxC45xc3Iguym3jCntwExRy9mIvaWnk78c+vIUWkL39
+        HE3lyiP2aDJW4ygOcDSJs+/CQdKEtBOlHmL7Zz5ppChs/8JH4b7ICG64Fdc7
+        xuVFIIl/gKcir4/GrZjEQPuGMwiMI3fDFAKTGJ7E6AQKSBsbR9aG03ibwARS
+        xMlpLWcj+X9YreDWZdujyiqy3ScfmSgkyBVUUzHVlG9vuojrZeJKvB3vsOF6
+        8E7ctjjcZmrYhptyBzWxgj55e0Xe7ZfQF12Kw3oHHTLoy0iuU130yw9N4U5f
+        ZnJdlvBlJ9fluDJP42O89i9zLTuN+wTG4ZG9T5KU68qdwgnf8uS6PNfyMzgx
+        fu6NwpxxbmECxa5cX3ZKXc7EuZcLcx6wSamubHLD8fp8V/4ZPDQOtlN46DQ+
+        KzCJL05ghaQ/No4cSX9sEo9Lpe9/Eas5pyh+PBSd9BW4CibxlCP08Dgy5eTD
+        kZmX7ZODX48z6CuML7Dw5MKhR4O04KzopzGKRKfd9gtDthG3eA2552jk3DjB
+        p+AVPnfySeFzN3AWG9lXcEL8BxnpDEvGbdqCcfsKGU7IuC2IxzD9j0xAHn3y
+        ZDefc3TBwvPwv0o+gDMOr5I/C6YG28cfxDpiXE0XrWdC2Myw3EJf9vG3gZrZ
+        yoRwNYN7DZPBNiaDazCM7TDRyEDdQdfZxvk78DCa8Cjd8HG6+FO4Ds8wMp/n
+        2Lc47yWspR5L8S+U4d98/y9j5iyuF5loE0VYw6dEFGOdqEW56GDbybFDHOtn
+        O8pkwlgTeyljnLF4iqkhj6knHafxNJYTw1p8A99k6hli8nmGo1nE14lnScsm
+        ynY8hykmuwEmnDNElMld+ImqiwfBzejDt/EdJpmXmApfoLx87vNxvCiTGBHV
+        4rv4HgqI4AlyOOns5el09up0Ont1Op29Pp3OfjOdzv7ppDPuZmVMz+azezbf
+        NC3N7tmS7Z4tmRqqj8yVPWeu7Dlzo7Q0u+fMlb2Zuc6OZM/ZB9MOji+eWlPw
+        V1kvcyN/Y/NmiflmiXnJSkz83a5oBH7AoPnhQSS34ket+HErfoKftuJn+Hkr
+        foFfHoQw8Su8dhAZJppN3GbiuIlDJlJNvG5KYquJX9sOnENZb/D5rT3nd/8H
+        gGho19MhAAA=""",
+      )
+
+    checkBytecodeMigration(
+      file,
+      "getImplicitReceiverPsi",
+      """
+      @@ -11 +11
+      -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtImplicitReceiverValue.getSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KtSymbol;
+      +   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue.getSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KaSymbol;
+      @@ -16 +16
+      -   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KtReceiverParameterSymbol
+      +   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol
+      @@ -19 +19
+      -   CHECKCAST org/jetbrains/kotlin/analysis/api/symbols/KtReceiverParameterSymbol
+      -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KtReceiverParameterSymbol.getOwningCallableSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KtCallableSymbol;
+      -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KtCallableSymbol.getPsi ()Lcom/intellij/psi/PsiElement;
+      +   CHECKCAST org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol
+      +   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol.getOwningCallableSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KaCallableSymbol;
+      +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/symbols/KaCallableSymbol.getPsi ()Lcom/intellij/psi/PsiElement; (itf)
+      @@ -27 +27
+      -   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KtClassOrObjectSymbol
+      +   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KaClassSymbol
+      @@ -30 +30
+      -   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/symbols/KtSymbol.getPsi ()Lcom/intellij/psi/PsiElement; (itf)
+      +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/symbols/KaSymbol.getPsi ()Lcom/intellij/psi/PsiElement; (itf)
+      """,
+      showDiff = true,
+      checkSource =
+        kotlin(
+          """
+          class Foo {
+             // The implicit receiver of method2 is "this" is Foo.this
+             fun method1(): Int = method2()
+             fun method2(): Int = 42
+          }
+          """
+        ),
+      checks = { ktFile, migratedClass ->
+        fun getImplicitReceiverPsi(ktExpression: KtExpression): PsiElement? {
+          val method = migratedClass.declaredMethods.find { it.name == "getPsiForReceiver" }!!
+          return method.invoke(null, ktExpression) as PsiElement?
+        }
+        val call =
+          ((ktFile.declarations[0] as KtClass).declarations[0] as KtNamedFunction).bodyExpression
+            as KtCallExpression
+        assertEquals("Foo", (getImplicitReceiverPsi(call) as KtClass).name)
       },
     )
   }
