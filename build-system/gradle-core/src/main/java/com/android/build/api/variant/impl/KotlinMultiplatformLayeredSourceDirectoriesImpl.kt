@@ -26,13 +26,12 @@ import org.gradle.api.tasks.util.PatternFilterable
 /**
  * Implementation of [SourceDirectories.Layered] that is read-only for kmp.
  */
-class KotlinMultiplatformResSourceDirectoriesImpl(
+open class KotlinMultiplatformLayeredSourceDirectoriesImpl(
     name: String,
     val variantServices: VariantServices,
     variantDslFilters: PatternFilterable?,
-    private val compilation: KotlinMultiplatformAndroidCompilation
+    private val compilation: KotlinMultiplatformAndroidCompilation,
 ) : LayeredSourceDirectoriesImpl(name, variantServices, variantDslFilters) {
-
     /**
      * Note: This doesn't preserve task dependencies of internal `directoryEntry` objects as the
      * provider watched is the one from the outer scope only. Do not use unless necessary.

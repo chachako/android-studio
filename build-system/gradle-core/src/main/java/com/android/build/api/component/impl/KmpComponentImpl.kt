@@ -37,7 +37,7 @@ import com.android.build.api.variant.impl.DirectoryEntries
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformFlatSourceDirectoriesImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformResSourceDirectoriesImpl
+import com.android.build.api.variant.impl.KotlinMultiplatformLayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.ManifestFilesImpl
 import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
@@ -303,8 +303,17 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         )
 
         override val res = if (buildFeatures.androidResources) {
-            KotlinMultiplatformResSourceDirectoriesImpl(
+            KotlinMultiplatformLayeredSourceDirectoriesImpl(
                 name = SourceType.RES.folder,
+                variantServices = variantServices,
+                variantDslFilters = PatternSet(),
+                compilation = compilation
+            )
+        } else null
+
+        override val assets = if (buildFeatures.androidResources) {
+            KotlinMultiplatformLayeredSourceDirectoriesImpl(
+                name = SourceType.ASSETS.folder,
                 variantServices = variantServices,
                 variantDslFilters = PatternSet(),
                 compilation = compilation
@@ -327,6 +336,10 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             res?.let(action)
         }
 
+        override fun assets(action: (LayeredSourceDirectoriesImpl) -> Unit) {
+            assets?.let(action)
+        }
+
         override val manifestFile = manifestFile
 
         private val extras by lazy(LazyThreadSafetyMode.NONE) {
@@ -341,7 +354,6 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         override fun getByName(name: String): SourceDirectories.Flat = extras.maybeCreate(name)
 
         // Not supported
-        override val assets = null
         override val jniLibs = null
         override val shaders = null
         override val mlModels = null
@@ -352,7 +364,6 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
         override fun aidl(action: (FlatSourceDirectoriesImpl) -> Unit) {}
         override fun renderscript(action: (FlatSourceDirectoriesImpl) -> Unit) {}
-        override fun assets(action: (LayeredSourceDirectoriesImpl) -> Unit) {}
         override fun jniLibs(action: (LayeredSourceDirectoriesImpl) -> Unit) {}
         override fun shaders(action: (LayeredSourceDirectoriesImpl) -> Unit) {}
         override fun mlModels(action: (LayeredSourceDirectoriesImpl) -> Unit) {}
@@ -442,7 +453,23 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
                             FileBasedDirectoryEntryImpl(
                                 name = sourceSet.name,
                                 // Android resources are located under androidMain/res
-                                directory = File(srcDir.parentFile, "res")
+                                directory = File(srcDir.parentFile, SourceType.RES.folder)
+                            )
+                        }.toMutableList()
+                    )
+                }
+            }
+        )
+
+        sources.assets?.addStaticSources(
+            services.provider {
+                androidKotlinCompilation.defaultSourceSet.let { sourceSet ->
+                    DirectoryEntries(
+                        sourceSet.name,
+                        sourceSet.resources.srcDirs.map { srcDir ->
+                            FileBasedDirectoryEntryImpl(
+                                name = sourceSet.name,
+                                directory = File(srcDir.parentFile, SourceType.ASSETS.folder)
                             )
                         }.toMutableList()
                     )
