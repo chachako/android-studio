@@ -71,6 +71,15 @@ public class SystemImageTags {
     public static final IdDisplay PLAY_STORE_TAG =
             IdDisplay.create("google_apis_playstore", "Google Play");
 
+    /** An "automated test device", a stripped-down system image for headless testing. */
+    public static final IdDisplay AOSP_ATD_TAG = IdDisplay.create("aosp_atd", "AOSP ATD");
+
+    /**
+     * An "automated test device" with Google APIs, a stripped-down system image for headless
+     * testing.
+     */
+    public static final IdDisplay GOOGLE_ATD_TAG = IdDisplay.create("google_atd", "Google ATD");
+
     /**
      * Tag to apply to system images specifically for tablets. (Tablets may also use non-tablet
      * images.)
@@ -155,6 +164,11 @@ public class SystemImageTags {
         return tags.contains(AUTOMOTIVE_TAG)
                 || tags.contains(AUTOMOTIVE_PLAY_STORE_TAG)
                 || tags.contains(AUTOMOTIVE_DISTANT_DISPLAY_TAG);
+    }
+
+    /** Indicates if the image is for an automated test device. */
+    public static boolean isAtd(Collection<IdDisplay> tags) {
+        return tags.contains(AOSP_ATD_TAG) || tags.contains(GOOGLE_ATD_TAG);
     }
 
     public static ImmutableList<IdDisplay> getTags(RepoPackage pkg) {
