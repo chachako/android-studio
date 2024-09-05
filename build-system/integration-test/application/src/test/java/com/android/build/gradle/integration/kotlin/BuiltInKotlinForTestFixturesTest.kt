@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
@@ -74,17 +75,12 @@ class BuiltInKotlinForTestFixturesTest {
      */
     @Test
     fun testModuleAndExternalDependencies() {
-        TestFileUtils.appendToFile(
-            project.gradlePropertiesFile,
-            "${BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT.propertyName}=true"
-        )
+        enableTestFixturesKotlinSupport()
         val lib = project.getSubproject(":lib")
-        lib.buildFile.appendText(
+        TestFileUtils.appendToFile(
+            lib.buildFile,
             """
-                android.testFixtures.enable = true
-
                 dependencies {
-                    testFixturesImplementation("org.jetbrains.kotlin:kotlin-stdlib:${TestUtils.KOTLIN_VERSION_FOR_TESTS}")
                     testFixturesImplementation("androidx.compose.ui:ui-tooling-preview:1.6.5")
                     testFixturesImplementation(project(":lib2"))
                 }
@@ -124,20 +120,8 @@ class BuiltInKotlinForTestFixturesTest {
 
     @Test
     fun testInternalModifierAccessible() {
-        TestFileUtils.appendToFile(
-            project.gradlePropertiesFile,
-            "${BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT.propertyName}=true"
-        )
+        enableTestFixturesKotlinSupport()
         val lib = project.getSubproject(":lib")
-        lib.buildFile.appendText(
-            """
-                android.testFixtures.enable = true
-
-                dependencies {
-                    testFixturesImplementation("org.jetbrains.kotlin:kotlin-stdlib:${TestUtils.KOTLIN_VERSION_FOR_TESTS}")
-                }
-                """.trimIndent()
-        )
         lib.file("src/testFixtures/kotlin/LibTestFixtureFoo.kt").let {
             it.parentFile.mkdirs()
             it.writeText(
@@ -165,25 +149,13 @@ class BuiltInKotlinForTestFixturesTest {
 
     @Test
     fun testLowKotlinVersion() {
+        enableTestFixturesKotlinSupport()
         TestFileUtils.searchAndReplace(
             project.projectDir.parentFile.resolve(VERSION_CATALOG),
             "version('kotlinVersion', '${TestUtils.KOTLIN_VERSION_FOR_TESTS}')",
             "version('kotlinVersion', '1.8.10')"
         )
-        TestFileUtils.appendToFile(
-            project.gradlePropertiesFile,
-            "${BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT.propertyName}=true"
-        )
         val lib = project.getSubproject(":lib")
-        lib.buildFile.appendText(
-            """
-                android.testFixtures.enable = true
-
-                dependencies {
-                    testFixturesImplementation("org.jetbrains.kotlin:kotlin-stdlib:${TestUtils.KOTLIN_VERSION_FOR_TESTS}")
-                }
-                """.trimIndent()
-        )
         val result = lib.executor().expectFailure().run(":lib:assembleDebugTestFixtures")
         result.assertErrorContains(
             "The current Kotlin Gradle plugin version (1.8.10) is below the required"
@@ -207,5 +179,79 @@ class BuiltInKotlinForTestFixturesTest {
         // Set failOnWarning to false because Gradle warns about deprecated feature(s) used by KGP 1.8.10.
         lib.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .withFailOnWarning(false).run(":lib:assembleDebugTestFixtures")
+    }
+
+    // Regression test for b/364331837
+    @Test
+    fun testJvmTarget() {
+        enableTestFixturesKotlinSupport()
+        val lib = project.getSubproject(":lib")
+        // Add a simple kotlin source file so that kotlin compilation task does work.
+        lib.file("src/testFixtures/kotlin/LibTestFixtureFoo.kt").let {
+            it.parentFile.mkdirs()
+            it.writeText(
+                """
+                    package com.foo.library
+                    class LibTestFixtureFoo {}
+                    """.trimIndent()
+            )
+        }
+
+        // First check setting jvmTarget via the compilerOptions DSL
+        TestFileUtils.searchAndReplace(
+            lib.buildFile,
+            "jvmToolchain(17)",
+             "compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)"
+        )
+        TestFileUtils.appendToFile(
+            lib.buildFile,
+            // language=groovy
+            """
+               afterEvaluate {
+                    tasks.named("compileDebugTestFixturesKotlin") {
+                        doLast {
+                            def jvmTarget = it.compilerOptions.jvmTarget.get().target
+                            println("My jvmTarget: " + jvmTarget)
+                        }
+                    }
+               }
+            """.trimIndent()
+        )
+        lib.executor().run(":lib:compileDebugTestFixturesKotlin")
+        ScannerSubject.assertThat(lib.buildResult.stdout).contains("My jvmTarget: 17")
+
+        // Then check that setting jvmTarget on the task overrides the compilerOptions DSL
+        TestFileUtils.appendToFile(
+            lib.buildFile,
+            // language=groovy
+            """
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+                    }
+                }
+                """.trimIndent()
+        )
+        lib.executor().run(":lib:compileDebugTestFixturesKotlin")
+        ScannerSubject.assertThat(lib.buildResult.stdout).contains("My jvmTarget: 21")
+    }
+
+
+    private fun enableTestFixturesKotlinSupport() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "${BooleanOption.ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT.propertyName}=true"
+        )
+        val lib = project.getSubproject(":lib")
+        TestFileUtils.appendToFile(
+            lib.buildFile,
+            """
+                android.testFixtures.enable = true
+
+                dependencies {
+                    testFixturesImplementation("org.jetbrains.kotlin:kotlin-stdlib:${TestUtils.KOTLIN_VERSION_FOR_TESTS}")
+                }
+                """.trimIndent()
+        )
     }
 }

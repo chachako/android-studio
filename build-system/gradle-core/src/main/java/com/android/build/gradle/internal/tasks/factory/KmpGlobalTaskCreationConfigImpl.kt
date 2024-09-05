@@ -64,7 +64,7 @@ import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 internal class KmpGlobalTaskCreationConfigImpl(
     project: Project,
@@ -254,6 +254,6 @@ internal class KmpGlobalTaskCreationConfigImpl(
         get() = throw IllegalAccessException("Not supported for kmp")
     override val dataBinding: DataBinding
         get() = throw IllegalAccessException("Not supported for kmp")
-    override val kotlinOptions: KotlinJvmOptions
+    override val kotlinAndroidProjectExtension: KotlinAndroidProjectExtension
         get() = throw IllegalAccessException("Not supported for kmp")
 }
