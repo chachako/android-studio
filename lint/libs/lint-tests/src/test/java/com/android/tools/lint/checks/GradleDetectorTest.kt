@@ -4139,6 +4139,32 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testUpgradeToCredentialManager() {
+    lint()
+      .files(
+        gradle(
+            """
+            apply plugin: 'com.android.application'
+
+            dependencies {
+                compile 'com.google.android.gms:play-services-fido:21.1.0'
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+        build.gradle:4: Warning: Prefer to migrate to the Credential Manager API (androidx.credentials:credentials) [GradleDependency]
+            compile 'com.google.android.gms:play-services-fido:21.1.0'
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
   fun testGetNamedDependency() {
     TestCase.assertEquals(
       "com.android.support:support-v4:21.0.+",

@@ -1598,6 +1598,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       report(context, cookie, DEPRECATED, message, fix)
     }
 
+    if (GMS_GROUP_ID == groupId && "play-services-fido" == artifactId) {
+      report(
+        context,
+        cookie,
+        DEPENDENCY,
+        "Prefer to migrate to the Credential Manager API (androidx.credentials:credentials)",
+        fix().url("https://developer.android.com/identity/sign-in/fido2-migration").build(),
+      )
+      return
+    }
+
     if (GMS_GROUP_ID == groupId || FIREBASE_GROUP_ID == groupId) {
       if (!mCheckedGms) {
         mCheckedGms = true
