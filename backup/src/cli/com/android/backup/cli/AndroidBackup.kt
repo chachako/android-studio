@@ -20,40 +20,91 @@ import com.android.adblib.tools.createStandaloneSession
 import com.android.backup.BackupResult
 import com.android.backup.BackupService
 import com.android.backup.BackupType
+import com.android.backup.BackupType.CLOUD
 import com.android.backup.BackupType.DEVICE_TO_DEVICE
+import com.android.backup.cli.CommandLineOptions.createCommonOptions
+import com.android.backup.cli.CommandLineOptions.getBackupProgressListener
+import com.android.backup.cli.CommandLineOptions.getDeviceSelector
+import com.android.backup.cli.CommandLineOptions.help
 import com.android.tools.environment.log.NoopLogger
 import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.cli.CommandLine
+import org.apache.commons.cli.DefaultParser
+import org.apache.commons.cli.HelpFormatter
+import org.apache.commons.cli.Option
+
+private const val USAGE_TITLE = "android-backup [options] <OUTPUT-FILE>"
+
+private val packageNameOption =
+  Option.builder()
+    .option("p")
+    .hasArg()
+    .argName("PACKAGE-NAME")
+    .desc("Backup application identified by PACKAGE-NAME")
+    .build()
+
+private val backupTypeOption =
+  Option.builder()
+    .option("type")
+    .hasArg()
+    .argName("BACKUP-TYPE")
+    .desc("Type of backup to perform (d2d [default], cloud)")
+    .build()
 
 object AndroidBackup {
   @JvmStatic
   fun main(args: Array<String>) {
-    if (args.size != 3) {
-      println("Usage: android-backup <serial-number> <application-id> <backup-file-path>")
-      return
-    }
-    val serialNumber = args[0]
-    val applicationId = args[1]
-    val file = args[2]
-    val backupService =
-      BackupService.getInstance(
-        createStandaloneSession(AdbNoopLoggerFactory()),
-        NoopLogger(),
-        MIN_GMSCORE_VERSION,
-      )
+
+    val options = createCommonOptions().addOption(packageNameOption).addOption(backupTypeOption)
+
+    val commandLine =
+      try {
+        val commandLine = DefaultParser().parse(options, args)
+        if (commandLine.hasOption(help) || commandLine.args.count() != 1) {
+          HelpFormatter().printHelp(USAGE_TITLE, options)
+          return
+        }
+        commandLine
+      } catch (e: Exception) {
+        HelpFormatter().printHelp(USAGE_TITLE, options)
+        return
+      }
+
+    val deviceSelector = commandLine.getDeviceSelector()
+    val backupType = commandLine.getBackupType()
+
+    val adbSession = createStandaloneSession(AdbNoopLoggerFactory())
+    val backupService = BackupService.getInstance(adbSession, NoopLogger(), MIN_GMSCORE_VERSION)
 
     runBlocking {
+      val serialNumber = adbSession.hostServices.getSerialNo(deviceSelector, true)
+      val applicationId =
+        when {
+          commandLine.hasOption(packageNameOption) -> commandLine.getOptionValue(packageNameOption)
+          else -> backupService.getForegroundApplicationId(serialNumber)
+        }
+      println("Creating a '${backupType.displayName}' backup of $applicationId on $serialNumber")
+
+      val file = commandLine.args.first()
+      val listener = commandLine.getBackupProgressListener()
+
       val result =
-        backupService.backup(
-          serialNumber,
-          applicationId,
-          DEVICE_TO_DEVICE,
-          Path.of(file)
-        ) { println(it.text) }
+        backupService.backup(serialNumber, applicationId, backupType, Path.of(file), listener)
 
       if (result is BackupResult.Error) {
         println("Error: ${result.throwable.message}")
+      } else {
+        println("Saved backup to $file")
       }
     }
+  }
+}
+
+private fun CommandLine.getBackupType(): BackupType {
+  return when (val value = getOptionValue(backupTypeOption, "d2d")) {
+    "cloud" -> CLOUD
+    "d2d" -> DEVICE_TO_DEVICE
+    else -> throw IllegalArgumentException("Invalid backup type: $value.")
   }
 }

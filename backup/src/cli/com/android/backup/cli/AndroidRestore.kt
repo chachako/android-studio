@@ -19,29 +19,49 @@ package com.android.backup.cli
 import com.android.adblib.tools.createStandaloneSession
 import com.android.backup.BackupResult
 import com.android.backup.BackupService
+import com.android.backup.cli.CommandLineOptions.createCommonOptions
+import com.android.backup.cli.CommandLineOptions.getBackupProgressListener
+import com.android.backup.cli.CommandLineOptions.getDeviceSelector
+import com.android.backup.cli.CommandLineOptions.help
 import com.android.tools.environment.log.NoopLogger
 import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.cli.DefaultParser
+import org.apache.commons.cli.HelpFormatter
+
+private const val USAGE_TITLE = "android-restore [options] <INPUT-FILE>"
 
 object AndroidRestore {
 
   @JvmStatic
   fun main(args: Array<String>) {
-    if (args.size != 2) {
-      println("Usage: android-restore <serial-number> <backup-file-path>")
-      return
-    }
-    val serialNumber = args[0]
-    val file = args[1]
-    val backupService =
-      BackupService.getInstance(
-        createStandaloneSession(AdbNoopLoggerFactory()),
-        NoopLogger(),
-        MIN_GMSCORE_VERSION,
-      )
+    val options = createCommonOptions()
+
+    val commandLine =
+      try {
+        val commandLine = DefaultParser().parse(options, args)
+        if (commandLine.hasOption(help) || commandLine.args.count() != 1) {
+          HelpFormatter().printHelp(USAGE_TITLE, options)
+          return
+        }
+        commandLine
+      } catch (e: Exception) {
+        HelpFormatter().printHelp(USAGE_TITLE, options)
+        return
+      }
+    val file = commandLine.args.first()
+
+    val deviceSelector = commandLine.getDeviceSelector()
+    val applicationId = BackupService.getApplicationId(Path.of(file))
+    val adbSession = createStandaloneSession(AdbNoopLoggerFactory())
 
     runBlocking {
-      val result = backupService.restore(serialNumber, Path.of(file)) { println(it.text) }
+      val serialNumber = adbSession.hostServices.getSerialNo(deviceSelector, true)
+      println("Restoring to $applicationId from $file on $serialNumber")
+      val backupService = BackupService.getInstance(adbSession, NoopLogger(), MIN_GMSCORE_VERSION)
+      val listener = commandLine.getBackupProgressListener()
+
+      val result = backupService.restore(serialNumber, Path.of(file), listener)
 
       if (result is BackupResult.Error) {
         println("Error: ${result.throwable.message}")
