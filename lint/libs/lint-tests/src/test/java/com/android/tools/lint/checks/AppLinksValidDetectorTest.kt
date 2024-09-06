@@ -2276,7 +2276,51 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .expectFixDiffs("")
   }
 
-  fun testAdvancedPatternValidation() {}
+  fun testAdvancedPatternValidation() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:pathAdvancedPattern="" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:21: Error: android:pathAdvancedPattern cannot be empty [AppLinkUrlError]
+                        <data android:pathAdvancedPattern="" />
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+      """
+      )
+  }
 
   fun testPortByItselfNotCounted() {
     // This test makes sure that a port by itself cannot be counted as a "host" (which could happen
