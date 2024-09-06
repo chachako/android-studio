@@ -1,9 +1,8 @@
 """Tests for ci module."""
 
 from absl.testing import absltest
-import bazel
-import ci
-
+from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import ci
 from tools.base.bazel.ci import query_checks
 
 
