@@ -85,6 +85,44 @@ private val mavenRepo = MavenRepoGenerator(
         )
 )
 
+fun privacySandboxSampleProjectWithSeparateTest(): GradleTestProject {
+    return createGradleProjectBuilder {
+        buildPrivacySandboxSampleProject()
+        subProject(":example-app-test") {
+            plugins.add(PluginType.ANDROID_TEST)
+            android {
+                defaultCompileSdk()
+                namespace = "com.example.privacysandboxsdk.consumer.test"
+                targetProjectPath = ":example-app"
+                privacySandboxEnabled = true
+            }
+            addFile(
+                "src/main/java/com/privacysandboxsdk/consumer/test/HelloWorldTest.kt",
+                // language=kotlin
+                """
+                package com.example.privacysandboxsdk.consumer.test
+
+                class HelloWorldTest {
+                    fun doSomething() {
+                        // The line below should compile if classes from another SDK are in the
+                        // same compile classpath.
+                        println(1 + 1)
+                    }
+                }
+            """.trimIndent()
+            )
+
+        }
+        subProject(":example-app") {
+            buildExampleApp()
+        }
+    }
+        .withAdditionalMavenRepo(mavenRepo)
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        .enableProfileOutput()
+        .create()
+}
+
 fun privacySandboxSampleProjectWithDynamicFeature(): GradleTestProject {
     return createGradleProjectBuilder {
         buildPrivacySandboxSampleProject()

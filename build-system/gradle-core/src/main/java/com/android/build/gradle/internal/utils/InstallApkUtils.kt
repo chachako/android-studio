@@ -71,13 +71,13 @@ fun getFiles(directoryProvider: Provider<Directory>): List<File> {
  */
 @Throws(IOException::class)
 fun addDexMetadataFiles(
-    dexMetadataDirectory: Provider<Directory>,
+    dexMetadataDirectory: Provider<Directory>?,
     apkDirectory: Directory,
     deviceApiLevel: Int,
     apkFiles: MutableList<File>,
     iLogger: ILogger
 ) {
-    val dmDir = dexMetadataDirectory.getOrNull()
+    val dmDir = dexMetadataDirectory?.getOrNull()
     if (dmDir == null || !dmDir.file(SdkConstants.FN_DEX_METADATA_PROP).asFile.exists()) {
         return
     }

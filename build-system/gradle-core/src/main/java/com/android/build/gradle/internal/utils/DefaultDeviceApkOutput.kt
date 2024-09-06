@@ -93,18 +93,6 @@ class DefaultDeviceApkOutput(
         return listOf()
     }
 
-    fun getApkInputs(deviceSpec: DeviceSpec): Set<Any> {
-        val taskInputs = mutableSetOf<Any>(apkSources.mainApkArtifact, apkSources.dexMetadataDirectory)
-
-        if (deviceSpec.supportsPrivacySandbox) {
-            // If the device supports privacy sandbox, we depend on privacy sandbox sdk apks and support sdk apk splits.
-            taskInputs.addAll(listOf(apkSources.privacySandboxSdksApksFiles, apkSources.additionalSupportedSdkApkSplits))
-        } else {
-            // If the device does not support privacy sandbox, we only depend on legacy sdk split apks.
-            taskInputs.add(apkSources.privacySandboxSdkSplitApksForLegacy)
-        }
-        return taskInputs
-    }
 
     data class DefaultApkInstallGroup(override val apks: List<RegularFile>,
         override val description: String) : ApkInstallGroup
@@ -112,6 +100,22 @@ class DefaultDeviceApkOutput(
     data class DefaultSdkApkInstallGroup(
         override val sdkFile: RegularFile,
         override val apks: List<RegularFile>) : SdkApkInstallGroup
+
+    companion object {
+        fun getApkInputs(apkSources: ApkSources, deviceSpec: DeviceSpec): Set<Any> {
+            val taskInputs = mutableSetOf<Any>(apkSources.mainApkArtifact)
+            apkSources.dexMetadataDirectory?.let { taskInputs.add(it) }
+
+            if (deviceSpec.supportsPrivacySandbox) {
+                // If the device supports privacy sandbox, we depend on privacy sandbox sdk apks and support sdk apk splits.
+                taskInputs.addAll(listOf(apkSources.privacySandboxSdksApksFiles, apkSources.additionalSupportedSdkApkSplits))
+            } else {
+                // If the device does not support privacy sandbox, we only depend on legacy sdk split apks.
+                taskInputs.add(apkSources.privacySandboxSdkSplitApksForLegacy)
+            }
+            return taskInputs
+        }
+    }
 }
 
 data class ApkSources(
@@ -119,7 +123,7 @@ data class ApkSources(
     val privacySandboxSdksApksFiles: FileCollection,
     val additionalSupportedSdkApkSplits: Provider<Directory>,
     val privacySandboxSdkSplitApksForLegacy: Provider<Directory>,
-    val dexMetadataDirectory: Provider<Directory>)
+    val dexMetadataDirectory: Provider<Directory>? = null)
 
 data class PrivacySandboxApkSources(
     val privacySandboxSdksApksFiles: FileCollection,

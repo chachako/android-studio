@@ -349,7 +349,7 @@ open class ApplicationVariantImpl @Inject constructor(
         val deviceApkOutput = DefaultDeviceApkOutput(
             apkSources, nativeBuildCreationConfig.supportedAbis, minSdk.toSharedAndroidVersion(),
             baseName, services.projectInfo.path)
-        task.inputs.files(deviceApkOutput.getApkInputs(deviceSpec))
+        task.inputs.files(DefaultDeviceApkOutput.getApkInputs(apkSources, deviceSpec))
         val apkOutput = services.provider {
             object: ApkOutput {
                 override val apkInstallGroups: List<ApkInstallGroup>

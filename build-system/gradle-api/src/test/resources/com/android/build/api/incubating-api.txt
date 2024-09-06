@@ -781,3 +781,4 @@ https://issuetracker.google.com/362941219
   * com.android.build.api.variant.DeviceSpec.getSupportsPrivacySandbox: boolean ()
   * com.android.build.api.variant.DeviceSpec.hashCode: int ()
   * com.android.build.api.variant.DeviceSpec.toString: java.lang.String ()
+  * com.android.build.api.variant.TestVariant.getOutputProviders: com.android.build.api.variant.ApkOutputProviders ()
