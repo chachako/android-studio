@@ -460,19 +460,42 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
         if (!hadTypeDef && resolvedArgument is PsiMethod) {
 
-          fun PsiMethod.isPrimitiveTypeConvertingMethod(): Boolean {
+          fun PsiMethod.isPrimitiveTypeMethod(
+            paramCount: Int,
+            nameFilter: (String) -> Boolean,
+          ): Boolean {
             // TODO(jsjeon): no longer allow `null` return type after 243
-            return (returnType == null || returnType is PsiPrimitiveType) &&
-              parameterList.parametersCount == 0 &&
-              name.substring(0, 2) == "to" &&
-              PsiJavaParserFacadeImpl.getPrimitiveType(name.substring(2).lowercase()) != null
+            if (returnType != null && returnType !is PsiPrimitiveType) return false
+            if (parameterList.parametersCount > paramCount) return false
+            return nameFilter.invoke(name)
           }
 
-          if (resolvedArgument.isPrimitiveTypeConvertingMethod()) {
+          fun PsiMethod.isPrimitiveTypeConvertingMethod(): Boolean =
+            isPrimitiveTypeMethod(0) { name ->
+              name.substring(0, 2) == "to" &&
+                PsiJavaParserFacadeImpl.getPrimitiveType(name.substring(2).lowercase()) != null
+            }
+
+          fun PsiMethod.isPrimitiveTypeReturningMethod(): Boolean =
+            isPrimitiveTypeMethod(1) { name ->
+              name == "inv" || name == "and" || name == "or" || name == "xor"
+            }
+
+          if (
+            resolvedArgument.isPrimitiveTypeConvertingMethod() ||
+              resolvedArgument.isPrimitiveTypeReturningMethod()
+          ) {
             val receiver = (argument as? UQualifiedReferenceExpression)?.receiver
             if (receiver != null) {
               // e.g., RECEIVER.toLong(), we should check if RECEIVER is allowed instead.
               checkTypeDefConstant(context, annotation, receiver, errorNode, flag, usageInfo)
+              val parameterCount = resolvedArgument.parameterList.parametersCount
+              // e.g., RECEIVER.xor(ARGUMENT)
+              if (parameterCount == 1) {
+                val callExpression = argument.selector as? UCallExpression
+                val callArgument = callExpression?.valueArguments?.firstOrNull()
+                checkTypeDefConstant(context, annotation, callArgument, errorNode, flag, usageInfo)
+              }
             }
             // TODO: how to handle implicit receiver in general?
             // NB: we bail out early to avoid any further false positives.

@@ -2512,6 +2512,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
   }
 
   fun testToLong() {
+    // b/352609562 and b/364261817
     lint()
       .files(
         kotlin(
@@ -2551,6 +2552,81 @@ src/DetailInfoTab.kt:17: Error: Must be one of: DetailInfoTabKt.CONST_1, DetailI
                 test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
                      ~~~~~~~~~~~~~~~~~~
 1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testFlagInv() {
+    // b/364261817
+    lint()
+      .files(
+        java(
+          """
+            package my.pkg;
+            import androidx.annotation.IntDef;
+
+            public class MyIntent {
+              @Retention(RetentionPolicy.SOURCE)
+              @IntDef(flag = true, value = {
+                FLAG_1, FLAG_2,
+              })
+              public @interface Flags {}
+
+              public static final int UNRELATED = 0;
+              public static final int FLAG_1 = 1;
+              public static final int FLAG_1 = 2;
+
+              private int mFlag;
+              public @Flags int getFlags() {
+                return mFlags;
+              }
+              public MyIntent setFlags(@Flags int flag) {
+                mFlag = flag;
+                return this;
+              }
+            }
+          """
+        ),
+        kotlin(
+          """
+            import my.pkg.MyIntent
+            fun MyIntent.stripUnwantedFlags() {
+              flags = flags and MyIntent.FLAG_1.inv() // OK
+              flags = flags and MyIntent.UNRELATED.inv() // ERROR 1
+              flags = flags.and(MyIntent.UNRELATED.inv()) // ERROR 2
+            }
+
+            fun test(i : MyIntent) {
+              i.flags = MyIntent.FLAG_1 or i.flags // OK
+              i.flags = MyIntent.UNRELATED.or(i.flags) // ERROR 3
+              i.flags = i.flags.and(MyIntent.FLAG_2) // OK
+              i.flags = i.flags xor MyIntent.UNRELATED // ERROR 4
+              i.flags = i.flags.xor(MyIntent.UNRELATED) // ERROR 5
+            }
+          """
+        ),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .skipTestModes(TestMode.PARENTHESIZED)
+      .run()
+      .expect(
+        """
+        src/test.kt:5: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      flags = flags and MyIntent.UNRELATED.inv() // ERROR 1
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test.kt:6: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      flags = flags.and(MyIntent.UNRELATED.inv()) // ERROR 2
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test.kt:11: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = MyIntent.UNRELATED.or(i.flags) // ERROR 3
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test.kt:13: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = i.flags xor MyIntent.UNRELATED // ERROR 4
+                                            ~~~~~~~~~~~~~~~~~~
+        src/test.kt:14: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = i.flags.xor(MyIntent.UNRELATED) // ERROR 5
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        5 errors, 0 warnings
         """
       )
   }
