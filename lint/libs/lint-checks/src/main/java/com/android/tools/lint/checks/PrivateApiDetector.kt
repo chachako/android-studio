@@ -320,7 +320,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
       if (aClass != null) { // Found in SDK: not internal
         return
       }
-      val apiLookup = ApiLookup.get(context.client, context.project.buildTarget) ?: return
+      val apiLookup = ApiLookup.getOrNull(context.client, context.project.buildTarget) ?: return
       isInternal = !apiLookup.containsClass(value)
     }
 

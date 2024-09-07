@@ -1501,7 +1501,7 @@ public class TestLintClient extends LintCliClient {
     @Override
     public void log(Throwable exception, String format, @NonNull Object... args) {
         if (exception != null) {
-            if (task.runner.getFirstThrowable() == null) {
+            if (task != null && task.runner.getFirstThrowable() == null) {
                 task.runner.setFirstThrowable(exception);
             }
             exception.printStackTrace();

@@ -33,9 +33,14 @@ import com.android.tools.lint.detector.api.ApiConstraint.MultiSdkApiConstraint;
 import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.android.tools.lint.detector.api.ExtensionSdkRegistry;
 import com.android.tools.lint.detector.api.JavaContext;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+
+import kotlin.text.Charsets;
+import kotlin.text.StringsKt;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import kotlin.text.Charsets;
-import kotlin.text.StringsKt;
 
 /**
  * Database for API checking: Allows quick lookup of a given class, method or field to see in which
@@ -76,6 +79,7 @@ public class ApiLookup extends ApiDatabase {
     // This is really a name, not a path, but it's used externally (such as in metalava)
     // so we won't change it.
     public static final String XML_FILE_PATH = "api-versions.xml"; // relative to the SDK data/ dir
+
     /** Database moved from platform-tools to SDK in API level 26 */
     public static final int SDK_DATABASE_MIN_VERSION = 26;
 
@@ -89,6 +93,7 @@ public class ApiLookup extends ApiDatabase {
     @VisibleForTesting static final boolean DEBUG_FORCE_REGENERATE_BINARY = false;
 
     private static final Map<AndroidVersion, SoftReference<ApiLookup>> instances = new HashMap<>();
+
     /** The API database this lookup is based on */
     @Nullable public final File xmlFile;
 
@@ -105,7 +110,10 @@ public class ApiLookup extends ApiDatabase {
      *     will be the one originally passed in. In other words, this parameter may be ignored if
      *     the client created is not new.
      * @return a (possibly shared) instance of the API database, or null if its data can't be found
+     * @deprecated Use {@link #get(LintClient, IAndroidTarget)} instead, specifying an explicit SDK
+     *     target to use
      */
+    @Deprecated
     @Nullable
     public static ApiLookup get(@NonNull LintClient client) {
         return get(client, null);
@@ -119,10 +127,13 @@ public class ApiLookup extends ApiDatabase {
      *     will be the one originally passed in. In other words, this parameter may be ignored if
      *     the client created is not new.
      * @param target the corresponding Android target, if known
-     * @return a (possibly shared) instance of the API database, or null if its data can't be found
+     * @return a (possibly shared) instance of the API database, or null if its data can't be found.
+     * @throws UnsupportedVersionException if the associated API database is using an incompatible
+     *     (i.e. future) format, and you need to upgrade lint to work with this version of the SDK.
      */
     @Nullable
-    public static ApiLookup get(@NonNull LintClient client, @Nullable IAndroidTarget target) {
+    public static ApiLookup get(@NonNull LintClient client, @Nullable IAndroidTarget target)
+            throws UnsupportedVersionException {
         synchronized (ApiLookup.class) {
             AndroidVersion version = target != null ? target.getVersion() : AndroidVersion.DEFAULT;
             SoftReference<ApiLookup> reference = instances.get(version);
@@ -157,7 +168,7 @@ public class ApiLookup extends ApiDatabase {
                             // compileSdkVersion 26 and later
                             file = database;
                             version = target.getVersion();
-                            versionKey = version.getApiString();
+                            versionKey = version.getApiStringWithExtension();
                             int revision = target.getRevision();
                             if (revision != 1) {
                                 versionKey = versionKey + "rev" + revision;
@@ -226,12 +237,37 @@ public class ApiLookup extends ApiDatabase {
                                         .toString();
                     }
 
-                    db = get(client, file, versionKey);
+                    try {
+                        db = get(client, file, versionKey);
+                    } catch (UnsupportedVersionException e) {
+                        e.target = target;
+                        // only throw the first time
+                        ApiLookup none = new ApiLookup(client, null, null);
+                        instances.put(version, new SoftReference<>(none));
+                        throw e;
+                    }
                 }
                 instances.put(version, new SoftReference<>(db));
+            } else if (db.mData == null) {
+                return null;
             }
 
             return db;
+        }
+    }
+
+    /**
+     * Like {@link #get(LintClient, IAndroidTarget)}, but does not throw {@link
+     * UnsupportedVersionException} for incompatible files; instead it logs a warning to the log and
+     * returns null.
+     */
+    @Nullable
+    public static ApiLookup getOrNull(@NonNull LintClient client, @Nullable IAndroidTarget target) {
+        try {
+            return get(client, target);
+        } catch (UnsupportedVersionException e) {
+            client.log(null, e.getDisplayMessage(client));
+            return null;
         }
     }
 
@@ -255,9 +291,12 @@ public class ApiLookup extends ApiDatabase {
      * @param xmlFile the XML file containing configuration data to use for this database
      * @param version the version of the Android platform this API database is associated with
      * @return a (possibly shared) instance of the API database, or null if its data can't be found
+     * @throws UnsupportedVersionException if the associated API database is using an incompatible
+     *     (i.e. future) format, and you need to upgrade lint to work with this version of the SDK.
      */
     private static ApiLookup get(
-            @NonNull LintClient client, @NonNull File xmlFile, @NonNull String version) {
+            @NonNull LintClient client, @NonNull File xmlFile, @NonNull String version)
+            throws UnsupportedVersionException {
         if (!xmlFile.exists()) {
             client.log(null, "The API database file %1$s does not exist", xmlFile);
             return null;
@@ -269,7 +308,8 @@ public class ApiLookup extends ApiDatabase {
                 throw new IllegalArgumentException(
                         String.format(
                                 Locale.US,
-                                "API database binary file specified by system property %s not found: %s",
+                                "API database binary file specified by system property %s not"
+                                        + " found: %s",
                                 API_DATABASE_BINARY_PATH_PROPERTY,
                                 binaryData));
             }
@@ -306,7 +346,7 @@ public class ApiLookup extends ApiDatabase {
         return new ApiLookup(client, xmlFile, binaryData);
     }
 
-    private static CacheCreator cacheCreator(File xmlFile) {
+    private static CacheCreator cacheCreator(File xmlFile) throws UnsupportedVersionException {
         return (client, binaryData) -> {
             long begin = WRITE_STATS ? System.currentTimeMillis() : 0;
 
@@ -314,6 +354,10 @@ public class ApiLookup extends ApiDatabase {
             try {
                 byte[] bytes = client.readBytes(xmlFile);
                 info = Api.parseApi(new ByteArrayInputStream(bytes));
+            } catch (UnsupportedVersionException e) {
+                // Don't pass through to the regular RuntimeException logging below
+                e.apiFile = xmlFile;
+                throw e;
             } catch (RuntimeException | IOException e) {
                 client.log(e, "Can't read API file " + xmlFile.getAbsolutePath());
                 return false;
@@ -1276,7 +1320,7 @@ public class ApiLookup extends ApiDatabase {
     public static String getSdkExtensionField(
             @NonNull JavaContext context, int sdkId, boolean fullyQualified) {
         return getSdkExtensionField(
-                ApiLookup.get(context.getClient(), context.getProject().getBuildTarget()),
+                ApiLookup.getOrNull(context.getClient(), context.getProject().getBuildTarget()),
                 sdkId,
                 fullyQualified);
     }
@@ -1304,10 +1348,51 @@ public class ApiLookup extends ApiDatabase {
             }
         }
 
-        boolean ok = cacheCreator(apiFile).create(client, outputFile);
-        if (ok) {
-            System.out.println("Created API database file " + outputFile);
+        try {
+            boolean ok = cacheCreator(apiFile).create(client, outputFile);
+            if (ok) {
+                client.log(null, "Created API database file " + outputFile);
+            }
+            return ok;
+        } catch (UnsupportedVersionException e) {
+            client.log(null, e.getDisplayMessage(client));
+            client.log(null, "(Database file: " + apiFile.getPath() + ")");
+            return false;
         }
-        return ok;
+    }
+
+    /**
+     * Exception thrown if the underlying database file is using a newer format than the latest one
+     * supported by the API parser and machinery.
+     */
+    public static class UnsupportedVersionException extends RuntimeException {
+        public final int requested;
+        public final int maxSupported;
+        @Nullable public File apiFile;
+        @Nullable public IAndroidTarget target;
+
+        UnsupportedVersionException(int requested, int maxSupported) {
+            super(
+                    "Unsupported API database version "
+                            + requested
+                            + "; max supported is "
+                            + maxSupported);
+            this.requested = requested;
+            this.maxSupported = maxSupported;
+        }
+
+        public String getDisplayMessage(@NonNull LintClient client) {
+            StringBuilder sb = new StringBuilder();
+            if (target != null) {
+                sb.append(target.getName());
+            } else {
+                sb.append("API database");
+            }
+            sb.append(" requires a newer version of ")
+                    .append(client.getClientDisplayName())
+                    .append(" than ")
+                    .append(client.getClientDisplayRevision());
+            return sb.toString();
+        }
     }
 }

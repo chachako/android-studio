@@ -61,6 +61,7 @@ import com.android.ide.common.resources.resourceNameToFieldName
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
 import com.android.sdklib.SdkVersionInfo
+import com.android.tools.lint.checks.ApiLookup.UnsupportedVersionException
 import com.android.tools.lint.checks.ApiLookup.equivalentName
 import com.android.tools.lint.checks.ApiLookup.startsWithEquivalentPrefix
 import com.android.tools.lint.checks.DesugaredMethodLookup.Companion.canBeDesugaredLater
@@ -128,6 +129,7 @@ import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiCompiledElement
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMember
@@ -136,6 +138,7 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSuperExpression
 import com.intellij.psi.PsiType
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.TypeConversionUtil
@@ -205,14 +208,20 @@ import org.xmlpull.v1.XmlPullParserException
  */
 class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScanner {
   private var apiDatabase: ApiLookup? = null
+  private var invalidDatabaseFormatError: String? = null
 
   override fun beforeCheckRootProject(context: Context) {
-    if (apiDatabase == null) {
-      apiDatabase = ApiLookup.get(context.client, context.project.buildTarget)
-      // We can't look up the minimum API required by the project here:
-      // The manifest file hasn't been processed yet in the -before- project hook.
-      // For now it's initialized lazily in getMinSdk(Context), but the
-      // lint infrastructure should be fixed to parse manifest file up front.
+    if (apiDatabase == null && invalidDatabaseFormatError == null) {
+      try {
+        apiDatabase = ApiLookup.get(context.client, context.project.buildTarget)
+        // We can't look up the minimum API required by the project here:
+        // The manifest file hasn't been processed yet in the -before- project hook.
+        // For now, it's initialized lazily in getMinSdk(Context), but the
+        // lint infrastructure should be fixed to parse manifest file up front.
+      } catch (e: UnsupportedVersionException) {
+        invalidDatabaseFormatError =
+          e.getDisplayMessage(context.client) + ": Lint API checks unavailable."
+      }
     }
   }
 
@@ -993,6 +1002,14 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
   override fun createUastHandler(context: JavaContext): UElementHandler? {
     if (apiDatabase == null || context.isTestSource && !context.driver.checkTestSources) {
+      if (invalidDatabaseFormatError != null) {
+        // Attach the error to the first important source element (skipping comments and imports
+        // etc)
+        firstSourceElement(context.uastFile)?.let { declaration ->
+          val message = invalidDatabaseFormatError!!
+          context.report(UNSUPPORTED, declaration, context.getLocation(declaration), message)
+        }
+      }
       return null
     }
     val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
@@ -1001,6 +1018,16 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     } else {
       null
     }
+  }
+
+  private fun firstSourceElement(file: UFile?): PsiElement? {
+    file ?: return null
+    val first = file.sourcePsi.firstChild
+    var curr = first
+    while (curr is PsiWhiteSpace) {
+      curr = curr.nextSibling
+    }
+    return curr
   }
 
   override fun getApplicableUastTypes(): List<Class<out UElement>> {

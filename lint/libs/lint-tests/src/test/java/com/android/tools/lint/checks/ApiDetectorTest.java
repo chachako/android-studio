@@ -9592,7 +9592,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                   "Could not extract message tokens from \"" + message + "\"",
                   requiredVersion.min() >= 1
                       && requiredVersion.min() <= SdkVersionInfo.HIGHEST_KNOWN_API);
-            } else {
+            } else if (!message.contains("Lint API checks unavailable")) {
               assertNotNull("Expected a custom API quickfix if not using regular API level fix mechanism", fixData);
             }
         }

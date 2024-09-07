@@ -39,6 +39,7 @@ import kotlin.io.FilesKt;
 import kotlin.text.StringsKt;
 
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 
@@ -649,7 +650,8 @@ public class ApiLookupTest extends AbstractCheckTest {
         int apiLevel = 22;
         String codename = "stable";
 
-        File root = getTempDir();
+        File root = new File(getTempDir(), getName());
+        root.mkdirs();
         File outputFile = new File(root, "bin/api_database.bin");
 
         // Stub SDK
@@ -705,8 +707,8 @@ public class ApiLookupTest extends AbstractCheckTest {
                 Charsets.UTF_8);
 
         MainTest.checkDriver(
-                "Created API database file ROOT/bin/api_database.bin",
                 "",
+                "Created API database file ROOT/bin/api_database.bin",
                 ERRNO_SUCCESS,
                 new String[] {"--XgenerateApiLookup", apiFile.getPath(), outputFile.getPath()},
                 s -> {
@@ -757,6 +759,95 @@ public class ApiLookupTest extends AbstractCheckTest {
             assertEquals(14, lookup.getClassVersions("android.MyTest").min());
         } finally {
             ApiLookup.overrideDbBinaryPath = null;
+        }
+    }
+
+    public void testFutureApiDatabaseFormat() throws IOException {
+        int apiLevel = 100;
+        String codename = "future";
+
+        File root = new File(getTempDir(), getName());
+        root.mkdirs();
+        File outputFile = new File(root, "bin/api_database.bin");
+
+        // Stub SDK
+        File sdkHome = new File(root, "sdk2");
+        File platformDir = new File(sdkHome, "platforms/" + codename);
+        File apiFile = new File(platformDir, "data/api-versions.xml");
+        File sourceProp = new File(platformDir, "source.properties");
+
+        //noinspection ResultOfMethodCallIgnored
+        sourceProp.getParentFile().mkdirs();
+        FilesKt.writeText(
+                sourceProp,
+                "Pkg.Desc=Android SDK Platform "
+                        + codename
+                        + "\n"
+                        + "Pkg.UserSrc=false\n"
+                        + "Platform.Version=13\n"
+                        + "AndroidVersion.CodeName="
+                        + codename
+                        + "\n"
+                        + "Pkg.Revision=2\n"
+                        + "AndroidVersion.ApiLevel="
+                        + apiLevel
+                        + "\n"
+                        + "AndroidVersion.ExtensionLevel=3\n"
+                        + "AndroidVersion.IsBaseSdk=true\n"
+                        + "Layoutlib.Api=15\n"
+                        + "Layoutlib.Revision=1\n"
+                        + "Platform.MinToolsRev=22",
+                Charsets.UTF_8);
+
+        //noinspection ResultOfMethodCallIgnored
+        apiFile.getParentFile().mkdirs();
+        FilesKt.writeText(
+                apiFile,
+                ""
+                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<api version=\"100\">\n"
+                        // Not real API; here so we can make sure we're really using this database
+                        + "        <class name=\"android/MyTest\" since=\"14\">\n"
+                        + "        </class>\n"
+                        + "</api>\n",
+                Charsets.UTF_8);
+
+        StringBuilder logger = new StringBuilder();
+        String canonicalRoot = root.getCanonicalPath();
+        com.android.tools.lint.checks.infrastructure.TestLintClient client =
+                new com.android.tools.lint.checks.infrastructure.TestLintClient() {
+                    @Override
+                    public File getSdkHome() {
+                        return sdkHome;
+                    }
+
+                    @Override
+                    public void log(Throwable exception, String format, @NotNull Object... args) {
+                        logger.append(
+                                String.format(format, args)
+                                        .replace(root.getPath(), "ROOT")
+                                        .replace(canonicalRoot, "ROOT"));
+                    }
+                };
+
+        List<IAndroidTarget> targets = client.getPlatformLookup().getTargets(false);
+        assertEquals(1, targets.size());
+        IAndroidTarget target = targets.get(0);
+        assertEquals(codename, target.getVersion().getCodename());
+
+        // Make sure the output isn't older than the input (the API lookup code looks for that)
+        //noinspection ResultOfMethodCallIgnored
+        outputFile.setLastModified(apiFile.lastModified());
+        try {
+            ApiLookup.get(client, target);
+            fail("Lookup for future version should have thrown an unsupported version exception");
+        } catch (ApiLookup.UnsupportedVersionException e) {
+            assertEquals(
+                    "Android API 100, future preview (Preview) requires a newer version of Lint"
+                            + " Unit Tests than unittest",
+                    e.getDisplayMessage(client));
+            // Make sure second attempt doesn't throw an exception
+            assertNull(ApiLookup.get(client, target));
         }
     }
 

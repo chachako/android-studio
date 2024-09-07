@@ -29,6 +29,8 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.BuildToolInfo
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.OptionalLibrary
+import com.android.sdklib.repository.targets.PlatformTarget.PLATFORM_NAME
+import com.android.sdklib.repository.targets.PlatformTarget.PLATFORM_NAME_PREVIEW
 import java.io.File
 import java.io.File.separator
 import java.io.File.separatorChar
@@ -473,7 +475,14 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
 
     override fun getVendor(): String = unsupported()
 
-    override fun getName(): String = unsupported()
+    override fun getName(): String {
+      val version = getVersion()
+      return if (version.isPreview) {
+        String.format(PLATFORM_NAME_PREVIEW, version)
+      } else {
+        String.format(PLATFORM_NAME, version)
+      }
+    }
 
     override fun getFullName(): String = unsupported()
 

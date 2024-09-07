@@ -22,23 +22,34 @@ import static com.android.tools.lint.LintCliFlags.ERRNO_EXISTS;
 import static com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS;
 import static com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS;
 import static com.android.tools.lint.checks.infrastructure.LintTestUtils.dos2unix;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.SdkConstants;
 import com.android.Version;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.sdklib.IAndroidTarget;
 import com.android.testutils.TestUtils;
 import com.android.tools.lint.checks.AbstractCheckTest;
 import com.android.tools.lint.checks.AccessibilityDetector;
 import com.android.tools.lint.checks.DesugaredMethodLookup;
 import com.android.tools.lint.checks.infrastructure.TestFile;
+import com.android.tools.lint.checks.infrastructure.TestLintClient;
 import com.android.tools.lint.client.api.ConfigurationHierarchy;
 import com.android.tools.lint.client.api.LintDriver;
 import com.android.tools.lint.client.api.LintListener;
+import com.android.tools.lint.client.api.PlatformLookup;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.Lint;
+
+import kotlin.io.FilesKt;
+import kotlin.text.Charsets;
+import kotlin.text.StringsKt;
+
+import org.intellij.lang.annotations.Language;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -46,10 +57,6 @@ import java.nio.file.Files;
 import java.security.Permission;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import kotlin.io.FilesKt;
-import kotlin.text.Charsets;
-import kotlin.text.StringsKt;
-import org.intellij.lang.annotations.Language;
 
 @SuppressWarnings("javadoc")
 public class MainTest extends AbstractCheckTest {
@@ -1184,6 +1191,127 @@ public class MainTest extends AbstractCheckTest {
                         "none",
                         project.getPath()
                     });
+        } finally {
+            DesugaredMethodLookup.Companion.reset();
+        }
+    }
+
+    public void testFutureApiVersion() throws Exception {
+        // Tests b/296372320#comment9
+        File project =
+                getProjectDir(
+                        null,
+                        manifest().minSdk(1),
+                        java(
+                                "src/test/pkg/Test.java",
+                                "package test.pkg;\n"
+                                        + "public class Test {\n"
+                                        + "    public int test(byte b) {\n"
+                                        + "        return java.lang.Byte.hashCode(b);\n"
+                                        + "    }\n"
+                                        + "}\n"),
+                        kotlin(
+                                "src/test/pkg/test2.kt",
+                                "" + "package test.pkg\n" + "fun someTest() {" + "}"),
+                        kotlin("src/blank.kt", ""),
+                        kotlin("src/test/pkg/test3.kt", "\n// My file\n"));
+
+        File root = getTempDir();
+        String codename = "future";
+        int apiLevel = 100;
+        // Stub SDK
+        File sdkHome = new File(root, "sdk");
+        File platformDir = new File(sdkHome, "platforms/" + codename);
+        File apiFile = new File(platformDir, "data/api-versions.xml");
+        File sourceProp = new File(platformDir, "source.properties");
+        TestLintClient client = createClient();
+        PlatformLookup platformLookup = client.getPlatformLookup();
+        assertNotNull(platformLookup);
+        IAndroidTarget target = platformLookup.getLatestSdkTarget(21, false, false);
+        assertNotNull(target);
+        File androidJar = target.getPath(IAndroidTarget.ANDROID_JAR).toFile();
+        FilesKt.copyTo(androidJar, new File(platformDir, androidJar.getName()), false, 1024);
+
+        //noinspection ResultOfMethodCallIgnored
+        sourceProp.getParentFile().mkdirs();
+        FilesKt.writeText(
+                sourceProp,
+                "Pkg.Desc=Android SDK Platform "
+                        + codename
+                        + "\n"
+                        + "Pkg.UserSrc=false\n"
+                        + "Platform.Version=13\n"
+                        + "AndroidVersion.CodeName="
+                        + codename
+                        + "\n"
+                        + "Pkg.Revision=2\n"
+                        + "AndroidVersion.ApiLevel="
+                        + apiLevel
+                        + "\n"
+                        + "AndroidVersion.ExtensionLevel=3\n"
+                        + "AndroidVersion.IsBaseSdk=true\n"
+                        + "Layoutlib.Api=15\n"
+                        + "Layoutlib.Revision=1\n"
+                        + "Platform.MinToolsRev=22",
+                Charsets.UTF_8);
+
+        //noinspection ResultOfMethodCallIgnored
+        apiFile.getParentFile().mkdirs();
+        FilesKt.writeText(
+                apiFile,
+                ""
+                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<api version=\"100\">\n"
+                        + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
+                        + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
+                        + "                <method name=\"finalize()V\"/>\n"
+                        + "        </class>\n"
+                        // Not real API; here so we can make sure we're really using this database
+                        + "        <class name=\"android/MyTest\" since=\"14\">\n"
+                        + "        </class>\n"
+                        + "</api>\n",
+                Charsets.UTF_8);
+
+        try {
+            checkDriver(
+                    "src/test/pkg/Test.java:1: Error: Android API 100, future preview (Preview)"
+                        + " requires a newer version of Lint than $CURRENT_VERSION: Lint API checks"
+                        + " unavailable. [NewApi]\n"
+                        + "package test.pkg;\n"
+                        + "~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/test2.kt:1: Error: Android API 100, future preview"
+                        + " (Preview) requires a newer version of Lint than $CURRENT_VERSION: Lint"
+                        + " API checks unavailable. [NewApi]\n"
+                        + "package test.pkg\n"
+                        + "~~~~~~~~~~~~~~~~\n"
+                        + "2 errors, 0 warnings",
+                    "",
+
+                    // Expected exit code
+                    ERRNO_SUCCESS,
+
+                    // Args
+                    new String[] {
+                        "--check",
+                        "NewApi",
+                        "--ignore",
+                        "LintError",
+                        "--sdk-home",
+                        sdkHome.getPath(),
+                        project.getPath()
+                    },
+                    new Cleanup() {
+                        @Override
+                        public String cleanup(String s) {
+                            String revision =
+                                    new LintCliClient(ToolsBaseTestLintClient.CLIENT_UNIT_TESTS)
+                                            .getClientDisplayRevision();
+                            return MainTest.this.cleanup(s).replace(revision, "$CURRENT_VERSION");
+                        }
+                    },
+                    null);
         } finally {
             DesugaredMethodLookup.Companion.reset();
         }

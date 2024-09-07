@@ -86,6 +86,7 @@ public class InvalidPackageDetector extends Detector implements ClassScanner {
      * defined as libraries (possibly encountered later in the library traversal).
      */
     private List<Candidate> mCandidates;
+
     /**
      * Set of Java packages defined in the libraries; this means that if the user has added
      * libraries in this package namespace (such as the null annotations jars) we don't flag these.
@@ -97,7 +98,8 @@ public class InvalidPackageDetector extends Detector implements ClassScanner {
 
     @Override
     public void beforeCheckRootProject(@NonNull Context context) {
-        mApiDatabase = ApiLookup.get(context.getClient(), context.getProject().getBuildTarget());
+        mApiDatabase =
+                ApiLookup.getOrNull(context.getClient(), context.getProject().getBuildTarget());
     }
 
     // ---- Implements ClassScanner ----

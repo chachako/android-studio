@@ -19,23 +19,31 @@ package com.android.tools.lint.checks;
 import static com.android.SdkConstants.ATTR_ID;
 
 import com.android.annotations.Nullable;
+import com.android.tools.lint.checks.ApiLookup.UnsupportedVersionException;
 import com.android.tools.lint.detector.api.ExtensionSdk;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import kotlin.text.StringsKt;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /** Parser for the simplified XML API format version 1. */
 class ApiParser extends DefaultHandler {
+    public static final int MAX_SUPPORTED_VERSION = 3;
+
     private static final String NODE_CLASS = "class";
     private static final String NODE_FIELD = "field";
     private static final String NODE_METHOD = "method";
     private static final String NODE_EXTENDS = "extends";
     private static final String NODE_IMPLEMENTS = "implements";
     private static final String NODE_SDK = "sdk";
+    private static final String NODE_API = "api";
 
     private static final String ATTR_NAME = "name";
     private static final String ATTR_SINCE = "since";
@@ -43,6 +51,7 @@ class ApiParser extends DefaultHandler {
     private static final String ATTR_DEPRECATED = "deprecated";
     private static final String ATTR_REMOVED = "removed";
     private static final String ATTR_REFERENCE = "reference";
+    private static final String ATTR_VERSION = "version";
 
     // Grow class list
     private final Map<String, ApiClass> mClasses = new HashMap<>(7000);
@@ -121,6 +130,18 @@ class ApiParser extends DefaultHandler {
                     reference = reference.replace('/', '.').replace('$', '.');
                 }
                 mSdks.add(new ExtensionSdk(name, Integer.decode(id), reference));
+
+            } else if (NODE_API.equals(localName)) {
+                String versionString = attributes.getValue(ATTR_VERSION);
+                if (versionString != null) {
+                    // Only enforce on the major version. Backwards compatible adjustments
+                    // can be made as long as only the minor version changes.
+                    String major = StringsKt.substringBefore(versionString, '.', versionString);
+                    int version = Integer.parseInt(major);
+                    if (version > MAX_SUPPORTED_VERSION) {
+                        throw new UnsupportedVersionException(version, MAX_SUPPORTED_VERSION);
+                    }
+                }
             }
         } finally {
             super.startElement(uri, localName, qName, attributes);

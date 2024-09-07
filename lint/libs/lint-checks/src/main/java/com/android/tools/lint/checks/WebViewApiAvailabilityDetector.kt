@@ -100,7 +100,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
       }
 
       val client = context.client
-      val apiLookup = ApiLookup.get(client, context.project.buildTarget) ?: return
+      val apiLookup = ApiLookup.getOrNull(client, context.project.buildTarget) ?: return
       val api =
         apiLookup.getMethodVersions(
           WEBVIEW_CLASS_NAME,
