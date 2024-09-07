@@ -522,7 +522,7 @@ class LintJarApiMigrationTest {
       -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KtCallableSymbol.getPsi ()Lcom/intellij/psi/PsiElement;
       +   CHECKCAST org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol
       +   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol.getOwningCallableSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KaCallableSymbol;
-      +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/symbols/KaCallableSymbol.getPsi ()Lcom/intellij/psi/PsiElement; (itf)
+      +   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/symbols/KaCallableSymbol.getPsi ()Lcom/intellij/psi/PsiElement;
       @@ -27 +27
       -   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KtClassOrObjectSymbol
       +   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KaClassSymbol

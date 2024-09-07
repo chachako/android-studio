@@ -23,7 +23,6 @@ import com.google.common.hash.Hashing
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.lang.reflect.Method
 import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
 import java.util.jar.JarOutputStream
@@ -896,14 +895,14 @@ class LintJarApiMigration(private val client: LintClient) {
       if (
         (opcode == Opcodes.INVOKESTATIC || opcode == Opcodes.INVOKEVIRTUAL) && isRelevantType(owner)
       ) {
-        val method = findMethod(owner, name, descriptor)
-        if (method == null) {
+        val clz = findClass(owner)
+        if (clz == null) {
           client.log(
             Severity.WARNING,
             null,
             "WARNING: Missing analysis API method ${owner}#${name}${descriptor}",
           )
-        } else if (method.declaringClass.isInterface) {
+        } else if (clz.isInterface) {
           // Should be invoked on interface instead!
           super.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, name, descriptor, true)
           return
@@ -1359,22 +1358,6 @@ class LintJarApiMigration(private val client: LintClient) {
       val className = Type.getObjectType(owner).className
       return Class.forName(className, false, LintJarApiMigration::class.java.classLoader)
     } catch (e: ClassNotFoundException) {
-      return null
-    }
-  }
-
-  private fun findMethod(owner: String, name: String, desc: String): Method? {
-    val clz = findClass(owner) ?: return null
-    try {
-      val argumentTypes =
-        Type.getArgumentTypes(desc).map { type -> type.toTypeClass() }.toTypedArray()
-
-      return try {
-        clz.getDeclaredMethod(name, *argumentTypes)
-      } catch (e: Throwable) {
-        clz.getMethod(name, *argumentTypes)
-      }
-    } catch (e: Throwable) {
       return null
     }
   }
