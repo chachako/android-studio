@@ -344,6 +344,22 @@ public class SdkVersionInfo {
         return null;
     }
 
+    @Nullable
+    public static String getBuildCode(int api, int minor) {
+        // See http://developer.android.com/reference/android/os/Build.VERSION_CODES_FULL.html
+        switch (api) {
+            // TODO: Add well known constants as they appear here
+            default: {
+                String codeName = getBuildCode(api);
+                if (codeName != null) {
+                    return codeName + '_' + minor;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns the API level of the given build code (e.g. JELLY_BEAN_MR1 ⇒ 17), or -1 if not
      * recognized

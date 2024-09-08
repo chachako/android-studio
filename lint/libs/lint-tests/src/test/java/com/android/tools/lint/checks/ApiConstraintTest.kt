@@ -30,7 +30,9 @@ import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.not
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.range
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.serialize
+import com.android.tools.lint.detector.api.ApiLevel
 import com.android.tools.lint.detector.api.ExtensionSdk
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
 import com.android.tools.lint.detector.api.ExtensionSdkRegistry
 import com.android.utils.XmlUtils
 import org.intellij.lang.annotations.Language
@@ -41,6 +43,13 @@ import org.junit.Test
 import org.w3c.dom.Element
 
 class ApiConstraintTest {
+  private fun atLeast(api: Int) = atLeast(ApiLevel.get(api), ANDROID_SDK_ID)
+
+  private fun below(api: Int) = below(ApiLevel.get(api), ANDROID_SDK_ID)
+
+  private fun range(from: Int, to: Int) =
+    range(ApiLevel.get(from), ApiLevel.get(to), ANDROID_SDK_ID)
+
   @Test
   fun testToString() {
     assertEquals(
@@ -67,6 +76,30 @@ class ApiConstraintTest {
     )
   }
 
+  @Suppress("LocalVariableName")
+  @Test
+  fun testMinorVersions() {
+    val atLeast15 = atLeast(15, 0, ANDROID_SDK_ID)
+    val atLeast15_1 = atLeast(15, 1, ANDROID_SDK_ID)
+    val atLeast15_2 = atLeast(15, 2, ANDROID_SDK_ID)
+    val below16_2 = below(16, 2, ANDROID_SDK_ID)
+    val between15_2_and_16_2 = atLeast15_2 and below16_2
+
+    assertEquals(15, atLeast15_1.fromInclusive())
+    assertEquals(1, atLeast15_1.fromInclusiveMinor())
+    assertEquals("15.1", atLeast15_1.minString())
+
+    assertEquals("API level ≥ 15", atLeast15.toString())
+    assertEquals("API level ≥ 15.1", atLeast15_1.toString())
+    assertEquals("API level ≥ 15.2", atLeast15_2.toString())
+    assertEquals("API level < 16.2", below16_2.toString())
+    assertEquals("API level ≥ 15.2 and API level < 16.2", between15_2_and_16_2.toString())
+    assertTrue(atLeast15_1.isAtLeast(atLeast15))
+    assertTrue(atLeast15_2.isAtLeast(atLeast15_1))
+    assertFalse(atLeast15.isAtLeast(atLeast15_1))
+    assertFalse(atLeast15_1.isAtLeast(atLeast15_2))
+  }
+
   @Test
   fun testIsAtLeast() {
     val manifest = atLeast(31)
@@ -74,7 +107,7 @@ class ApiConstraintTest {
     assertTrue(manifest.isAtLeast(call))
     assertFalse(call.isAtLeast(manifest))
 
-    @Suppress("DEPRECATION") assertTrue(atLeast(31).isAtLeast(28))
+    assertTrue(atLeast(31).isAtLeast(28))
 
     assertTrue(exactly(31).isAtLeast(atLeast(29)))
     assertTrue(atLeast(21).isAtLeast(atLeast(20)))
@@ -176,7 +209,6 @@ class ApiConstraintTest {
     assertEquals("API level ≥ 24", (!(!atLeast(24))).toString())
   }
 
-  @Suppress("DEPRECATION")
   @Test
   fun testAlwaysAtLeast() {
     assertTrue(atLeast(4).alwaysAtLeast(4))
@@ -191,6 +223,7 @@ class ApiConstraintTest {
 
   @Test
   fun testNeverAtMost() {
+    @Suppress("DEPRECATION")
     fun ApiConstraint.neverAtMost(level: Int): Boolean {
       return not().alwaysAtLeast(level)
     }
@@ -202,7 +235,6 @@ class ApiConstraintTest {
     assertFalse(atLeast(25).neverAtMost(23))
   }
 
-  @Suppress("DEPRECATION")
   @Test
   fun testEverHigher() {
     assertTrue(below(21).everHigher(19)) // includes 20
@@ -230,11 +262,6 @@ class ApiConstraintTest {
     assertEquals("API level = 33 or API level = 10000", (exactly(10000) or exactly(33)).toString())
   }
 
-  @Test(expected = IllegalStateException::class)
-  fun testUnsupportedApiLevel() {
-    below(100)
-  }
-
   @Test
   fun testNegatable() {
     assertTrue(atLeast(26).negatable())
@@ -256,10 +283,10 @@ class ApiConstraintTest {
 
   @Test
   fun testSerialization() {
-    assertEquals("e000000", serialize(atLeast(26) and atMost(28)))
-    assertEquals("API level ≥ 26 and API level < 29", deserialize("e000000").toString())
-    assertEquals("fffffffffe000000", serialize(atLeast(26)))
-    assertEquals("API level ≥ 26", deserialize("fffffffffe000000").toString())
+    assertEquals("26-29", serialize(atLeast(26) and atMost(28)))
+    assertEquals("API level ≥ 26 and API level < 29", deserialize("26-29").toString())
+    assertEquals("26-∞", serialize(atLeast(26)))
+    assertEquals("API level ≥ 26", deserialize("26-∞").toString())
 
     val sdkConstraint = atLeast(26, 10)
     val deserialized = deserialize(sdkConstraint.serialize())
@@ -267,8 +294,8 @@ class ApiConstraintTest {
     assertEquals(26, deserialized.min())
     assertEquals(10, deserialized.getSdk())
 
-    assertEquals("{:ffffffffffffc000,:fffffffffffffffe;30}", serialize(multiSdkAnyOf("0:15,30:2")))
-    assertEquals("{ffffffffffffc000:,fffffffffffffffe;30:}", serialize(multiSdkAllOf("0:15,30:2")))
+    assertEquals("{:15-∞,:2-∞;30}", serialize(multiSdkAnyOf("0:15,30:2")))
+    assertEquals("{15-∞:,2-∞;30:}", serialize(multiSdkAllOf("0:15,30:2")))
     assertEquals(
       multiSdkAnyOf("0:15,30:2").toString(),
       deserialize(multiSdkAnyOf("0:15,30:2").serialize()).toString(),
@@ -279,13 +306,10 @@ class ApiConstraintTest {
     )
 
     val combined = max(multiSdkAllOf("0:15,30:2"), multiSdkAnyOf("0:17,30:4"))
-    assertEquals(
-      "{ffffffffffffc000:ffffffffffff0000,fffffffffffffffe;30:fffffffffffffff8;30}",
-      combined.serialize(),
-    )
+    assertEquals("{15-∞:17-∞,2-∞;30:4-∞;30}", combined.serialize())
     assertEquals(combined.toString(), deserialize(combined.serialize()).toString())
 
-    assertEquals("{ffffffffffffc000:,fffffffffffffffe;30:}", serialize(multiSdkAllOf("0:15,30:2")))
+    assertEquals("{15-∞:,2-∞;30:}", serialize(multiSdkAllOf("0:15,30:2")))
     val deserialize = deserialize(multiSdkAnyOf("0:15,30:2").serialize())
     assertEquals(multiSdkAnyOf("0:15,30:2").toString(), deserialize.toString())
 
@@ -458,21 +482,26 @@ class ApiConstraintTest {
     )
   }
 
+  val registry =
+    ExtensionSdkRegistry(
+      listOf(
+        ExtensionSdk.ANDROID_SDK,
+        ExtensionSdk("R Extensions", "R-ext", 30, "android.os.Build\$VERSION_CODES.R"),
+        ExtensionSdk("S Extensions", "S-ext", 31, "android.os.Build\$VERSION_CODES.S"),
+        ExtensionSdk("T Extensions", "T-ext", 33, "android.os.Build\$VERSION_CODES.T"),
+        ExtensionSdk(
+          "Ad Services Extensions",
+          "AD_SERVICES-ext",
+          1000000,
+          "android.os.ext.SdkExtensions.AD_SERVICES",
+        ),
+      )
+    )
+
   @Test
   fun testSdkExtensions() {
     val allConstraint = multiSdkAllOf("0:33,30:2,31:2,33:2")
     val anyConstraint = multiSdkAnyOf("0:33,30:2,31:2,33:2")
-
-    val registry =
-      ExtensionSdkRegistry(
-        listOf(
-          ExtensionSdk.ANDROID_SDK,
-          ExtensionSdk("R-ext", 30, "android.os.Build\$VERSION_CODES.R"),
-          ExtensionSdk("S-ext", 31, "android.os.Build\$VERSION_CODES.S"),
-          ExtensionSdk("T-ext", 33, "android.os.Build\$VERSION_CODES.T"),
-          ExtensionSdk("AD_SERVICES-ext", 1000000, "android.os.ext.SdkExtensions.AD_SERVICES"),
-        )
-      )
 
     assertEquals("0:33,30:2,31:2,33:2", ApiConstraint.MultiSdkApiConstraint.describe(allConstraint))
 
@@ -482,13 +511,13 @@ class ApiConstraintTest {
     )
 
     assertEquals(
-      "API level ≥ 33 and R-ext: version ≥ 2 and S-ext: version ≥ 2 and T-ext: version ≥ 2",
+      "API level ≥ 33 and R Extensions: version ≥ 2 and S Extensions: version ≥ 2 and T Extensions: version ≥ 2",
       allConstraint.toString(registry),
     )
 
     val constraint2 = multiSdk("0:34,1000000:4,33:4")
     assertEquals(
-      "API level ≥ 34 or AD_SERVICES-ext: version ≥ 4 or T-ext: version ≥ 4",
+      "API level ≥ 34 or Ad Services Extensions: version ≥ 4 or T Extensions: version ≥ 4",
       constraint2.toString(registry),
     )
 
@@ -593,6 +622,53 @@ class ApiConstraintTest {
     // Otherwise, just use the first item
     assertEquals(-1, multiSdk("1000000:4,33:5").fromInclusive())
     assertEquals(-1, (atMost(4, 1000000) or atMost(28, 34)).toExclusive())
+  }
+
+  @Suppress("LocalVariableName")
+  @Test
+  fun testFirstMissing() {
+    fun checkFirstMissing(expected: String, have: ApiConstraint, required: ApiConstraint) {
+      assertFalse(have.isAtLeast(required))
+      assertEquals(expected, have.firstMissing(required)?.toString(registry))
+    }
+
+    val atLeast36 = atLeast(36)
+    val atLeast30 = atLeast(30)
+    val atLeast34 = atLeast(34)
+    val atLeastSdk30_4 = atLeast(4, 30)
+    val atLeastSdk37_4 = atLeast(4, 37)
+    val atLeastAdsSdk_4 = atLeast(4, 1000000)
+
+    checkFirstMissing("API level ≥ 36", atLeast30, atLeast36)
+    checkFirstMissing("API level ≥ 36", atLeast30, atLeast36 or atLeast(4, 3))
+    checkFirstMissing("API level ≥ 36", atLeast30 or atLeastSdk37_4, atLeast36)
+    checkFirstMissing(
+      "Ad Services Extensions: version ≥ 4",
+      atLeast34 or atLeastSdk30_4,
+      atLeastAdsSdk_4 or atLeastSdk30_4,
+    )
+    // It might seem more natural for this to list
+    // Ad Services Extensions: version ≥ 4
+    // as the first missing, since we *may* have R, but we
+    // definitely don't have the Ads SDK, but our policy is to
+    // always list the *first* requirement in the required vector
+    // first; it's an ordered list.
+    checkFirstMissing(
+      "R Extensions: version ≥ 4",
+      atLeast34 or atLeastSdk30_4,
+      atLeastSdk30_4 or atLeastAdsSdk_4,
+    )
+    checkFirstMissing(
+      "R Extensions: version ≥ 4",
+      atLeast34 or atLeastSdk30_4,
+      atLeastSdk30_4 or atLeastAdsSdk_4,
+    )
+
+    checkFirstMissing(
+      "R Extensions: version ≥ 4",
+      multiSdk("0:30,30:4"),
+      multiSdk("30:4,1000000:4"),
+    )
   }
 
   @Test

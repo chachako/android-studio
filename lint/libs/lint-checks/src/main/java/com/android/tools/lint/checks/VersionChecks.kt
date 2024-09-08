@@ -28,16 +28,6 @@ import org.jetbrains.uast.UElement
 class VersionChecks {
   companion object {
     @Deprecated(
-      message = "Use com.android.tools.lint.detector.api.VersionChecks.codeNameToApi instead",
-      replaceWith =
-        ReplaceWith("com.android.tools.lint.detector.api.VersionChecks.codeNameToApi(text)"),
-    )
-    @JvmStatic
-    fun codeNameToApi(text: String): Int {
-      return com.android.tools.lint.detector.api.VersionChecks.codeNameToApi(text)
-    }
-
-    @Deprecated(
       message =
         "Use com.android.tools.lint.detector.api.VersionChecks.isWithinVersionCheckConditional instead",
       replaceWith =

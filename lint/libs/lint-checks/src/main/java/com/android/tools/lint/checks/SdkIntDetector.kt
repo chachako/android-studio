@@ -16,12 +16,12 @@
 
 package com.android.tools.lint.checks
 
-import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.getAndroidVersionField
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
@@ -31,6 +31,8 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.VersionChecks.Companion.CHECKS_SDK_INT_AT_LEAST_ANNOTATION
+import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT
+import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT_FULL
 import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT_VERSION_DATA
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getVersionCheckConditional
 import com.android.tools.lint.detector.api.VersionChecks.SdkIntAnnotation.Companion.getFieldKey
@@ -66,7 +68,7 @@ import org.jetbrains.uast.tryResolve
 
 /** Looks for SDK_INT checks and suggests annotating these. */
 class SdkIntDetector : Detector(), SourceCodeScanner {
-  override fun getApplicableReferenceNames(): List<String> = listOf("SDK_INT")
+  override fun getApplicableReferenceNames(): List<String> = listOf(SDK_INT, SDK_INT_FULL)
 
   override fun getApplicableMethodNames(): List<String> =
     listOf("getBuildSdkInt", "getExtensionVersion")
@@ -79,7 +81,8 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
     // Make sure it's android.os.Build.VERSION.SDK_INT, though that's highly likely
     val evaluator = context.evaluator
     if (evaluator.isMemberInClass(referenced as? PsiField, "android.os.Build.VERSION")) {
-      checkAnnotation(context, reference)
+      val isFull = (referenced as? PsiField)?.name == SDK_INT_FULL
+      checkAnnotation(context, reference, isFull = isFull)
     }
   }
 
@@ -90,9 +93,9 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       }
       val first = node.valueArguments.firstOrNull() ?: return
       val sdkId = (ConstantEvaluator.evaluate(context, first) as? Number)?.toInt() ?: return
-      checkAnnotation(context, node, sdkId)
+      checkAnnotation(context, node, sdkId, false)
     } else {
-      checkAnnotation(context, node)
+      checkAnnotation(context, node, isFull = false)
     }
   }
 
@@ -142,7 +145,12 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         implementation = IMPLEMENTATION,
       )
 
-    fun checkAnnotation(context: JavaContext, sdkInt: UElement, sdkId: Int = ANDROID_SDK_ID) {
+    fun checkAnnotation(
+      context: JavaContext,
+      sdkInt: UElement,
+      sdkId: Int = ANDROID_SDK_ID,
+      isFull: Boolean,
+    ) {
       // In app module analysis we always have source access to the
       // check method bodies; don't nag users to annotate these.
       val project = context.project
@@ -178,6 +186,24 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         // Allow SDK_INT > R && getExtensionVersion(...) combination, since getExtensionVersion
         // requires R.
         parent = skipParenthesizedExprUp(parent.uastParent)
+      } else if (
+        sdkId == ANDROID_SDK_ID &&
+          parent is UBinaryExpression &&
+          parent.operator == UastBinaryOperator.LOGICAL_AND
+      ) {
+        val left = parent.leftOperand.skipParenthesizedExprDown()
+        val right = parent.rightOperand.skipParenthesizedExprDown()
+        if (
+          left === comparison &&
+            parent.rightOperand.sourcePsi?.text?.contains("SDK_INT_FULL") == true
+        ) {
+          return
+        } else if (right === comparison) {
+          // Allow SDK_INT > 36 && SDK_INT_FULL >= combination, since SDK_INT_FULL requires 36.
+          parent = skipParenthesizedExprUp(parent.uastParent)
+        } else {
+          return
+        }
       }
 
       if (parent is UField) {
@@ -189,7 +215,14 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           val size = parentParent.expressions.size
           if (size == 1) {
             val method = parentParent.uastParent as UMethod
-            checkMethod(comparison, context, isGreaterOrEquals, method, sdkId = sdkId)
+            checkMethod(
+              comparison,
+              context,
+              isGreaterOrEquals,
+              method,
+              sdkId = sdkId,
+              isFull = isFull,
+            )
           }
         }
       } else if (parent is UIfExpression) {
@@ -208,7 +241,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           }
 
         val parentParent = skipParenthesizedExprUp(parent.uastParent) ?: return
-        checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId)
+        checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId, isFull)
       } else if (parent is USwitchClauseExpressionWithBody && parent.body.expressions.size == 1) {
         var then = parent.body.expressions[0].skipParenthesizedExprDown()
         @Suppress("UnstableApiUsage")
@@ -227,7 +260,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         if (!parent.caseValues.any { it.isUastChildOf(comparison) }) {
           return
         }
-        checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId)
+        checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId, isFull)
       }
     }
 
@@ -258,6 +291,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       comparison: UBinaryExpression,
       isGreaterOrEquals: Boolean,
       sdkId: Int,
+      isFull: Boolean,
     ) {
       val method: UMethod =
         if (parentParent is UReturnExpression) {
@@ -281,7 +315,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           return
         }
 
-      checkMethod(context, method, receiver, comparison, isGreaterOrEquals, sdkId)
+      checkMethod(context, method, receiver, comparison, isGreaterOrEquals, sdkId, isFull)
     }
 
     private fun checkMethod(
@@ -291,11 +325,12 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       comparison: UBinaryExpression,
       isGreaterOrEquals: Boolean,
       sdkId: Int,
+      isFull: Boolean,
     ) {
       val parameter = receiver.tryResolve() as? PsiParameter ?: return
       val index = getParameterIndex(parameter)
       if (index != -1 && isLambdaType(context, parameter.type)) {
-        checkMethod(comparison, context, isGreaterOrEquals, method, sdkId, index)
+        checkMethod(comparison, context, isGreaterOrEquals, method, sdkId, index, isFull)
       }
     }
 
@@ -311,6 +346,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       method: UMethod,
       sdkId: Int,
       lambda: Int = -1,
+      isFull: Boolean,
     ) {
       if (!context.evaluator.isPublic(method)) {
         return
@@ -342,6 +378,13 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           }
         }
       } else if (apiOperand is UReferenceExpression) {
+        if (isFull) {
+          // For plain SDK_INT checks we suggest using @ChecksSdkIntAtLeast(parameter=0),
+          // but if the API level is passed in via a lambda, we need to indicate to the
+          // caller whether it's a plain API level or a packed (full) API level; we can't
+          // express that today.
+          return
+        }
         val parameter = apiOperand.resolve()
         if (parameter is PsiParameter) {
           val index = getParameterIndex(parameter)
@@ -396,8 +439,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       if (sdkId != ANDROID_SDK_ID) {
         return api.toString()
       }
-      val buildCode = SdkVersionInfo.getBuildCode(api) ?: return api.toString()
-      return "android.os.Build.VERSION_CODES.$buildCode"
+      return getAndroidVersionField(api, true)
     }
 
     private fun checkField(

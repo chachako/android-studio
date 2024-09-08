@@ -59,9 +59,9 @@ import com.android.tools.lint.detector.api.ResourceEvaluator.RES_SUFFIX
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
-import com.android.tools.lint.detector.api.UastLintUtils
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationBooleanValue
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationLongValue
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValue
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValues
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getDoubleAttribute
@@ -488,7 +488,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             foundFirst = true
           }
 
-          val sdkVersion = UastLintUtils.getAnnotationLongValue(a, "extension", -1).toInt()
+          val sdkVersion = getAnnotationLongValue(a, "extension", -1).toInt()
           if (sdkVersion == -1) {
             val location = context.getLocation(a)
             context.report(
@@ -499,7 +499,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             )
             return
           }
-          val extensionVersion = UastLintUtils.getAnnotationLongValue(a, "version", -1).toInt()
+          val extensionVersion = getAnnotationLongValue(a, "version", -1).toInt()
           if (extensionVersion == -1) {
             val location = context.getLocation(a)
             context.report(
@@ -514,10 +514,8 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           levels.add(Triple(a, sdkVersion, extensionVersion))
         } else if (REQUIRES_API_ANNOTATION.isEquals(qualifiedName)) {
           val sdkVersion =
-            UastLintUtils.getAnnotationLongValue(a, "api", -1L)
-              .let {
-                if (it != -1L) it else UastLintUtils.getAnnotationLongValue(a, ATTR_VALUE, -1L)
-              }
+            getAnnotationLongValue(a, "api", -1L)
+              .let { if (it != -1L) it else getAnnotationLongValue(a, ATTR_VALUE, -1L) }
               .toInt()
           if (sdkVersion == -1) {
             // Already validated elsewhere (in checkRequiresApi)

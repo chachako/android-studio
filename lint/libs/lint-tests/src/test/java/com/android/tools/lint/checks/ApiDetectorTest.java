@@ -23,6 +23,7 @@ import static com.android.tools.lint.checks.ApiDetector.UNSUPPORTED;
 import static com.android.tools.lint.checks.infrastructure.TestFiles.binaryStub;
 import static com.android.tools.lint.checks.infrastructure.TestFiles.rClass;
 import static com.android.tools.lint.checks.infrastructure.TestMode.PARTIAL;
+import static com.android.tools.lint.detector.api.VersionChecksTestKt.getNewAndroidOsBuildStub;
 import static com.android.tools.lint.detector.api.VersionChecksTestKt.getRequiresExtensionStub;
 
 import com.android.annotations.NonNull;
@@ -6253,8 +6254,8 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(expected)
                 .expectFixDiffs(
-                        "Data for src/test/pkg/MapApiTest.java line 8:   minSdk : ffffffffffffffff\n"
-                                + "  requiresApi : ffffffffff800000");
+                        "Data for src/test/pkg/MapApiTest.java line 8:   minSdk : 1-∞\n"
+                                + "  requiresApi : 24-∞");
     }
 
     public void testExtensionFunction() {
@@ -9186,7 +9187,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                                 + "}")))
                 .expect(
                         ""
-                                + "src/test/pkg/test.kt:6: Warning: Field requires version 4 of the AD_SERVICES-ext SDK (current min is 0): android.app.GameManager#GAME_MODE_BATTERY [InlinedApi]\n"
+                                + "src/test/pkg/test.kt:6: Warning: Field requires version 4 of the Ad Services Extensions SDK (current min is 0): android.app.GameManager#GAME_MODE_BATTERY [InlinedApi]\n"
                                 + "    GameManager.GAME_MODE_BATTERY\n"
                                 + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                                 + "0 errors, 1 warnings");
@@ -9276,6 +9277,165 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "        outer.new Inner(1f);\n"
                                 + "        ~~~~~~~~~~~~~~~\n"
                                 + "1 errors, 0 warnings");
+    }
+
+    public void testMinorVersions() {
+        // Test of minor versions in the API XML file.
+        // We don't have new APIs in minor versions yet, so here we're creating
+        // a fake API surface (in android, since the API database expects that)
+        // with minor requirements to test lint.
+        ApiLookupTest.runApiCheckWithCustomLookup(
+                        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                            + "<api version=\"4\">\n"
+                            + "        <sdk id=\"30\" name=\"R-ext\""
+                            + " reference=\"android/os/Build$VERSION_CODES$R\"/>\n"
+                            + "        <sdk id=\"31\" name=\"S-ext\"/>\n"
+                            + "        <sdk id=\"33\" name=\"T-ext\"/>\n"
+                            + "        <sdk id=\"34\" name=\"U-ext\"/>\n"
+                            + "        <sdk id=\"35\" name=\"V-ext\"/>\n"
+                            + "        <sdk id=\"36\" shortname=\"B-ext\" name=\"Waffle"
+                            + " Extensions\"\n"
+                            + "            "
+                            + " reference=\"android/os/Build$VERSION_CODES$WAFFLE\"/>\n"
+                            + "        <sdk id=\"1000000\" name=\"AD_SERVICES-ext\""
+                            + " reference=\"android/os/ext/SdkExtensions$AD_SERVICES\"/>\n"
+                            + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                            + "                <method name=\"&lt;init>()V\"/>\n"
+                            + "        </class>\n"
+                            + "        <class name=\"android/test/api/MyClass\" since=\"35.0\">\n"
+                            + "                <extends name=\"java/lang/Object\"/>\n"
+                            + "                <method name=\"&lt;init>()V\"/>\n"
+                            + "                <method name=\"method360()V\" since=\"36.0\"/>\n"
+                            + "                <method name=\"method361()V\" since=\"36.1\"/>\n"
+                            + "                <method name=\"method352()V\" since=\"35.2\"/>\n"
+                            + "        </class>\n"
+                            + "</api>\n",
+                        () ->
+                                lint().files(
+                                                binaryStub(
+                                                        "libs/code.jar",
+                                                        new TestFile[] {
+                                                            java(
+                                                                    "package android.test.api;\n"
+                                                                        + "\n"
+                                                                        + "public class MyClass {\n"
+                                                                        + "    public void"
+                                                                        + " method360() { }\n"
+                                                                        + "    public void"
+                                                                        + " method361() { }\n"
+                                                                        + "    public void"
+                                                                        + " method352() { }\n"
+                                                                        + "}")
+                                                        },
+                                                        true),
+                                                java(
+                                                        "package test.pkg;\n"
+                                                            + "import android.test.api.MyClass;\n"
+                                                            + "import android.os.Build;\n"
+                                                            + "public class Test {\n"
+                                                            + "    public static void test(MyClass"
+                                                            + " instance) {\n"
+                                                            + "        instance.method360();\n"
+                                                            + "        instance.method361();\n"
+                                                            + "        instance.method352();\n"
+                                                            + "        if (Build.VERSION.SDK_INT >="
+                                                            + " 36) {\n"
+                                                            + "            instance.method360();\n"
+                                                            + "            instance.method361();\n"
+                                                            + "            instance.method352();\n"
+                                                            + "        }\n"
+                                                                + "    }\n"
+                                                                + "}")))
+                .expect(
+                        "src/test/pkg/Test.java:6: Error: Call requires API level 36 (current min"
+                            + " is 1): android.test.api.MyClass#method360 [NewApi]\n"
+                            + "        instance.method360();\n"
+                            + "                 ~~~~~~~~~\n"
+                            + "src/test/pkg/Test.java:7: Error: Call requires API level 36.1"
+                            + " (current min is 1): android.test.api.MyClass#method361 [NewApi]\n"
+                            + "        instance.method361();\n"
+                            + "                 ~~~~~~~~~\n"
+                            + "src/test/pkg/Test.java:8: Error: Call requires API level 35.2"
+                            + " (current min is 1): android.test.api.MyClass#method352 [NewApi]\n"
+                            + "        instance.method352();\n"
+                            + "                 ~~~~~~~~~\n"
+                            + "src/test/pkg/Test.java:11: Error: Call requires API level 36.1"
+                            + " (current min is 36): android.test.api.MyClass#method361 [NewApi]\n"
+                            + "            instance.method361();\n"
+                            + "                     ~~~~~~~~~\n"
+                            + "4 errors, 0 warnings");
+    }
+
+    @SuppressWarnings("all") // sample code
+    public void testObsoleteVersionCheckFullSdk() {
+        lint().files(
+                        manifest().minSdk(36),
+                        kotlin(
+                                "package test.pkg\n"
+                                    + "\n"
+                                    + "import android.os.Build.VERSION.SDK_INT\n"
+                                    + "import android.os.Build.VERSION.SDK_INT_FULL\n"
+                                    + "import android.os.Build.VERSION_CODES_FULL\n"
+                                    + "\n"
+                                    + "fun obsolete1() {\n"
+                                    + "    if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // ERROR 1\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "fun obsolete2() {\n"
+                                    + "    if (SDK_INT_FULL < VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // ERROR 2\n"
+                                    + "}\n"),
+                        getNewAndroidOsBuildStub())
+                // We *don't* want to use provisional computation for this:
+                // limit suggestions around SDK_INT checks to those implied
+                // by the minSdkVersion of the library.
+                .skipTestModes(PARTIAL)
+                .run()
+                .expect(
+                        "src/test/pkg/test.kt:8: Warning: Unnecessary; SDK_INT_FULL is always >= 36 [ObsoleteSdkInt]\n"
+                            + "    if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // ERROR 1\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:12: Warning: Unnecessary; SDK_INT_FULL is never < 36 [ObsoleteSdkInt]\n"
+                            + "    if (SDK_INT_FULL < VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // ERROR 2\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "0 errors, 2 warnings");
+    }
+
+    @SuppressWarnings("all") // sample code
+    public void testObsoleteVersionCheckFullSdkUsingWhen() {
+        lint().files(
+                        manifest().minSdk(36),
+                        kotlin(
+                                "package test.pkg\n"
+                                    + "\n"
+                                    + "import android.os.Build\n"
+                                    + "import android.os.Build.VERSION.SDK_INT\n"
+                                    + "import android.os.Build.VERSION.SDK_INT_FULL\n"
+                                    + "import android.os.Build.VERSION_CODES_FULL\n"
+                                    + "\n"
+                                    + "fun obsolete1() {\n"
+                                    + "    when {\n"
+                                    + "        SDK_INT_FULL < VERSION_CODES_FULL.VANILLA_ICE_CREAM_0 -> { } // ERROR 1\n"
+                                    + "    }\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "fun obsolete2() {\n"
+                                    + "    when {\n"
+                                    + "        Build.VERSION.SDK_INT == 36 -> { // OK 1\n"
+                                    + "            requires36()\n"
+                                    + "        }\n"
+                                    + "    }\n"
+                                    + "}\n"),
+                        getNewAndroidOsBuildStub())
+                // We *don't* want to use provisional computation for this:
+                // limit suggestions around SDK_INT checks to those implied
+                // by the minSdkVersion of the library.
+                .skipTestModes(PARTIAL)
+                .run()
+                .expect(
+                        "src/test/pkg/test.kt:10: Warning: Unnecessary; SDK_INT_FULL is never < 36 [ObsoleteSdkInt]\n"
+                            + "        SDK_INT_FULL < VERSION_CODES_FULL.VANILLA_ICE_CREAM_0 -> { } // ERROR 1\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "0 errors, 1 warnings");
     }
 
     public void testNonConstantExpression() {
@@ -9643,14 +9803,14 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                     + "@@ -2 +2\n"
                                     + "-     list.removeFirst()\n"
                                     + "+     list.removeAt(0)\n"
-                                    + "Data for src/test.kt line 2:   minSdk : ffffffffffffffff\n"
-                                    + "  requiresApi : fffffffc00000000\n"
+                                    + "Data for src/test.kt line 2:   minSdk : 1-∞\n"
+                                    + "  requiresApi : 35-∞\n"
                                     + "Fix for src/test.kt line 3: Replace with removeAt(list.lastIndex):\n"
                                     + "@@ -3 +3\n"
                                     + "-     list.removeLast()\n"
                                     + "+     list.removeAt(list.lastIndex)\n"
-                                    + "Data for src/test.kt line 3:   minSdk : ffffffffffffffff\n"
-                                    + "  requiresApi : fffffffc00000000");
+                                    + "Data for src/test.kt line 3:   minSdk : 1-∞\n"
+                                    + "  requiresApi : 35-∞");
         }
     }
 
@@ -9673,6 +9833,51 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     @SuppressWarnings("all") // sample code
+    public void testInvalidComparisons() {
+        lint().files(
+                        manifest().minSdk(24),
+                        kotlin(
+                                "package test.pkg\n"
+                                    + "\n"
+                                    + "import android.os.Build.VERSION.SDK_INT\n"
+                                    + "import android.os.Build.VERSION.SDK_INT_FULL\n"
+                                    + "import android.os.Build.VERSION_CODES_FULL\n"
+                                    + "import android.os.Build\n"
+                                    + "\n"
+                                    + "fun testInvalidComparisons() {\n"
+                                    + "    if (SDK_INT_FULL > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // OK 1\n"
+                                    + "    }\n"
+                                    + "    if (SDK_INT_FULL > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // OK 2\n"
+                                    + "    }\n"
+                                    + "    if (SDK_INT > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // ERROR 1\n"
+                                    + "    }\n"
+                                    + "    if (SDK_INT_FULL > Build.VERSION_CODES.VANILLA_ICE_CREAM) { // ERROR 2\n"
+                                    + "    }\n"
+                                    + "    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUR_DEVELOPMENT) { // OK 3\n"
+                                    + "    }\n"
+                                    + "}\n"),
+                        getNewAndroidOsBuildStub())
+                .run()
+                .expect(
+                        "src/test/pkg/test.kt:13: Error: The API level (Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) appears to be a plain SDK int, so it should be compared with SDK_INT, not SDK_INT, or you should switch the API level to a full SDK constant [WrongSdkInt]\n"
+                            + "    if (SDK_INT > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // ERROR 1\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:15: Error: The API level (Build.VERSION_CODES.VANILLA_ICE_CREAM) appears to be a full SDK int (encoding major and minor versions), so it should be compared with SDK_INT_FULL, not SDK_INT [WrongSdkInt]\n"
+                            + "    if (SDK_INT_FULL > Build.VERSION_CODES.VANILLA_ICE_CREAM) { // ERROR 2\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "2 errors, 0 warnings")
+                .expectFixDiffs(
+                        "Fix for src/test/pkg/test.kt line 13: Switch to `SDK_INT_FULL`:\n"
+                            + "@@ -13 +13\n"
+                            + "-     if (SDK_INT > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // ERROR 1\n"
+                            + "+     if (SDK_INT_FULL > Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { // ERROR 1\n"
+                            + "Fix for src/test/pkg/test.kt line 15: Switch to `SDK_INT`:\n"
+                            + "@@ -15 +15\n"
+                            + "-     if (SDK_INT_FULL > Build.VERSION_CODES.VANILLA_ICE_CREAM) { // ERROR 2\n"
+                            + "+     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.VANILLA_ICE_CREAM) { // ERROR 2");
+    }
+
+    @SuppressWarnings("all") // sample code
     public void testNestedObsolete() {
         lint().files(
                         manifest().minSdk(24),
@@ -9680,6 +9885,8 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 "package test.pkg\n"
                                     + "\n"
                                     + "import android.os.Build.VERSION.SDK_INT\n"
+                                    + "import android.os.Build.VERSION.SDK_INT_FULL\n"
+                                    + "import android.os.Build.VERSION_CODES_FULL\n"
                                     + "import android.os.Build\n"
                                     + "import androidx.annotation.RequiresApi\n"
                                     + "import androidx.annotation.RequiresExtension\n"
@@ -9705,30 +9912,60 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                     + "        if (SDK_INT >= 36) { } // Error 5: Always true, known from outer check\n"
                                     + "        if (SDK_INT < 36) { } // Error 6: Always false, known from outer check\n"
                                     + "    }\n"
-                                    + "}\n"),
+                                    + "}\n"
+                                    + "\n"
+                                    + "fun obsolete3() {\n"
+                                    + "    if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_1) {\n"
+                                    + "        if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 7: Known from outer check\n"
+                                    + "    }\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "fun obsolete4() {\n"
+                                    + "    when {\n"
+                                    + "        SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_1 -> {\n"
+                                    + "            if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 8: Known from outer check\n"
+                                    + "        }\n"
+                                    + "    }\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "@RequiresExtension(0, 36)\n"
+                                    + "fun obsolete5() {\n"
+                                    + "    if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 9: Known from annotation\n"
+                                    + "}\n"
+                            ),
                         SUPPORT_ANNOTATIONS_JAR,
-                        getRequiresExtensionStub())
+                        getRequiresExtensionStub(),
+                        getNewAndroidOsBuildStub())
                 .run()
                 .expect(
-                        "src/test/pkg/test.kt:10: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
+                        "src/test/pkg/test.kt:12: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
                             + "    if (SDK_INT >= 36) { } // Error 1: Always true, known from @RequiresApi\n"
                             + "        ~~~~~~~~~~~~~\n"
-                            + "src/test/pkg/test.kt:11: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "src/test/pkg/test.kt:13: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
                             + "    if (SDK_INT < 36) { } // Error 2: Always false, known from @RequiresApi\n"
                             + "        ~~~~~~~~~~~~\n"
-                            + "src/test/pkg/test.kt:17: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
+                            + "src/test/pkg/test.kt:19: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
                             + "        SDK_INT >= 36 -> { } // Error 3: Always true, known from @RequiresApi\n"
                             + "        ~~~~~~~~~~~~~\n"
-                            + "src/test/pkg/test.kt:20: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "src/test/pkg/test.kt:22: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
                             + "        SDK_INT < 36 -> { } // Error 4: Always false, known from @RequiresApi\n"
                             + "        ~~~~~~~~~~~~\n"
-                            + "src/test/pkg/test.kt:26: Warning: Unnecessary; SDK_INT is always >= 37 [ObsoleteSdkInt]\n"
+                            + "src/test/pkg/test.kt:28: Warning: Unnecessary; SDK_INT is always >= 37 [ObsoleteSdkInt]\n"
                             + "        if (SDK_INT >= 36) { } // Error 5: Always true, known from outer check\n"
                             + "            ~~~~~~~~~~~~~\n"
-                            + "src/test/pkg/test.kt:27: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "src/test/pkg/test.kt:29: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
                             + "        if (SDK_INT < 36) { } // Error 6: Always false, known from outer check\n"
                             + "            ~~~~~~~~~~~~\n"
-                            + "0 errors, 6 warnings");
+                            + "src/test/pkg/test.kt:35: Warning: Unnecessary; SDK_INT_FULL is always >= 35.2 [ObsoleteSdkInt]\n"
+                            + "        if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 7: Known from outer check\n"
+                            + "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:42: Warning: Unnecessary; SDK_INT_FULL is always >= 35.2 [ObsoleteSdkInt]\n"
+                            + "            if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 8: Known from outer check\n"
+                            + "                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:49: Warning: Unnecessary; SDK_INT_FULL is always >= 36 [ObsoleteSdkInt]\n"
+                            + "    if (SDK_INT_FULL > VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) { } // Error 9: Known from annotation\n"
+                            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                            + "0 errors, 9 warnings");
     }
 
     @SuppressWarnings("all") // sample code
@@ -9795,16 +10032,21 @@ public class ApiDetectorTest extends AbstractCheckTest {
             }
 
             if (fixData instanceof LintFix.DataMap) {
-              LintFix.DataMap map = (LintFix.DataMap) fixData;
-              ApiConstraint requiredVersions = map.getApiConstraint(KEY_REQUIRES_API);
-              assertNotNull(requiredVersions);
-              ApiConstraint requiredVersion = requiredVersions.getConstraints().get(0);
-              assertTrue(
-                  "Could not extract message tokens from \"" + message + "\"",
-                  requiredVersion.min() >= 1
-                      && requiredVersion.min() <= SdkVersionInfo.HIGHEST_KNOWN_API);
+                LintFix.DataMap map = (LintFix.DataMap) fixData;
+                ApiConstraint requiredVersions = map.getApiConstraint(KEY_REQUIRES_API);
+                assertNotNull(requiredVersions);
+                ApiConstraint requiredVersion = requiredVersions.getConstraints().get(0);
+                assertTrue(
+                        "Could not extract message tokens from \"" + message + "\"",
+                        requiredVersion.min() >= 1
+                                // Allow a few future API levels here as well, that's within the
+                                // margin of error
+                                && requiredVersion.min() <= SdkVersionInfo.HIGHEST_KNOWN_API + 3);
             } else if (!message.contains("Lint API checks unavailable")) {
-              assertNotNull("Expected a custom API quickfix if not using regular API level fix mechanism", fixData);
+                assertNotNull(
+                        "Expected a custom API quickfix if not using regular API level fix"
+                            + " mechanism",
+                        fixData);
             }
         }
     }

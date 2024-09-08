@@ -77,6 +77,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ApiDetector.OBSOLETE_SDK,
           ApiDetector.UNSUPPORTED,
           ApiDetector.UNUSED,
+          ApiDetector.WRONG_SDK_INT,
           AppBundleLocaleChangesDetector.ISSUE,
           AppCompatCallDetector.ISSUE,
           AppCompatCustomViewDetector.ISSUE,

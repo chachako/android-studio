@@ -748,6 +748,17 @@ class LintBaselineTest {
         old = "Call requires API level 24 (current min is 1): `java.util.Map#getOrDefault`",
       )
     )
+
+    // Switching default display name for extensions (since api-versions.xml
+    // seems to have switched the meaning of the name attribute from short
+    // name to full name, and have introduced a new shortName attribute)
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "Call requires version 4 of the R Extensions SDK (current min is 0): `rOnly`",
+        old = "Call requires version 4 of the R-ext SDK (current min is 0): `rOnly`",
+      )
+    )
   }
 
   @Test
@@ -759,6 +770,15 @@ class LintBaselineTest {
         ApiDetector.OBSOLETE_SDK,
         new =
           "Unnecessary; `Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN` is never true here",
+        old = "Unnecessary; SDK_INT is never < 21",
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new =
+          "Unnecessary; `Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN` is never true here (SDK_INT ≥ 11 and < 31)",
         old = "Unnecessary; SDK_INT is never < 21",
       )
     )

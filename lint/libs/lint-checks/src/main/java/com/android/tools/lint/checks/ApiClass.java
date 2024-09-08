@@ -23,7 +23,9 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.utils.Pair;
+
 import com.google.common.collect.Iterables;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -97,11 +99,12 @@ public final class ApiClass extends ApiClassBase {
         super(name);
 
         // Work around b/206996004 -- wrong API level for SdkExtensions: Should be R, not TIRAMISU
-        if (name.equals("android/os/ext/SdkExtensions")) {
-            since = 30;
-            if (sdks != null && sdks.startsWith("0:33")) {
-                sdks = "0:30" + sdks.substring(4);
-            }
+        // This was broken for API level 33 (and fixed as of 34)
+        if (name.equals("android/os/ext/SdkExtensions")
+                // 8448: inlined ApiParser.toVersionInt(33), unit test (ApiLookupTest.testMinor)
+                // verifies this stays working
+                && since == 8448) {
+            since = ApiParser.toVersionInt(30, 0);
         }
 
         mSdks = sdks;
@@ -117,6 +120,9 @@ public final class ApiClass extends ApiClassBase {
     /**
      * Returns when the class was introduced.
      *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
+     *
      * @return the api level the class was introduced.
      */
     int getSince() {
@@ -125,6 +131,9 @@ public final class ApiClass extends ApiClassBase {
 
     /**
      * Returns the API level the class was deprecated in, or 0 if the class is not deprecated.
+     *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
      *
      * @return the API level the class was deprecated in, or 0 if the class is not deprecated
      */
@@ -135,6 +144,9 @@ public final class ApiClass extends ApiClassBase {
     /**
      * Returns the API level the class was removed in, or 0 if the class was not removed.
      *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
+     *
      * @return the API level the class was removed in, or 0 if the class was not removed
      */
     int getRemovedIn() {
@@ -143,6 +155,9 @@ public final class ApiClass extends ApiClassBase {
 
     /**
      * Returns the API level when a field was added, or 0 if it doesn't exist.
+     *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
      *
      * @param name the name of the field.
      * @param info the information about the rest of the API
@@ -188,7 +203,13 @@ public final class ApiClass extends ApiClassBase {
                 && mSdks != null
                 && maxFrom != null
                 && ((ApiClass) maxFrom).getMemberSdks(name, info) == null) {
-            mMemberSdks.put(name, ANDROID_SDK_ID + ":" + apiLevel);
+            mMemberSdks.put(
+                    name,
+                    ANDROID_SDK_ID
+                            + ":"
+                            + ApiParser.getMajorVersion(apiLevel)
+                            + '.'
+                            + ApiParser.getMinorVersion(apiLevel));
         }
 
         return apiLevel;
@@ -196,6 +217,9 @@ public final class ApiClass extends ApiClassBase {
 
     /**
      * Returns when a field or a method was deprecated, or 0 if it's not deprecated.
+     *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
      *
      * @param name the name of the field.
      * @param info the information about the rest of the API
@@ -219,6 +243,9 @@ public final class ApiClass extends ApiClassBase {
 
     /**
      * Returns the API level when a field or a method was removed, or 0 if it's not removed.
+     *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
      *
      * @param name the name of the field or method
      * @param info the information about the rest of the API
@@ -280,6 +307,9 @@ public final class ApiClass extends ApiClassBase {
      * Returns the API level when a method was added, or 0 if it doesn't exist. This goes through
      * the super class and interfaces to find method only present there.
      *
+     * <p>Note that this is a packed integer containing both major and minor versions; decode using
+     * {@link ApiParser#getMajorVersion(int)} and {@link ApiParser#getMinorVersion(int)}.
+     *
      * @param methodSignature the method signature
      * @param info the information about the rest of the API
      */
@@ -324,7 +354,13 @@ public final class ApiClass extends ApiClassBase {
                     && mSdks != null
                     && maxFrom != null
                     && ((ApiClass) maxFrom).getMemberSdks(methodSignature, info) == null) {
-                mMemberSdks.put(methodSignature, ANDROID_SDK_ID + ":" + apiLevel);
+                mMemberSdks.put(
+                        methodSignature,
+                        ANDROID_SDK_ID
+                                + ":"
+                                + ApiParser.getMajorVersion(apiLevel)
+                                + '.'
+                                + ApiParser.getMinorVersion(apiLevel));
             }
         }
 
@@ -642,7 +678,7 @@ public final class ApiClass extends ApiClassBase {
                     ApiClassBase superClass = info.getClasses().get(pair.getFirst());
                     assert superClass != null : this;
                     ApiDatabase.put3ByteInt(buffer, superClass.index);
-                    buffer.put((byte) api);
+                    writeConstraintReference(info.getSdkIndex(api), buffer, false);
                 }
             }
             for (Pair<String, Integer> pair : interfaces) {
@@ -651,9 +687,30 @@ public final class ApiClass extends ApiClassBase {
                     ApiClassBase interfaceClass = info.getClasses().get(pair.getFirst());
                     assert interfaceClass != null : this;
                     ApiDatabase.put3ByteInt(buffer, interfaceClass.index);
-                    buffer.put((byte) api);
+                    writeConstraintReference(info.getSdkIndex(api), buffer, false);
                 }
             }
+        }
+    }
+
+    private static void writeConstraintReference(
+            int index,
+            ByteBuffer buffer,
+            boolean hasExtraByte) {
+        boolean isShort = index >= (1 << 6);
+        if (isShort) {
+            int left = index >> 8 | ApiDatabase.IS_SHORT_FLAG;
+            if (hasExtraByte) {
+                left |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+            }
+            buffer.put((byte) left);
+            buffer.put((byte) (index & 0xFF));
+        } else {
+            // We can fit in one byte
+            if (hasExtraByte) {
+                index |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+            }
+            buffer.put((byte) index);
         }
     }
 
@@ -811,37 +868,36 @@ public final class ApiClass extends ApiClassBase {
         boolean isRemoved = removedIn > 0;
         // Writing "since" and, optionally, "deprecatedIn" and "removedIn".
 
-        short sdkIndex;
+        short sinceIndex;
         if (sdks != null) {
-            sdkIndex = info.getSdkIndex(sdks);
+            sinceIndex = info.getSdkIndex(sdks);
         } else {
-            // Convert since API level into sdkIndex
-            sdkIndex = info.getSdkIndex(since);
+            // Convert since API level into sinceIndex
+            sinceIndex = info.getSdkIndex(since);
         }
         // Top two bits in from field is (1) is short, and (2) continues with deprecated/removedIn
-        boolean sinceShort = sdkIndex >= (1 << 6);
+        boolean sinceShort = sinceIndex >= (1 << 6);
         if (sinceShort) {
-            int left = sdkIndex >> 8 | ApiDatabase.IS_SHORT_FLAG;
+            int left = sinceIndex >> 8 | ApiDatabase.IS_SHORT_FLAG;
             if (isDeprecated || isRemoved) {
                 left |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
             }
             buffer.put((byte) left);
-            buffer.put((byte) (sdkIndex & 0xFF));
+            buffer.put((byte) (sinceIndex & 0xFF));
         } else {
             // We can fit in one byte
             if (isDeprecated || isRemoved) {
-                sdkIndex |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+                sinceIndex |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
             }
-            buffer.put((byte) sdkIndex);
+            buffer.put((byte) sinceIndex);
         }
 
         if (isDeprecated || isRemoved) {
+            int deprecatedIndex = info.getSdkIndex(deprecatedIn);
+            writeConstraintReference(deprecatedIndex, buffer, isRemoved);
             if (isRemoved) {
-                deprecatedIn |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
-            }
-            buffer.put((byte) deprecatedIn);
-            if (isRemoved) {
-                buffer.put((byte) removedIn);
+                int removedIndex = info.getSdkIndex(removedIn);
+                writeConstraintReference(removedIndex, buffer, false);
             }
         }
     }

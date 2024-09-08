@@ -17,6 +17,7 @@ package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.newAndroidOsBuildStub
 
 /** Unit tests for [SdkIntDetector] */
 class SdkIntDetectorTest : AbstractCheckTest() {
@@ -869,6 +870,99 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 @@ -17 +17
                 + @ChecksSdkIntAtLeast(api=VERSION_CODES.N)
             """
+      )
+  }
+
+  fun testFullVersions() {
+    lint()
+      .files(
+        manifest().minSdk(4),
+        projectProperties().library(true),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Build
+            import android.os.Build.VERSION
+            import android.os.Build.VERSION.SDK_INT
+            import android.os.Build.VERSION.SDK_INT_FULL
+            import android.os.Build.VERSION_CODES
+            import android.os.Build.VERSION_CODES_FULL
+
+            fun is352(): Boolean { // ERROR 1
+                return VERSION.SDK_INT_FULL >= VERSION_CODES_FULL.VANILLA_ICE_CREAM_2
+            }
+
+            fun is352b(): Boolean { // ERROR 2
+                return VERSION.SDK_INT >= 36 && VERSION.SDK_INT_FULL >= VERSION_CODES_FULL.VANILLA_ICE_CREAM_2
+            }
+
+            inline fun <T> T.applyForVANILLA_ICE_CREAM2OrAbove(block: T.() -> Unit): T { // ERROR 3
+                if (Build.VERSION.SDK_INT_FULL >= Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_1) {
+                    block()
+                }
+                return this
+            }
+
+            // For plain SDK_INT checks we suggest using @ChecksSdkIntAtLeast(parameter=0)
+            // but this says to pass in an SDK_INT value, and here it's interpreted as
+            // an SDK_INT_FULL, which doesn't work. We'd need to introduce a separate property
+            // on the @ChecksSdkIntAtLeast annotation for this (or use a separate annotation,
+            // @ChecksSdkIntFullAtLeast). For now, we're not flagging these.
+            fun isAtLeast(api: Int): Boolean { // OK
+                return VERSION.SDK_INT_FULL >= api
+            }
+            """
+          )
+          .indented(),
+        newAndroidOsBuildStub,
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:10: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES_FULL.VANILLA_ICE_CREAM_2) [AnnotateVersionCheck]
+        fun is352(): Boolean { // ERROR 1
+            ~~~~~
+        src/test/pkg/test.kt:14: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES_FULL.VANILLA_ICE_CREAM_2) [AnnotateVersionCheck]
+        fun is352b(): Boolean { // ERROR 2
+            ~~~~~~
+        src/test/pkg/test.kt:18: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_1, lambda=1) [AnnotateVersionCheck]
+        inline fun <T> T.applyForVANILLA_ICE_CREAM2OrAbove(block: T.() -> Unit): T { // ERROR 3
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Fix for src/test/pkg/test.kt line 10: Annotate with @ChecksSdkIntAtLeast:
+        @@ -9 +9
+          import android.os.Build.VERSION_CODES_FULL
+        + import androidx.annotation.ChecksSdkIntAtLeast
+
+        + @ChecksSdkIntAtLeast(api=VERSION_CODES_FULL.VANILLA_ICE_CREAM_2)
+          fun is352(): Boolean { // ERROR 1
+        Fix for src/test/pkg/test.kt line 14: Annotate with @ChecksSdkIntAtLeast:
+        @@ -9 +9
+          import android.os.Build.VERSION_CODES_FULL
+        + import androidx.annotation.ChecksSdkIntAtLeast
+
+        @@ -14 +15
+
+        + @ChecksSdkIntAtLeast(api=VERSION_CODES_FULL.VANILLA_ICE_CREAM_2)
+          fun is352b(): Boolean { // ERROR 2
+        Fix for src/test/pkg/test.kt line 18: Annotate with @ChecksSdkIntAtLeast:
+        @@ -9 +9
+          import android.os.Build.VERSION_CODES_FULL
+        + import androidx.annotation.ChecksSdkIntAtLeast
+
+        @@ -18 +19
+
+        + @ChecksSdkIntAtLeast(api=Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_1, lambda=1)
+          inline fun <T> T.applyForVANILLA_ICE_CREAM2OrAbove(block: T.() -> Unit): T { // ERROR 3
+        """
       )
   }
 

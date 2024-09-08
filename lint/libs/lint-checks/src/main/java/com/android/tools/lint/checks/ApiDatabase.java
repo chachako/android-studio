@@ -17,14 +17,16 @@ package com.android.tools.lint.checks;
 
 import static com.android.tools.lint.checks.ApiClass.USE_HASH_CODES;
 import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
-import static com.android.tools.lint.detector.api.ApiConstraint.SdkApiConstraint.isValidApiLevel;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.lint.client.api.LintClient;
-import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.ExtensionSdk;
+
 import com.google.common.io.Files;
+
+import kotlin.text.Charsets;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -36,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import kotlin.text.Charsets;
 
 /**
  * Database for API checking, providing efficient lookup for a given class, method or field.
@@ -61,7 +62,7 @@ public class ApiDatabase {
     public static final int IS_SHORT_FLAG = 1 << 6;
     public static final int API_MASK = ~HAS_EXTRA_BYTE_FLAG;
 
-    private static final int BINARY_FORMAT_VERSION = 17;
+    private static final int BINARY_FORMAT_VERSION = 18;
 
     protected byte[] mData;
     protected int[] mIndices;
@@ -451,43 +452,15 @@ public class ApiDatabase {
                     int colon = segment.indexOf(':');
                     assert colon != -1 : segment;
                     int sdk = Integer.parseInt(segment.substring(0, colon));
-                    int version = Integer.parseInt(segment.substring(colon + 1));
-
-                    // Force ApiConstraint class to be loaded before SdkApiConstraint.
-                    // TODO(b/263504975): Remove once b/263504975 is fixed.
-                    @SuppressWarnings("unused")
-                    ApiConstraint unused = ApiConstraint.NONE;
-
-                    if (!isValidApiLevel(version)) {
-                        /* Temporarily remove log warning until b/260716454 is checked in and
-                           the Integer.MAX_VALUE entries disappear from the SDK.
-                        if (!warnedInvalidData) {
-                            warnedInvalidData = true;
-                            String message =
-                                    "Unsupported API level "
-                                            + version
-                                            + " in "
-                                            + encoded
-                                            + " from "
-                                            + xmlFile;
-                            client.log(null, message);
-                        }
-                        */
-                        // Coerce version to 0 to gracefully proceed instead of aborting lint; this
-                        // means if the real version is something higher than 0 we won't correctly
-                        // flag uses, but for b/260515648 it's probably the case that the API
-                        // shouldn't be present. (We can't easily back out here; we've already
-                        // written the API to the database, we've written a count of API vector
-                        // elements etc.)
-                        version = 0;
-                    }
+                    int version = ApiParser.toVersionInt(segment.substring(colon + 1));
                     buffer.putInt(sdk);
                     buffer.putInt(version);
                 }
                 buffer.putInt(-1); // terminator
             } else {
                 // Example 2: "31" - simple API level
-                int api = Integer.parseInt(encoded);
+                // ALREADY a version int
+                int api = ApiParser.toVersionInt(encoded);
                 buffer.putInt(api);
                 buffer.putInt(-1); // terminator
             }

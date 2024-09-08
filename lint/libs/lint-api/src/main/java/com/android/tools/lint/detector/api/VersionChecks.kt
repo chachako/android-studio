@@ -31,6 +31,8 @@ import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.not
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.range
 import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID_WITH_MINOR
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationLongValue
 import com.android.tools.lint.detector.api.VersionChecks.SdkIntAnnotation.Companion.findSdkIntAnnotation
 import com.android.utils.SdkUtils
 import com.google.common.annotations.VisibleForTesting
@@ -85,7 +87,7 @@ import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
-private typealias ApiLevelLookup = (UElement) -> Int
+private typealias ApiLevelLookup = (UElement) -> ApiLevel
 
 /**
  * Helper for checking whether a given element is surrounded (or preceded!) by an API check using
@@ -157,6 +159,7 @@ class VersionChecks(
     }
 
     const val SDK_INT = "SDK_INT"
+    const val SDK_INT_FULL = "SDK_INT_FULL"
     private const val CHECKS_SDK_INT_AT_LEAST_NAME = "ChecksSdkIntAtLeast"
     const val CHECKS_SDK_INT_AT_LEAST_ANNOTATION = "androidx.annotation.ChecksSdkIntAtLeast"
     private const val PLATFORM_CHECKS_SDK_INT_AT_LEAST_ANNOTATION =
@@ -173,6 +176,8 @@ class VersionChecks(
     /** SDK int method used by the data binding compiler. */
     private const val GET_BUILD_SDK_INT = "getBuildSdkInt"
 
+    // Used by ClassVerificationFailureDetector.kt in AndroidX
+    @Deprecated("Use SdkVersion instead")
     @JvmStatic
     fun codeNameToApi(text: String): Int {
       val dotIndex = text.lastIndexOf('.')
@@ -255,10 +260,9 @@ class VersionChecks(
       if (fqcn != null && isApiLevelAnnotation(fqcn)) {
         if (fqcn == REQUIRES_EXTENSION_ANNOTATION) {
           val sdkId =
-            UastLintUtils.getAnnotationLongValue(annotation, "extension", ANDROID_SDK_ID.toLong())
-              .toInt()
-          val value = UastLintUtils.getAnnotationLongValue(annotation, "version", 0).toInt()
-          return ApiConstraint.get(value, sdkId)
+            getAnnotationLongValue(annotation, "extension", ANDROID_SDK_ID.toLong()).toInt()
+          val value = getAnnotationLongValue(annotation, "version", 0).toInt()
+          return atLeast(value, sdkId)
         }
         val sdkId = ANDROID_SDK_ID
         val attributeList = annotation.attributeValues
@@ -277,21 +281,21 @@ class VersionChecks(
           if (expression is ULiteralExpression) {
             val value = expression.value
             if (value is Int) {
-              return ApiConstraint.get(value, sdkId)
+              return ApiLevel.getMinConstraint(value, sdkId)
             } else if (value is String) {
-              return ApiConstraint.get(codeNameToApi(value), sdkId)
+              return ApiLevel.getMinConstraint(value, sdkId)
             }
           } else {
-            val apiLevel = ConstantEvaluator.evaluate(null, expression) as? Int
-            if (apiLevel != null) {
-              return ApiConstraint.get(apiLevel, sdkId)
+            val constant = ConstantEvaluator.evaluate(null, expression) as? Int
+            if (constant != null) {
+              return ApiLevel.getMinConstraint(constant, sdkId)
             } else if (expression is UReferenceExpression) {
               val name = expression.resolvedName
               if (name != null) {
-                return ApiConstraint.get(codeNameToApi(name), sdkId)
+                return ApiLevel.getMinConstraint(name, sdkId)
               }
             } else {
-              return ApiConstraint.get(codeNameToApi(expression.asSourceString()), sdkId)
+              return ApiLevel.getMinConstraint(expression.asSourceString(), sdkId)
             }
           }
         }
@@ -323,16 +327,7 @@ class VersionChecks(
             if (index != -1) {
               name = name.substring(index + 1)
             }
-            if (name.isNotEmpty()) {
-              if (name[0].isDigit()) {
-                val api = Integer.parseInt(name)
-                if (api > 0) {
-                  return ApiConstraint.get(api)
-                }
-              } else {
-                return ApiConstraint.get(codeNameToApi(name))
-              }
-            }
+            return ApiLevel.getMinConstraint(name, ANDROID_SDK_ID)
           }
         }
       }
@@ -521,8 +516,11 @@ class VersionChecks(
       project: Project?,
     ): Int {
       if (element is UReferenceExpression) {
-        if (SDK_INT == element.resolvedName) {
+        val resolvedName = element.resolvedName
+        if (SDK_INT == resolvedName) {
           return ANDROID_SDK_ID
+        } else if (SDK_INT_FULL == resolvedName) {
+          return ANDROID_SDK_ID_WITH_MINOR
         }
         val selector = element.findSelector()
         if (selector !== element) {
@@ -618,7 +616,7 @@ class VersionChecks(
           tokenType === UastBinaryOperator.IDENTITY_NOT_EQUALS
       ) {
         val left = binary.leftOperand
-        val level: Int
+        val level: ApiLevel
         val right: UExpression
         var sdkId = getSdkVersionLookup(left, client, evaluator, project)
         if (sdkId == -1) {
@@ -634,7 +632,10 @@ class VersionChecks(
           level = getApiLevel(right, apiLevelLookup)
         }
 
-        if (level != -1) {
+        if (level.isValid()) {
+          if (sdkId == ANDROID_SDK_ID_WITH_MINOR) {
+            sdkId = ANDROID_SDK_ID
+          }
           when (tokenType) {
             UastBinaryOperator.GREATER_OR_EQUALS -> return atLeast(level, sdkId)
             UastBinaryOperator.GREATER -> return above(level, sdkId)
@@ -670,41 +671,54 @@ class VersionChecks(
       if (expression.operands.size == 2) {
         // We assume there's no step, downTo etc -- there's no good reason to do that with API level
         // range checks.
-        val from = getApiLevel(expression.operands[0], apiLevelLookup)
-        var to = getApiLevel(expression.operands[1], apiLevelLookup)
-        if (expression.operator.text == "..") {
-          // If it's a range like "1..10", then the end point is included,
-          // whereas if it's "1 until 10", it's not.
-          to++
+        val lowerBound = getApiLevel(expression.operands[0], apiLevelLookup)
+        val upperBound = getApiLevel(expression.operands[1], apiLevelLookup)
+        // If it's a range like "1..10", then the end point is included,
+        // whereas if it's "1 until 10", it's not.
+        val includesEndPoint = expression.operator.text == ".."
+        if (lowerBound != ApiLevel.NONE && upperBound != ApiLevel.NONE) {
+          if (sdkId == ANDROID_SDK_ID_WITH_MINOR) {
+            val (from, fromMinor) = lowerBound
+            val (to, toMinor) = upperBound
+            return range(
+              from,
+              fromMinor,
+              to,
+              toMinor + if (includesEndPoint) 1 else 0,
+              ANDROID_SDK_ID,
+            )
+          } else {
+            val adjustedUpperBound = upperBound.major + if (includesEndPoint) 1 else 0
+            return range(lowerBound.major, 0, adjustedUpperBound, 0, sdkId)
+          }
         }
-        return range(from, to, sdkId)
       }
 
       return null
     }
 
-    private fun getApiLevel(element: UExpression?, apiLevelLookup: ApiLevelLookup?): Int {
-      var level = -1
+    private fun getApiLevel(element: UExpression?, apiLevelLookup: ApiLevelLookup?): ApiLevel {
+      var level = ApiLevel.NONE
       if (element is UReferenceExpression) {
         val codeName = element.resolvedName
         if (codeName != null) {
-          level = SdkVersionInfo.getApiByBuildCode(codeName, false)
+          level = ApiLevel.get(codeName, false)
         }
-        if (level == -1) {
+        if (level.isMissing()) {
           val constant = ConstantEvaluator.evaluate(null, element)
           if (constant is Number) {
-            level = constant.toInt()
+            level = ApiLevel.get(constant.toInt())
           }
         }
       } else if (element is ULiteralExpression) {
         val value = element.value
         if (value is Int) {
-          level = value
+          level = ApiLevel.get(value)
         }
       } else if (element is UParenthesizedExpression) {
         return getApiLevel(element.expression, apiLevelLookup)
       }
-      if (level == -1 && apiLevelLookup != null && element != null) {
+      if (level.isMissing() && apiLevelLookup != null && element != null) {
         level = apiLevelLookup(element)
       }
       return level
@@ -876,7 +890,7 @@ class VersionChecks(
         if (annotation != null) {
           val value = annotation.getApiLevel(evaluator, method, current)
           if (value != null) {
-            return atLeast(value, annotation.sdkId)
+            return value.atLeast(annotation.sdkId)
           } // else: lambda
         }
 
@@ -908,7 +922,7 @@ class VersionChecks(
         if (annotation != null) {
           val value = annotation.getApiLevel(evaluator, method, current)
           if (value != null) {
-            return atLeast(value, annotation.sdkId)
+            return value.atLeast(annotation.sdkId)
           } // else: lambda
         }
 
@@ -1052,7 +1066,7 @@ class VersionChecks(
           }
         } else {
           val level = getApiLevel(expression, apiLevelLookup)
-          if (level != -1) {
+          if (level.isValid()) {
             exactly(level)
           } else {
             null
@@ -1072,9 +1086,9 @@ class VersionChecks(
     return constraint
   }
 
-  private fun getReferenceApiLookup(call: UCallExpression): (UElement) -> Int {
+  private fun getReferenceApiLookup(call: UCallExpression): (UElement) -> ApiLevel {
     return { reference ->
-      var apiLevel = -1
+      var apiLevel = ApiLevel.NONE
       if (reference is UReferenceExpression) {
         val resolved = reference.resolve()
         if (resolved is PsiParameter) {
@@ -1293,8 +1307,7 @@ class VersionChecks(
     call: UCallExpression? = null,
   ): ApiConstraint? {
     val sdkIntAnnotation = SdkIntAnnotation.get(owner) ?: return null
-    val value = sdkIntAnnotation.getApiLevel(evaluator, owner, call) ?: return null
-    return atLeast(value, sdkIntAnnotation.sdkId)
+    return sdkIntAnnotation.getApiLevel(evaluator, owner, call)?.atLeast(sdkIntAnnotation.sdkId)
   }
 
   /**
@@ -1310,8 +1323,7 @@ class VersionChecks(
   ): ApiConstraint? {
     val annotation =
       findChecksSdkInferredAnnotation(owner, client, evaluator, project) ?: return null
-    val value = annotation.getApiLevel(evaluator, owner, call) ?: return null
-    return atLeast(value, annotation.sdkId)
+    return annotation.getApiLevel(evaluator, owner, call)?.atLeast(annotation.sdkId)
   }
 
   private fun getValidVersionCall(call: UCallExpression, depth: Int): ApiConstraint? {
@@ -1407,7 +1419,7 @@ class VersionChecks(
             getVersionCheckConstraint(
               element = returnValue,
               apiLookup = { reference ->
-                var apiLevel = -1
+                var apiLevel = ApiLevel.NONE
                 if (reference is UReferenceExpression) {
                   val resolved = reference.resolve()
                   if (resolved is PsiParameter) {
@@ -1700,9 +1712,9 @@ class VersionChecks(
       evaluator: JavaEvaluator,
       owner: PsiModifierListOwner,
       call: UCallExpression?,
-    ): Int? {
+    ): ApiLevel? {
       val apiLevel = apiLevel()
-      if (apiLevel != null) {
+      if (apiLevel.isValid()) {
         return apiLevel
       }
 
@@ -1711,25 +1723,20 @@ class VersionChecks(
         val argument = findArgumentFor(evaluator, owner, index, call)
         if (argument != null) {
           val v = ConstantEvaluator.evaluate(null, argument)
-          return (v as? Number)?.toInt()
+          return (v as? Number)?.toInt()?.let { ApiLevel(it) }
         }
       }
 
       return null
     }
 
-    private fun apiLevel(): Int? {
-      return if (!codename.isNullOrEmpty()) {
-        val level = SdkVersionInfo.getApiByBuildCode(codename, false)
-        if (level != -1) {
-          level
-        } else {
-          SdkVersionInfo.getApiByPreviewName(codename, true)
-        }
-      } else if (api != -1) {
-        api
+    private fun apiLevel(): ApiLevel {
+      return if (api != null && api != -1) {
+        ApiLevel(api)
+      } else if (codename != null) {
+        ApiLevel.get(codename)
       } else {
-        null
+        ApiLevel.NONE
       }
     }
 

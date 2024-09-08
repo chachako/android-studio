@@ -117,17 +117,17 @@ class Api<C extends ApiClassBase> {
         int next = mSdkIndex.size();
         if (TEST_TWO_BYTE_APIS) {
             for (int i = 300; i < 500; i++) {
-                mSdkIndex.put(i + ":1", next++);
+                mSdkIndex.put(ApiParser.toVersionInt(i, 0) + ":1", next++);
             }
         }
 
         // Reserve spots for the base API levels
         for (int i = 0; i <= SdkVersionInfo.HIGHEST_KNOWN_API + 1; i++) {
-            mSdkIndex.put(i, next++);
+            mSdkIndex.put(ApiParser.toVersionInt(i, 0), next++);
         }
 
         // Special API level used in platform development to mean next API level
-        mSdkIndex.put(SdkVersionInfo.CUR_DEVELOPMENT, next);
+        mSdkIndex.put(ApiParser.toVersionInt(SdkVersionInfo.CUR_DEVELOPMENT, 0), next);
     }
 
     private Api(
@@ -171,7 +171,16 @@ class Api<C extends ApiClassBase> {
         List<String> list = new ArrayList<>();
         // Note: iteration order is significant; should match results from getSdkIndex()
         for (Object key : mSdkIndex.keySet()) {
-            if (key instanceof String || key instanceof Integer) {
+            if (key instanceof Integer) {
+                int value = (Integer) key;
+                int major = ApiParser.getMajorVersion(value);
+                int minor = ApiParser.getMinorVersion(value);
+                if (minor > 0) {
+                    list.add(Integer.toString(major) + '.' + minor);
+                } else {
+                    list.add(Integer.toString(major));
+                }
+            } else if (key instanceof String) {
                 list.add(key.toString());
             } else {
                 throw new RuntimeException(key.toString());

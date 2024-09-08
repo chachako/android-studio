@@ -35,7 +35,7 @@ import java.util.Map;
 
 /** Parser for the simplified XML API format version 1. */
 class ApiParser extends DefaultHandler {
-    public static final int MAX_SUPPORTED_VERSION = 3;
+    public static final int MAX_SUPPORTED_VERSION = 4;
 
     private static final String NODE_CLASS = "class";
     private static final String NODE_FIELD = "field";
@@ -46,6 +46,7 @@ class ApiParser extends DefaultHandler {
     private static final String NODE_API = "api";
 
     private static final String ATTR_NAME = "name";
+    private static final String ATTR_SHORT_NAME = "shortname";
     private static final String ATTR_SINCE = "since";
     private static final String ATTR_SDKS = "sdks";
     private static final String ATTR_DEPRECATED = "deprecated";
@@ -97,11 +98,11 @@ class ApiParser extends DefaultHandler {
                 int removedIn = getRemovedIn(attributes);
 
                 // Perform a few API corrections; see issue 73514594
-                if (since == 28
+                if (since == (28 << MAJOR_SHIFT)
                         && (name.equals("navigationBarDividerColor")
                                 || name.equals("windowLightNavigationBar")
                                         && mCurrentClass.getName().equals("android/R$attr"))) {
-                    since = 27;
+                    since = toVersionInt(27, 0);
                 }
 
                 mCurrentClass.addField(name, sdks, since, deprecatedIn, removedIn);
@@ -118,18 +119,19 @@ class ApiParser extends DefaultHandler {
             } else if (NODE_CLASS.equals(localName)) {
                 String name = attributes.getValue(ATTR_NAME);
                 String sdks = getSdks(attributes, false);
-                int since = getAttributeValue(attributes, ATTR_SINCE, 1);
-                int deprecatedIn = getAttributeValue(attributes, ATTR_DEPRECATED, 0);
-                int removedIn = getAttributeValue(attributes, ATTR_REMOVED, 0);
+                int since = getVersionAttribute(attributes, ATTR_SINCE, 1);
+                int deprecatedIn = getVersionAttribute(attributes, ATTR_DEPRECATED, 0);
+                int removedIn = getVersionAttribute(attributes, ATTR_REMOVED, 0);
                 mCurrentClass = addClass(name, sdks, since, deprecatedIn, removedIn);
             } else if (NODE_SDK.equals(localName)) {
                 String id = attributes.getValue(ATTR_ID);
                 String name = attributes.getValue(ATTR_NAME);
+                String shortName = attributes.getValue(ATTR_SHORT_NAME);
                 String reference = attributes.getValue(ATTR_REFERENCE);
                 if (reference != null) {
                     reference = reference.replace('/', '.').replace('$', '.');
                 }
-                mSdks.add(new ExtensionSdk(name, Integer.decode(id), reference));
+                mSdks.add(new ExtensionSdk(name, shortName, Integer.decode(id), reference));
 
             } else if (NODE_API.equals(localName)) {
                 String versionString = attributes.getValue(ATTR_VERSION);
@@ -172,15 +174,15 @@ class ApiParser extends DefaultHandler {
     }
 
     private int getSince(Attributes attributes) {
-        return getAttributeValue(attributes, ATTR_SINCE, mCurrentClass.getSince());
+        return getVersionAttribute(attributes, ATTR_SINCE, mCurrentClass.getSince());
     }
 
     private int getDeprecatedIn(Attributes attributes) {
-        return getAttributeValue(attributes, ATTR_DEPRECATED, mCurrentClass.getDeprecatedIn());
+        return getVersionAttribute(attributes, ATTR_DEPRECATED, mCurrentClass.getDeprecatedIn());
     }
 
     private int getRemovedIn(Attributes attributes) {
-        return getAttributeValue(attributes, ATTR_REMOVED, mCurrentClass.getRemovedIn());
+        return getVersionAttribute(attributes, ATTR_REMOVED, mCurrentClass.getRemovedIn());
     }
 
     @Nullable
@@ -192,8 +194,36 @@ class ApiParser extends DefaultHandler {
         return sdks;
     }
 
-    private int getAttributeValue(Attributes attributes, String attributeName, int defaultValue) {
+    private int getVersionAttribute(Attributes attributes, String attributeName, int defaultValue) {
         String attributeValue = attributes.getValue(attributeName);
-        return attributeValue == null ? defaultValue : Integer.parseInt(attributeValue);
+        if (attributeValue == null) {
+            return defaultValue;
+        }
+        return toVersionInt(attributeValue);
+    }
+
+    private static final int MAJOR_SHIFT = 8;
+    private static final int MINOR_MASK = (1 << 8) - 1;
+
+    public static int toVersionInt(String value) {
+        int dot = value.indexOf('.');
+        if (dot == -1) {
+            return toVersionInt(Integer.parseInt(value), 0);
+        }
+        int major = Integer.parseInt(value.substring(0, dot));
+        int minor = value.endsWith(".0") ? 0 : Integer.parseInt(value.substring(dot + 1));
+        return toVersionInt(major, minor);
+    }
+
+    public static int toVersionInt(int major, int minor) {
+        return (major << MAJOR_SHIFT) + minor;
+    }
+
+    public static int getMajorVersion(int versionInt) {
+        return versionInt >> MAJOR_SHIFT;
+    }
+
+    public static int getMinorVersion(int versionInt) {
+        return versionInt & MINOR_MASK;
     }
 }

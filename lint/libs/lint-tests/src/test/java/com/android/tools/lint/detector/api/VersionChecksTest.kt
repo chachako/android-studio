@@ -4416,6 +4416,72 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testChecksSdkIntAtLeastWithFullVersions() {
+    // Uses of @ChecksSdkIntAtLeast with full versions
+    lint()
+      .files(
+        kotlin(
+            "src/main/java/test/pkg/test.kt",
+            """
+            package test.pkg
+
+            import androidx.annotation.RequiresApi
+
+            fun test() {
+                if (Constants.getVersionCheck()) {
+                    bar() // OK 1
+                }
+                if (Constants.SUPPORTS_LETTER_SPACING) {
+                    bar() // OK 2
+                }
+                bar() // ERROR
+            }
+
+            @RequiresApi(10)
+            fun bar() {
+            }
+            """,
+          )
+          .indented(),
+        binaryStub(
+          "libs/library.jar",
+          stubSources =
+            listOf(
+              java(
+                """
+                package test.pkg;
+
+                import android.os.Build;
+                import androidx.annotation.ChecksSdkIntAtLeast;
+
+                public class Constants {
+                    @ChecksSdkIntAtLeast(api = 8000002) // Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_2
+                    public static boolean getVersionCheck() {
+                        return false;
+                    }
+
+                    @ChecksSdkIntAtLeast(api = 8000002) // Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_2
+                    public static final boolean SUPPORTS_LETTER_SPACING = Boolean.getBoolean("foo");
+                }
+                """
+              )
+            ),
+          compileOnly = listOf(newAndroidOsBuildStub, SUPPORT_ANNOTATIONS_JAR),
+        ),
+        newAndroidOsBuildStub,
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/main/java/test/pkg/test.kt:12: Error: Call requires API level 10 (current min is 1): bar [NewApi]
+            bar() // ERROR
+            ~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
+
   fun testPolyadic() {
     lint()
       .files(
@@ -4947,192 +5013,230 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testMissingAdServices() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.ext.SdkExtensions
+            import android.os.Build.VERSION_CODES.R
+            import androidx.annotation.RequiresApi
+            import androidx.annotation.RequiresExtension
+
+            @RequiresExtension(extension = R, 4)
+            @RequiresApi(34)
+            fun test() {
+                rAndRb() // ERROR 1
+            }
+
+            @RequiresExtension(extension = R, 4)
+            @RequiresExtension(extension = SdkExtensions.AD_SERVICES, 4)
+            fun rAndRb() {
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        requiresExtensionStub,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:11: Error: Call requires version 4 of the Ad Services Extensions SDK (current min is 0): rAndRb [NewApi]
+            rAndRb() // ERROR 1
+            ~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
+
   fun testAndOrWithIfs() {
     if (ApiDetector.REPEATED_API_ANNOTATION_REQUIRES_ALL) {
-      // Like ApiDetector#testExtensionAndOr(), but we've replaced the annotations with surrounding
-      // if-else checks
-      // of SDKs.
+      // Like ApiDetector#testExtensionAndOr(), but we've replaced the
+      // annotations with surrounding if-else checks of SDKs.
 
-      // Using a special version of the lookup database here in order to be able to test OR
-      // semantics
-      // on APIs, which we cannot express with annotations, only in the database (for now).
+      // Using a special version of the lookup database here in order to be able
+      // to test OR semantics on APIs, which we cannot express with annotations,
+      // only in the database (for now).
       ApiLookupTest.runApiCheckWithCustomLookup {
           lint()
             .files(
               kotlin(
-                """
-                        package test.pkg
+                  """
+                package test.pkg
 
-                        import android.os.Build
-                        import android.os.Build.VERSION.SDK_INT
-                        import android.os.Build.VERSION_CODES.R
-                        import android.os.Build.VERSION_CODES.S
-                        import android.os.ext.SdkExtensions
-                        import android.provider.MediaStore
+                import android.os.Build
+                import android.os.Build.VERSION.SDK_INT
+                import android.os.Build.VERSION_CODES.R
+                import android.os.Build.VERSION_CODES.S
+                import android.os.ext.SdkExtensions
+                import android.provider.MediaStore
 
-                        import androidx.annotation.RequiresApi
-                        import androidx.annotation.RequiresExtension
+                import androidx.annotation.RequiresApi
+                import androidx.annotation.RequiresExtension
 
-                        class Test {
-                            @RequiresApi(R)
-                            fun testViaIfs() {
-                                /* Instead of
-                                @RequiresExtension.AnyOf(
-                                    RequiresExtension(extension = R, 4),
-                                    RequiresApi(34)
-                                )
-                                */
-                                MediaStore.getPickImagesMaxLimit() // ERROR 1
-                                if (SDK_INT >= 34 || SdkExtensions.getExtensionVersion(R) >= 2) {
-                                     // This method requires any of 0:33,30:2,31:2,33:2
-                                    MediaStore.getPickImagesMaxLimit() // OK 1
-                                    rOnly()  // ERROR 1: We may not have R, we may only have U
-                                    uOnly()  // ERROR 2: We may not have U, we may only have R
-                                }
-                                if (SdkExtensions.getExtensionVersion(R) >= 2 || SdkExtensions.getExtensionVersion(S) >= 2) {
-                                     // This method requires any of 0:33,30:2,31:2,33:2
-                                    MediaStore.getPickImagesMaxLimit() // OK 2
-                                }
-
-                                // Like the above, but with an extra SDK_INT >= R added in to avoid
-                                // warnings on SdkExtensions; make sure we combine multiple
-                                // SDK version checks together properly
-                                if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                    MediaStore.getPickImagesMaxLimit() // OK 3
-                                    rOnly()  // ERROR 4: We may not have R, we may only have U
-                                }
-                                if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                    MediaStore.getPickImagesMaxLimit() // OK 3
-                                    rOnly()  // OK 4
-                                    uOnly()  // OK 5
-                                }
-                            }
-
-                            @RequiresExtension(R, 4)
-                            fun rOnly() {
-                            }
-
-                            @RequiresApi(34)
-                            fun uOnly() {
-                            }
+                class Test {
+                    @RequiresApi(R)
+                    fun testViaIfs() {
+                        /* Instead of
+                        @RequiresExtension.AnyOf(
+                            RequiresExtension(extension = R, 4),
+                            RequiresApi(34)
+                        )
+                        */
+                        MediaStore.getPickImagesMaxLimit() // ERROR 1
+                        if (SDK_INT >= 34 || SdkExtensions.getExtensionVersion(R) >= 2) {
+                             // This method requires any of 0:33,30:2,31:2,33:2
+                            MediaStore.getPickImagesMaxLimit() // OK 1
+                            rOnly()  // ERROR 1: We may not have R, we may only have U
+                            uOnly()  // ERROR 2: We may not have U, we may only have R
                         }
-                        """
-              ),
+                        if (SdkExtensions.getExtensionVersion(R) >= 2 || SdkExtensions.getExtensionVersion(S) >= 2) {
+                             // This method requires any of 0:33,30:2,31:2,33:2
+                            MediaStore.getPickImagesMaxLimit() // OK 2
+                        }
+
+                        // Like the above, but with an extra SDK_INT >= R added in to avoid
+                        // warnings on SdkExtensions; make sure we combine multiple
+                        // SDK version checks together properly
+                        if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                            MediaStore.getPickImagesMaxLimit() // OK 3
+                            rOnly()  // ERROR 4: We may not have R, we may only have U
+                        }
+                        if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                            MediaStore.getPickImagesMaxLimit() // OK 3
+                            rOnly()  // OK 4
+                            uOnly()  // OK 5
+                        }
+                    }
+
+                    @RequiresExtension(R, 4)
+                    fun rOnly() {
+                    }
+
+                    @RequiresApi(34)
+                    fun uOnly() {
+                    }
+                }
+                """
+                )
+                .indented(),
               requiresExtensionStub,
               SUPPORT_ANNOTATIONS_JAR,
             )
         }
         .expect(
           """
-          src/test/pkg/Test.kt:23: Error: Call requires API level 33 (current min is 30): android.provider.MediaStore#getPickImagesMaxLimit [NewApi]
-                                          MediaStore.getPickImagesMaxLimit() // ERROR 1
-                                                     ~~~~~~~~~~~~~~~~~~~~~
-          src/test/pkg/Test.kt:27: Error: Call requires version 4 of the R-ext SDK (current min is 0): rOnly [NewApi]
-                                              rOnly()  // ERROR 1: We may not have R, we may only have U
-                                              ~~~~~
-          src/test/pkg/Test.kt:28: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
-                                              uOnly()  // ERROR 2: We may not have U, we may only have R
-                                              ~~~~~
-          src/test/pkg/Test.kt:38: Warning: Unnecessary; SDK_INT >= R is never true here (SDK_INT ≥ 30 and < 34) [ObsoleteSdkInt]
-                                          if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                                               ~~~~~~~~~~~~
-          src/test/pkg/Test.kt:42: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
-                                          if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                                               ~~~~~~~~~~~~
+          src/test/pkg/Test.kt:22: Error: Call requires API level 33 (current min is 30): android.provider.MediaStore#getPickImagesMaxLimit [NewApi]
+                  MediaStore.getPickImagesMaxLimit() // ERROR 1
+                             ~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Test.kt:26: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rOnly [NewApi]
+                      rOnly()  // ERROR 1: We may not have R, we may only have U
+                      ~~~~~
+          src/test/pkg/Test.kt:27: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
+                      uOnly()  // ERROR 2: We may not have U, we may only have R
+                      ~~~~~
+          src/test/pkg/Test.kt:37: Warning: Unnecessary; SDK_INT >= R is never true here (SDK_INT ≥ 30 and < 34) [ObsoleteSdkInt]
+                  if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                       ~~~~~~~~~~~~
+          src/test/pkg/Test.kt:41: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
+                  if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                       ~~~~~~~~~~~~
           3 errors, 2 warnings
           """
         )
     } else {
       // Like ApiDetector#testExtensionAndOr(), but we've replaced the annotations with surrounding
-      // if-else checks
-      // of SDKs.
+      // if-else checks of SDKs.
       lint()
         .files(
           kotlin(
               """
-                    package test.pkg
+              package test.pkg
 
-                    import android.os.Build.VERSION.SDK_INT
-                    import android.os.Build.VERSION_CODES.R
-                    import android.os.ext.SdkExtensions
-                    import androidx.annotation.RequiresApi
-                    import androidx.annotation.RequiresExtension
+              import android.os.Build.VERSION.SDK_INT
+              import android.os.Build.VERSION_CODES.R
+              import android.os.ext.SdkExtensions
+              import androidx.annotation.RequiresApi
+              import androidx.annotation.RequiresExtension
 
-                    class Test {
-                        @RequiresApi(R)
-                        fun testViaIfs() {
-                            /* Instead of
-                            @RequiresExtension.AnyOf(
-                                RequiresExtension(extension = R, 4),
-                                RequiresApi(34)
-                            )
-                            */
-                            if (SDK_INT >= 34 || SdkExtensions.getExtensionVersion(R) >= 4) {
-                                either() // OK 1
-                                rOnly()  // ERROR 1: We may not have R, we may only have U
-                                uOnly()  // ERROR 2: We may not have U, we may only have R
-                                other()  // ERROR 3: We may not have R or RB
-                            }
-                            // Like the above, but with an extra SDK_INT >= R added in to avoid
-                            // warnings on SdkExtensions; make sure we combine multiple
-                            // SDK version checks together properly
-                            if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                either() // OK 2
-                                rOnly()  // ERROR 4: We may not have R, we may only have U
-                                uOnly()  // ERROR 5: We may not have U, we may only have R
-                                other()  // ERROR 6: We may not have R or RB
-                            }
-                            if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                either() // OK 3
-                                rOnly()  // OK 4
-                                uOnly()  // OK 5
-                                other()  // OK 6
-                            }
-                        }
+              class Test {
+                  @RequiresApi(R)
+                  fun testViaIfs() {
+                      /* Instead of
+                      @RequiresExtension.AnyOf(
+                          RequiresExtension(extension = R, 4),
+                          RequiresApi(34)
+                      )
+                      */
+                      if (SDK_INT >= 34 || SdkExtensions.getExtensionVersion(R) >= 4) {
+                          either() // OK 1
+                          rOnly()  // ERROR 1: We may not have R, we may only have U
+                          uOnly()  // ERROR 2: We may not have U, we may only have R
+                          other()  // ERROR 3: We may not have R or RB
+                      }
+                      // Like the above, but with an extra SDK_INT >= R added in to avoid
+                      // warnings on SdkExtensions; make sure we combine multiple
+                      // SDK version checks together properly
+                      if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                          either() // OK 2
+                          rOnly()  // ERROR 4: We may not have R, we may only have U
+                          uOnly()  // ERROR 5: We may not have U, we may only have R
+                          other()  // ERROR 6: We may not have R or RB
+                      }
+                      if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                          either() // OK 3
+                          rOnly()  // OK 4
+                          uOnly()  // OK 5
+                          other()  // OK 6
+                      }
+                  }
 
-                        @RequiresApi(R)
-                        fun test2() {
-                            /* Instead of
-                            @RequiresExtension.AnyOf(
-                                @RequiresApi(34),
-                                @RequiresExtension(R, 4),
-                                @RequiresExtension(1000000, 4)
-                            )
-                            */
-                            if (SDK_INT >= 34 ||
-                                SdkExtensions.getExtensionVersion(R) >= 4 ||
-                                SdkExtensions.getExtensionVersion(1000000) >= 4) {
-                                other() // ERROR 7
-                            }
-                        }
+                  @RequiresApi(R)
+                  fun test2() {
+                      /* Instead of
+                      @RequiresExtension.AnyOf(
+                          @RequiresApi(34),
+                          @RequiresExtension(R, 4),
+                          @RequiresExtension(1000000, 4)
+                      )
+                      */
+                      if (SDK_INT >= 34 ||
+                          SdkExtensions.getExtensionVersion(R) >= 4 ||
+                          SdkExtensions.getExtensionVersion(1000000) >= 4) {
+                          other() // ERROR 7
+                      }
+                  }
 
-                        fun test3() {
-                            // Instead of
-                            //   @RequiresExtension(1000000, 4)
-                            if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
-                                other() // OK 7
-                            }
-                        }
+                  fun test3() {
+                      // Instead of
+                      //   @RequiresExtension(1000000, 4)
+                      if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
+                          other() // OK 7
+                      }
+                  }
 
-                        @RequiresExtension(R, 4)
-                        @RequiresApi(34)
-                        fun either() {
-                        }
+                  @RequiresExtension(R, 4)
+                  @RequiresApi(34)
+                  fun either() {
+                  }
 
-                        @RequiresExtension(R, 4)
-                        fun rOnly() {
-                        }
+                  @RequiresExtension(R, 4)
+                  fun rOnly() {
+                  }
 
-                        @RequiresApi(34)
-                        fun uOnly() {
-                        }
+                  @RequiresApi(34)
+                  fun uOnly() {
+                  }
 
-                        @RequiresExtension(R, 4)
-                        @RequiresExtension(1000000, 4)
-                        fun other() {
-                        }
-                    }
-                    """
+                  @RequiresExtension(R, 4)
+                  @RequiresExtension(1000000, 4)
+                  fun other() {
+                  }
+              }
+              """
             )
             .indented(),
           requiresExtensionStub,
@@ -5141,35 +5245,35 @@ class VersionChecksTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                src/test/pkg/Test.kt:20: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rOnly [NewApi]
-                            rOnly()  // ERROR 1: We may not have R, we may only have U
-                            ~~~~~
-                src/test/pkg/Test.kt:21: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
-                            uOnly()  // ERROR 2: We may not have U, we may only have R
-                            ~~~~~
-                src/test/pkg/Test.kt:22: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
-                            other()  // ERROR 3: We may not have R or RB
-                            ~~~~~
-                src/test/pkg/Test.kt:30: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
-                            uOnly()  // ERROR 5: We may not have U, we may only have R
-                            ~~~~~
-                src/test/pkg/Test.kt:31: Error: Call requires version 4 of the R Extensions SDK (current min is 4): other [NewApi]
-                            other()  // ERROR 6: We may not have R or RB
-                            ~~~~~
-                src/test/pkg/Test.kt:53: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
-                            other() // ERROR 7
-                            ~~~~~
-                src/test/pkg/Test.kt:60: Error: Call requires API level 30 (current min is 1): android.os.ext.SdkExtensions#getExtensionVersion [NewApi]
-                        if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
-                                          ~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/Test.kt:27: Warning: Unnecessary; SDK_INT is always >= 30 [ObsoleteSdkInt]
-                        if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                             ~~~~~~~~~~~~
-                src/test/pkg/Test.kt:33: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
-                        if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
-                                             ~~~~~~~~~~~~
-                7 errors, 2 warnings
-                """
+          src/test/pkg/Test.kt:20: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rOnly [NewApi]
+                      rOnly()  // ERROR 1: We may not have R, we may only have U
+                      ~~~~~
+          src/test/pkg/Test.kt:21: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
+                      uOnly()  // ERROR 2: We may not have U, we may only have R
+                      ~~~~~
+          src/test/pkg/Test.kt:22: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
+                      other()  // ERROR 3: We may not have R or RB
+                      ~~~~~
+          src/test/pkg/Test.kt:30: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
+                      uOnly()  // ERROR 5: We may not have U, we may only have R
+                      ~~~~~
+          src/test/pkg/Test.kt:31: Error: Call requires version 4 of the R Extensions SDK (current min is 4): other [NewApi]
+                      other()  // ERROR 6: We may not have R or RB
+                      ~~~~~
+          src/test/pkg/Test.kt:53: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
+                      other() // ERROR 7
+                      ~~~~~
+          src/test/pkg/Test.kt:60: Error: Call requires API level 30 (current min is 1): android.os.ext.SdkExtensions#getExtensionVersion [NewApi]
+                  if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
+                                    ~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Test.kt:27: Warning: Unnecessary; SDK_INT >= R is never true here (SDK_INT ≥ 30 and < 34) [ObsoleteSdkInt]
+                  if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                       ~~~~~~~~~~~~
+          src/test/pkg/Test.kt:33: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
+                  if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                       ~~~~~~~~~~~~
+          7 errors, 2 warnings
+          """
         )
     }
   }
@@ -5713,6 +5817,199 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testMinorVersions() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Build
+            import android.os.Build.VERSION.SDK_INT_FULL
+            import android.os.Build.VERSION_CODES
+            import android.os.Build.VERSION_CODES_FULL
+            import androidx.annotation.RequiresApi
+
+            fun test() {
+                requiresApi35()            // ERROR 1
+                requiresApi35_2()          // ERROR 2
+                if (SDK_INT_FULL >= VERSION_CODES_FULL.VANILLA_ICE_CREAM_0) {
+                    requiresApi35()        // OK 1
+                    requiresApi35_2()      // ERROR 3
+                }
+                if (SDK_INT_FULL >= VERSION_CODES_FULL.VANILLA_ICE_CREAM_2) {
+                    requiresApi35()        // OK 2
+                    requiresApi35_2()      // OK 3
+                }
+            }
+
+            fun testRangeOperator() {
+                if (SDK_INT_FULL in VERSION_CODES_FULL.VANILLA_ICE_CREAM_0 until VERSION_CODES_FULL.VANILLA_ICE_CREAM_2) {
+                    requiresApi35()     // OK 4
+                    requiresApi35_1()   // ERROR 4
+                    requiresApi35_2()   // ERROR 5
+                }
+                if (SDK_INT_FULL in VERSION_CODES_FULL.VANILLA_ICE_CREAM_1 until VERSION_CODES_FULL.VANILLA_ICE_CREAM_2) {
+                    requiresApi35()     // OK 5
+                    requiresApi35_1()   // OK 6
+                    requiresApi35_2()   // ERROR 6
+                }
+            }
+
+            @RequiresApi(VERSION_CODES.VANILLA_ICE_CREAM)
+            fun requiresApi35() {
+            }
+
+            @RequiresApi(VERSION_CODES_FULL.VANILLA_ICE_CREAM_1)
+            fun requiresApi35_1() {
+            }
+
+            @RequiresApi(VERSION_CODES_FULL.VANILLA_ICE_CREAM_2)
+            fun requiresApi35_2() {
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        newAndroidOsBuildStub,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:10: Error: Call requires API level 35 (current min is 1): requiresApi35 [NewApi]
+            requiresApi35()            // ERROR 1
+            ~~~~~~~~~~~~~
+        src/test/pkg/test.kt:11: Error: Call requires API level 35.2 (current min is 1): requiresApi35_2 [NewApi]
+            requiresApi35_2()          // ERROR 2
+            ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:14: Error: Call requires API level 35.2 (current min is 35): requiresApi35_2 [NewApi]
+                requiresApi35_2()      // ERROR 3
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:25: Error: Call requires API level 35.1 (current min is 35): requiresApi35_1 [NewApi]
+                requiresApi35_1()   // ERROR 4
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:26: Error: Call requires API level 35.2 (current min is 35): requiresApi35_2 [NewApi]
+                requiresApi35_2()   // ERROR 5
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:31: Error: Call requires API level 35.2 (current min is 35.1): requiresApi35_2 [NewApi]
+                requiresApi35_2()   // ERROR 6
+                ~~~~~~~~~~~~~~~
+        6 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testMinorVersionsOperators() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Build
+            import android.os.Build.VERSION.SDK_INT
+            import android.os.Build.VERSION.SDK_INT_FULL
+            import android.os.Build.VERSION_CODES
+            import android.os.Build.VERSION_CODES_FULL
+            import androidx.annotation.RequiresApi
+
+            fun testOperatorCornerCases() {
+                if (SDK_INT_FULL < VERSION_CODE_FULL_351) {
+                } else {
+                    requiresApi35()    // OK 1
+                    requiresApi35_1()  // OK 2
+                    requiresApi35_2()  // ERROR 1
+                }
+
+                if (SDK_INT <= VERSION_CODES.VANILLA_ICE_CREAM) {
+                    // Here, for SDK_INT comparisons, we conclude that
+                    // you're comparing whole API levels, so the inverse
+                    // will mean VANILLA_ICE_CREAM.next, higher than all the VANILLA_ICE_CREAM
+                    // minor versions
+                } else {
+                    requiresApi35_2()  // OK 3
+                }
+
+                // But when comparing full versions, we want to imply
+                // minor versions are not implicitly covered by <=
+                if (SDK_INT_FULL <= VERSION_CODE_FULL_350) {
+                } else {
+                    requiresApi35()    // OK 4
+                    requiresApi35_1()  // OK 5
+                    requiresApi35_2()  // ERROR 2
+                }
+
+                if (SDK_INT_FULL > VERSION_CODE_FULL_351) {
+                    requiresApi35_1()  // OK 6
+                    requiresApi35_2()  // OK 7
+                    requiresApi35_3()  // ERROR 3
+                }
+                if (SDK_INT_FULL > VERSION_CODE_FULL_350) {
+                    requiresApi35_1()  // OK 8
+                    requiresApi35_2()  // ERROR 4
+                }
+
+                if (SDK_INT_FULL == VERSION_CODE_FULL_351) {
+                    requiresApi35_1()  // OK 9
+                    requiresApi35_2()  // ERROR 5
+                }
+
+                if (SDK_INT_FULL != VERSION_CODE_FULL_351) {
+                } else {
+                    requiresApi35_1()  // OK 10
+                }
+            }
+
+            val VERSION_CODE_FULL_350 = VERSION_CODES_FULL.VANILLA_ICE_CREAM_0
+            val VERSION_CODE_FULL_351 = VERSION_CODES_FULL.VANILLA_ICE_CREAM_1
+            val VERSION_CODE_FULL_352 = VERSION_CODES_FULL.VANILLA_ICE_CREAM_2
+
+            @RequiresApi(VERSION_CODES.VANILLA_ICE_CREAM)
+            fun requiresApi35() {
+            }
+
+            @RequiresApi(VERSION_CODES_FULL.VANILLA_ICE_CREAM_1)
+            fun requiresApi35_1() {
+            }
+
+            @RequiresApi(VERSION_CODES_FULL.VANILLA_ICE_CREAM_2)
+            fun requiresApi35_2() {
+            }
+
+            @RequiresApi(VERSION_CODES_FULL.VANILLA_ICE_CREAM_3)
+            fun requiresApi35_3() {
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        newAndroidOsBuildStub,
+      )
+      // Limitation in constant evaluator, to be fixed separately
+      .skipTestModes(TestMode.FULLY_QUALIFIED)
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:15: Error: Call requires API level 35.2 (current min is 35.1): requiresApi35_2 [NewApi]
+                requiresApi35_2()  // ERROR 1
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:33: Error: Call requires API level 35.2 (current min is 35.1): requiresApi35_2 [NewApi]
+                requiresApi35_2()  // ERROR 2
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:39: Error: Call requires API level 35.3 (current min is 35.2): requiresApi35_3 [NewApi]
+                requiresApi35_3()  // ERROR 3
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:43: Error: Call requires API level 35.2 (current min is 35.1): requiresApi35_2 [NewApi]
+                requiresApi35_2()  // ERROR 4
+                ~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:48: Error: Call requires API level 35.2 (current min is 35.1): requiresApi35_2 [NewApi]
+                requiresApi35_2()  // ERROR 5
+                ~~~~~~~~~~~~~~~
+        5 errors, 0 warnings
+        """
+      )
+  }
+
   override fun getDetector(): Detector {
     return ApiDetector()
   }
@@ -5722,55 +6019,87 @@ class VersionChecksTest : AbstractCheckTest() {
 private val checksSdkIntWithSdkStub: TestFile =
   java(
       """
-    package androidx.annotation;
-    import static java.lang.annotation.ElementType.FIELD;
-    import static java.lang.annotation.ElementType.METHOD;
-    import static java.lang.annotation.RetentionPolicy.CLASS;
-    import java.lang.annotation.Documented;
-    import java.lang.annotation.Retention;
-    import java.lang.annotation.Target;
-    @Documented
-    @Retention(CLASS)
-    @Target({METHOD, FIELD})
-    public @interface ChecksSdkIntAtLeast {
-        int api() default -1;
-        String codename() default "";
-        int parameter() default -1;
-        int lambda() default -1;
-        int extension() default 0;
-    }
-    """
+      package androidx.annotation;
+      import static java.lang.annotation.ElementType.FIELD;
+      import static java.lang.annotation.ElementType.METHOD;
+      import static java.lang.annotation.RetentionPolicy.CLASS;
+      import java.lang.annotation.Documented;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.Target;
+      @Documented
+      @Retention(CLASS)
+      @Target({METHOD, FIELD})
+      public @interface ChecksSdkIntAtLeast {
+          int api() default -1;
+          String codename() default "";
+          int parameter() default -1;
+          int lambda() default -1;
+          int extension() default 0;
+      }
+      """
+    )
+    .indented()
+
+val newAndroidOsBuildStub: TestFile =
+  java(
+      // Stub until SDK_MINOR_INT is available everywhere
+      """
+      // HIDE-FROM-DOCUMENTATION
+      package android.os;
+
+      public class Build {
+          public static class VERSION {
+              public static int SDK_INT;
+              public static int SDK_INT_FULL;
+          }
+          public static class VERSION_CODES {
+              public static final int VANILLA_ICE_CREAM = 35;
+          }
+          public static class VERSION_CODES_FULL {
+              private VERSION_CODES_FULL() {}
+
+              private static final int SDK_INT_MULTIPLIER = 100000;
+
+              public static final int VANILLA_ICE_CREAM_0 = SDK_INT_MULTIPLIER * VERSION_CODES.VANILLA_ICE_CREAM;
+              public static final int VANILLA_ICE_CREAM_1 = SDK_INT_MULTIPLIER * VERSION_CODES.VANILLA_ICE_CREAM + 1;
+              public static final int VANILLA_ICE_CREAM_2 = SDK_INT_MULTIPLIER * VERSION_CODES.VANILLA_ICE_CREAM + 2;
+              public static final int VANILLA_ICE_CREAM_3 = SDK_INT_MULTIPLIER * VERSION_CODES.VANILLA_ICE_CREAM + 3;
+          }
+      }
+      """
     )
     .indented()
 
 val requiresExtensionStub: TestFile =
   kotlin(
       """
-    package androidx.annotation
-    import java.lang.annotation.ElementType.CONSTRUCTOR
-    import java.lang.annotation.ElementType.FIELD
-    import java.lang.annotation.ElementType.METHOD
-    import java.lang.annotation.ElementType.PACKAGE
-    import java.lang.annotation.ElementType.TYPE
-    @MustBeDocumented
-    @Retention(AnnotationRetention.BINARY)
-    @Target(
-        AnnotationTarget.ANNOTATION_CLASS,
-        AnnotationTarget.CLASS,
-        AnnotationTarget.FUNCTION,
-        AnnotationTarget.PROPERTY_GETTER,
-        AnnotationTarget.PROPERTY_SETTER,
-        AnnotationTarget.CONSTRUCTOR,
-        AnnotationTarget.FIELD,
-        AnnotationTarget.FILE
-    )
-    @Suppress("DEPRECATED_JAVA_ANNOTATION", "SupportAnnotationUsage")
-    @java.lang.annotation.Target(TYPE, METHOD, CONSTRUCTOR, FIELD, PACKAGE)
-    @Repeatable
-    public annotation class RequiresExtension(
-        @IntRange(from = 1) val extension: Int,
-        @IntRange(from = 1) val version: Int
-    )
-    """
+      package androidx.annotation
+
+      import java.lang.annotation.ElementType.CONSTRUCTOR
+      import java.lang.annotation.ElementType.FIELD
+      import java.lang.annotation.ElementType.METHOD
+      import java.lang.annotation.ElementType.PACKAGE
+      import java.lang.annotation.ElementType.TYPE
+
+      @MustBeDocumented
+      @Retention(AnnotationRetention.BINARY)
+      @Target(
+          AnnotationTarget.ANNOTATION_CLASS,
+          AnnotationTarget.CLASS,
+          AnnotationTarget.FUNCTION,
+          AnnotationTarget.PROPERTY_GETTER,
+          AnnotationTarget.PROPERTY_SETTER,
+          AnnotationTarget.CONSTRUCTOR,
+          AnnotationTarget.FIELD,
+          AnnotationTarget.FILE
+      )
+      @Suppress("DEPRECATED_JAVA_ANNOTATION", "SupportAnnotationUsage")
+      @java.lang.annotation.Target(TYPE, METHOD, CONSTRUCTOR, FIELD, PACKAGE)
+      @Repeatable
+      annotation class RequiresExtension(
+          val extension: Int,
+          val version: Int
+      )
+      """
     )
     .indented()

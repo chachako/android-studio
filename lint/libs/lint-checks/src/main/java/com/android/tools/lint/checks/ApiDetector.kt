@@ -77,7 +77,10 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.ApiConstraint
+import com.android.tools.lint.detector.api.ApiConstraint.Companion.isInfinity
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
+import com.android.tools.lint.detector.api.ApiLevel
+import com.android.tools.lint.detector.api.ApiLevel.Companion.isFullSdkInt
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext.Companion.getFqcn
 import com.android.tools.lint.detector.api.ConstantEvaluator
@@ -104,6 +107,7 @@ import com.android.tools.lint.detector.api.VersionChecks
 import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_API_ANNOTATION
 import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_EXTENSION_ANNOTATION
 import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT
+import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT_FULL
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getTargetApiAnnotation
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getTargetApiForAnnotation
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getVersionCheckConditional
@@ -192,6 +196,7 @@ import org.jetbrains.uast.getQualifiedName
 import org.jetbrains.uast.isUastChildOf
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isConstructorCall
 import org.jetbrains.uast.util.isInstanceCheck
 import org.jetbrains.uast.util.isMethodCall
@@ -329,18 +334,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       val name = attribute.localName
       if (name == ATTR_TARGET_API) {
         val targetApiString = attribute.value
-        val api =
-          if (targetApiString.isNotBlank() && targetApiString[0].isDigit()) {
-            try {
-              Integer.parseInt(targetApiString)
-            } catch (e: NumberFormatException) {
-              null
-            }
-          } else {
-            SdkVersionInfo.getApiByBuildCode(targetApiString, true)
-          }
+        val api = ApiLevel.getMinConstraint(targetApiString, ANDROID_SDK_ID)
         if (api != null) {
-          val message = "Unnecessary; `SDK_INT` is always >= $api"
+          val message = "Unnecessary; `SDK_INT` is always >= ${api.minString()}"
           val fix =
             fix()
               .replace()
@@ -981,7 +977,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
   /**
    * Is there an outer annotation (outside [annotation] that specifies an api level requirement of
-   * [atLeast]?
+   * [atLeast])?
    */
   private fun isSurroundedByHigherTargetAnnotation(
     evaluator: JavaEvaluator,
@@ -2657,8 +2653,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       val evaluator = context.evaluator
       var owner = evaluator.getQualifiedName(containingClass) ?: return
 
-      if (SDK_INT == name && "android.os.Build.VERSION" == owner) {
-        checkObsoleteSdkVersion(context, node)
+      val isSdkInt = SDK_INT == name
+      val isSdkIntFull = SDK_INT_FULL == name
+      if ((isSdkInt || isSdkIntFull) && "android.os.Build.VERSION" == owner) {
+        checkObsoleteSdkVersion(context, node, expectFull = isSdkIntFull)
         return
       }
 
@@ -2812,7 +2810,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     return requires.minString()
   }
 
-  private fun checkObsoleteSdkVersion(context: JavaContext, node: UElement) {
+  private fun checkObsoleteSdkVersion(context: JavaContext, node: UElement, expectFull: Boolean) {
     val binary = node.getParentOfType(UBinaryExpression::class.java, true)
     if (binary != null) {
       // Compute the cumulative effects of the app's minSdkVersion, any surrounding
@@ -2832,6 +2830,41 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           ?: return
       val sdkId = constraint.getSdk()
       if (sdkId == ANDROID_SDK_ID) {
+        val value = binary.rightOperand.evaluate()
+        if (value is Number) {
+          val constant = value.toInt()
+          if (!isInfinity(constant) && expectFull != isFullSdkInt(constant)) {
+            val rhs = binary.rightOperand.skipParenthesizedExprDown().sourcePsi?.text ?: ""
+            val message =
+              if (expectFull) {
+                "The API level (`$rhs`) appears to be a full SDK int (encoding major and minor versions), so it should be compared with `SDK_INT_FULL`, not `SDK_INT`"
+              } else {
+                "The API level (`$rhs`) appears to be a plain SDK int, so it should be compared with `SDK_INT`, not `SDK_INT`, or you should switch the API level to a full SDK constant"
+              }
+            val lhs = binary.leftOperand
+            val resolved = lhs.tryResolve()
+            val fix =
+              if (resolved is PsiField) {
+                fix()
+                  .name(if (expectFull) "Switch to `SDK_INT`" else "Switch to `SDK_INT_FULL`")
+                  .replace()
+                  .range(context.getLocation(lhs))
+                  .all()
+                  .with(
+                    if (expectFull) "android.os.Build.VERSION.SDK_INT"
+                    else "android.os.Build.VERSION.SDK_INT_FULL"
+                  )
+                  .shortenNames()
+                  .build()
+                // TODO: Consider helping switch Build.VERSION_CODE constants over to equivalent
+                // VERSION_CODE_FULL constants (matching all with the same prefix before _)
+              } else {
+                null
+              }
+            context.report(WRONG_SDK_INT, binary, context.getLocation(binary), message, fix)
+          }
+        }
+
         // Merge in knowledge about SDK_INT from surrounding if-SDK_INT checks.
         val outer =
           VersionChecks.Companion.getOuterVersionCheckConstraint(context, binary)?.findSdk(sdkId)
@@ -2849,20 +2882,26 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val both = constraint and environmentConstraint
         val always = both.alwaysAtLeast(environmentConstraint)
         val never = both.not().alwaysAtLeast(environmentConstraint)
+        if (!(always || never)) {
+          return
+        }
+        val sdkInt = "SDK_INT${if (expectFull) "_FULL" else ""}"
         val message =
           when {
             both.isEmpty() && (outer != null || target != null) ||
-              (always || never) && !environmentConstraint.isOpenEnded() -> {
+              !environmentConstraint.isOpenEnded() -> {
               val source = binary.sourcePsi?.text ?: binary.asSourceString()
+              val constraintString = environmentConstraint.toString().replace("API level ", "")
               val suffix =
-                if (!both.isEmpty())
-                  " (`SDK_INT` " + environmentConstraint.toString().replace("API level ", "") + ")"
-                else ""
+                if (!both.isEmpty()) {
+                  " (`$sdkInt` $constraintString)"
+                } else {
+                  ""
+                }
               "Unnecessary; `$source` is never true here$suffix"
             }
-            always -> "Unnecessary; `SDK_INT` is always >= ${environmentConstraint.minString()}"
-            never -> "Unnecessary; `SDK_INT` is never < ${environmentConstraint.minString()}"
-            else -> return
+            always -> "Unnecessary; `$sdkInt` is always >= ${environmentConstraint.minString()}"
+            else -> "Unnecessary; `$sdkInt` is never < ${environmentConstraint.minString()}"
           }
         context.report(
           Incident(
@@ -3086,6 +3125,30 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         category = Category.PERFORMANCE,
         priority = 6,
         severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation = JAVA_IMPLEMENTATION,
+      )
+
+    /** Mismatched SDK_INT and SDK_INT_FULL comparisons. */
+    @JvmField
+    val WRONG_SDK_INT =
+      Issue.create(
+        id = "WrongSdkInt",
+        briefDescription = "Mismatched SDK_INT or SDK_INT_FULL",
+        explanation =
+          """
+          The `SDK_INT` constant can be used to check what the current API level is. \
+          The `SDK_INT_FULL` constant also contains this information, but it also \
+          carries additional information about minor versions between major releases, \
+          and cannot be compared directly with the normal API levels.
+
+          You should typically compare `SDK_INT` with the constants in `Build.VERSION_CODES`, \
+          and `SDK_INT_FULL` with the constants in `Build.VERSION_CODES_FULL`. This lint check \
+          flags suspicious combinations of these comparisons.
+          """,
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.ERROR,
         androidSpecific = true,
         implementation = JAVA_IMPLEMENTATION,
       )
@@ -3319,17 +3382,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       while (true) {
         val targetApi = current.getAttributeNS(TOOLS_URI, ATTR_TARGET_API)
         if (targetApi.isNotEmpty()) {
-          val api =
-            if (targetApi[0].isDigit()) {
-              try {
-                Integer.parseInt(targetApi)
-              } catch (e: NumberFormatException) {
-                break
-              }
-            } else {
-              SdkVersionInfo.getApiByBuildCode(targetApi, true)
-            }
-          return ApiConstraint.get(api)
+          ApiLevel.getMinConstraint(targetApi, ANDROID_SDK_ID)?.let {
+            return it
+          }
         }
 
         val parent = current.parentNode
@@ -3658,7 +3713,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val sdkId = getLongAttribute(annotation, "extension", -1).toInt()
             val version = getLongAttribute(annotation, "version", -1).toInt()
             if (sdkId != -1 && version != -1) {
-              return ApiConstraint.get(version, sdkId)
+              val minor = getLongAttribute(annotation, "minor", 0).toInt()
+              return if (minor > 0) {
+                ApiConstraint.atLeast(version, minor, sdkId)
+              } else {
+                ApiConstraint.atLeast(version, sdkId)
+              }
             } else {
               return null
             }
@@ -3702,7 +3762,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       return if (api == -1) {
         null
       } else {
-        ApiConstraint.get(api, ANDROID_SDK_ID)
+        ApiLevel(api).atLeast()
       }
     }
 

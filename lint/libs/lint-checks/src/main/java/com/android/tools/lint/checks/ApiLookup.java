@@ -380,8 +380,7 @@ public class ApiLookup extends ApiDatabase {
     }
 
     /** Use one of the {@link #get} factory methods instead. */
-    private ApiLookup(
-            @NonNull LintClient client, @Nullable File xmlFile, @Nullable File binaryFile) {
+    ApiLookup(@NonNull LintClient client, @Nullable File xmlFile, @Nullable File binaryFile) {
         this.xmlFile = xmlFile;
         if (binaryFile != null) {
             readData(
@@ -411,10 +410,11 @@ public class ApiLookup extends ApiDatabase {
 
             if (second == -1) {
                 // API level only
-                apiConstraints.add(ApiConstraint.get(first, ANDROID_SDK_ID));
+                // Already a packed version code
+                apiConstraints.add(getApiConstraint(first, ANDROID_SDK_ID));
             } else {
                 List<ApiConstraint.SdkApiConstraint> apis = new ArrayList<>();
-                apis.add(ApiConstraint.get(second, first));
+                apis.add(getApiConstraint(second, first));
 
                 while (true) {
                     int sdk = get4ByteInt(mData, offset);
@@ -426,7 +426,7 @@ public class ApiLookup extends ApiDatabase {
                     int version = get4ByteInt(mData, offset);
                     offset += 4;
                     assert (version != -1);
-                    apis.add(ApiConstraint.get(version, sdk));
+                    apis.add(getApiConstraint(version, sdk));
                 }
 
                 apiConstraints.add(MultiSdkApiConstraint.Companion.create(apis, true));
@@ -445,6 +445,12 @@ public class ApiLookup extends ApiDatabase {
             sdks.add(ExtensionSdk.Companion.deserialize(s));
         }
         registry = new ExtensionSdkRegistry(sdks);
+    }
+
+    private static ApiConstraint.SdkApiConstraint getApiConstraint(int versionInt, int sdkId) {
+        int major = ApiParser.getMajorVersion(versionInt);
+        int minor = ApiParser.getMinorVersion(versionInt);
+        return ApiConstraint.atLeast(major, minor, sdkId);
     }
 
     /**
@@ -570,9 +576,7 @@ public class ApiLookup extends ApiDatabase {
                 }
                 int deprecatedIn = Byte.toUnsignedInt(mData[offset]) & API_MASK;
 
-                return deprecatedIn != 0
-                        ? ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID)
-                        : ApiConstraint.UNKNOWN;
+                return deprecatedIn > 0 ? apiConstraints.get(deprecatedIn) : ApiConstraint.UNKNOWN;
             }
         }
 
@@ -611,10 +615,7 @@ public class ApiLookup extends ApiDatabase {
                     return ApiConstraint.UNKNOWN;
                 }
                 int removedIn = Byte.toUnsignedInt(mData[offset]) & API_MASK;
-                // TODO: Support in database
-                return removedIn != 0
-                        ? ApiConstraint.get(removedIn, ANDROID_SDK_ID)
-                        : ApiConstraint.UNKNOWN;
+                return removedIn > 0 ? apiConstraints.get(removedIn) : ApiConstraint.UNKNOWN;
             }
         }
 
@@ -713,9 +714,7 @@ public class ApiLookup extends ApiDatabase {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int deprecatedIn = findMemberDeprecatedIn(classNumber, name, desc);
-                return deprecatedIn == 0
-                        ? ApiConstraint.UNKNOWN
-                        : ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID);
+                return deprecatedIn <= 0 ? ApiConstraint.UNKNOWN : apiConstraints.get(deprecatedIn);
             }
         }
 
@@ -754,9 +753,7 @@ public class ApiLookup extends ApiDatabase {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int removedIn = findMemberRemovedIn(classNumber, name, desc);
-                return removedIn == 0
-                        ? ApiConstraint.UNKNOWN
-                        : ApiConstraint.get(removedIn, ANDROID_SDK_ID);
+                return removedIn <= 0 ? ApiConstraint.UNKNOWN : apiConstraints.get(removedIn);
             }
         }
 
@@ -936,9 +933,7 @@ public class ApiLookup extends ApiDatabase {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int deprecatedIn = findMemberDeprecatedIn(classNumber, name, null);
-                return deprecatedIn == 0
-                        ? ApiConstraint.UNKNOWN
-                        : ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID);
+                return deprecatedIn <= 0 ? ApiConstraint.UNKNOWN : apiConstraints.get(deprecatedIn);
             }
         }
 
@@ -974,9 +969,7 @@ public class ApiLookup extends ApiDatabase {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int removedIn = findMemberRemovedIn(classNumber, name, null);
-                return removedIn == 0
-                        ? ApiConstraint.UNKNOWN
-                        : ApiConstraint.get(removedIn, ANDROID_SDK_ID);
+                return removedIn <= 0 ? ApiConstraint.UNKNOWN : apiConstraints.get(removedIn);
             }
         }
 
@@ -1131,12 +1124,20 @@ public class ApiLookup extends ApiDatabase {
         if (field == CLASS_HEADER_DEPRECATED) {
             return hasDeprecatedIn ? offset : -1;
         } else if (hasDeprecatedIn) {
-            hasRemovedIn = (mData[offset] & HAS_EXTRA_BYTE_FLAG) != 0;
+            byte deprecatedFirst = mData[offset];
+            hasRemovedIn = (deprecatedFirst & HAS_EXTRA_BYTE_FLAG) != 0;
             offset++;
+            if ((deprecatedFirst & IS_SHORT_FLAG) != 0) {
+                offset++;
+            }
         }
         if (field == CLASS_HEADER_REMOVED) {
             return hasRemovedIn ? offset : -1;
         } else if (hasRemovedIn) {
+            byte removedFirst = mData[offset];
+            if ((removedFirst & IS_SHORT_FLAG) != 0) {
+                offset++;
+            }
             offset++;
         }
         assert field == CLASS_HEADER_INTERFACES;
@@ -1288,20 +1289,47 @@ public class ApiLookup extends ApiDatabase {
         }
         api = Byte.toUnsignedInt(mData[++offset]);
         if (apiLevelField == CLASS_HEADER_DEPRECATED) {
+            if ((api & IS_SHORT_FLAG) != 0) {
+                // It's packed into a short
+                int second = Byte.toUnsignedInt(mData[++offset]);
+                int value = (api & (API_MASK & ~IS_SHORT_FLAG)) << 8 | second;
+                return value == 0 ? -1 : value;
+            }
             api &= API_MASK;
             return api == 0 ? -1 : api;
+        }
+        if ((api & IS_SHORT_FLAG) != 0) {
+            // We used two bytes for the API level
+            offset++;
         }
         assert apiLevelField == CLASS_HEADER_REMOVED;
         if ((api & HAS_EXTRA_BYTE_FLAG) == 0 || apiLevelField != CLASS_HEADER_REMOVED) {
             return -1;
         }
         api = Byte.toUnsignedInt(mData[++offset]);
+        if ((api & IS_SHORT_FLAG) != 0) {
+            // It's packed into a short
+            int second = Byte.toUnsignedInt(mData[++offset]);
+            int value = (api & (API_MASK & ~IS_SHORT_FLAG)) << 8 | second;
+            return value == 0 ? -1 : value;
+        }
+        api &= API_MASK;
         return api == 0 ? -1 : api;
     }
 
     public String getSdkName(int sdkId) {
+        return getSdkName(sdkId, false);
+    }
+
+    public String getSdkName(int sdkId, boolean shortName) {
         ExtensionSdk sdk = registry.find(sdkId);
         if (sdk != null) {
+            if (shortName) {
+                String name = sdk.getShortName();
+                if (name != null) {
+                    return name;
+                }
+            }
             return sdk.getName();
         }
 

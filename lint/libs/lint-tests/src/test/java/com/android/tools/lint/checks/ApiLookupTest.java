@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings({"ConstantConditions"})
 public class ApiLookupTest extends AbstractCheckTest {
+    @SuppressWarnings("deprecation")
     private final ApiLookup mDb = ApiLookup.get(createClient());
 
     private int getClassVersion(String owner) {
@@ -537,32 +538,32 @@ public class ApiLookupTest extends AbstractCheckTest {
         File file = mDb.xmlFile;
         Api<ApiClass> info = Api.parseApi(file);
         for (ApiClass cls : info.getClasses().values()) {
-            int classSince = cls.getSince();
+            int classSince = ApiParser.getMajorVersion(cls.getSince());
             String className = cls.getName();
             assertSameApi(className, classSince, getClassVersion(className));
 
             for (String method : cls.getAllMethods(info)) {
-                int since = cls.getMethodSince(method, info);
+                int since = ApiParser.getMajorVersion(cls.getMethodSince(method, info));
                 int index = method.indexOf('(');
                 String name = method.substring(0, index);
                 String desc = method.substring(index);
                 assertSameApi(method, since, getMethodVersion(className, name, desc));
             }
             for (String method : cls.getAllFields(info)) {
-                int since = cls.getFieldSince(method, info);
+                int since = ApiParser.getMajorVersion(cls.getFieldSince(method, info));
                 assertSameApi(method, since, getFieldVersion(className, method));
             }
 
             for (Pair<String, Integer> pair : cls.getAllInterfaces(info)) {
                 String interfaceName = pair.getFirst();
-                int api = pair.getSecond();
+                int api = ApiParser.getMajorVersion(pair.getSecond());
                 assertSameApi(interfaceName, api, getCastVersion(className, interfaceName));
             }
         }
 
         // Check Deprecated In
         for (ApiClass cls : info.getClasses().values()) {
-            int classDeprecatedIn = cls.getDeprecatedIn();
+            int classDeprecatedIn = ApiParser.getMajorVersion(cls.getDeprecatedIn());
             String className = cls.getName();
             if (classDeprecatedIn >= 1) {
                 assertSameApi(className, classDeprecatedIn, getClassDeprecatedIn(className));
@@ -571,7 +572,8 @@ public class ApiLookupTest extends AbstractCheckTest {
             }
 
             for (String method : cls.getAllMethods(info)) {
-                int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
+                int deprecatedIn =
+                        ApiParser.getMajorVersion(cls.getMemberDeprecatedIn(method, info));
                 if (deprecatedIn == 0) {
                     deprecatedIn = -1;
                 }
@@ -585,7 +587,8 @@ public class ApiLookupTest extends AbstractCheckTest {
                         STRIP_MEMBERS);
             }
             for (String method : cls.getAllFields(info)) {
-                int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
+                int deprecatedIn =
+                        ApiParser.getMajorVersion(cls.getMemberDeprecatedIn(method, info));
                 if (deprecatedIn == 0) {
                     deprecatedIn = -1;
                 }
@@ -599,7 +602,7 @@ public class ApiLookupTest extends AbstractCheckTest {
 
         // Check Removed In
         for (ApiClass cls : info.getClasses().values()) {
-            int classRemovedIn = cls.getRemovedIn();
+            int classRemovedIn = ApiParser.getMajorVersion(cls.getRemovedIn());
             String className = cls.getName();
             if (classRemovedIn >= 1) {
                 assertSameApi(className, classRemovedIn, getClassRemovedIn(className));
@@ -608,7 +611,7 @@ public class ApiLookupTest extends AbstractCheckTest {
             }
 
             for (String method : cls.getAllMethods(info)) {
-                int removedIn = cls.getMemberRemovedIn(method, info);
+                int removedIn = ApiParser.getMajorVersion(cls.getMemberRemovedIn(method, info));
                 if (removedIn == 0) {
                     removedIn = -1;
                 }
@@ -622,7 +625,7 @@ public class ApiLookupTest extends AbstractCheckTest {
                         STRIP_MEMBERS);
             }
             for (String method : cls.getAllFields(info)) {
-                int removedIn = cls.getMemberRemovedIn(method, info);
+                int removedIn = ApiParser.getMajorVersion(cls.getMemberRemovedIn(method, info));
                 if (removedIn == 0) {
                     removedIn = -1;
                 }
@@ -868,7 +871,8 @@ public class ApiLookupTest extends AbstractCheckTest {
                 "API level ≥ 33 or SDK 1000000: version ≥ 3 or SDK 33: version ≥ 3",
                 lookup.getClassVersions("android.adservices.AdServicesVersion").toString());
         assertEquals(
-                "API level ≥ 33 or SDK 30: version ≥ 2 or SDK 31: version ≥ 2 or SDK 33: version ≥ 2",
+                "API level ≥ 33 or SDK 30: version ≥ 2 or SDK 31: version ≥ 2 or SDK 33: version ≥"
+                    + " 2",
                 lookup.getFieldVersions(
                                 "android.provider.MediaStore$PickerMediaColumns", "MIME_TYPE")
                         .toString());
@@ -877,7 +881,9 @@ public class ApiLookupTest extends AbstractCheckTest {
                 lookup.getMethodVersions("android.adservices.adid.AdId", "getAdId", "()")
                         .toString());
 
-        assertEquals("AD_SERVICES-ext", lookup.getSdkName(1000000));
+        assertEquals("Ad Services Extensions", lookup.getSdkName(1000000));
+        assertEquals("Ad Services Extensions", lookup.getSdkName(1000000, false));
+        assertEquals("AD_SERVICES-ext", lookup.getSdkName(1000000, true));
         assertEquals("AD_SERVICES", lookup.getSdkExtensionField(1000000, false));
         assertEquals(
                 "android.os.ext.SdkExtensions.AD_SERVICES",
@@ -915,7 +921,19 @@ public class ApiLookupTest extends AbstractCheckTest {
     }
 
     public static TestLintResult runApiCheckWithCustomLookup(
+            @Language("XML") @NonNull String apiXml, @NonNull CreateLintTask createTask) {
+        return runApiCheckWithCustomLookup(apiXml, false, createTask);
+    }
+
+    public static TestLintResult runApiCheckWithCustomLookup(
             boolean force2ByteFormat, @NonNull CreateLintTask createTask) {
+        return runApiCheckWithCustomLookup(null, force2ByteFormat, createTask);
+    }
+
+    public static TestLintResult runApiCheckWithCustomLookup(
+            @Language("XML") @NonNull String apiXml,
+            boolean force2ByteFormat,
+            @NonNull CreateLintTask createTask) {
         // this is here to prevent the SoftReference in the ApiLookup's
         // instance table from getting gc'ed
         @SuppressWarnings("WriteOnlyObject")
@@ -931,7 +949,7 @@ public class ApiLookupTest extends AbstractCheckTest {
                                 try {
                                     lookup.set(
                                             ApiLookupTest.createMultiSdkLookup(
-                                                    false, force2ByteFormat));
+                                                    false, force2ByteFormat, apiXml));
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -959,77 +977,124 @@ public class ApiLookupTest extends AbstractCheckTest {
     @Nullable
     public static ApiLookup createMultiSdkLookup(boolean disposeAfter, boolean force2ByteFormat)
             throws IOException {
+        return createMultiSdkLookup(disposeAfter, force2ByteFormat, null);
+    }
+
+    @Nullable
+    public static ApiLookup createMultiSdkLookup(
+            boolean disposeAfter,
+            boolean force2ByteFormat,
+            @Language("XML") @Nullable String apiVersionsOverride)
+            throws IOException {
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
         LookupTestClient client =
                 new ApiLookupTest()
                 .new LookupTestClient(temporaryFolder.newFolder(), new StringBuilder());
         @Language("XML")
-        String apiVersionsOverride =
-                ""
-                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-                        + "<api version=\"3\">\n"
-                        + "        <sdk id=\"30\" name=\"R-ext\" reference=\"android/os/Build$VERSION_CODES$R\"/>\n"
-                        + "        <sdk id=\"31\" name=\"S-ext\"/>\n"
-                        + "        <sdk id=\"33\" name=\"T-ext\"/>\n"
-                        + "        <sdk id=\"34\" name=\"U-ext\"/>\n"
-                        + "        <sdk id=\"35\" name=\"V-ext\"/>\n"
-                        + "        <sdk id=\"1000000\" name=\"AD_SERVICES-ext\" reference=\"android/os/ext/SdkExtensions$AD_SERVICES\"/>\n"
-                        + "        <class name=\"java/lang/Object\" since=\"1\">\n"
-                        + "                <method name=\"&lt;init>()V\"/>\n"
-                        + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
-                        + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
-                        + "                <method name=\"finalize()V\"/>\n"
-                        + "                <method name=\"getClass()Ljava/lang/Class;\"/>\n"
-                        + "                <method name=\"hashCode()I\"/>\n"
-                        + "                <method name=\"notify()V\"/>\n"
-                        + "                <method name=\"notifyAll()V\"/>\n"
-                        + "                <method name=\"toString()Ljava/lang/String;\"/>\n"
-                        + "                <method name=\"wait()V\"/>\n"
-                        + "                <method name=\"wait(J)V\"/>\n"
-                        + "                <method name=\"wait(JI)V\"/>\n"
-                        + "        </class>\n"
-                        + "        <class name=\"android/Manifest\" since=\"1\">\n"
-                        + "                <extends name=\"java/lang/Object\"/>\n"
-                        + "                <method name=\"&lt;init>()V\"/>\n"
-                        + "        </class>\n"
-                        + "        <class name=\"android/animation/AnimatorSet\" since=\"11\"/>\n"
-                        + "        <class name=\"android/adservices/AdServicesState\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
-                        + "                <extends name=\"java/lang/Object\"/>\n"
-                        + "                <method name=\"isAdServicesStateEnabled()Z\"/>\n"
-                        + "        </class>\n"
-                        + "        <class name=\"android/adservices/AdServicesVersion\" module=\"framework-adservices\" since=\"33\" sdks=\"0:33,1000000:3,33:3\">\n"
-                        + "                <extends name=\"java/lang/Object\"/>\n"
-                        + "                <field name=\"API_VERSION\"/>\n"
-                        + "        </class>\n"
-                        + "        <class name=\"android/adservices/adid/AdId\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
-                        + "                <extends name=\"java/lang/Object\"/>\n"
-                        + "                <method name=\"&lt;init>(Ljava/lang/String;Z)V\"/>\n"
-                        + "                <method name=\"getAdId()Ljava/lang/String;\"/>\n"
-                        + "                <method name=\"isLimitAdTrackingEnabled()Z\"/>\n"
-                        + "                <field name=\"ZERO_OUT\"/>\n"
-                        + "        </class>\n"
-                        + "        <class name=\"android/adservices/adid/AdIdManager\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
-                        + "                <extends name=\"java/lang/Object\"/>\n"
-                        + "                <method name=\"getAdId(Ljava/util/concurrent/Executor;Landroid/os/OutcomeReceiver;)V\"/>\n"
-                        + "                <method name=\"hasOutcome()Z\" sdks=\"1000000:2147483647,33:2147483647\"/>\n" // Simulate b/260515648
+        String defaultApiXml =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                    + "<api version=\"3\">\n"
+                    + "        <sdk id=\"30\" shortname=\"R-ext\" name=\"R Extensions\""
+                    + " reference=\"android/os/Build$VERSION_CODES$R\"/>\n"
+                    + "        <sdk id=\"31\" shortname=\"S-ext\" name=\"S Extensions\""
+                    + " reference=\"android/os/Build$VERSION_CODES$S\"/>\n"
+                    + "        <sdk id=\"33\" shortname=\"T-ext\" name=\"T Extensions\""
+                    + " reference=\"android/os/Build$VERSION_CODES$TIRAMISU\"/>\n"
+                    + "        <sdk id=\"34\" shortname=\"U-ext\" name=\"U Extensions\""
+                    + " reference=\"android/os/Build$VERSION_CODES$UPSIDE_DOWN_CAKE\"/>\n"
+                    + "        <sdk id=\"35\" shortname=\"V-ext\" name=\"V Extensions\""
+                    + " reference=\"android/os/Build$VERSION_CODES$VANILLA_ICE_CREAM\"/>\n"
+                    + "        <sdk id=\"1000000\" shortname=\"AD_SERVICES-ext\" name=\"Ad Services"
+                    + " Extensions\" reference=\"android/os/ext/SdkExtensions$AD_SERVICES\"/>\n"
+                    + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                    + "                <method name=\"&lt;init>()V\"/>\n"
+                    + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
+                    + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
+                    + "                <method name=\"finalize()V\"/>\n"
+                    + "                <method name=\"getClass()Ljava/lang/Class;\"/>\n"
+                    + "                <method name=\"hashCode()I\"/>\n"
+                    + "                <method name=\"notify()V\"/>\n"
+                    + "                <method name=\"notifyAll()V\"/>\n"
+                    + "                <method name=\"toString()Ljava/lang/String;\"/>\n"
+                    + "                <method name=\"wait()V\"/>\n"
+                    + "                <method name=\"wait(J)V\"/>\n"
+                    + "                <method name=\"wait(JI)V\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/Manifest\" since=\"1\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method name=\"&lt;init>()V\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/animation/AnimatorSet\" since=\"11\"/>\n"
+                    + "        <class name=\"android/adservices/AdServicesState\""
+                    + " module=\"framework-adservices\" since=\"34\""
+                    + " sdks=\"0:34,1000000:4,33:4\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method name=\"isAdServicesStateEnabled()Z\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/adservices/AdServicesVersion\""
+                    + " module=\"framework-adservices\" since=\"33\""
+                    + " sdks=\"0:33,1000000:3,33:3\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <field name=\"API_VERSION\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/adservices/adid/AdId\""
+                    + " module=\"framework-adservices\" since=\"34\""
+                    + " sdks=\"0:34,1000000:4,33:4\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method name=\"&lt;init>(Ljava/lang/String;Z)V\"/>\n"
+                    + "                <method name=\"getAdId()Ljava/lang/String;\"/>\n"
+                    + "                <method name=\"isLimitAdTrackingEnabled()Z\"/>\n"
+                    + "                <field name=\"ZERO_OUT\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/adservices/adid/AdIdManager\""
+                    + " module=\"framework-adservices\" since=\"34\""
+                    + " sdks=\"0:34,1000000:4,33:4\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method"
+                    + " name=\"getAdId(Ljava/util/concurrent/Executor;Landroid/os/OutcomeReceiver;)V\"/>\n"
+                    + "                <method name=\"hasOutcome()Z\""
+                    + " sdks=\"1000000:2147483647,33:2147483647\"/>\n" // Simulate b/260515648
                         + "        </class>\n"
                         + "        <class name=\"android/provider/MediaStore\" since=\"1\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
                         + "                <method name=\"&lt;init>()V\"/>\n"
-                        + "                <method name=\"canManageMedia(Landroid/content/Context;)Z\" since=\"31\"/>\n"
-                        + "                <method name=\"createDeleteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
-                        + "                <method name=\"createFavoriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
-                        + "                <method name=\"createTrashRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
-                        + "                <method name=\"createWriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
-                        + "                <method name=\"getDocumentUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\" since=\"26\"/>\n"
-                        + "                <method name=\"getExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\" since=\"29\"/>\n"
-                        + "                <method name=\"getGeneration(Landroid/content/Context;Ljava/lang/String;)J\" since=\"30\"/>\n"
-                        + "                <method name=\"getMediaScannerUri()Landroid/net/Uri;\"/>\n"
-                        + "                <method name=\"getMediaUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\" since=\"29\"/>\n"
-                        + "                <method name=\"getOriginalMediaFormatFileDescriptor(Landroid/content/Context;Landroid/os/ParcelFileDescriptor;)Landroid/os/ParcelFileDescriptor;\" since=\"31\"/>\n"
-                        + "                <method name=\"getPickImagesMaxLimit()I\" since=\"33\" sdks=\"0:33,30:2,31:2,33:2\"/>\n"
-                        + "                <method name=\"getRecentExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\" since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"canManageMedia(Landroid/content/Context;)Z\" since=\"31\"/>\n"
+                        + "                <method"
+                        + " name=\"createDeleteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\""
+                        + " since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"createFavoriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\""
+                        + " since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"createTrashRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\""
+                        + " since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"createWriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\""
+                        + " since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"getDocumentUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\""
+                        + " since=\"26\"/>\n"
+                        + "                <method"
+                        + " name=\"getExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\""
+                        + " since=\"29\"/>\n"
+                        + "                <method"
+                        + " name=\"getGeneration(Landroid/content/Context;Ljava/lang/String;)J\""
+                        + " since=\"30\"/>\n"
+                        + "                <method"
+                        + " name=\"getMediaScannerUri()Landroid/net/Uri;\"/>\n"
+                        + "                <method"
+                        + " name=\"getMediaUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\""
+                        + " since=\"29\"/>\n"
+                        + "                <method"
+                        + " name=\"getOriginalMediaFormatFileDescriptor(Landroid/content/Context;Landroid/os/ParcelFileDescriptor;)Landroid/os/ParcelFileDescriptor;\""
+                        + " since=\"31\"/>\n"
+                        + "                <method name=\"getPickImagesMaxLimit()I\" since=\"33\""
+                        + " sdks=\"0:33,30:2,31:2,33:2\"/>\n"
+                        + "                <method"
+                        + " name=\"getRecentExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\""
+                        + " since=\"30\"/>\n"
                         + "        </class>\n"
                         // This is supposed to be 31, but here we're testing codename handling
                         // (10_000)
@@ -1039,15 +1104,19 @@ public class ApiLookupTest extends AbstractCheckTest {
                         // Made up extra numbers (for testing purposes in
                         // ApiDetectorTest#testSdkExtensionOrder3 where
                         // we need a particular order)
-                        + "                <field name=\"GAME_MODE_BATTERY\" since=\"34\" sdks=\"1000000:4,0:34,33:4\"/>\n"
+                        + "                <field name=\"GAME_MODE_BATTERY\" since=\"34\""
+                        + " sdks=\"1000000:4,0:34,33:4\"/>\n"
                         + "        </class>\n"
                         // Like GameManager, but using compat-format with the 10000 payload in sdks=
                         // and a low version for old-lint compat
-                        + "        <class name=\"android/app/GameState\" since=\"34\" sdks=\"0:10000\">\n"
+                        + "        <class name=\"android/app/GameState\" since=\"34\""
+                        + " sdks=\"0:10000\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
                         + "                <method name=\"getLabel()I\"/>\n"
                         + "        </class>\n"
-                        + "        <class name=\"android/provider/MediaStore$PickerMediaColumns\" module=\"framework-mediaprovider\" since=\"33\" sdks=\"0:33,30:2,31:2,33:2\">\n"
+                        + "        <class name=\"android/provider/MediaStore$PickerMediaColumns\""
+                        + " module=\"framework-mediaprovider\" since=\"33\""
+                        + " sdks=\"0:33,30:2,31:2,33:2\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
                         + "                <field name=\"DATA\"/>\n"
                         + "                <field name=\"DATE_TAKEN\"/>\n"
@@ -1066,7 +1135,8 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        </class>\n"
                         + "        <class name=\"android/test/api/Outer$Inner\" since=\"29\">\n"
                         + "                <extends name=\"android/test/api/Outer\"/>\n"
-                        + "                <method name=\"&lt;init>(Landroid/test/api/Outer;F)V\" since=\"32\"/>\n"
+                        + "                <method name=\"&lt;init>(Landroid/test/api/Outer;F)V\""
+                        + " since=\"32\"/>\n"
                         + "        </class>\n"
                         // Test scenario used by #testComputeAllInterfaces() to make sure we
                         // properly handle "diamond shaped" interface hierarchies.
@@ -1093,7 +1163,10 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        </class>\n"
                         + "</api>\n";
         File xml = File.createTempFile("api-versions", "xml");
-        FilesKt.writeText(xml, apiVersionsOverride, Charsets.UTF_8);
+        FilesKt.writeText(
+                xml,
+                apiVersionsOverride != null ? apiVersionsOverride : defaultApiXml,
+                Charsets.UTF_8);
         ApiLookup.dispose();
 
         // Anticipate the same AndroidVersion (used for key lookup) that the lint detector test will
@@ -1113,6 +1186,120 @@ public class ApiLookupTest extends AbstractCheckTest {
             }
         } finally {
             Api.TEST_TWO_BYTE_APIS = false;
+            if (old == null) {
+                System.clearProperty(key);
+            } else {
+                System.setProperty(key, old);
+            }
+        }
+        temporaryFolder.delete();
+        return lookup;
+    }
+
+    public void testMinorVersions() throws IOException {
+        getTempDir();
+        // Note: We're *not* using mDb as lookup here (the real API database); we're using a
+        // customized database which contains a handful of APIs using the new API vector
+        // (sdks=) format to test it before it lands in an official SDK.
+        ApiLookup lookup = ApiLookupTest.createMultiSdkLookupWithMinorVersions(true);
+        // <class name="android/os/PlatformOnly" since="36.4">
+        assertEquals(
+                "API level ≥ 36.4", lookup.getClassVersions("android.os.PlatformOnly").toString());
+        // <class name="android/test/MyClass" since="30.0">
+        assertEquals("API level ≥ 30", lookup.getClassVersions("android.test.MyClass").toString());
+        // <method name="myMethod()String;" since="31.2" deprecated="34.2" removed="34.6"/>
+        assertEquals(
+                "API level ≥ 31.2",
+                lookup.getMethodVersions("android.test.MyClass", "myMethod", "()").toString());
+        assertEquals(
+                "API level ≥ 34.2",
+                lookup.getMethodDeprecatedInVersions("android.test.MyClass", "myMethod", "()")
+                        .toString());
+        assertEquals(
+                "API level ≥ 34.6",
+                lookup.getMethodRemovedInVersions("android.test.MyClass", "myMethod", "()")
+                        .toString());
+        // <method name="getAllExtensionVersions()Ljava/util/Map;" since="31.1"
+        // sdks="30:2,31:2,33:4,35:12,36:16,0:31.1"/>
+        assertEquals(
+                "SDK 30: version ≥ 2 or SDK 31: version ≥ 2.1 or SDK 33: version ≥ 4 or SDK 35:"
+                    + " version ≥ 12 or SDK 36: version ≥ 16 or API level ≥ 31.1",
+                lookup.getMethodVersions("android.test.MyClass", "getAllExtensionVersions", "()")
+                        .toString());
+        // <field name="AD_SERVICES" since="34.2" sdks="30:4,31:4,33:4,34:4,35:12,36:16,0:34.2"/>
+        assertEquals(
+                "SDK 30: version ≥ 4 or SDK 31: version ≥ 4 or SDK 33: version ≥ 4 or SDK 34:"
+                    + " version ≥ 4 or SDK 35: version ≥ 12 or SDK 36: version ≥ 16 or API level ≥"
+                    + " 34.2",
+                lookup.getFieldVersions("android.test.MyClass", "AD_SERVICES").toString());
+
+        // Special test for b/20699600: Verify workaround in ApiClass to patch in the correct
+        // API requirements for SdkExtensions on API level 33 only.
+        assertEquals(
+                "API level ≥ 30",
+                lookup.getClassVersions("android.os.ext.SdkExtensions").toString());
+    }
+
+    @Nullable
+    public static ApiLookup createMultiSdkLookupWithMinorVersions(boolean disposeAfter)
+            throws IOException {
+        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        temporaryFolder.create();
+        LookupTestClient client =
+                new ApiLookupTest()
+                .new LookupTestClient(temporaryFolder.newFolder(), new StringBuilder());
+        @Language("XML")
+        String apiVersionsOverride =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                    + "<api version=\"4\">\n"
+                    + "        <sdk id=\"36\" shortname=\"B-ext\" name=\"VANILLA_ICE_CREAM Extensions\"\n"
+                    + "             reference=\"android/os/Build$VERSION_CODES$VANILLA_ICE_CREAM\"/>\n"
+                    + "\n"
+                    + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                    + "                <method name=\"&lt;init>()V\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/test/MyClass\" since=\"30.0\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method name=\"myMethod()String;\" since=\"31.2\""
+                    + " deprecated=\"34.2\" removed=\"34.6\"/>\n"
+                    + "                <method name=\"getAllExtensionVersions()Ljava/util/Map;\""
+                    + " since=\"31.1\"\n"
+                    + " sdks=\"30:2,31:2.1,33:4,35:12,36:16,0:31.1\"/>\n"
+                    + "                <field name=\"AD_SERVICES\" since=\"34.2\""
+                    + " sdks=\"30:4,31:4,33:4,34:4,35:12,36:16,0:34.2\"/>\n"
+                    + "        </class>\n"
+                    + "        <class name=\"android/os/PlatformOnly\" since=\"36.4\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method name=\"foo(I)V\" />\n"
+                    + "        </class>\n"
+                    + "\n"
+                    + "        <!-- Here to verify ApiClass workaround for b/20699600: -->\n"
+                    + "        <class name=\"android/os/ext/SdkExtensions\" since=\"33\">\n"
+                    + "                <extends name=\"java/lang/Object\"/>\n"
+                    + "                <method"
+                    + " name=\"getAllExtensionVersions()Ljava/util/Map;\"/>\n"
+                    + "                <method name=\"getExtensionVersion(I)I\"/>\n"
+                    + "        </class>\n"
+                    + "</api>\n";
+        File xml = File.createTempFile("api-versions", "xml");
+        FilesKt.writeText(xml, apiVersionsOverride, Charsets.UTF_8);
+        ApiLookup.dispose();
+
+        // Anticipate the same AndroidVersion (used for key lookup) that the lint detector test will
+        // use:
+        PlatformLookup platformLookup = client.getPlatformLookup();
+        IAndroidTarget target = platformLookup.getLatestSdkTarget(1, false, false);
+
+        String key = "LINT_API_DATABASE";
+        String old = System.getProperty(key);
+        System.setProperty(key, xml.getPath());
+        ApiLookup lookup;
+        try {
+            lookup = ApiLookup.get(client, target);
+            if (disposeAfter) {
+                ApiLookup.dispose();
+            }
+        } finally {
             if (old == null) {
                 System.clearProperty(key);
             } else {
