@@ -58,6 +58,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume
 import org.junit.ClassRule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -2357,6 +2358,7 @@ class ProjectInitializerTest {
 
   @Test
   fun testKMPProjectK2() {
+    Assume.assumeTrue(useFirUast())
     val shared =
       project(
           kt(
@@ -2774,6 +2776,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
 
   @Test
   fun testKMPProjectK2_common_klib() {
+    Assume.assumeTrue(useFirUast())
     val shared =
       project(
           // TODO
