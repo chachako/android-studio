@@ -26,6 +26,7 @@ import com.google.api.services.storage.model.StorageObject
 import com.google.api.services.testing.model.AndroidDevice
 import com.google.api.services.testing.model.AndroidModel
 import com.google.api.services.testing.model.DeviceFile
+import com.google.api.services.testing.model.EnvironmentVariable
 import com.google.api.services.testing.model.FileReference
 import com.google.api.services.testing.model.RegularFile
 import com.google.api.services.testing.model.TestMatrix
@@ -69,6 +70,7 @@ class TestMatrixGeneratorTest {
       `when`(testedApplicationId).thenReturn("app_under_test")
       `when`(applicationId).thenReturn("testing_apk")
       `when`(instrumentationRunner).thenReturn("instrumentation.class")
+      `when`(instrumentationRunnerArguments).thenReturn(mapOf("param1" to "value1"))
     }
 
     testRunStorage.apply {
@@ -389,6 +391,13 @@ class TestMatrixGeneratorTest {
         assertThat(setup.filesToPush).containsExactlyElementsIn(testSpecSetupFilesToPush)
         assertThat(setup.directoriesToPull)
           .containsExactlyElementsIn(testSpecSetupDirectoriesToPull)
+        assertThat(setup.environmentVariables)
+          .containsExactly(
+            EnvironmentVariable().apply {
+              key = "param1"
+              value = "value1"
+            }
+          )
       }
 
       testSpec.androidInstrumentationTest.also { instrumentation ->

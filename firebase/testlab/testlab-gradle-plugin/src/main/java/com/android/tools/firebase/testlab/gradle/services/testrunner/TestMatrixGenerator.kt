@@ -30,6 +30,7 @@ import com.google.api.services.testing.model.AndroidInstrumentationTest
 import com.google.api.services.testing.model.ClientInfo
 import com.google.api.services.testing.model.DeviceFile
 import com.google.api.services.testing.model.EnvironmentMatrix
+import com.google.api.services.testing.model.EnvironmentVariable
 import com.google.api.services.testing.model.GoogleCloudStorage
 import com.google.api.services.testing.model.RegularFile
 import com.google.api.services.testing.model.ResultStorage
@@ -99,6 +100,16 @@ class TestMatrixGenerator(private val projectSettings: ProjectSettings) {
               }
 
               directoriesToPull = projectSettings.directoriesToPull
+
+              environmentVariables =
+                testData.instrumentationRunnerArguments
+                  .map { entry ->
+                    EnvironmentVariable().apply {
+                      key = entry.key
+                      value = entry.value
+                    }
+                  }
+                  .toList()
             }
           androidInstrumentationTest =
             AndroidInstrumentationTest().apply {
