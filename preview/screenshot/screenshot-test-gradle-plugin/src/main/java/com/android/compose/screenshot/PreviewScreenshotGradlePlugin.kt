@@ -85,7 +85,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         private val perClassLoaderConstant = UUID.randomUUID().toString()
 
         const val ST_SOURCE_SET_ENABLED = "android.experimental.enableScreenshotTest"
-        const val VALIDATION_ENGINE_VERSION_OVERRIDE = "android.experimental.validationEngineVersion"
+        const val VALIDATION_ENGINE_VERSION_OVERRIDE = "android.compose.screenshot.validationEngineVersion"
+
         const val MIN_VALIDATION_ENGINE_VERSION = "0.0.1-alpha03"
         private const val LAYOUTLIB_VERSION = "14.0.9"
         private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.9"
@@ -132,12 +133,13 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 if (validationEngineOverrideString < MIN_VALIDATION_ENGINE_VERSION && !validationEngineOverrideString.endsWith("-dev")) {
                     error(
                         """
-                        Preview screenshot plugin requires the screenshot validation engine version to be at least $MIN_VALIDATION_ENGINE_VERSION, android.experimental.validationEngineVersion cannot be set to $validationEngineOverrideString.
+                        Preview screenshot plugin requires the screenshot validation engine version to be at least $MIN_VALIDATION_ENGINE_VERSION, $VALIDATION_ENGINE_VERSION_OVERRIDE cannot be set to $validationEngineOverrideString.
                         """.trimIndent()
                     )
                 }
                 validationEngineOverrideString
             } else SCREENSHOT_TEST_PLUGIN_VERSION
+
             val screenshotExtension = project.extensions.create("screenshotTests", ScreenshotTestOptionsImpl::class.java)
 
 
@@ -420,6 +422,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve screenshot test engine dependencies."
             }
+
             dependencies.add(previewScreenshotTestEngineConfigurationName, "org.junit.platform:junit-platform-launcher")
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,

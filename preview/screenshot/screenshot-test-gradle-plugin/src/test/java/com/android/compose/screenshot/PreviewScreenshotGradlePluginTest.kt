@@ -49,6 +49,7 @@ class PreviewScreenshotGradlePluginTest {
     lateinit var mockAndroidPlugin: AndroidComponentsExtension<*, *, *>
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     lateinit var mockCommonExtension: CommonExtension<*, *, *, *, *, *>
+
     @Before
     fun setupMocks() {
         `when`(mockProject.extensions.getByType(eq(AndroidComponentsExtension::class.java))).thenReturn(mockAndroidPlugin)
@@ -120,7 +121,7 @@ class PreviewScreenshotGradlePluginTest {
                 applyScreenshotPlugin(validationEngineVersion = it)
             }
             assertThat(e).hasMessageThat()
-                .contains("Preview screenshot plugin requires the screenshot validation engine version to be at least ${PreviewScreenshotGradlePlugin.MIN_VALIDATION_ENGINE_VERSION}, android.experimental.validationEngineVersion cannot be set to $it.")
+                .contains("Preview screenshot plugin requires the screenshot validation engine version to be at least ${PreviewScreenshotGradlePlugin.MIN_VALIDATION_ENGINE_VERSION}, ${PreviewScreenshotGradlePlugin.VALIDATION_ENGINE_VERSION_OVERRIDE} cannot be set to $it.")
         }
 
         supportedVersions.forEach {
