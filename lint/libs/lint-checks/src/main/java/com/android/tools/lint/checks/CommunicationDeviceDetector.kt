@@ -39,7 +39,7 @@ import org.jetbrains.uast.UCallExpression
  *
  * CommunicationDeviceDetector is an example of a detector that supports partial analysis by storing
  * data in per module LintMaps. It also demonstrates how such a detector can usually immediately
- * work in global analysis mode by simply overriding afterCheckRootProject and adding a few lines of
+ * work in global analysis mode by simply overriding [checkMergedProject] and adding a few lines of
  * code. So that this can serve as the "reference example" for such detectors, we include detailed
  * comments explaining how the analysis works.
  *
@@ -64,8 +64,8 @@ import org.jetbrains.uast.UCallExpression
  * incident. See [checkPartialResults], below.
  *
  * Finally, rather than specializing the check for partial and global analysis modes, the detector
- * just overrides [afterCheckRootProject] such that if we are in global analysis mode, we call
- * [checkPartialResults]. See [afterCheckRootProject], below.
+ * just overrides [checkMergedProject] such that if we are in global analysis mode, we call
+ * [checkPartialResults]. See [checkMergedProject], below.
  */
 class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
   companion object {
@@ -193,12 +193,12 @@ class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
     }
   }
 
-  override fun afterCheckRootProject(context: Context) {
+  override fun checkMergedProject(context: Context) {
     // Called after analysis of the root/main project (usually the app project),
     // in both partial analysis and global analysis modes.
 
-    // When lint is running in global analysis mode (e.g. via "Run Inspection by
-    // Name" from within the IDE), one detector instance is used to check all
+    // When lint is running in global analysis mode (e.g. via Code -> Inspect
+    // Code... from within the IDE), one detector instance is used to check all
     // modules, and the source code of all modules is available. Thus, the check
     // could be implemented in a different way (e.g. a boolean field could be
     // set as soon as we visit a call to clearCommunicationDevice, and we could

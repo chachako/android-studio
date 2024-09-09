@@ -175,6 +175,14 @@ abstract class Detector {
    * [afterCheckRootProject]. For analysis that is local to a given module, just place it in
    * [afterCheckEachProject].
    *
+   * Given an app module and several library module dependencies:
+   * * In global analysis mode: this method will be called once on the app module.
+   * * In partial analysis mode (assuming Lint's `--analyze-only` phase is run on each module, and
+   *   then the `--report-only` phase is run on just the app module): this method will be called in
+   *   the `--analyze-only` phase for every module.
+   * * In isolated ("on-the-fly") mode: this method will be called on the containing module, even if
+   *   it is not a root module.
+   *
    * @param context the context for the check referencing the project, lint client, etc
    */
   open fun afterCheckRootProject(context: Context) {
@@ -670,8 +678,20 @@ abstract class Detector {
 
   /**
    * Callback to detectors that add partial results (by adding entries to the map returned by
-   * [LintClient.getPartialResults]). This is where the data should be analyzed and merged and
-   * results reported (via [Context.report]) to lint.
+   * [Context.getPartialResults]). This is where the data should be analyzed and merged and results
+   * reported (via [Context.report]) to lint.
+   *
+   * Given an app module and several library module dependencies:
+   * * In global analysis mode: this method is not called by Lint, but your Detector may wish to
+   *   conditionally call this method from [checkMergedProject] when [Context.isGlobalAnalysis]
+   *   returns true so that your Detector works in both global and partial analysis modes, without
+   *   having to specialize the logic for each mode.
+   * * In partial analysis mode (assuming Lint's `--analyze-only` phase is run on each module, and
+   *   then the `--report-only` phase is run on just the app module): this method will be called in
+   *   the `--report-only` phase on the app module (for each [Issue] with partial results), but only
+   *   if the Detector has added partial results for the [Issue].
+   * * In isolated ("on-the-fly") mode: this method is not called by Lint, but see global analysis
+   *   mode.
    */
   open fun checkPartialResults(context: Context, partialResults: PartialResult) {
     // Don't call super.checkPartialResults! This is here to make sure you
@@ -702,6 +722,14 @@ abstract class Detector {
    * [Detector.checkPartialResults], but that's not very clean. Therefore, you can instead override
    * this method, which will be called for all detectors when merging in partial results, and where
    * you can report any issues discovered in the merged project context.
+   *
+   * Given an app module and several library module dependencies:
+   * * In global analysis mode: this method will be called once on the app module.
+   * * In partial analysis mode (assuming Lint's `--analyze-only` phase is run on each module, and
+   *   then the `--report-only` phase is run on just the app module): this method will be called in
+   *   the `--report-only` phase on the app module.
+   * * In isolated ("on-the-fly") mode: this method will be called on the containing module, even if
+   *   it is not a root module.
    */
   open fun checkMergedProject(context: Context) {}
 
