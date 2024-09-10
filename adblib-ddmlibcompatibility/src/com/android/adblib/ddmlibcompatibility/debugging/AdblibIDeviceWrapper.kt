@@ -67,12 +67,16 @@ import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 import com.android.ddmlib.internal.UserDataMapImpl
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.asListenableFuture
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -116,27 +120,20 @@ internal class AdblibIDeviceWrapper(
             .createDeviceClientManager(bridge, this)
 
     /** Name and path of the AVD  */
-    private val mAvdData = connectedDevice.scope.async {
-        // Wait until the device goes online before creating avd data.
-        // Note that extra care should be taken when using `connectedDevice.deviceInfoFlow.deviceState`
-        // instead of `AdblibIDeviceWrapper.deviceStateProvider`. In this case it's ok to use
-        // the former as all we care about is populating avd data as soon as possible.
-        connectedDevice.deviceInfoFlow.first {
-            it.deviceState == com.android.adblib.DeviceState.ONLINE
-        }
-        createAvdData()
-    }
     private var mAvdName: String? = null
     private var mAvdPath: String? = null
 
+    private val mutex = Mutex()
+
+    // Use `Result` to distinguish between when `mAvdData` has not been not set, and when it was set
+    // to `null` because we are dealing with a non-emulator device.
+    // Note that we never set `mAvdData` to a failed Result.
+    @Volatile
+    private var mAvdData: Result<AvdData?>? = null
+
     init {
-        mAvdData.invokeOnCompletion { throwable ->
-            if (throwable == null) {
-                mAvdName = mAvdData.getCompleted()?.name
-                mAvdPath = mAvdData.getCompleted()?.path
-            } else if (throwable !is CancellationException) {
-                logger.warn(throwable, "`createAvdData` completed exceptionally")
-            }
+        connectedDevice.scope.launch {
+            createOrGetCachedAvdData()
         }
     }
 
@@ -243,13 +240,13 @@ internal class AdblibIDeviceWrapper(
         return connectedDevice.serialNumber
     }
 
-    @Deprecated("")
+    @Deprecated("Prefer using getAvdData()")
     override fun getAvdName(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_NAME) {
             mAvdName
         }
 
-    @Deprecated("")
+    @Deprecated("Prefer using getAvdData()")
     override fun getAvdPath(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_PATH) {
             mAvdPath
@@ -257,29 +254,54 @@ internal class AdblibIDeviceWrapper(
 
     override fun getAvdData(): ListenableFuture<AvdData?> =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_DATA) {
-            mAvdData.asListenableFuture()
-        }
-
-    private suspend fun createAvdData(): AvdData? {
-        if (!isEmulator) {
-            return null
-        }
-        val emulatorMatchResult = RE_EMULATOR_SN.toRegex().matchEntire(serialNumber) ?: return null
-        val port = emulatorMatchResult.groupValues[1].toIntOrNull() ?: return null
-
-        return try {
-            connectedDevice.session.openEmulatorConsole(localConsoleAddress(port)).use {
-                val avdName = kotlin.runCatching { it.avdName() }.getOrNull()
-                val path = kotlin.runCatching { it.avdPath() }.getOrNull()
-
-                AvdData(avdName, path)
+            // Callers expect this method to start returning a completed future after a while
+            val avdData = mAvdData
+            if (avdData != null) {
+                return@logUsage Futures.immediateFuture(avdData.getOrThrow())
             }
-        } catch (e: EmulatorCommandException) {
-            logger.warn(e, "Couldn't open emulator console")
-            null
-        } catch (e: IOException) {
-            logger.warn(e, "Couldn't open emulator console")
-            null
+            connectedDevice.scope.async {
+                createOrGetCachedAvdData()
+            }.asListenableFuture()
+        }
+
+    private suspend fun createOrGetCachedAvdData(): AvdData? {
+        mutex.withLock {
+            if (mAvdData != null) {
+                return mAvdData!!.getOrThrow()
+            }
+
+            // Wait until the device goes online before creating avd data.
+            // Note that extra care should be taken when using `connectedDevice.deviceInfoFlow.deviceState`
+            // instead of `AdblibIDeviceWrapper.deviceStateProvider`. In this case it's ok to use
+            // the former as all we care about is populating avd data as soon as possible.
+            connectedDevice.deviceInfoFlow.first {
+                it.deviceState == com.android.adblib.DeviceState.ONLINE
+            }
+
+            if (!isEmulator) {
+                mAvdData = Result.success(null)
+            } else {
+                val emulatorMatchResult =
+                    RE_EMULATOR_SN.toRegex().matchEntire(serialNumber) ?: return null
+                val port = emulatorMatchResult.groupValues[1].toIntOrNull() ?: return null
+
+                try {
+                    connectedDevice.session.openEmulatorConsole(localConsoleAddress(port)).use {
+                        val avdName = kotlin.runCatching { it.avdName() }.getOrNull()
+                        val path = kotlin.runCatching { it.avdPath() }.getOrNull()
+                        val avdData = AvdData(avdName, path)
+
+                        mAvdData = Result.success(avdData)
+                        mAvdName = avdData.name
+                        mAvdPath = avdData.path
+                    }
+                } catch (e: EmulatorCommandException) {
+                    logger.warn(e, "Couldn't open emulator console")
+                } catch (e: IOException) {
+                    logger.warn(e, "Couldn't open emulator console")
+                }
+            }
+            return mAvdData?.getOrThrow()
         }
     }
 

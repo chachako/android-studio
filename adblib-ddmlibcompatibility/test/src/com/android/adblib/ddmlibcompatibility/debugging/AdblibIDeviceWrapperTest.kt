@@ -166,7 +166,8 @@ class AdblibIDeviceWrapperTest {
             serialNumber, DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper = createAdblibIDeviceWrapper(connectedDevice, bridge)
-        yieldUntil { adblibIDeviceWrapper.avdData.isDone }
+        val avdDataFuture = adblibIDeviceWrapper.avdData
+        yieldUntil { avdDataFuture.isDone }
 
         // Act / Assert
         // Note that `serialNumber` above matches an emulator pattern and as a result a call to
@@ -175,6 +176,14 @@ class AdblibIDeviceWrapperTest {
         assertNull(adblibIDeviceWrapper.avdData.get())
         assertNull(adblibIDeviceWrapper.avdName)
         assertNull(adblibIDeviceWrapper.avdPath)
+
+        // Act / Assert
+        // Trying to retrieve avdData again retries querying the data from the emulator as indicated
+        // by avdDataFuture2 not being in a completed state at first
+        val avdDataFuture2 = adblibIDeviceWrapper.avdData
+        assertFalse(avdDataFuture2.isDone)
+        yieldUntil { avdDataFuture.isDone }
+        assertNull(adblibIDeviceWrapper.avdData.get())
     }
 
     @Test
