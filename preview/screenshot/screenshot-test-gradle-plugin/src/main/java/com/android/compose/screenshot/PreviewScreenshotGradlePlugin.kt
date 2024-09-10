@@ -22,7 +22,6 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.ScopedArtifacts
