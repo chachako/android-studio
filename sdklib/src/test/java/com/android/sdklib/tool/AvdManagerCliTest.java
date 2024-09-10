@@ -238,7 +238,8 @@ public class AvdManagerCliTest {
                     "create", "avd",
                     "--name", "testAvd",
                     "-k", android25GoogleApisPlayStoreSdkPath,
-                    "-d", "Nexus 6P"
+                    "-d", "Nexus 6P",
+                    "--sdcard", "100M",
                 });
         mAvdManager.reloadAvds();
         AvdInfo info = mAvdManager.getAvd("testAvd", true);
@@ -260,7 +261,7 @@ public class AvdManagerCliTest {
                 EmulatedProperties.MAX_DEFAULT_RAM_SIZE,
                 Storage.getStorageFromString(config.get("hw.ramSize")));
         assertEquals(
-                new Storage(512, Storage.Unit.MiB),
+                new Storage(100, Storage.Unit.MiB),
                 Storage.getStorageFromString(config.get("sdcard.size")));
         assertEquals(
                 new Storage(384, Storage.Unit.MiB),
