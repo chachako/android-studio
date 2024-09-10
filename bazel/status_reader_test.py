@@ -1,6 +1,6 @@
 import os
 import unittest
-import status_reader
+from tools.base.bazel import status_reader
 
 
 def read_file(path):

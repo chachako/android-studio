@@ -14,7 +14,7 @@
 
 import os
 import unittest
-import rename_jar_services
+from tools.base.bazel.jarjar import rename_jar_services
 import zipfile
 
 
