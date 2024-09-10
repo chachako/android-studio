@@ -53,6 +53,7 @@ import com.android.tools.r8.startup.StartupProfileProvider
 import com.android.tools.r8.utils.ArchiveResourceProvider
 import com.google.common.io.ByteStreams
 import java.io.BufferedOutputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -445,6 +446,21 @@ data class ToolConfig(
     val disableMinification: Boolean,
     val r8OutputType: R8OutputType,
 )
+
+/** Parameters required for running resource shrinking. */
+data class ResourceShrinkingConfig(
+    val linkedResourcesInputFiles: List<File>,
+    val mergedNotCompiledResourcesInputDir: File,
+    val usePreciseShrinking: Boolean,
+    val logFile: File?,
+    val shrunkResourcesOutputFiles: List<File>
+) : java.io.Serializable { // Serializable so it can be used in Gradle workers
+
+    companion object {
+        @Suppress("ConstPropertyName")
+        private const val serialVersionUID = 0L
+    }
+}
 
 private class ProGuardRulesFilteringVisitor(
     private val visitor: DataResourceProvider.Visitor?

@@ -37,30 +37,33 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
+import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import kotlin.streams.toList
 
 class ResourceShrinkerTest {
 
     @get:Rule
     var project = builder().fromTestProject("shrink")
-            .create()
+        .create()
 
     @get:Rule
-    var projectWithDynamicFeatureModules =
-        builder().fromTestProject("shrinkDynamicFeatureModules").create()
+    var projectWithDynamicFeatureModules = builder().fromTestProject("shrinkDynamicFeatureModules")
+        .create()
 
     private val testAapt2 = TestUtils.getAapt2().toFile().absoluteFile
 
     @Test
-    fun `shrink resources for APKs with R8`() {
+    fun `shrink resources for APKs`() {
         project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("clean", "assembleDebug", "assembleRelease")
-        val debugApk = project.getApk(DEBUG)
-        val releaseApk = project.getApk(RELEASE)
+            .run(
+                ":assembleRelease",
+                ":webview:assembleRelease",
+                ":keep:assembleRelease",
+                ":assembleDebug"
+            )
+
         // Check that unused resources are replaced in shrunk apk.
         val removedFiles = listOf(
                 "res/drawable-hdpi-v4/notification_bg_normal.9.png",
@@ -125,6 +128,10 @@ class ResourceShrinkerTest {
                 "res/menu/unused12.xml",
                 "res/raw/keep.xml"
         )
+        checkUnusedResourcesAreReplacedInApk(project, removedFiles)
+
+        val debugApk = project.getApk(DEBUG)
+        val releaseApk = project.getApk(RELEASE)
         val debugResourcePaths = getZipPaths(debugApk.file.toFile())
         val releaseResourcePaths = getZipPaths(releaseApk.file.toFile())
         val numberOfDebugApkEntries = 119
@@ -138,18 +145,10 @@ class ResourceShrinkerTest {
                 .isEqualTo(numberOfReleaseApkEntries -
                                    (debugMetaFiles.size + removedFiles.size))
 
-        assertThat(getZipPaths(project.getLinkedProtoResources()))
-            .containsAtLeastElementsIn(removedFiles)
-        assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
-
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
-        assertThat(getZipPaths(project.getLinkedProtoResources()))
-            .containsAtLeastElementsIn(removedFiles)
-        assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
-
-        onlyInOriginal(
-            project.getSubproject("webview"), arrayOf(
+        checkUnusedResourcesAreReplacedInApk(
+            project.getSubproject("webview"), listOf(
                 "res/raw/unused_icon.png",
                 "res/raw/unused_index.html",
                 "res/xml/my_xml.xml"
@@ -181,52 +180,47 @@ class ResourceShrinkerTest {
                         "deflated  res/raw/used_styles.css",
                         "deflated  res/layout/webview.xml"
                 )
-        // Check that unused resources are removed from all split APKs
-        for (split in listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")) {
-            onlyInOriginal(project.getSubproject("abisplits"),
-                           arrayOf("res/layout/unused.xml"),
-                           split)
-        }
+
         // Check that unused resources that are referenced with Resources.getIdentifier are removed
         // in case shrinker mode is set to 'strict'.
-        onlyInOriginal(project.getSubproject("keep"),
-                       arrayOf(
-                           "res/raw/keep.xml",
-                           "res/layout/unused1.xml",
-                           "res/layout/unused2.xml")
+        checkUnusedResourcesAreReplacedInApk(
+            project.getSubproject("keep"),
+            listOf(
+                "res/raw/keep.xml",
+                "res/layout/unused1.xml",
+                "res/layout/unused2.xml"
+            )
         )
         // Ensure that report file is created and near mapping file
         assertThat(project.file("build/outputs/mapping/release/mapping.txt")).exists()
-        assertThat(project.file("build/outputs/mapping/release/resources.txt")).exists()
+        assertThat(project.file("build/outputs/mapping/release/resources.txt").readLines())
+            .hasSize(570)
     }
 
-    private fun onlyInOriginal(
+    private fun checkUnusedResourcesAreReplacedInApk(
         project: GradleTestProject,
-        removed: Array<String>,
-        splitName: String? = null
+        unusedResources: List<String>,
+        multiApkSplitName: String? = null
     ) {
-        var originalResources = project.getLinkedProtoResources(splitName)
-        var shrunkResources = project.getShrunkProtoResources(splitName)
-        onlyInOriginal(originalResources, shrunkResources, removed)
+        val linkedResources = project.getLinkedProtoResources(multiApkSplitName)
+        val shrunkResources = project.getShrunkProtoResources(multiApkSplitName)
+        val releaseApk = project.getApk(multiApkSplitName, RELEASE).file.toFile()
+
+        assertThat(getZipPaths(linkedResources)).containsAtLeastElementsIn(unusedResources)
+        assertThat(getZipPaths(shrunkResources)).containsNoneIn(unusedResources)
+        assertThat(getZipPaths(releaseApk)).containsNoneIn(unusedResources)
     }
 
-    private fun onlyInOriginal(
-        originalResources: File,
-        shrunkResources: File,
-        removed: Array<String>,
+    private fun checkUnusedResourcesAreReplacedInBundle(
+        project: GradleTestProject,
+        unusedResources: List<String>
     ) {
-        assertThat(getZipPaths(originalResources))
-            .containsAtLeastElementsIn(
-                removed
-            )
-        assertThat(getZipPaths(shrunkResources))
-            .containsNoneIn(
-                removed
-            )
+        assertThat(getZipPaths(project.getOriginalBundle())).containsAtLeastElementsIn(unusedResources)
+        assertThat(getZipPaths(project.getShrunkBundle())).containsNoneIn(unusedResources)
     }
 
     @Test
-    fun `optimize shrinked resources`() {
+    fun `optimize shrunk resources`() {
         project.executor().run(":webview:assembleRelease")
 
         val releaseApk = project.getSubproject("webview").getApk(RELEASE).file.toFile()
@@ -271,14 +265,16 @@ class ResourceShrinkerTest {
     }
 
     @Test
-    fun `shrink resources in single module bundles`() {
+    fun `shrink resources for bundles`() {
         project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run(
-                        "clean",
-                        "packageDebugUniversalApk",
-                        "packageReleaseUniversalApk"
-                )
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run(
+                ":bundleRelease",
+                ":webview:bundleRelease",
+                ":keep:bundleRelease",
+                ":packageDebugUniversalApk",
+                ":packageReleaseUniversalApk"
+            )
 
         // Check that unused resources are replaced in shrunk bundle.
         val replacedFiles = listOf(
@@ -344,39 +340,35 @@ class ResourceShrinkerTest {
                 "res/menu/unused12.xml",
                 "res/raw/keep.xml"
         )
-
-
-        onlyInOriginal(project.getOriginalBundle(), project.getShrunkBundle(),
-                       replacedFiles.map{"base/$it"}.toTypedArray())
+        checkUnusedResourcesAreReplacedInBundle(project, replacedFiles.map { "base/$it" })
 
         // Check that unused resources are removed in release APK and leave as is in debug one.
-        onlyInOriginal(
-            project.getBundleUniversalApk(DEBUG).file.toFile(),
-            project.getBundleUniversalApk(RELEASE).file.toFile(),
-            arrayOf(
-                "META-INF/BNDLTOOL.RSA",
-                "META-INF/BNDLTOOL.SF",
-                "META-INF/MANIFEST.MF"
-            )
+        val unusedResources = listOf(
+            "META-INF/BNDLTOOL.RSA",
+            "META-INF/BNDLTOOL.SF",
+            "META-INF/MANIFEST.MF"
         )
+        assertThat(getZipPaths(project.getBundleUniversalApk(DEBUG).file.toFile()))
+            .containsAtLeastElementsIn(unusedResources)
+        assertThat(getZipPaths(project.getBundleUniversalApk(RELEASE).file.toFile()))
+            .containsNoneIn(unusedResources)
 
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
-        onlyInOriginal(
-            project.getSubproject("webview").getOriginalBundle(),
-            project.getSubproject("webview").getShrunkBundle(),
-            arrayOf("base/res/raw/unused_icon.png",
-                    "base/res/raw/unused_index.html",
-                    "base/res/xml/my_xml.xml"
+        checkUnusedResourcesAreReplacedInBundle(
+            project.getSubproject("webview"),
+            listOf(
+                "base/res/raw/unused_icon.png",
+                "base/res/raw/unused_index.html",
+                "base/res/xml/my_xml.xml"
             )
         )
 
         // Check that unused resources that are referenced with Resources.getIdentifier are removed
         // in case shrinker mode is set to 'strict'.
-        onlyInOriginal(
-            project.getSubproject("keep").getOriginalBundle(),
-            project.getSubproject("keep").getShrunkBundle(),
-            arrayOf(
+        checkUnusedResourcesAreReplacedInBundle(
+            project.getSubproject("keep"),
+            listOf(
                 "base/res/raw/keep.xml",
                 "base/res/layout/unused1.xml",
                 "base/res/layout/unused2.xml"
@@ -385,32 +377,31 @@ class ResourceShrinkerTest {
     }
 
     @Test
-    fun `shrink resources in bundles with dynamic feature module`() {
-        projectWithDynamicFeatureModules.executor().run("signReleaseBundle")
+    fun `shrink resources for bundles with dynamic features`() {
+        projectWithDynamicFeatureModules.executor().run(":base:bundleRelease")
 
         // Check that unused resources are replaced in shrunk bundle.
-        val originalBundle =
-                projectWithDynamicFeatureModules.getSubproject("base").getOriginalBundle()
-        val shrunkBundle = projectWithDynamicFeatureModules.getSubproject("base").getShrunkBundle()
-        onlyInOriginal(originalBundle, shrunkBundle,             arrayOf(
-            "feature/res/drawable/feat_unused.png",
-            "feature/res/drawable/discard_from_feature_1.xml",
-            "feature/res/layout/feat_unused_layout.xml",
-            "feature/res/raw/feat_keep.xml",
-            "feature/res/raw/webpage.html",
-            "base/res/drawable/discard_from_feature_2.xml",
-            "base/res/drawable/force_remove.xml",
-            "base/res/drawable/unused5.9.png",
-            "base/res/drawable/unused9.xml",
-            "base/res/drawable/unused10.xml",
-            "base/res/drawable/unused11.xml",
-            "base/res/layout/unused1.xml",
-            "base/res/layout/unused2.xml",
-            "base/res/layout/unused13.xml",
-            "base/res/layout/unused14.xml",
-            "base/res/menu/unused12.xml",
-            "base/res/raw/keep.xml"
-        ))
+        checkUnusedResourcesAreReplacedInBundle(
+            projectWithDynamicFeatureModules.getSubproject("base"), listOf(
+                "feature/res/drawable/feat_unused.png",
+                "feature/res/drawable/discard_from_feature_1.xml",
+                "feature/res/layout/feat_unused_layout.xml",
+                "feature/res/raw/feat_keep.xml",
+                "feature/res/raw/webpage.html",
+                "base/res/drawable/discard_from_feature_2.xml",
+                "base/res/drawable/force_remove.xml",
+                "base/res/drawable/unused5.9.png",
+                "base/res/drawable/unused9.xml",
+                "base/res/drawable/unused10.xml",
+                "base/res/drawable/unused11.xml",
+                "base/res/layout/unused1.xml",
+                "base/res/layout/unused2.xml",
+                "base/res/layout/unused13.xml",
+                "base/res/layout/unused14.xml",
+                "base/res/menu/unused12.xml",
+                "base/res/raw/keep.xml"
+            )
+        )
 
         // Check that replaced files release bundle have proper dummy content.
         val releaseBundle = projectWithDynamicFeatureModules.getSubproject("base")
@@ -432,20 +423,18 @@ class ResourceShrinkerTest {
         ).exists()
         assertThat(
             projectWithDynamicFeatureModules.getSubproject("base")
-                .file("build/outputs/mapping/release/resources.txt")
-        ).exists()
+                .file("build/outputs/mapping/release/resources.txt").readLines()
+        ).hasSize(173)
     }
 
     @Test
-    fun `shrink resources in APK with dynamic feature module`() {
-        projectWithDynamicFeatureModules.executor().run("assembleRelease")
+    fun `shrink resources for APKs with dynamic features`() {
+        projectWithDynamicFeatureModules.executor().run(":base:assembleRelease")
 
         // Check that unused resources are replaced in shrunk bundle.
-        // Check that zip entities have proper methods.
-        val shrunkResources =
-            projectWithDynamicFeatureModules.getSubproject("base").getShrunkBinaryResources()
-        assertThat(getZipPaths(shrunkResources)).containsNoneIn(
-            arrayOf(
+        checkUnusedResourcesAreReplacedInApk(
+            projectWithDynamicFeatureModules.getSubproject("base"),
+            unusedResources = listOf(
                 "res/drawable/discard_from_feature_2.xml",
                 "res/drawable/force_remove.xml",
                 "res/drawable/from_raw_feat.xml",
@@ -464,7 +453,7 @@ class ResourceShrinkerTest {
     }
 
     @Test
-    fun `shrink resources with splits`() {
+    fun `shrink resources for multi-APKs`() {
         val abiSplitsSubproject = project.getSubproject("abisplits")
         FileUtils.createFile(
                 FileUtils.join(
@@ -509,19 +498,25 @@ class ResourceShrinkerTest {
                         "  }\n"
         )
 
-
         project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("clean", "abisplits:assembleRelease")
+            .run(":abisplits:assembleRelease")
+
+        // Check that unused resources are removed from all split APKs, including universal APK
+        for (split in listOf("universal", "arm64-v8a", "armeabi-v7a", "x86", "x86_64")) {
+            checkUnusedResourcesAreReplacedInApk(
+                project.getSubproject("abisplits"),
+                listOf("res/layout/unused.xml"),
+                split
+            )
+        }
+
+        // Regression test for b/22833352 (Check signing cert content is correctly compiled)
         val shrunkUniversalApk =
                 FileUtils.join(abiSplitsSubproject.outputDir,
                         "apk",
                         "release",
                         "abisplits-universal-release-unsigned.apk")
-
-        assertThat(shrunkUniversalApk.exists()).isTrue()
-
-       // Regression test for b/22833352 (Check signing cert content is correctly compiled)
         val logger = StdLogger(StdLogger.Level.VERBOSE)
         val result = AaptInvoker(testAapt2.toPath(), logger)
                 .getXmlStrings(shrunkUniversalApk, "res/V7.xml")
@@ -537,31 +532,9 @@ class ResourceShrinkerTest {
         )
     }
 
-    private fun diffFiles(
-            original: File,
-            shrunk: File,
-            skipEntries: Set<String> = emptySet()
-    ): List<String> =
-            FileUtils.createZipFilesystem(original.toPath()).use { originalBundle ->
-                FileUtils.createZipFilesystem(shrunk.toPath()).use { shrunkBundle ->
-                    val shrunkRoot = shrunkBundle.getPath("/")
-                    Files.walk(originalBundle.getPath("/"))
-                            .filter { Files.isRegularFile(it) }
-                            .filter { !skipEntries.contains(it.toString().trimStart('/')) }
-                            .filter { originalPath ->
-                                val shrunkPath = shrunkRoot.resolve(originalPath.toString())
-                                val originalContent = Files.readAllBytes(originalPath)
-                                val shrunkContent = Files.readAllBytes(shrunkPath)
-                                !shrunkContent.contentEquals(originalContent)
-                            }
-                            .map { it.toString().trimStart('/') }
-                            .toList()
-                }
-            }
-
     private fun getZipPaths(zipFile: File, transform: (path: ZipEntry) -> String = { it.name }) =
             ZipFile(zipFile).use { zip ->
-                zip.stream().map(transform).toList()
+                zip.stream().map(transform).collect(Collectors.toList())
             }
 
     private fun getZipPathsWithMethod(zipFile: File) = getZipPaths(zipFile) {
@@ -577,11 +550,11 @@ class ResourceShrinkerTest {
             ZipFile(zipFile).use { zip ->
                 zip.stream()
                         .filter {
-                            ByteStreams.toByteArray(zip.getInputStream(it))!!
+                            ByteStreams.toByteArray(zip.getInputStream(it))
                                     .contentEquals(content)
                         }
                         .map { it.name }
-                        .toList()
+                        .collect(Collectors.toList())
             }
 
     private fun GradleTestProject.getOriginalBundle() =
@@ -605,10 +578,12 @@ class ResourceShrinkerTest {
             .resolve("release/convertLinkedResourcesToProtoRelease")
             .resolve(listOfNotNull("linked-resources-proto-format", splitName, "release.ap_").joinToString("-"))
 
-    private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File =
-        InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
-            .resolve("release/shrinkReleaseRes")
+    private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File {
+        val task = "shrinkReleaseRes"
+        return InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
+            .resolve("release/$task")
             .resolve(listOfNotNull("shrunk-resources-proto-format", splitName, "release.ap_").joinToString("-"))
+    }
 
     private fun GradleTestProject.getShrunkBinaryResources(splitName: String? = null): File =
         InternalArtifactType.SHRUNK_RESOURCES_BINARY_FORMAT.getOutputDir(buildDir)
