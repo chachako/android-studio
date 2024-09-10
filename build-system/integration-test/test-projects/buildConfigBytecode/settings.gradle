@@ -1,0 +1,9 @@
+include ':app'
+
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = 'testrepo'
+        }
+    }
+}

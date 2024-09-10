@@ -137,7 +137,7 @@ open class HostTestTaskManager(
     protected fun setupAndroidRequiredTasks(
         testedVariant: VariantCreationConfig,
         hostTestCreationConfig: HostTestCreationConfig
-        ) {
+    ) {
         if (testedVariant.componentType.isAar) {
             // Add a task to process the manifest
             createProcessTestManifestTask(hostTestCreationConfig)
