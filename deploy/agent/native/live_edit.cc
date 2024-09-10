@@ -221,8 +221,9 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
   }
 
   // If we're going to restart the activity, there's no need to do any save/load
-  // or group invalidation logic.
+  // or group invalidation logic. Restart the activity and return.
   if (req.invalidate_mode() == proto::LiveEditRequest::RESTART_ACTIVITY) {
+    live_edit_stubs.CallStaticVoidMethod("restartActivity", "()V");
     resp.set_status(proto::AgentLiveEditResponse::OK);
     return resp;
   }

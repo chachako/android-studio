@@ -16,9 +16,16 @@
 
 package com.android.tools.deploy.liveedit;
 
+import static com.android.tools.deploy.instrument.ReflectionHelpers.call;
+import static com.android.tools.deploy.instrument.ReflectionHelpers.getDeclaredField;
+
+import android.app.Activity;
+
 import com.android.annotations.VisibleForTesting;
 import com.android.tools.deploy.liveedit.BytecodeValidator.UnsupportedChange;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @SuppressWarnings("unused") // Used by native instrumentation code.
@@ -33,6 +40,17 @@ public final class LiveEditStubs {
         if (context == null) {
             context = new LiveEditContext(loader);
             Log.setLogger(new AndroidLogger());
+        }
+    }
+
+    public static void restartActivity() throws Exception {
+        Class<?> clazz = Class.forName("android.app.ActivityThread");
+        Object activityThread = call(clazz, "currentActivityThread");
+        Collection<?> clientRecords =
+                (Collection<?>) call(getDeclaredField(activityThread, "mActivities"), "values");
+        for (Object record : clientRecords) {
+            Activity activity = (Activity) getDeclaredField(record, "activity");
+            activity.recreate();
         }
     }
 
