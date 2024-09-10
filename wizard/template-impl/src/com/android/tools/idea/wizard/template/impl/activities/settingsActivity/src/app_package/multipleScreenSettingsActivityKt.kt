@@ -73,9 +73,10 @@ class ${activityClass} : AppCompatActivity(),
     ): Boolean {
         // Instantiate the new Fragment
         val args = pref.extras
+        val fragmentClassName = requireNotNull(pref.fragment)
         val fragment = supportFragmentManager.fragmentFactory.instantiate(
                 classLoader,
-                pref.fragment
+                fragmentClassName
         ).apply {
             arguments = args
             setTargetFragment(caller, 0)
