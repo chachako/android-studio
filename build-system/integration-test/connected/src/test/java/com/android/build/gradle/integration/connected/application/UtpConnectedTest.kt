@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.connected.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -256,7 +255,7 @@ class UtpConnectedTest : UtpTestBase() {
     }
 
     private fun executor(): GradleTaskExecutor {
-        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+        return project.executor()
     }
 
     /**
