@@ -432,8 +432,16 @@ public class AppInspectionService {
         if (application == null) {
             return looperClassLoader;
         }
-        ClassLoader classLoader = application.getClassLoader();
-        return classLoader == null ? looperClassLoader : classLoader;
+        try {
+            ClassLoader classLoader = application.getClassLoader();
+            return classLoader == null ? looperClassLoader : classLoader;
+        } catch (Exception e) {
+            Log.w(
+                    "studio.inspectors",
+                    "Failed to get application classloader. Using looper classloader",
+                    e);
+            return looperClassLoader;
+        }
     }
 
     private static native AppInspectionService createAppInspectionService();
