@@ -501,11 +501,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       )
     }
 
-    // --- Check "missing host" (Hosts are required when a web scheme or path is used.) ---
-    if (
-      (schemes?.any { it == "http" || it == "https" } == true || paths != null) &&
-        hostPortPairs.all { (host, _) -> host.isNullOrBlank() }
-    ) {
+    // --- Check "missing host" (Hosts are required when a path is used. ) ---
+    // We insist on this because paths will be ignored if there is no host, which makes the intent
+    // filter very misleading.
+    if ((paths != null) && hostPortPairs.all { (host, _) -> host.isNullOrBlank() }) {
       val fix = LintFix.create().set().todo(ANDROID_URI, ATTR_HOST).build()
       reportUrlError(
         context,
