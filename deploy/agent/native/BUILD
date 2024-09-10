@@ -65,7 +65,7 @@ cc_binary(
     deps = [
         ":jvmti_android",
         ":runtime_header",
-        "//external:slicer",
+        "@slicer//:slicer",
         "//prebuilts/studio/jdk:jni_headers",
         "//tools/base/deploy/agent/native/jni:agent_jni",
         "//tools/base/deploy/agent/native/jni_dispatch",

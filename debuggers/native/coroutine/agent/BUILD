@@ -12,7 +12,7 @@ cc_binary(
     linkshared = 1,
     visibility = ["//visibility:public"],
     deps = [
-        "//external:slicer",
+        "@slicer//:slicer",
         "//tools/base/transport/native/jvmti",
     ],
 )

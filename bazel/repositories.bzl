@@ -21,7 +21,7 @@ _git = [
         "path": "external/googletest",
     },
     {
-        "name": "slicer_repo",
+        "name": "slicer",
         "build_file": "//tools/base/profiler:native/external/slicer.BUILD",
         "path": "external/dexter/slicer",
     },
@@ -172,7 +172,6 @@ filegroup(
 ]
 
 _binds = {
-    "slicer": "@slicer_repo//:slicer",
     "protobuf_clib": "@com_google_protobuf//:protoc_lib",
     "nanopb": "@nanopb_repo//:nanopb",
     "zlib": "@zlib_repo//:zlib",

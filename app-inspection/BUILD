@@ -61,7 +61,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":common",
-        "//external:slicer",
+        "@slicer//:slicer",
         "//prebuilts/studio/jdk:jni_headers",
         "//tools/base/transport/native/agent",
         "//tools/base/transport/native/agent:jni_wrappers",

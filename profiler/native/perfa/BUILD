@@ -21,7 +21,7 @@ cc_library(
     ],
     visibility = ["//tools/base/transport/native/agent:__pkg__"],
     deps = [
-        "//external:slicer",
+        "@slicer//:slicer",
         "//prebuilts/studio/jdk:jni_headers",
         "//tools/base/profiler/native/agent:support",
         "//tools/base/transport/native/agent",
