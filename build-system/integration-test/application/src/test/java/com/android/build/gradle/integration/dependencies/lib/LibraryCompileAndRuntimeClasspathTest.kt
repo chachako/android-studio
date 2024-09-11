@@ -59,7 +59,7 @@ class LibraryCompileAndRuntimeClasspathTest {
             "debugAndroidTestCompileClasspath", """
             |debugAndroidTestCompileClasspath - Resolved configuration for compilation for variant: debugAndroidTest
             |+--- com.example:package:4.0-androidTestCompileOnly FAILED
-            |+--- project : (*)
+            |+--- root project : (*)
             |\--- com.example:package:{strictly 3.0-androidTestRuntimeOnly} FAILED
         """
         )
@@ -83,7 +83,7 @@ class LibraryCompileAndRuntimeClasspathTest {
         """)
         assertDependenciesOutput("debugUnitTestCompileClasspath", """
             |debugUnitTestCompileClasspath - Resolved configuration for compilation for variant: debugUnitTest
-            |+--- project : (*)
+            |+--- root project : (*)
             |+--- com.example:package:6.0-testCompileOnly FAILED
             |\--- com.example:package:{strictly 5.0-testRuntimeOnly} FAILED
         """)
@@ -93,7 +93,7 @@ class LibraryCompileAndRuntimeClasspathTest {
         assertDependenciesOutput("debugAndroidTestRuntimeClasspath", """
             |debugAndroidTestRuntimeClasspath - Resolved configuration for runtime for variant: debugAndroidTest
             |+--- com.example:package:3.0-androidTestRuntimeOnly
-            |+--- project : (*)
+            |+--- root project : (*)
             |\--- com.example:package:1.0-runtimeOnly -> 3.0-androidTestRuntimeOnly
         """)
     }
@@ -107,7 +107,7 @@ class LibraryCompileAndRuntimeClasspathTest {
         assertDependenciesOutput("debugAndroidTestCompileClasspath", """
             |debugAndroidTestCompileClasspath - Resolved configuration for compilation for variant: debugAndroidTest
             |+--- com.example:package:4.0-androidTestCompileOnly
-            |\--- project : (*)
+            |\--- root project : (*)
         """)
     }
 
@@ -133,14 +133,14 @@ class LibraryCompileAndRuntimeClasspathTest {
         """)
         assertDependenciesOutput("debugUnitTestCompileClasspath", """
             |debugUnitTestCompileClasspath - Resolved configuration for compilation for variant: debugUnitTest
-            |+--- project : (*)
+            |+--- root project : (*)
             |\--- com.example:package:6.0-testCompileOnly
         """)
 
         assertDependenciesOutput("debugAndroidTestRuntimeClasspath", """
             |debugAndroidTestRuntimeClasspath - Resolved configuration for runtime for variant: debugAndroidTest
             |+--- com.example:package:3.0-androidTestRuntimeOnly
-            |+--- project : (*)
+            |+--- root project : (*)
             |\--- com.example:package:1.0-runtimeOnly -> 3.0-androidTestRuntimeOnly
         """)
     }

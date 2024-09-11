@@ -97,7 +97,7 @@ maven_library(
 )
 
 # The Gradle APIs to build against and run against.
-GRADLE_VERSION = "8.9"
+GRADLE_VERSION = "8.10.2"
 
 filegroup(
     name = "gradle-distrib",

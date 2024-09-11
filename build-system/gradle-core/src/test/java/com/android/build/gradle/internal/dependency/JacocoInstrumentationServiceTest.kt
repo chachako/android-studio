@@ -16,10 +16,10 @@
 
 package com.android.build.gradle.internal.dependency
 
+import com.android.SdkConstants
 import com.android.build.gradle.internal.coverage.JacocoOptions
 import com.android.build.gradle.internal.transforms.testdata.SomeClass
 import com.android.testutils.TestInputsGenerator
-import com.android.testutils.TestResources
 import com.android.testutils.TestUtils
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.truth.Truth.assertThat
@@ -46,11 +46,12 @@ internal class JacocoInstrumentationServiceTest {
                 .replace(".", File.separator) + ".class"
         )
         val jacocoVersion = JacocoOptions.DEFAULT_VERSION
+        val asmVersion = SdkConstants.CURRENT_ASM_VERSION
         val jacocoJars = listOf(
             "org/jacoco/org.jacoco.core/$jacocoVersion/org.jacoco.core-$jacocoVersion.jar",
-            "org/ow2/asm/asm/9.6/asm-9.6.jar",
-            "org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
-            "org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar"
+            "org/ow2/asm/asm/$asmVersion/asm-$asmVersion.jar",
+            "org/ow2/asm/asm-commons/$asmVersion/asm-commons-$asmVersion.jar",
+            "org/ow2/asm/asm-tree/$asmVersion/asm-tree-$asmVersion.jar"
         ).map(this::getTestJar)
 
         val instrumented = mockJacocoInstrumentationService.instrument(

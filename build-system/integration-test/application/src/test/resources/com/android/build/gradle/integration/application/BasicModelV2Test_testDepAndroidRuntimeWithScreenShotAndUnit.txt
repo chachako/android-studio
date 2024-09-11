@@ -823,7 +823,7 @@
                   - dependencies:
                      - com.android.support|support-v4|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:28.0.0:
                         - dependencies = "*visited*"
-               - org.jacoco|org.jacoco.agent|0.8.11|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.11:
+               - org.jacoco|org.jacoco.agent|0.8.12|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.12:
                   - requestedCoordinates = (null)
                   - dependencies         = []
             < dependencies
@@ -840,7 +840,7 @@
             - dependencies = "*visited*"
          - com.android.support|support-v13|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v13:28.0.0:
             - dependencies = "*visited*"
-         - org.jacoco|org.jacoco.agent|0.8.11|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.11:
+         - org.jacoco|org.jacoco.agent|0.8.12|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.12:
             - dependencies = "*visited*"
       < runtimeDependencies
       - unresolvedDependencies = []
@@ -2529,14 +2529,14 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < org.hamcrest|hamcrest-library|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.hamcrest:hamcrest-library:1.3
-      > org.jacoco|org.jacoco.agent|0.8.11|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.11:
+      > org.jacoco|org.jacoco.agent|0.8.12|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.12:
          - type               = JAVA_LIBRARY
-         - artifact           = {LOCAL_REPO}/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar{F}
+         - artifact           = {LOCAL_REPO}/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar{F}
          - projectInfo        = (null)
          > libraryInfo:
             - group          = "org.jacoco"
             - name           = "org.jacoco.agent"
-            - version        = "0.8.11"
+            - version        = "0.8.12"
             - isTestFixtures = false
             - buildType      = (null)
             - productFlavors = []
@@ -2545,10 +2545,10 @@
                * "org.gradle.status -> release"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
-               * "org.jacoco:org.jacoco.agent:0.8.11"
+               * "org.jacoco:org.jacoco.agent:0.8.12"
          < libraryInfo
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < org.jacoco|org.jacoco.agent|0.8.11|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.11
+      < org.jacoco|org.jacoco.agent|0.8.12|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jacoco:org.jacoco.agent:0.8.12
    < libraries
 < VariantDependencies

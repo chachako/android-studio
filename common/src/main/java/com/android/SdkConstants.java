@@ -2883,7 +2883,7 @@ public final class SdkConstants {
      * Studio product. It need not actually be the latest version of Gradle, but it will most likely
      * be fairly recent.
      */
-    public static final String GRADLE_LATEST_VERSION = "8.9";
+    public static final String GRADLE_LATEST_VERSION = "8.10.2";
 
     /**
      * The minimum released version of the Android Gradle Plugin that this version of Studio will
@@ -3048,4 +3048,7 @@ public final class SdkConstants {
 
     /** Sdk downloadable fonts folder. */
     public static final String SDK_DL_FONTS_FOLDER = "fonts";
+
+    /** Current version for ASM dependencies. */
+    public static final String CURRENT_ASM_VERSION = "9.7";
 }

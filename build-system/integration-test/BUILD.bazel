@@ -46,7 +46,7 @@ maven_repository(
         "@maven//:android.arch.persistence.room.runtime_1.0.0",
         "@maven//:com.android.support.test.rules_1.0.2",
         "@maven//:com.android.support.test.runner_1.0.2",
-        "@maven//:org.jacoco.org.jacoco.ant_0.8.11",
+        "@maven//:org.jacoco.org.jacoco.ant_0.8.12",
     ],
     visibility = [":__subpackages__"],
 )
@@ -89,8 +89,9 @@ maven_repository(
 
 # Kotlin dependencies for Gradle
 KTS = [
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.22",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.24",
     "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.23",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.24",
 ]
 
 # Kotlin Gradle plugin dependencies

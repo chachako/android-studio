@@ -274,11 +274,12 @@ class JacocoTransformTest {
                 override val jacocoConfiguration: ConfigurableFileCollection
                     get() {
                         val jacocoVersion = JacocoOptions.DEFAULT_VERSION
+                        val asmVersion = SdkConstants.CURRENT_ASM_VERSION
                         val jacocoJars = listOf(
                             "org/jacoco/org.jacoco.core/$jacocoVersion/org.jacoco.core-$jacocoVersion.jar",
-                            "org/ow2/asm/asm/9.6/asm-9.6.jar",
-                            "org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
-                            "org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar"
+                            "org/ow2/asm/asm/$asmVersion/asm-$asmVersion.jar",
+                            "org/ow2/asm/asm-commons/$asmVersion/asm-commons-$asmVersion.jar",
+                            "org/ow2/asm/asm-tree/$asmVersion/asm-tree-$asmVersion.jar"
                         ).map(this@JacocoTransformTest::getTestJar)
                         return FakeConfigurableFileCollection(jacocoJars)
                     }
