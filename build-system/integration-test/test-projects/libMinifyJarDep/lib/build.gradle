@@ -31,6 +31,6 @@ android {
         release {
             minifyEnabled true
         }
-        proguard.initWith(buildTypes.debug)
+        create("proguard").initWith(buildTypes.debug)
     }
 }

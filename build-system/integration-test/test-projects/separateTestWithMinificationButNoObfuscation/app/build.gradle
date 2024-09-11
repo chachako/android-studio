@@ -37,7 +37,7 @@ android {
     }
 
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
         minified {
             minifyEnabled true
             proguardFiles 'proguard.txt'

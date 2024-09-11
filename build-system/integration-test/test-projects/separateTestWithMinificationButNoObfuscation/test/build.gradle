@@ -29,7 +29,7 @@ android {
     targetProjectPath ':app'
 
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
         minified {
             minifyEnabled true
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

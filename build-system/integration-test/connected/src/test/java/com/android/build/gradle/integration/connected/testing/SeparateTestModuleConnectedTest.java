@@ -16,20 +16,19 @@
 
 package com.android.build.gradle.integration.connected.testing;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import java.io.IOException;
-
 import com.android.build.gradle.options.BooleanOption;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import java.io.IOException;
 
 public class SeparateTestModuleConnectedTest {
 
@@ -50,16 +49,16 @@ public class SeparateTestModuleConnectedTest {
         TestFileUtils.appendToFile(
                 project.getSubproject("test").getBuildFile(),
                 "\n"
-                        + "android {\n"
-                        + "  defaultConfig {\n"
-                        + "    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n"
-                        + "  }\n"
-                        + "  dependencies {\n"
-                        + "    implementation ('androidx.test:runner:1.4.0-alpha06', {\n"
-                        + "      exclude group: 'com.android.support', module: 'support-annotations'\n"
-                        + "    })\n"
-                        + "  }\n"
-                        + "}\n");
+                    + "android {\n"
+                    + "  defaultConfig {\n"
+                    + "    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n"
+                    + "  }\n"
+                    + "  dependencies {\n"
+                    + "    implementation ('androidx.test:runner:1.4.0-alpha06', {\n"
+                    + "      exclude group: 'com.android.support', module: 'support-annotations'\n"
+                    + "    })\n"
+                    + "  }\n"
+                    + "}\n");
         // fail fast if no response
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
@@ -78,7 +77,6 @@ public class SeparateTestModuleConnectedTest {
     }
 
     public GradleTaskExecutor executor() {
-        return project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
+        return project.executor();
     }
 }

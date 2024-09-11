@@ -69,7 +69,7 @@ class MinifyFeaturesTest {
             .appendToBuild("""
                 android {
                     buildTypes {
-                        minified.initWith(buildTypes.debug)
+                        create("minified").initWith(buildTypes.debug)
                         minified {
                             consumerProguardFiles "proguard-rules.pro"
                         }
@@ -119,7 +119,7 @@ class MinifyFeaturesTest {
             .appendToBuild("""
                 android {
                     buildTypes {
-                        minified.initWith(buildTypes.debug)
+                        create("minified").initWith(buildTypes.debug)
                         minified {
                             consumerProguardFiles "proguard-rules.pro"
                         }
@@ -194,7 +194,7 @@ class MinifyFeaturesTest {
                         android {
                             dynamicFeatures = [':foo:otherFeature1', '$otherFeature2GradlePath']
                             buildTypes {
-                                minified.initWith(buildTypes.debug)
+                                create("minified").initWith(buildTypes.debug)
                                 minified {
                                     minifyEnabled true
                                     proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -322,7 +322,7 @@ class MinifyFeaturesTest {
             """
                 android {
                     buildTypes {
-                        minified.initWith(buildTypes.debug)
+                        create("minified").initWith(buildTypes.debug)
                         minified {
                             proguardFiles "proguard-rules.pro"
                         }
@@ -439,7 +439,7 @@ class MinifyFeaturesTest {
         .appendToBuild("""
         android {
             buildTypes {
-                minified.initWith(buildTypes.debug)
+                create("minified").initWith(buildTypes.debug)
             }
         }
         """)
@@ -798,7 +798,9 @@ class MinifyFeaturesTest {
 }
                     """
             )
-        val output = executor().run("tasks")
+        val output = executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("tasks")
         output.stdout.use {
             ScannerSubject.assertThat(it).contains("beforeVariants.appMinified=true")
             ScannerSubject.assertThat(it).contains("beforeVariants.appMinifiedEnabled=false")
@@ -871,6 +873,6 @@ class MinifyFeaturesTest {
     }
 
     private fun executor(): GradleTaskExecutor {
-        return project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+        return project.executor()
     }
 }

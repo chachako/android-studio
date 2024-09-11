@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -37,7 +36,7 @@ private const val BASE_BUILD_GRADLE =
 android {
     dynamicFeatures = [':foo:feature1']
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
         minified {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -51,7 +50,7 @@ private const val FEATURE1_BUILD_GRADLE =
 """
 android {
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
         minified {
             proguardFiles "proguard-rules.pro"
         }
@@ -107,8 +106,7 @@ class RulesExtractionDynamicAppTest {
 
     @Test
     fun testRightClassesAreKept() {
-        project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("assembleMinified")
+        project.executor().run("assembleMinified")
 
         val baseModuleApk = project.getSubproject("baseModule").getApk(APK_TYPE)
         assertThat(baseModuleApk).containsClass("Lcom/example/baseModule/BaseClassToKeep;")

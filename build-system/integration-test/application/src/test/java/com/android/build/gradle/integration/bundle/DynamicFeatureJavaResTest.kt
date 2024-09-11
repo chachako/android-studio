@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.bundle
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -37,7 +36,7 @@ class DynamicFeatureJavaResTest {
                 """
                     android {
                         buildTypes {
-                            minified.initWith(buildTypes.debug)
+                            create("minified").initWith(buildTypes.debug)
                         }
                     }""".trimIndent()
             )
@@ -55,7 +54,7 @@ class DynamicFeatureJavaResTest {
                     android {
                         dynamicFeatures = [':dynamicFeature']
                         buildTypes {
-                            minified.initWith(buildTypes.debug)
+                            create("minified").initWith(buildTypes.debug)
                             minified {
                                 minifyEnabled true
                             }
@@ -74,7 +73,7 @@ class DynamicFeatureJavaResTest {
                 """
                     android {
                         buildTypes {
-                            minified.initWith(buildTypes.debug)
+                            create("minified").initWith(buildTypes.debug)
                         }
                         packagingOptions {
                             exclude "collide.txt"
@@ -121,9 +120,7 @@ class DynamicFeatureJavaResTest {
 
     @Test
     fun testJavaResourcePackaging() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("assembleMinified")
+        project.executor().run("assembleMinified")
         project.getSubproject("dynamicFeature").getApk(apkType).use { apk ->
             assertThat(apk.file).exists()
             assertThat(apk).containsJavaResourceWithContent("pickFirst.txt", "dynamicFeature")

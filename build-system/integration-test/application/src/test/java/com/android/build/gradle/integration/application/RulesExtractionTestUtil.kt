@@ -23,7 +23,7 @@ private const val LIB1_BUILD_GRADLE =
 """
 android {
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
         minified {
             consumerProguardFiles "proguard-rules.pro"
         }

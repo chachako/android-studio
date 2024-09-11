@@ -23,6 +23,6 @@ android {
     }
 
     buildTypes {
-        minified.initWith(buildTypes.debug)
+        create("minified").initWith(buildTypes.debug)
     }
 }

@@ -16,19 +16,19 @@
 
 package com.android.build.gradle.integration.connected.testing;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import java.io.IOException;
-
 import com.android.build.gradle.options.BooleanOption;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import java.io.IOException;
 
 public class SeparateTestWithAarDependencyConnectedTest {
     @Rule
@@ -36,7 +36,8 @@ public class SeparateTestWithAarDependencyConnectedTest {
             GradleTestProject.builder()
                     .fromTestProject("separateTestModule")
                     .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
-                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=false")
+                    .addGradleProperties(
+                            BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=false")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();
@@ -72,15 +73,11 @@ public class SeparateTestWithAarDependencyConnectedTest {
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("uninstallAll");
+        project.executor().run("uninstallAll");
     }
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":test:connectedCheck");
+        project.executor().run("clean", ":test:connectedCheck");
     }
 }

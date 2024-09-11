@@ -18,11 +18,13 @@ package com.android.build.gradle.integration.library;
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /** Assemble tests for libMinifyJarDep. */
 public class LibMinifyJarDepTest {
@@ -44,8 +46,6 @@ public class LibMinifyJarDepTest {
 
     @Test
     public void lint() throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("lint");
+        project.executor().run("lint");
     }
 }

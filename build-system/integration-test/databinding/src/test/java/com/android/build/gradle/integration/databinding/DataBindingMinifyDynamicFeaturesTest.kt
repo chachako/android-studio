@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.databinding
 
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.testutils.apk.Apk
@@ -63,7 +62,7 @@ class DataBindingMinifyDynamicFeaturesTest {
             """
             android {
                 buildTypes {
-                    minified.initWith(buildTypes.debug)
+                    create("minified") { initWith(buildTypes.debug) }
                     minified {
                         proguardFiles "proguard-rules.pro"
                     }
@@ -75,7 +74,7 @@ class DataBindingMinifyDynamicFeaturesTest {
             """
             android {
                 buildTypes {
-                    minified.initWith(buildTypes.debug)
+                    create("minified") { initWith(buildTypes.debug) }
                     minified {
                         minifyEnabled true
                         proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -131,9 +130,7 @@ class DataBindingMinifyDynamicFeaturesTest {
 
     @Test
     fun assembleMinified() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("assembleMinified")
+        project.executor().run("assembleMinified")
 
         val minifiedApk = "minified"
 
