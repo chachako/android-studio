@@ -944,16 +944,16 @@ private val AvdInfo.resolution
     }
 
 private val AvdInfo.deviceError
-  get() = errorMessage?.let { AvdDeviceError(status, it) }
+  get() =
+    when (status) {
+      AvdStatus.ERROR_DEVICE_MISSING -> null
+      else -> errorMessage?.let { AvdDeviceError(status, it) }
+    }
 
 private data class AvdDeviceError(val status: AvdStatus, override val message: String) :
   DeviceError {
   override val severity
-    get() =
-      when (status) {
-        AvdStatus.ERROR_DEVICE_MISSING -> DeviceError.Severity.INFO
-        else -> DeviceError.Severity.ERROR
-      }
+    get() = DeviceError.Severity.ERROR
 }
 
 internal object AvdChangedError : DeviceError {
