@@ -58,6 +58,7 @@ val cppGameActivityTemplate
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       default = "MainActivity"
       help = "The name of the activity class to create"
+      loggable = true
     }
     val isLauncher: BooleanParameter = booleanParameter {
       name = "Launcher Activity"

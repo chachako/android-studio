@@ -71,6 +71,7 @@ val appWidgetTemplate
       default = "NewAppWidget"
       help = "The name of the App Widget to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val placement = enumParameter<Placement> {

@@ -47,6 +47,7 @@ val sliceProviderTemplate
       name = "Class Name"
       default = "MySliceProvider"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val authorities = stringParameter {
@@ -55,6 +56,7 @@ val sliceProviderTemplate
       help = "A semicolon separated list of one or more URI authorities that identify data under the purview of the SliceProvider"
       constraints = listOf(NONEMPTY, URI_AUTHORITY)
       suggest = { packageName }
+      loggable = true
     }
 
     val hostUrl = stringParameter {
@@ -63,6 +65,7 @@ val sliceProviderTemplate
       help = "An HTTP URL that will expose the SliceProvider"
       constraints = listOf(NONEMPTY)
       suggest = { packageNameToDomain(packageName) }
+      loggable = true
     }
 
     val pathPrefix = stringParameter {
@@ -70,6 +73,7 @@ val sliceProviderTemplate
       default = "/"
       help = "A partial path in the URL that is matched to the SliceProvider"
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     widgets(

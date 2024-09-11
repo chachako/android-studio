@@ -66,6 +66,7 @@ val cppEmptyActivityTemplate
       }
       default = "MainActivity"
       help = "The name of the activity class to create"
+      loggable = true
     }
     layoutName = stringParameter {
       name = "Layout Name"
@@ -76,6 +77,7 @@ val cppEmptyActivityTemplate
       }
       default = "activity_main"
       help = "The name of the UI layout to create for the activity"
+      loggable = true
     }
     val isLauncher: BooleanParameter = booleanParameter {
       name = "Launcher Activity"

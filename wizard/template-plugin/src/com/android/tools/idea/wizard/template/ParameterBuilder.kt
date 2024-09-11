@@ -70,10 +70,20 @@ data class StringParameterBuilder(
   override var default: String? = null,
   var constraints: List<Constraint> = listOf(),
   var suggest: WizardParameterData.() -> String? = { null },
+  var loggable: Boolean = false,
 ) : ParameterBuilder<String> {
   override fun build(): StringParameter {
     validate()
-    return StringParameter(name!!, help, visible, enabled, default!!, constraints, suggest)
+    return StringParameter(
+      name!!,
+      help,
+      visible,
+      enabled,
+      default!!,
+      constraints,
+      suggest,
+      loggable,
+    )
   }
 }
 

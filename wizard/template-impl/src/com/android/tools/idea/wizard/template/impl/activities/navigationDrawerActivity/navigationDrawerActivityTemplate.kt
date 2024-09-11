@@ -51,6 +51,7 @@ val navigationDrawerActivityTemplate = template {
     help = "The name of the activity class to create"
     constraints = listOf(Constraint.CLASS, Constraint.UNIQUE, Constraint.NONEMPTY)
     suggest = { layoutToActivity(layoutName.value) }
+    loggable = true
   }
 
   layoutName = stringParameter {
@@ -59,6 +60,7 @@ val navigationDrawerActivityTemplate = template {
     help = "The name of the layout to create for the activity"
     constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE, Constraint.NONEMPTY)
     suggest = { activityToLayout(activityClass.value) }
+    loggable = true
   }
 
   val isLauncher = booleanParameter {
@@ -76,6 +78,7 @@ val navigationDrawerActivityTemplate = template {
     visible = { false }
     constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE)
     suggest = { activityToLayout(activityClass.value, "app_bar") }
+    loggable = true
   }
 
   val navHeaderLayoutName = stringParameter {
@@ -85,6 +88,7 @@ val navigationDrawerActivityTemplate = template {
     visible = { false }
     constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE)
     suggest = { activityToLayout(activityClass.value, "nav_header") }
+    loggable = true
   }
 
   val drawerMenu = stringParameter {
@@ -94,6 +98,7 @@ val navigationDrawerActivityTemplate = template {
     visible = { false }
     constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE)
     suggest = { "${layoutName.value}_drawer" }
+    loggable = true
   }
 
   val contentLayoutName = stringParameter {
@@ -103,6 +108,7 @@ val navigationDrawerActivityTemplate = template {
     visible = { false }
     constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE)
     suggest = { activityToLayout(activityClass.value, "content") }
+    loggable = true
   }
 
   val navGraphName = stringParameter {
@@ -112,6 +118,7 @@ val navigationDrawerActivityTemplate = template {
     visible = { false }
     constraints = listOf(Constraint.NAVIGATION, Constraint.UNIQUE)
     suggest = { "mobile_navigation" }
+    loggable = true
   }
 
   widgets(

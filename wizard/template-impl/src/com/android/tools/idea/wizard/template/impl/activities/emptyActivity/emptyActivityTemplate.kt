@@ -63,6 +63,7 @@ val emptyActivityTemplate get() = template {
     }
     default = "MainActivity"
     help = "The name of the activity class to create"
+    loggable = true
   }
    layoutName = stringParameter {
     name = "Layout Name"
@@ -73,6 +74,7 @@ val emptyActivityTemplate get() = template {
     default = "activity_main"
     visible = { generateLayout.value }
     help = "The name of the UI layout to create for the activity"
+    loggable = true
   }
   val isLauncher: BooleanParameter = booleanParameter {
     name = "Launcher Activity"

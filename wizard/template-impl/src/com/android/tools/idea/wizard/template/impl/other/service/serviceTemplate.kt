@@ -47,6 +47,7 @@ val serviceTemplate
       name = "Class Name"
       default = "MyService"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val isExported = booleanParameter {

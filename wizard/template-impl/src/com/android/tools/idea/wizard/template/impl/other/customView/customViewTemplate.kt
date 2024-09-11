@@ -48,6 +48,7 @@ val customViewTemplate
       default = "MyView"
       help = "By convention, should end in View"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     thumb {

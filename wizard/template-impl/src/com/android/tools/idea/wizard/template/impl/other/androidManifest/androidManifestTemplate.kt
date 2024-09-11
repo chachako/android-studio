@@ -55,6 +55,7 @@ val androidManifestTemplate
       suggest = { "src/${sourceProviderName}/AndroidManifest.xml" }
       help = "The location for the new file"
       enabled = { remapFolder.value }
+      loggable = true
     }
 
     // This is an invisible parameter to pass data from [WizardTemplateData] to the recipe.

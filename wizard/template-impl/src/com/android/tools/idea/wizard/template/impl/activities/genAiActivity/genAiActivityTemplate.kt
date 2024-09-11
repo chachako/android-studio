@@ -62,6 +62,7 @@ val genAiActivityTemplate
       visible = { false }
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter
@@ -71,6 +72,7 @@ val genAiActivityTemplate
       default = ""
       help = "Add API key here to be used as a build config variable"
       constraints = listOf(NONEMPTY)
+      loggable = false // Do not expose the API key in logs!
     }
 
     widgets(

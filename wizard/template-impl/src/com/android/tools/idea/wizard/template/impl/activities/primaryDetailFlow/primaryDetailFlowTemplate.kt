@@ -51,6 +51,7 @@ val primaryDetailFlowTemplate
       default = "Item"
       help = "Other examples are Person, Book, etc."
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     val objectKindPlural = stringParameter {
@@ -58,6 +59,7 @@ val primaryDetailFlowTemplate
       default = "Items"
       help = "Other examples are People, Books, etc."
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     val isLauncher = booleanParameter {
@@ -73,6 +75,7 @@ val primaryDetailFlowTemplate
       visible = { false }
       constraints = listOf(Constraint.NAVIGATION, Constraint.UNIQUE)
       suggest = { "primary_details_nav_graph" }
+      loggable = true
     }
 
     val childNavGraphFile = stringParameter {
@@ -82,6 +85,7 @@ val primaryDetailFlowTemplate
       visible = { false }
       constraints = listOf(Constraint.NAVIGATION, Constraint.UNIQUE)
       suggest = { "primary_details_sub_nav_graph" }
+      loggable = true
     }
 
     val detailNameFragmentLayout = stringParameter {
@@ -90,6 +94,7 @@ val primaryDetailFlowTemplate
       default = "fragment_${extractLetters(objectKind.value.lowercase(Locale.getDefault()))}_detail"
       suggest = { "fragment_${extractLetters(objectKind.value.lowercase(Locale.getDefault()))}_detail" }
       visible = { false }
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter

@@ -26,6 +26,7 @@ val defaultPackageNameParameter: StringParameter
       default = "com.mycompany.myapp"
       constraints = listOf(Constraint.NONEMPTY, Constraint.PACKAGE)
       suggest = { packageName }
+      loggable = true
     }
 
 // This is an invisible parameter to pass data from [WizardTemplateData] to the recipe.
@@ -38,4 +39,5 @@ val invisibleSourceProviderNameParameter: StringParameter
     default = ""
     visible = { false }
     suggest = { sourceProviderName }
+    loggable = true
 }

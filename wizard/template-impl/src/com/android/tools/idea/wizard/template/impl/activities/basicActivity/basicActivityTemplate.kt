@@ -62,6 +62,7 @@ val basicActivityTemplate get() = template {
         suggest = { activityToLayout(activityClass.value) }
         default = "activity_main"
         help = "The name of the layout to create for the activity"
+        loggable = true
     }
 
     activityClass = stringParameter {
@@ -70,6 +71,7 @@ val basicActivityTemplate get() = template {
         suggest = { layoutToActivity(layoutName.value) }
         default = "MainActivity"
         help = "The name of the activity class to create"
+        loggable = true
     }
 
     val menuName: StringParameter = stringParameter {
@@ -79,6 +81,7 @@ val basicActivityTemplate get() = template {
         visible = { isNewModule }
         default = "menu_main"
         help = "The name of the resource file to create for the menu items"
+        loggable = true
     }
     val isLauncher: BooleanParameter = booleanParameter {
         name = "Launcher Activity"
@@ -94,6 +97,7 @@ val basicActivityTemplate get() = template {
         default = "content_main"
         visible = { false }
         help = "The name of the App Bar layout to create for the activity"
+        loggable = true
     }
 
     val firstFragmentLayoutName: StringParameter = stringParameter {
@@ -102,6 +106,7 @@ val basicActivityTemplate get() = template {
         default = "fragment_first"
         visible = { false }
         help = "The name of the layout of the Fragment as the initial destination in Navigation"
+        loggable = true
     }
 
     val secondFragmentLayoutName: StringParameter = stringParameter {
@@ -110,6 +115,7 @@ val basicActivityTemplate get() = template {
         default = "fragment_second"
         visible = { false }
         help = "The name of the layout of the Fragment as the second destination in Navigation"
+        loggable = true
     }
 
     val navGraphName = stringParameter {
@@ -119,6 +125,7 @@ val basicActivityTemplate get() = template {
         visible = { false }
         constraints = listOf(NAVIGATION, UNIQUE)
         suggest = { "nav_graph" }
+        loggable = true
     }
 
     val packageName = defaultPackageNameParameter

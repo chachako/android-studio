@@ -50,6 +50,7 @@ val viewModelFragmentTemplate
       default = "BlankFragment"
       help = "The name of the fragment class to create"
       constraints = listOf(CLASS, NONEMPTY, UNIQUE)
+      loggable = true
     }
 
     val layoutName = stringParameter {
@@ -58,6 +59,7 @@ val viewModelFragmentTemplate
       help = "The name of the layout to create"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { "fragment_${classToResource(fragmentClass.value)}" }
+      loggable = true
     }
 
     val viewModelName = stringParameter {
@@ -66,6 +68,7 @@ val viewModelFragmentTemplate
       help = "The name of the ViewModel class to create"
       constraints = listOf(CLASS, NONEMPTY, UNIQUE)
       suggest = { "${underscoreToCamelCase(classToResource(fragmentClass.value))}ViewModel" }
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter

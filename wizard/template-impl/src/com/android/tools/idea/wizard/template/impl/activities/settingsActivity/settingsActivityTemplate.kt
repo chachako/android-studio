@@ -52,6 +52,7 @@ val settingsActivityTemplate
       default = "SettingsActivity"
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val multipleScreens = booleanParameter {

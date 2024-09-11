@@ -57,6 +57,7 @@ val tabbedActivityTemplate
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { layoutToActivity(layoutName.value) }
+      loggable = true
     }
 
     layoutName = stringParameter {
@@ -65,6 +66,7 @@ val tabbedActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(activityClass.value) }
+      loggable = true
     }
 
     val fragmentLayoutName = stringParameter {
@@ -73,6 +75,7 @@ val tabbedActivityTemplate
       help = "The name of the layout to create for the activitys content fragment"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { "fragment_${classToResource(activityClass.value)}" }
+      loggable = true
     }
 
     val isLauncher = booleanParameter {

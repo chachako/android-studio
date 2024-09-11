@@ -57,6 +57,7 @@ private fun getSourceSetFolderTemplate(
     suggest = { "src/${sourceProviderName}/$defaultDirName/" }
     help = "The location for the new folder"
     enabled = { remapFolder.value }
+    loggable = true
   }
 
   val sourceProviderName = invisibleSourceProviderNameParameter
@@ -105,6 +106,7 @@ private fun getSimpleFolderTemplate(
     suggest = { "src/${sourceProviderName}/$dirName/" }
     help = "The location for the new folder"
     enabled = { remapFolder.value }
+    loggable = true
   }
 
   val sourceProviderName = invisibleSourceProviderNameParameter

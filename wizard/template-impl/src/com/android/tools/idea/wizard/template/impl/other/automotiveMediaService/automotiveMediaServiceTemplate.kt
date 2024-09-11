@@ -49,6 +49,7 @@ val automotiveMediaServiceTemplate
       default = "MyMusicService"
       help = "The name of the service that will extend MediaBrowserService and contain the logic to browse and playback media"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter
@@ -64,6 +65,7 @@ val automotiveMediaServiceTemplate
       default = "CarTheme"
       visible = { useCustomTheme.value }
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     widgets(

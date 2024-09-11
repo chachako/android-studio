@@ -47,6 +47,7 @@ val contentProviderTemplate
       name = "Class Name"
       default = "MyContentProvider"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val authorities = stringParameter {
@@ -54,6 +55,7 @@ val contentProviderTemplate
       default = ""
       help = "A semicolon separated list of one or more URI authorities that identify data under the purview of the content provider"
       constraints = listOf(NONEMPTY, URI_AUTHORITY)
+      loggable = true
     }
 
     val isExported = booleanParameter {

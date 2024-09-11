@@ -55,6 +55,7 @@ val modalBottomSheetTemplate
       default = "Item"
       help = "Other examples are Person, Book, etc."
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     val fragmentClass = stringParameter {
@@ -62,6 +63,7 @@ val modalBottomSheetTemplate
       default = "ItemListDialogFragment"
       constraints = listOf(NONEMPTY, CLASS, UNIQUE)
       suggest = { "${extractLetters(objectKind.value)}ListDialogFragment" }
+      loggable = true
     }
 
     val columnCount = enumParameter<ColumnCount> {
@@ -75,6 +77,7 @@ val modalBottomSheetTemplate
       default = "fragment_item_list_dialog_item"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { "${fragmentToLayout(fragmentClass.value)}_list_dialog_item" }
+      loggable = true
     }
 
     val listLayout = stringParameter {
@@ -82,6 +85,7 @@ val modalBottomSheetTemplate
       default = "fragment_item_list_dialog"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { "${fragmentToLayout(fragmentClass.value)}_list_dialog" }
+      loggable = true
     }
 
     widgets(

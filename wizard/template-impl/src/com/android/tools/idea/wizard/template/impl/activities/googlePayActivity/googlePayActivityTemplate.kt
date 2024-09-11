@@ -54,6 +54,7 @@ val googlePayActivityTemplate
       default = "CheckoutActivity"
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val layoutName = stringParameter {
@@ -62,6 +63,7 @@ val googlePayActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(activityClass.value) }
+      loggable = true
     }
 
     val viewModelClass = stringParameter {
@@ -69,6 +71,7 @@ val googlePayActivityTemplate
       default = "CheckoutViewModel"
       help = "The name of the view model class to create"
       constraints = listOf(CLASS, NONEMPTY, UNIQUE)
+      loggable = true
     }
 
     val isLauncher = booleanParameter {

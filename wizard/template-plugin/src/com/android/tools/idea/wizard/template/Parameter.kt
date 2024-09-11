@@ -97,6 +97,7 @@ sealed class Parameter<T> {
    */
   abstract val enabled: Boolean
   abstract val visible: Boolean
+  abstract val loggable: Boolean
 }
 
 /**
@@ -124,6 +125,7 @@ data class StringParameter(
   override val defaultValue: String,
   val constraints: List<Constraint>,
   private val _suggest: WizardParameterData.() -> String? = { null },
+  override val loggable: Boolean = false,
 ) : DslParameter<String>(_visible, _enabled) {
   override var value: String = defaultValue
 
@@ -145,6 +147,7 @@ data class EnumParameter<T : Enum<T>>(
   override val defaultValue: T,
 ) : DslParameter<T>(_visible, _enabled) {
   override var value: T = defaultValue
+  override val loggable = true
   val options: Array<T> = enumClass.java.enumConstants
 
   fun fromString(string: String): T? = options.find { it.name == string }
@@ -159,4 +162,5 @@ data class BooleanParameter(
   override val defaultValue: Boolean,
 ) : DslParameter<Boolean>(_visible, _enabled) {
   override var value: Boolean = defaultValue
+  override val loggable = true
 }

@@ -42,6 +42,7 @@ val shortcutsResourceFileTemplate
       default = "shortcuts"
       help = "Name of the Shortcuts XML file"
       constraints = listOf(UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     thumb {

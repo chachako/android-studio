@@ -44,6 +44,7 @@ val valueResourceFileTemplate
       default = "values"
       help = "Name of the values XML file"
       constraints = listOf(UNIQUE, NONEMPTY, VALUES)
+      loggable = true
     }
 
     thumb {

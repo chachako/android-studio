@@ -64,6 +64,7 @@ val googleAdMobAdsFragmentTemplate
       default = "AdMobFragment"
       help = "The name of the AdMob fragment class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val layoutName = stringParameter {
@@ -72,6 +73,7 @@ val googleAdMobAdsFragmentTemplate
       help = "The name of the layout to create for the fragment"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { fragmentToLayout(fragmentClass.value) }
+      loggable = true
     }
 
     val adFormat = enumParameter<AdFormat> {

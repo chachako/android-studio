@@ -58,6 +58,7 @@ val androidTVActivityTemplate
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { layoutToActivity(layoutName.value) }
+      loggable = true
     }
 
     layoutName = stringParameter {
@@ -66,6 +67,7 @@ val androidTVActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(activityClass.value) }
+      loggable = true
     }
 
     val mainFragment = stringParameter {
@@ -74,6 +76,7 @@ val androidTVActivityTemplate
       help = "The name of the main fragment"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { "MainFragment" }
+      loggable = true
     }
 
     val detailsActivity = stringParameter {
@@ -82,6 +85,7 @@ val androidTVActivityTemplate
       help = "The name of the details activity"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { "DetailsActivity" }
+      loggable = true
     }
 
     val detailsLayoutName = stringParameter {
@@ -90,6 +94,7 @@ val androidTVActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(detailsActivity.value) }
+      loggable = true
     }
 
     val detailsFragment = stringParameter {
@@ -98,6 +103,7 @@ val androidTVActivityTemplate
       help = "The name of the details fragment"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { "VideoDetailsFragment" }
+      loggable = true
     }
 
     val isLauncher = booleanParameter {

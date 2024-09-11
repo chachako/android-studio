@@ -45,6 +45,7 @@ val broadcastReceiverTemplate
       name = "Class Name"
       default = "MyReceiver"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val isExported = booleanParameter {

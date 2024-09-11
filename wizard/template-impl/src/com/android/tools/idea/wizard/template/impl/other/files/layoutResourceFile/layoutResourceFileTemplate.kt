@@ -44,6 +44,7 @@ val layoutResourceFileTemplate
       default = "layout"
       help = "Name of the layout XML file"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val rootTag = stringParameter {
@@ -51,6 +52,7 @@ val layoutResourceFileTemplate
       default = "LinearLayout"
       help = "The root XML tag for the new file"
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     widgets(

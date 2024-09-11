@@ -57,6 +57,7 @@ val composeWearActivityTemplate
             default = "MainActivity"
             help = "The name of the activity class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+            loggable = true
         }
 
         val packageName = defaultPackageNameParameter
@@ -74,6 +75,7 @@ val composeWearActivityTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         val wearAppName = stringParameter {
@@ -82,6 +84,7 @@ val composeWearActivityTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         val defaultPreview = stringParameter {
@@ -90,6 +93,7 @@ val composeWearActivityTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         widgets(
@@ -138,18 +142,21 @@ val composeWearActivityWithTileAndComplicationTemplate
             default = "MainActivity"
             help = "The name of the activity class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+            loggable = true
         }
         val tileServiceClass = stringParameter {
             name = "Tile Service Name"
             default = "MainTileService"
             help = "The name of the tile service class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+            loggable = true
         }
         val complicationServiceClass = stringParameter {
             name = "Complication Service Name"
             default = "MainComplicationService"
             help = "The name of the complication service class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+            loggable = true
         }
 
         val packageName = defaultPackageNameParameter
@@ -167,6 +174,7 @@ val composeWearActivityWithTileAndComplicationTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         val wearAppName = stringParameter {
@@ -175,6 +183,7 @@ val composeWearActivityWithTileAndComplicationTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         val defaultPreview = stringParameter {
@@ -183,6 +192,7 @@ val composeWearActivityWithTileAndComplicationTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
         val tilePreview = stringParameter {
             name = "Tile Default Preview function name"
@@ -190,6 +200,7 @@ val composeWearActivityWithTileAndComplicationTemplate
             help = "Used for deduplication"
             visible = { false }
             constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+            loggable = true
         }
 
         widgets(

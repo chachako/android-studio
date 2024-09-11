@@ -43,6 +43,7 @@ val appActionsResourceFileTemplate
       default = "actions"
       help = "Name of the App Actions XML file"
       constraints = listOf(UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     thumb {

@@ -61,6 +61,7 @@ val listFragmentTemplate
       default = "Item"
       help = "Other examples are Person, Book, etc."
       constraints = listOf(NONEMPTY)
+      loggable = true
     }
 
     val fragmentClass = stringParameter {
@@ -68,6 +69,7 @@ val listFragmentTemplate
       default = "ItemFragment"
       constraints = listOf(NONEMPTY, CLASS, UNIQUE)
       suggest = { "${extractLetters(objectKind.value)}Fragment" }
+      loggable = true
     }
 
     val columnCount = enumParameter<ColumnCount> {
@@ -81,6 +83,7 @@ val listFragmentTemplate
       default = "fragment_item"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { fragmentToLayout(fragmentClass.value) }
+      loggable = true
     }
 
     val fragmentLayoutList = stringParameter {
@@ -88,6 +91,7 @@ val listFragmentTemplate
       default = "fragment_item_list"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { "${fragmentToLayout(fragmentClass.value)}_list" }
+      loggable = true
     }
 
     val adapterClassName = stringParameter {
@@ -95,6 +99,7 @@ val listFragmentTemplate
       default = "MyItemRecyclerViewAdapter"
       constraints = listOf(NONEMPTY, CLASS, UNIQUE)
       suggest = { "My${extractLetters(objectKind.value)}RecyclerViewAdapter" }
+      loggable = true
     }
 
     widgets(

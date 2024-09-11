@@ -47,6 +47,7 @@ val blankFragmentTemplate
       default = "BlankFragment"
       help = "The name of the fragment class to create"
       constraints = listOf(CLASS, NONEMPTY, UNIQUE)
+      loggable = true
     }
 
     val layoutName = stringParameter {
@@ -55,6 +56,7 @@ val blankFragmentTemplate
       help = "The name of the layout to create"
       constraints = listOf(LAYOUT, NONEMPTY, UNIQUE)
       suggest = { fragmentToLayout(className.value) }
+      loggable = true
     }
 
     widgets(

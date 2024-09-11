@@ -46,6 +46,7 @@ val intentServiceTemplate
       name = "Class Name"
       default = "MyIntentService"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val includeHelper = booleanParameter {

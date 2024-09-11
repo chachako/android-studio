@@ -63,6 +63,7 @@ val googleAdMobAdsActivityTemplate
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { layoutToActivity(layoutName.value) }
+      loggable = true
     }
 
     layoutName = stringParameter {
@@ -71,6 +72,7 @@ val googleAdMobAdsActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(activityClass.value) }
+      loggable = true
     }
 
     val menuName = stringParameter {
@@ -79,6 +81,7 @@ val googleAdMobAdsActivityTemplate
       help = "The name of the resource file to create for the menu items"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { "menu_${classToResource(activityClass.value)}" }
+      loggable = true
     }
 
     val adFormat = enumParameter<AdFormat> {

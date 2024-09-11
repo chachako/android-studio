@@ -48,6 +48,7 @@ val automotiveMessagingServiceTemplate
       default = "MyMessagingService"
       help = "The name of the service that will handle incoming messages and send corresponding notifications"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val readReceiverName = stringParameter {
@@ -55,6 +56,7 @@ val automotiveMessagingServiceTemplate
       default = "MessageReadReceiver"
       help = "The broadcast receiver that will handle Read notifications"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val replyReceiverName = stringParameter {
@@ -62,6 +64,7 @@ val automotiveMessagingServiceTemplate
       default = "MessageReplyReceiver"
       help = "The broadcast receiver that will handle Reply notifications"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter

@@ -49,6 +49,7 @@ val loginFragmentTemplate
       default = "LoginFragment"
       help = "The name of the fragment class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val layoutName = stringParameter {
@@ -57,6 +58,7 @@ val loginFragmentTemplate
       help = "The name of the layout to create for the fragment"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { fragmentToLayout(fragmentClass.value) }
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter

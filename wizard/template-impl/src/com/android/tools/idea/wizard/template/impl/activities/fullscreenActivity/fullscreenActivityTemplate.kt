@@ -53,6 +53,7 @@ val fullscreenActivityTemplate
       default = "FullscreenActivity"
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     layoutName = stringParameter {
@@ -61,6 +62,7 @@ val fullscreenActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { activityToLayout(activityClass.value) }
+      loggable = true
     }
 
     val isLauncher = booleanParameter {

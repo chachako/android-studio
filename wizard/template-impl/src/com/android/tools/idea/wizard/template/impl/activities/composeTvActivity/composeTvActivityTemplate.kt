@@ -60,6 +60,7 @@ val composeTvActivityTemplate
         Constraint.UNIQUE,
         Constraint.NONEMPTY
       )
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter
@@ -79,6 +80,7 @@ val composeTvActivityTemplate
         Constraint.UNIQUE,
         Constraint.KOTLIN_FUNCTION
       )
+      loggable = true
     }
 
     val defaultPreview = stringParameter {
@@ -90,6 +92,7 @@ val composeTvActivityTemplate
         Constraint.UNIQUE,
         Constraint.KOTLIN_FUNCTION
       )
+      loggable = true
     }
 
     widgets(

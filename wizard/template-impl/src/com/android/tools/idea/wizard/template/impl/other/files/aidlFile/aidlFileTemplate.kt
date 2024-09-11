@@ -47,6 +47,7 @@ val aidlFileTemplate
       default = "IMyAidlInterface"
       help = "Name of the Interface"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     thumb {

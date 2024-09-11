@@ -54,6 +54,7 @@ val composeActivityMaterial3Template
       default = "MainActivity"
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter
@@ -70,6 +71,7 @@ val composeActivityMaterial3Template
       help = "Used for deduplication"
       visible = { false }
       constraints = listOf(UNIQUE, KOTLIN_FUNCTION)
+      loggable = true
     }
 
     val defaultPreview = stringParameter {
@@ -78,6 +80,7 @@ val composeActivityMaterial3Template
       help = "Used for deduplication"
       visible = { false }
       constraints = listOf(UNIQUE, KOTLIN_FUNCTION)
+      loggable = true
     }
 
     widgets(

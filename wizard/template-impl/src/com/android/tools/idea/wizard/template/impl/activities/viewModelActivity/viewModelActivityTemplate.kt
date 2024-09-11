@@ -54,6 +54,7 @@ val viewModelActivityTemplate
       default = "MainActivity"
       help = "The name of the activity class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val activityLayout = stringParameter {
@@ -62,6 +63,7 @@ val viewModelActivityTemplate
       help = "The name of the layout to create for the activity"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { "activity_${classToResource(activityClass.value)}" }
+      loggable = true
     }
 
     val fragmentClass = stringParameter {
@@ -70,6 +72,7 @@ val viewModelActivityTemplate
       help = "The name of the fragment class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { "${underscoreToCamelCase(classToResource(activityClass.value))}Fragment" }
+      loggable = true
     }
 
     val fragmentLayout = stringParameter {
@@ -78,6 +81,7 @@ val viewModelActivityTemplate
       help = "The name of the layout to create for the fragment"
       constraints = listOf(LAYOUT, UNIQUE, NONEMPTY)
       suggest = { "fragment_${classToResource(fragmentClass.value)}" }
+      loggable = true
     }
 
     val viewModelClass = stringParameter {
@@ -86,6 +90,7 @@ val viewModelActivityTemplate
       help = "The name of the view model class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
       suggest = { "${underscoreToCamelCase(classToResource(fragmentClass.value))}ViewModel" }
+      loggable = true
     }
 
     val isLauncher = booleanParameter {
@@ -102,6 +107,7 @@ val viewModelActivityTemplate
       help = "The package path for the fragment and the view model"
       constraints = listOf(PACKAGE)
       suggest = { "ui.${classToResource(fragmentClass.value).replace("_", "")}" }
+      loggable = true
     }
 
     widgets(

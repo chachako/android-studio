@@ -48,6 +48,7 @@ val settingsFragmentTemplate
       default = "SettingsFragment"
       help = "The name of the fragment class to create"
       constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+      loggable = true
     }
 
     val packageName = defaultPackageNameParameter
