@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.manifest
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor.ConfigurationCaching.ON
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -61,10 +60,10 @@ class ProcessManifestTest {
     fun testSourceManifestDeletion() {
         val manifestFile = project.file("src/main/AndroidManifest.xml")
         PathSubject.assertThat(manifestFile).isFile()
-        project.executor().withConfigurationCaching(ON).run("processDebugManifest")
+        project.executor().run("processDebugManifest")
         FileUtils.deleteIfExists(manifestFile)
         PathSubject.assertThat(manifestFile).doesNotExist()
-        project.executor().withConfigurationCaching(ON).run("processDebugManifest")
+        project.executor().run("processDebugManifest")
     }
 
     // This should eventually be a warning, but not until there's AUA support (b/272815813)

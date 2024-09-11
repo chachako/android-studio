@@ -25,17 +25,18 @@ import static com.android.build.gradle.integration.common.truth.ApkSubject.asser
 import static com.android.builder.core.BuilderConstants.ANDROID_WEAR_MICRO_APK;
 import static com.android.testutils.truth.PathSubject.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.testutils.apk.Apk;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Assemble tests for embedded.
@@ -66,9 +67,7 @@ public class WearVariantTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":main:assemble");
+        project.executor().run("clean", ":main:assemble");
     }
 
     @AfterClass

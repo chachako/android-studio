@@ -2,3 +2,7 @@ include 'app'
 include 'library'
 include 'baseLibrary'
 include 'util'
+
+gradle.lifecycle.beforeProject {
+    version = "1.0"
+}

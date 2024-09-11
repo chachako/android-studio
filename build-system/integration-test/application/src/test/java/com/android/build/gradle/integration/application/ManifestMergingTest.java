@@ -267,9 +267,7 @@ public class ManifestMergingTest {
                 "</activity>",
                 "        <nav-graph android:value=\"@navigation/nav1\"/>\n    </activity>");
 
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":library:processDebugManifest");
+        navigation.executor().run("clean", ":library:processDebugManifest");
 
         File manifestFile =
                 navigation.file(

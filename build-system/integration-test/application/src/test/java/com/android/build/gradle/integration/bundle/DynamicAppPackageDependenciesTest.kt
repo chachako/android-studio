@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.bundle
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -116,7 +115,7 @@ class DynamicAppPackageDependenciesTest {
             //language=groovy
             """
                 dependencies {
-                  implementation rootProject.files("libs/local.jar")
+                  implementation files("../libs/local.jar")
                 }
 
                 android {
@@ -169,13 +168,11 @@ class DynamicAppPackageDependenciesTest {
             project.getSubproject("feature1").buildFile,
             """
                 dependencies {
-                  implementation rootProject.files("libs/local.jar")
+                  implementation files("../libs/local.jar")
                 }
             """.trimIndent()
         )
 
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("assembleDebug")
+        project.executor().run("assembleDebug")
     }
 }

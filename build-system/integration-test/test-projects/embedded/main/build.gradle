@@ -21,7 +21,7 @@ android {
   }
 
   buildTypes {
-    custom.initWith(release)
+    create("custom").initWith(release)
     custom {
       applicationIdSuffix = '.custom'
     }
@@ -29,10 +29,10 @@ android {
 }
 
 configurations {
-  flavor1ReleaseWearApp
-  flavor2ReleaseWearApp
-  flavor1CustomWearApp
-  flavor2CustomWearApp
+  create("flavor1ReleaseWearApp")
+  create("flavor2ReleaseWearApp")
+  create("flavor1CustomWearApp")
+  create("flavor2CustomWearApp")
 }
 
 dependencies {

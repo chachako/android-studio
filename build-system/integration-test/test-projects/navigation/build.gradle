@@ -24,8 +24,3 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}"
     }
 }
-
-
-allprojects {
-    version = '1.0'
-}

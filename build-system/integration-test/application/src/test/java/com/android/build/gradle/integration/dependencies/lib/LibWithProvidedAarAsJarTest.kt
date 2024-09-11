@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.dependencies.lib
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -49,7 +48,7 @@ class LibWithProvidedAarAsJarTest : ModelComparator() {
             project.getSubproject("library2").buildFile,
             """
                 configurations {
-                    fakeJar
+                    create("fakeJar")
                 }
                 task makeFakeJar(type: Jar) {
                     from "src/main/java"
@@ -75,9 +74,7 @@ class LibWithProvidedAarAsJarTest : ModelComparator() {
 
     @Test
     fun `check project jar is not packaged`() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("clean", ":library:assembleDebug")
+        project.executor().run("clean", ":library:assembleDebug")
         project.getSubproject("library")
             .testAar(
                 GradleTestProject.ApkType.DEBUG.buildType

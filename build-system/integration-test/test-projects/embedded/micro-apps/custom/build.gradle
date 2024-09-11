@@ -13,7 +13,7 @@ android {
     }
 
     buildTypes {
-        custom.initWith(release)
+        create("custom").initWith(release)
     }
 
 }
