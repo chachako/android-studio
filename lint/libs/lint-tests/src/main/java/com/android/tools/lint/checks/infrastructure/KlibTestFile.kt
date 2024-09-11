@@ -98,7 +98,7 @@ class KlibTestFile(
     Assert.fail(
       "Update the test source declaration for $targetRelativePath with this encoding: " +
         "\n\n${TestFiles.toBase64gzip(target)}" +
-        "\n\nAlso the checksum is " +
+        "\n\nAlso the checksum is 0x" +
         checksum.toString(16)
     )
   }

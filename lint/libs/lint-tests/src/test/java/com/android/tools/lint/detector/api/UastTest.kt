@@ -19,6 +19,7 @@ package com.android.tools.lint.detector.api
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
+import com.android.tools.lint.checks.infrastructure.TestFiles.klib
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
@@ -5103,5 +5104,175 @@ public object ProtoObjectKt {
         }
       )
     }
+  }
+
+  // TODO: way to test simple UAST loading with specific project structure
+  //  This test only works when source and klib are put into "common" module
+  fun disabledTestBasicKlibResolution() {
+    // Klib resolution only works for K2 UAST.
+    if (!useFirUast()) {
+      return
+    }
+    val testFiles =
+      arrayOf(
+        kotlin(
+          "commonMain/src/test.kt",
+          """
+            import com.hello.Person
+
+            fun test() {
+              Person("Foo", 10).greet("Bar")
+            }
+          """,
+        ),
+        klib(
+          "libs/common.klib",
+          "" +
+            "H4sIAAAAAAAA/62YeTzU7dfHRxhbGOtYIlvZ94SSxljCkAnZ584yYxtmxJA1" +
+            "ycTYIpEte2gs2d20kCX7UnYVCqGSpdDC1KN+r+e+Z57iqdfr950/vvN9zZz3" +
+            "db7XOee6zvWBw6hpGAH/uYQB5Bc9gA2ARDk7+Hrg5M+aMwPoyH+E72rGTmbm" +
+            "jfLB+no7oXz+BAAiA+AcvF1QuD8y5/uFuYcbxtf/nP/RI38CEt0T5IZx8vBF" +
+            "opB/QhTek4hxwLn5of57PDQWt/PwJzw2Mt6OKRrpgHP4tT0ngJ6e/id78K/s" +
+            "PbFIXw/UT5TZmQqD/oG+voHq6hkapXUlUx/v91RwGB09crEazrXzB67fDs4/" +
+            "Q3k5OKEdXFDnnLCecq4oDw/snzgv93tEhXM/7nJojOdPcIGrJSwtEE6dj8sx" +
+            "KJAHnJn9SQ6f6RXReiADENZpmt6Y6Mx8tfxlRsJIp5QY7NGckXNvM8vM01H4" +
+            "BcuzsuZHoSll5dFAx2mNHJNG6fQDztuJg9qvMn0EqxqGMWzhtkC31EOu2jdO" +
+            "yciI4BxQi6HFBNlH/DWGfZ5aMjORDZm3BtNVPCVjghZFZVC4i10LRqzIh6pK" +
+            "OiG5QRWshc2KvFx0oG8/5rccxCqeu+Ns7X9jNhT3mA3ja02nWxVA7T51s2pj" +
+            "N9KFcm+LmhUV47rxOtZQcRp2x7joEXPjd4kRufwc8Q/b8hU+skm198dm8jQU" +
+            "CvA0bl10mT7Y1W4C0fTzWfcx42R5lSmZ0p+XPUqsmHiec7OhONUmifWsei3H" +
+            "3ESbUFMtV0Tk+6lSaKgpn5nwYMWV6naLlG/+lxyXuKWT5l+pSN/g2Z8pbaQX" +
+            "ZJecwf65FpHbXY26OJvFXNwtYKFr2VkTCQ3gg0s9ltl0X5gz2mqD9nwxcvVd" +
+            "33xi4lTe2sQm1wh5UEJ/P5U549rjPCbOcDn+WhWWNxph68ExL+l9w736WJ8b" +
+            "jV87flclIfodDF00jy9Cj0/XrjMwP0GcZHsdEb9P4MwzIH2/6yhwmVrW1B+N" +
+            "p9Hq3nw8nKBRuLouLPFMi846+3pwopii6SWRiMYvj7xiplgj1pMefInxo19i" +
+            "/R6x0VK5XF0qAKCOaq+IkS+bng4YN2eUD+7nmPRVMrYogACPSY26UNvoeqSX" +
+            "l9d59jEvFRd1fTmVC5Kk4HsSy6yCpw9YFHfrBq+cvhNOPK/EzQyDBiWnk94F" +
+            "N2nKrcoEvNTZWKAba8gN12cyMC/n5jB5qCIxcHlUKoT45asC5HArISL05WLg" +
+            "uGQ55/63RoWalTWyHh1s6av3zoB65z5qgMN+vJTQW46BiB2Pyvcscyayl3Lz" +
+            "/pNy5qS0xAV4oXx20vTnKXGyt7d3tLeHU824CjkDHf2EnKmf2JTu8/RgN7KR" +
+            "2SfE3smWCCC+utQ120LPDI9mgq5BJCTpkwG5g2I8EPMoGg7A97eRE+Bm09qB" +
+            "xezpkwClT27eOignDwfvnXUfi/nuHPIn51AJA2iOM6CO6cZbz8YM0mP5o3Jd" +
+            "QzDaCUXD6yN4FFoXRiQSTrLM6AZKFLisyY+Pg25Hga8EdhXQi/xFktdgfBCw" +
+            "ee5xOEF5qw4vxiDc69I4vdKrIYznhMbiOxEFoSb1rINYngNBFTnBvSONS6+1" +
+            "k2CHACoQGS9Zr57SDjQcrm0Q7aAd2p8Pdrc6fCaxQ12PuU1BRVLc4XqtsRWK" +
+            "GbQFuj7fOMSJMObr8S3X2VjhN8fampxeviFNp52t9wGDbYJNWtYIsPPcb7cw" +
+            "pPErcJOfBDLpjrxijs+4m62vA84SHyy/Xjrj/tfqM8aRTP3U0/dbL+QOrb/m" +
+            "YaTzxbGBeWmsiAEvGe1mpYsJvcHBbDc+Rz8N8LLUG1xqZ1V7XQUrEnuVeEMy" +
+            "CnIp00auVLvTID2R8PnT6bu3V4PFo7sz+vzD89/QfJscFN8eB77BJwJzh0RN" +
+            "LNce7B+yrM+6NnwM3DlXOFHD/9hxQ2rj61UrkqKZqnKLu+3hwWodzUwloo7m" +
+            "xLNC1JgD875kHf8Cv82RkOy3jW0HlUpbaFUIXcqYW9cXOuqOD9Vlp71bLjVO" +
+            "0w4CbA0bLxuPB2v02NkqywVF+WODLsNKF2nHxtPccUd0aDkmjh4JOO3ieJpr" +
+            "WkJ14eWSn25g/CmnhVnJBQkfzUxfucQPBQHO2Q/lTnZN4T/ozJT33j0ZdODD" +
+            "VDPnt/w8dt3Gqqnt0O+JJnC5w5l5HwDQQf0Hye/s5vEj+Z13S34voKOlnB5Q" +
+            "WFpOlpT4fF+IjxOMQ5vajMmJyYeaQ1RZGwYjzW3bkWKHb94MDmEFEVMQIm2t" +
+            "D2/fnks6lnlefZZbT/IwUC+B7ajdU3wcvb6sVP8AdVozk5IoVnDWrF0+Ns5I" +
+            "SPtHmRxYkhxA7wybtGeZ8FB6j0Q5+roYYJyxv6yQ5AQtWCsEdAWsS/uEMVpQ" +
+            "JTCajvZEYa4pOinHtewBQd/a15hb9Z5iGje0c2UNe8ygLhFfJ/Syp1djqtEj" +
+            "AlSlQ19ZuW2P0BtNkEXK9wUfxledAIrrjinGD/XG8FB/gIW9eL/OICJ3wvxJ" +
+            "U/wB4bedUko6Np2MVdZdpJ5TfjhPt/3I/Oa6TeMFxBx84cBcdd+hyNMkQ88T" +
+            "Deyrfk/DEOkGfBXosYZ7Sl/CIxuVeTTj5e49sP341dm8u6G5+xxQTLjavbId" +
+            "37Edx8QSxaUXDA3jlc+2M12zKZU8WdikfcJC36pWCZ3xbeK8RPua+VL3nOOd" +
+            "NQRtbqJRS5p1Zn+PpBF3GaM5MT1uqqhy2uxg6YSlfAGH/0O+wfutS0FGuh+y" +
+            "b3ZsE6Pf3dWSUqjFhqGdN+W/x2D+0jMl2Z2dZGXfXjHgooyBIxbp9iOFHH8K" +
+            "QK05Qt9cizPLZ3Lktb1fZu/omb83lvnmTcpO3orS8bQQseImEa5cO5RGSHhy" +
+            "UGty0uiI6KFAG1AVxGjx0Ln8yKloAl6kInJRJW8sp6h/ecpvYeaB5Jnupd6b" +
+            "aZ/7P4b4zCu1H2lPjaxUyZTZ+PuqTdyIqmTIoVpFd/FSC1RtSawWS+3bWJTx" +
+            "h7WKM2FvidcDUjnW3rtm2QfewGrEfo6ylwtcudRe7XuDfo3H/zPh1MBQsyrf" +
+            "TL5wviCaeH3ESpAuPONKHidTJBN81ZbWW9a5QyjG5NPiqqtEgM7Hx/G0rQx6" +
+            "H2RpPkMVGKpBRq00Sgpfj8RqKTA1z7FdzvU552iPf/wiRjHhkBUoMhiD4W5Y" +
+            "JA4dU4UfsymKq+le6b/MRnu/q2ge8lcr03memXmL84ImPWbPPUCI8WjZKnXF" +
+            "0g4lmUR+Dv1j89bE1qTATTYasVxTE4uCKs6hbdlHMbebPvIgv7TpC+gK9hdY" +
+            "SBxfyxneJm1Hzn07Myvkh3T2Vh3tEO7tO3zmSkHrI6ukivKHhlNGXUO2DHLK" +
+            "m8h2aejfyByS22LmUdc+3kD1fAJ//iteEQwvZ0u4Wg5oublfDeflk+LaOp86" +
+            "2pmf3o+04s67oj5YXGg+s+XBOB6tR6LZzn0etc34iWFmla1+4jA31bkWZX8q" +
+            "iURLhPNQWjRvXWrrSO09vuR99MfaoP05F8FwT15IQ5mexZ2UFb5Nl8IZZJDq" +
+            "CVJl6zqbPh11umYfioYfKaAaT+ATL8u8gyo2DS7g+3pgVbK3lSMH5whc1ew0" +
+            "UPqWykN3625y7fMl9pGmlRQJSf0kVUnV+11+b99ctajhuVASS5KLRcCHK7Ex" +
+            "7owYy1vmjgYHousDIGpVvpUXpehczLUFAVMRh/QvFg8+6Y6pP3ihUw+zyfSK" +
+            "12i9eD3ZxctiwAKDyVju69Wh7VZ73FF2SqxvSAtx1uApvt38akplKMOX1Vjo" +
+            "qn/L5JiQelHKG/3ZeLHxYv0Dpu447FaWThzLooOu5FC+hKzIC0Odtf1NxLua" +
+            "1I2iK9OXyvSkiXriVMYJqvXqEndeHNIQ36pXFwu8Nau86BsEvPrM4HLPJuTB" +
+            "m+iQzRSWr8cbLoIb0qvtmmLs3jV1e8KH79xdDv3Rkqs/rag4ubOg2zPsVZK8" +
+            "lCXp4+ayc2L09d6lrfE0nYTtlGV22oOgJruxt4iPU9et+8z2GzLMmJ0Y1v4G" +
+            "CTWUP7EBuqvFJC1NEOF+o+1bduhRJAKPa46rkOlJUDCoZgW3FWzYfgF5DDek" +
+            "TLx/2cE7v92f9mGrT4ueDQ9nzH3sImjMEt76qkIdh7t5QWc9NyPdAFSnqDh7" +
+            "ig6qYCT2rHDUEPGZuRf+oMAJFgY9Pw0jdXNhFT2KD1t4lp5BjkaxUzfiyp17" +
+            "5O8/59KTKMRH0Ei3TNfL9EFvWeOoTkFm4Y/uX5wiLfSfeCmD9hbrDESYE58l" +
+            "59kdBHvdWtRX7vH5HNwQudaUzSiDfGZ5g647A/bcZDl9JXvllnBeF2numrlk" +
+            "RdDJaxdHVdVUoxumG3sc9L/2zn3t1bS726YPG29jo1eRuovh3b6OKwEePhZh" +
+            "FvV1ZGwsDRrl6k7ns7i6aGBLzD8+qXrZOhWsF8+Yb7Hf8Pjr4eW55a0Mo1cn" +
+            "L8yIuN50t/UdFFk0XyOept2oQN+/7A7ks3MzK3ZNLYZWAytSB8QapwQuVsRZ" +
+            "ty0cV2o6tjgIyEwLyzyP9UyokBi5vFW9euTkGCI1ZLsyeQR+Au7NYjHlEee3" +
+            "ueHxvLk3D6jidjbhVoUqDs73WiplTKGk4BrEXLeFRVCd1WklorBdcymoT0av" +
+            "xG04VgCWwOE7MwhQ+zS30Q++Pn2nsh6EVvi0trkJHZiCYXmVO4q6NzAvLgUz" +
+            "NYPiFM4Fqmhub091nvUzDPblKMu9oXawm4kIlntaz9t4gTS1LHAza77H3AT9" +
+            "CG0sq2AmVWP80QgzZV9E7Sdd46IKHhvb6nBWQNNHJGQf1/YM7cps+p64+1nX" +
+            "+R129hE/mr0Sl/v/JC7O2w3j8uus9TU1xg5BQCpu7DaaLMkAhvNEtTAadq8X" +
+            "STY2z67jrryrRxfl2VlYWD2Svjlpj8UHzqWsWh5/W2pbwl6VdSo9cyLgw1Rg" +
+            "lup7jZWDEU082aJXQRyRHYQiwhjhNWDTI1atdgP9oEwH8ZZpK8b+tBnBmd9B" +
+            "08/6oDKSC6zh1LPf6nyfAQ80S35C3tOd6D2kX5uWZlj3tZCt5ba3tGs6WIw5" +
+            "TJk+7C8q0TfAUyECjzOOBZqdKijym1MQbLMk/E0QDz/rsRJliz1iFbC0un+t" +
+            "c+P++Sfz8YiVto04xOQaJP2JfXtb5kZDCgF81XaAVJOiwGFccrY813zwk8XV" +
+            "XNNXenCUhT8+vfdyQ2gRGtKCPYJYVb+ilicpKxH1mrUefLH/BsMAvSgD58Nj" +
+            "MUvvvl1YfGFYrJijWydYtEWNlZ5Im/pcV/LRk7v8Pe3zaVxEzLsa9u7gvyDR" +
+            "R7lBawROfKRil08WhB1wT/pL1eg9/nzWGMEafxferFC11uaFlZKqMijJ7Eje" +
+            "5Fh7Z5nrS9PtqRRffldEjKnw2bA+vSPFpSjqlM38WHACEqY3rtIkEpsoBKye" +
+            "DJlBqH8TNX40hkJXCDRGVr4N/ATE/ljOXFjBDM07HYbMjx6Vah8jYDeBkQFA" +
+            "ef0rN9L+Jy/2MmenMFclMyeXHX8DBKIA+ZOB/pUffwPDR4H5+xcYchnyN4Ci" +
+            "lPNDtReQTI78DbIwBdl0T/I/suQfc/P25P4jT/4Gl42C+56MSyZTknE4Af+u" +
+            "ROR6IpiCo7TvF5z/lSv/OD6Zv6L9SpHcxU9yXU6Ogrzye2QKZXKXQcilJMpB" +
+            "SNS/NYjibwxCLu1Q1lY5LeAXGtVvTDUTBQYPBFCqQrs4Qq7KcFIQGikJZOrQ" +
+            "Lijyc7cAZfXQAf4/UWcXJvlpmNK9ewyAXc7vu6DID3U8FKgARsAeh+ldcOQN" +
+            "KRdlmjABdjsX7sIi7xF4KVgJrIC9GtpdeOS7CzcFz4AdsGuf8Q+MFvj9zrXz" +
+            "id/5do7z+9P/ANzW3e4EGwAA",
+          0x4f666997,
+          kotlin(
+            "com/hello/Hello.kt",
+            """
+              package com.hello
+
+              interface Hello {
+                val hello : String
+                fun greet(name : String) : String
+              }
+            """,
+          ),
+          kotlin(
+            "com/hello/Person.kt",
+            """
+              package com.hello
+
+              data class Person(val name : String, val age : Int) : Hello {
+                override val hello get() = "hi"
+                override fun greet(name : String) = hello + " " + name
+             }
+            """,
+          ),
+        ),
+      )
+    var count = 0
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+
+            if (node.isConstructorCall()) {
+              assertTrue(resolved!!.isConstructor)
+              assertEquals("Person", resolved.name)
+            } else {
+              assertFalse(resolved!!.isConstructor)
+              assertEquals("greet", resolved.name)
+            }
+
+            count++
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(2, count)
   }
 }

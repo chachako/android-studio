@@ -160,9 +160,15 @@ private fun configureFirProjectEnvironment(
 
   configureProjectEnvironment(project, config)
 
+  val psiDeclarationProviderFactory =
+    KotlinStaticPsiDeclarationProviderFactory(
+      project,
+      analysisAPISession.coreApplicationEnvironment.jarFileSystem,
+    )
+
   project.registerService(
     KotlinPsiDeclarationProviderFactory::class.java,
-    KotlinStaticPsiDeclarationProviderFactory::class.java,
+    psiDeclarationProviderFactory,
   )
 }
 

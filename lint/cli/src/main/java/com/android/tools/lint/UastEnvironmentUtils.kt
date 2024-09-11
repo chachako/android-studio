@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.sequences.forEach
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
+import org.jetbrains.kotlin.analysis.decompiler.konan.KlibMetaFileType
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleProviderBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
@@ -55,6 +56,7 @@ import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.library.KLIB_METADATA_FILE_EXTENSION
 import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.has
 import org.jetbrains.kotlin.platform.jvm.JvmPlatform
@@ -311,6 +313,8 @@ internal fun configureApplicationEnvironment(
     LanguageFeatureProvider.EXTENSION_POINT_NAME,
     LanguageFeatureProvider::class.java,
   )
+
+  appEnv.registerFileType(KlibMetaFileType, KLIB_METADATA_FILE_EXTENSION)
 
   appConfigured = true
   Disposer.register(appEnv.parentDisposable, Disposable { appConfigured = false })

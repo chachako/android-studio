@@ -41,9 +41,9 @@ import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
 import com.android.tools.lint.client.api.JavaEvaluator
-import com.android.tools.lint.detector.api.endsWith
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
+import com.google.common.hash.Hashing
 import com.google.common.io.ByteStreams
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -470,6 +470,20 @@ object TestFiles {
     return source(".classpath", source)
   }
 
+  @Deprecated("") // Use the method with the checksum instead
+  @JvmStatic
+  fun metadataKlib(to: String, vararg files: TestFile): MetadataKlibTestFile =
+    metadataKlib(to, files, null, null)
+
+  @JvmStatic
+  fun metadataKlib(
+    to: String,
+    files: Array<out TestFile>,
+    checksum: Long?,
+    encoded: String?,
+  ): MetadataKlibTestFile = MetadataKlibTestFile(to, files, checksum, encoded)
+
+  @Deprecated("") // Use the method with the checksum instead
   @JvmStatic
   fun klib(to: String, vararg files: TestFile): KlibTestFile = klib(to, null, null, *files)
 
@@ -663,5 +677,22 @@ object TestFiles {
       targetRelativePath = to
       this.file = file
     }
+  }
+
+  /**
+   * Computes a hash of the source file and the binary contents (SHA256 with source as UTF8 plus
+   * bytecode in order)
+   */
+  @Suppress("UnstableApiUsage")
+  internal fun computeCheckSum(source: String, binaries: List<ByteArray>): Int {
+    val hashFunction = Hashing.sha256()
+    val hasher = hashFunction.newHasher()
+
+    hasher.putString(source, Charsets.UTF_8)
+    for (bytes in binaries) {
+      hasher.putBytes(bytes)
+    }
+    val hashCode = hasher.hash()
+    return hashCode.asInt()
   }
 }

@@ -24,10 +24,10 @@ import com.android.SdkConstants.DOT_KOTLIN_MODULE
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.currentPlatform
+import com.android.tools.lint.checks.infrastructure.TestFiles.computeCheckSum
 import com.android.tools.lint.checks.infrastructure.TestFiles.toBase64gzipJava
 import com.android.tools.lint.checks.infrastructure.TestFiles.toBase64gzipKotlin
 import com.google.common.base.Joiner
-import com.google.common.hash.Hashing
 import java.io.BufferedReader
 import java.io.File
 import java.io.FilenameFilter
@@ -63,23 +63,6 @@ internal class CompiledSourceFile(
       files.add(source)
     }
     return files
-  }
-
-  /**
-   * Computes a hash of the source file and the binary contents (SHA256 with source as UTF8 plus
-   * bytecode in order)
-   */
-  @Suppress("UnstableApiUsage")
-  private fun computeCheckSum(source: String, binaries: List<ByteArray>): Int {
-    val hashFunction = Hashing.sha256()
-    val hasher = hashFunction.newHasher()
-
-    hasher.putString(source, Charsets.UTF_8)
-    for (bytes in binaries) {
-      hasher.putBytes(bytes)
-    }
-    val hashCode = hasher.hash()
-    return hashCode.asInt()
   }
 
   @Throws(IOException::class)
