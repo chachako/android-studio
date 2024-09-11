@@ -126,7 +126,8 @@ internal class ResourceVisitor(
   }
 
   private fun String.isLikelyClassName(): Boolean {
-    if (indexOf('.') != -1 && length >= 2) {
+    val inPackage = indexOf('.') != -1
+    if (inPackage && length >= 2) {
       var prev = '.'
       for (c in this) {
         if (c == '.' && prev != '.') {
@@ -139,6 +140,20 @@ internal class ResourceVisitor(
           return false
         }
         prev = c
+      }
+      // e.g. "Nov."
+      return prev != '.'
+    } else if (!inPackage && isNotEmpty()) {
+      var index = 0
+      for (c in this) {
+        if (index == 0 && c.isJavaIdentifierStart()) {
+          // ok
+        } else if (c.isJavaIdentifierPart()) {
+          // ok
+        } else {
+          return false
+        }
+        index++
       }
       return true
     }
