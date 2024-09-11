@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Apk
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.shrinker.DummyContent.TINY_PNG
 import com.android.build.shrinker.DummyContent.TINY_PROTO_CONVERTED_TO_BINARY_XML
 import com.android.testutils.TestUtils
@@ -36,19 +37,31 @@ import com.google.common.io.ByteStreams
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class ResourceShrinkerTest {
+@RunWith(Parameterized::class)
+class ResourceShrinkerTest(private val r8IntegratedResourceShrinking: Boolean) {
+
+    companion object {
+
+        @Parameterized.Parameters(name = "r8IntegratedResourceShrinking_{0}")
+        @JvmStatic
+        fun parameters() = listOf(true, false)
+    }
 
     @get:Rule
     var project = builder().fromTestProject("shrink")
+        .addGradleProperty(BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING, r8IntegratedResourceShrinking)
         .create()
 
     @get:Rule
     var projectWithDynamicFeatureModules = builder().fromTestProject("shrinkDynamicFeatureModules")
+        .addGradleProperty(BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING, r8IntegratedResourceShrinking)
         .create()
 
     private val testAapt2 = TestUtils.getAapt2().toFile().absoluteFile
@@ -193,8 +206,7 @@ class ResourceShrinkerTest {
         )
         // Ensure that report file is created and near mapping file
         assertThat(project.file("build/outputs/mapping/release/mapping.txt")).exists()
-        assertThat(project.file("build/outputs/mapping/release/resources.txt").readLines())
-            .hasSize(570)
+        assertThat(project.file("build/outputs/mapping/release/resources.txt").readLines()).hasSize(570)
     }
 
     private fun checkUnusedResourcesAreReplacedInApk(
@@ -270,10 +282,10 @@ class ResourceShrinkerTest {
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(
                 ":bundleRelease",
-                ":webview:bundleRelease",
-                ":keep:bundleRelease",
                 ":packageDebugUniversalApk",
-                ":packageReleaseUniversalApk"
+                ":packageReleaseUniversalApk",
+                ":webview:bundleRelease",
+                ":keep:bundleRelease"
             )
 
         // Check that unused resources are replaced in shrunk bundle.
@@ -445,10 +457,16 @@ class ResourceShrinkerTest {
                 "res/layout/unused13.xml",
                 "res/layout/unused14.xml",
                 "res/layout/unused2.xml",
-                "res/layout/used_from_feature_1.xml",
                 "res/layout/used_from_feature_2.xml",
                 "res/menu/unused12.xml",
-            )
+            ) + if (r8IntegratedResourceShrinking) {
+                emptyList()
+            } else {
+                // This resource is used by a feature module, so the fact that it appears in this
+                // list of unusedResources is unexpected. This is a limitation of the legacy
+                // resource shrinking pipeline (r8IntegratedResourceShrinking = false).
+                listOf("res/layout/used_from_feature_1.xml")
+            }
         )
     }
 
@@ -579,7 +597,11 @@ class ResourceShrinkerTest {
             .resolve(listOfNotNull("linked-resources-proto-format", splitName, "release.ap_").joinToString("-"))
 
     private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File {
-        val task = "shrinkReleaseRes"
+        val task = if (r8IntegratedResourceShrinking) {
+            "minifyReleaseWithR8"
+        } else {
+            "shrinkReleaseRes"
+        }
         return InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
             .resolve("release/$task")
             .resolve(listOfNotNull("shrunk-resources-proto-format", splitName, "release.ap_").joinToString("-"))

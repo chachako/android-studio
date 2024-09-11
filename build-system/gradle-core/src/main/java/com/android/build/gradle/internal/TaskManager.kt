@@ -29,11 +29,11 @@ import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AndroidSourceSet
-import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
@@ -65,9 +65,9 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_AND_
 import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_DEX
 import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_RESOURCE_PKG
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVAC
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT
 import com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_RES
 import com.android.build.gradle.internal.scope.InternalArtifactType.PACKAGED_RES
-import com.android.build.gradle.internal.scope.InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT
 import com.android.build.gradle.internal.scope.InternalArtifactType.RUNTIME_R_CLASS_CLASSES
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
@@ -131,6 +131,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.featuresplit.getFeatureName
 import com.android.build.gradle.internal.tasks.mlkit.GenerateMlModelClass
+import com.android.build.gradle.internal.tasks.runResourceShrinkingWithR8
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
@@ -1847,11 +1848,15 @@ abstract class TaskManager(
             // for base module only.
             return
         }
+
         // Shrink resources in APK with a new resource shrinker and produce stripped res
         // package.
         taskFactory.register(ConvertLinkedResourcesToProtoTask.CreationAction(creationConfig))
-        taskFactory.register(ShrinkResourcesNewShrinkerTask.CreationAction(creationConfig))
+        if (!creationConfig.runResourceShrinkingWithR8()) {
+            taskFactory.register(ShrinkResourcesNewShrinkerTask.CreationAction(creationConfig))
+        }
         taskFactory.register(ConvertShrunkResourcesToBinaryTask.CreationAction(creationConfig))
+
         // Shrink resources in bundles with new resource shrinker.
         taskFactory.register(ShrinkAppBundleResourcesTask.CreationAction(creationConfig))
     }

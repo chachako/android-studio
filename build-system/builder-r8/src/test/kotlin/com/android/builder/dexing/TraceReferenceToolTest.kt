@@ -67,6 +67,7 @@ class TraceReferenceToolTest {
             toolConfig = toolConfig,
             proguardConfig = proguardConfig,
             mainDexListConfig = mainDexConfig,
+            resourceShrinkingConfig = null,
             messageReceiver = NoOpMessageReceiver(),
             true,
             featureClassJars = listOf(),

@@ -119,6 +119,15 @@ abstract class R8ResourceShrinkingParameters {
 
 }
 
+/**
+ * Returns true if resource shrinking is enabled AND it will be performed by [R8Task] instead of
+ * a separate task.
+ */
+fun ConsumableCreationConfig.runResourceShrinkingWithR8(): Boolean {
+    return androidResourcesCreationConfig?.useResourceShrinker == true
+            && services.projectOptions[BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING]
+}
+
 fun R8ResourceShrinkingParameters.initialize(
     creationConfig: ConsumableCreationConfig,
     mappingFile: RegularFileProperty

@@ -26,6 +26,7 @@ import com.android.build.gradle.integration.BazelIntegrationTestsSuite;
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile;
 import com.android.build.gradle.integration.common.utils.SdkHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.testutils.MavenRepoGenerator;
 import com.android.testutils.TestUtils;
 
@@ -410,6 +411,14 @@ public class GradleTestProjectBuilder {
     /** Add gradle properties. */
     public GradleTestProjectBuilder addGradleProperties(@NonNull String property) {
         gradleProperties.add(property);
+        return this;
+    }
+
+    /** Adds a Gradle property that is a [BooleanOption]. */
+    @NonNull
+    public GradleTestProjectBuilder addGradleProperty(
+            @NonNull BooleanOption booleanOption, boolean value) {
+        addGradleProperties(booleanOption.getPropertyName() + "=" + value);
         return this;
     }
 

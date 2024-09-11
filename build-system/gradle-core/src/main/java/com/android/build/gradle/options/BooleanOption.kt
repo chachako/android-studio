@@ -336,6 +336,19 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    /**
+     * When enabled, the R8 task will perform resource shrinking in addition to code shrinking.
+     * When disabled, resource shrinking will be performed in a separate task after the R8 task has
+     * run.
+     *
+     * Note: If resource shrinking is not enabled, this flag has no effect.
+     */
+    R8_INTEGRATED_RESOURCE_SHRINKING(
+        "android.r8.integratedResourceShrinking",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

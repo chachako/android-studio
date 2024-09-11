@@ -197,5 +197,6 @@ fun runR8(
         outputArtProfile = null,
         inputProfileForDexStartupOptimization = null,
         r8Metadata = null,
+        resourceShrinkingConfig = null
     )
 }
