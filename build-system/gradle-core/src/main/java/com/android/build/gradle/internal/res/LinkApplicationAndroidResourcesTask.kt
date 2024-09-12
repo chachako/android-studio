@@ -757,6 +757,14 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                 task.inputResourcesDir
             )
 
+            if (creationConfig.services.projectOptions[BooleanOption.SUPPORT_OEM_TOKEN_LIBRARIES]) {
+                task.sharedLibraryDependencies.fromDisallowChanges(
+                    creationConfig.variantDependencies.getArtifactFileCollection(
+                        RUNTIME_CLASSPATH, ALL, AndroidArtifacts.ArtifactType.RES_SHARED_OEM_TOKEN_LIBRARY
+                    )
+                )
+            }
+
             if (androidResourcesCreationConfig.isPrecompileDependenciesResourcesEnabled) {
                 task.compiledDependenciesResources.fromDisallowChanges(
                     creationConfig.variantDependencies.getArtifactFileCollection(

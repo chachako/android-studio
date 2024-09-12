@@ -33,6 +33,7 @@ import static com.android.SdkConstants.FN_PROGUARD_TXT;
 import static com.android.SdkConstants.FN_PUBLIC_TXT;
 import static com.android.SdkConstants.FN_RESOURCE_STATIC_LIBRARY;
 import static com.android.SdkConstants.FN_RESOURCE_TEXT;
+import static com.android.build.gradle.internal.publishing.AndroidArtifacts.PATH_SHARED_LIBRARY_RESOURCES_APK;
 
 import android.databinding.tool.DataBindingBuilder;
 
@@ -54,12 +55,16 @@ import org.gradle.api.tasks.Input;
 import org.gradle.work.DisableCachingByDefault;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 /** Transform that returns the content of an extracted AAR folder. */
 @DisableCachingByDefault
 public abstract class AarTransform implements TransformAction<AarTransform.Parameters> {
 
     public interface Parameters extends GenericTransformParameters {
+
         @Input
         Property<ArtifactType> getTargetType();
 
@@ -72,36 +77,41 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
     public abstract Provider<FileSystemLocation> getInputArtifact();
 
     @NonNull
-    public static ArtifactType[] getTransformTargets(AarOrJarTypeToConsume aarOrJarTypeToConsume) {
-        return new ArtifactType[] {
-            aarOrJarTypeToConsume.getJar(),
-            // For CLASSES, this transform is ues for runtime, and AarCompileClassesTransform is
-            // used for compile
-            ArtifactType.SHARED_CLASSES,
-            ArtifactType.JAVA_RES,
-            ArtifactType.SHARED_JAVA_RES,
-            ArtifactType.MANIFEST,
-            ArtifactType.ANDROID_RES,
-            ArtifactType.ASSETS,
-            ArtifactType.SHARED_ASSETS,
-            ArtifactType.JNI,
-            ArtifactType.SHARED_JNI,
-            ArtifactType.AIDL,
-            ArtifactType.RENDERSCRIPT,
-            ArtifactType.UNFILTERED_PROGUARD_RULES,
-            ArtifactType.LINT,
-            ArtifactType.ANNOTATIONS,
-            ArtifactType.PUBLIC_RES,
-            ArtifactType.COMPILE_SYMBOL_LIST,
-            ArtifactType.DATA_BINDING_ARTIFACT,
-            ArtifactType.DATA_BINDING_BASE_CLASS_LOG_ARTIFACT,
-            ArtifactType.RES_STATIC_LIBRARY,
-            ArtifactType.RES_SHARED_STATIC_LIBRARY,
-            ArtifactType.PREFAB_PACKAGE,
-            ArtifactType.AAR_METADATA,
-            ArtifactType.ART_PROFILE,
-            ArtifactType.NAVIGATION_JSON,
-        };
+    public static Set<ArtifactType> getTransformTargets(AarOrJarTypeToConsume aarOrJarTypeToConsume, boolean sharedLibSupportEnabled) {
+        ArrayList<ArtifactType> targets = new ArrayList<>(Arrays.asList(
+                aarOrJarTypeToConsume.getJar(),
+                // For CLASSES, this transform is ues for runtime, and AarCompileClassesTransform is
+                // used for compile
+                ArtifactType.SHARED_CLASSES,
+                ArtifactType.JAVA_RES,
+                ArtifactType.SHARED_JAVA_RES,
+                ArtifactType.MANIFEST,
+                ArtifactType.ANDROID_RES,
+                ArtifactType.ASSETS,
+                ArtifactType.SHARED_ASSETS,
+                ArtifactType.JNI,
+                ArtifactType.SHARED_JNI,
+                ArtifactType.AIDL,
+                ArtifactType.RENDERSCRIPT,
+                ArtifactType.UNFILTERED_PROGUARD_RULES,
+                ArtifactType.LINT,
+                ArtifactType.ANNOTATIONS,
+                ArtifactType.PUBLIC_RES,
+                ArtifactType.COMPILE_SYMBOL_LIST,
+                ArtifactType.DATA_BINDING_ARTIFACT,
+                ArtifactType.DATA_BINDING_BASE_CLASS_LOG_ARTIFACT,
+                ArtifactType.RES_STATIC_LIBRARY,
+                ArtifactType.RES_SHARED_STATIC_LIBRARY,
+                ArtifactType.PREFAB_PACKAGE,
+                ArtifactType.AAR_METADATA,
+                ArtifactType.ART_PROFILE,
+                ArtifactType.NAVIGATION_JSON
+        )
+        );
+        if (sharedLibSupportEnabled) {
+            targets.add(ArtifactType.RES_SHARED_OEM_TOKEN_LIBRARY);
+        }
+        return Set.copyOf(targets);
     }
 
     @Override
@@ -182,6 +192,9 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
                             transformOutputs);
                 }
                 break;
+            case RES_SHARED_OEM_TOKEN_LIBRARY:
+                outputIfExists(
+                        new File(input, PATH_SHARED_LIBRARY_RESOURCES_APK), transformOutputs);
             case DATA_BINDING_ARTIFACT:
                 outputIfExists(
                         new File(input, DataBindingBuilder.DATA_BINDING_ROOT_FOLDER_IN_AAR),
@@ -220,7 +233,7 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
     private boolean isNamespacedSharedLibrary(@NonNull File explodedAar) {
         return getParameters().getNamespacedSharedLibSupport().get()
                 && new File(explodedAar, FN_NAMESPACED_SHARED_LIBRARY_ANDROID_MANIFEST_XML)
-                        .exists();
+                .exists();
     }
 
     private static void outputIfExists(@NonNull File file, @NonNull TransformOutputs outputs) {

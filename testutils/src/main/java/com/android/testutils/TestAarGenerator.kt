@@ -39,7 +39,8 @@ fun generateAarWithContent(
     resources: Map<String, ByteArray> = mapOf(),
     apiJar: ByteArray? = null,
     lintJar: ByteArray? = null,
-    manifest: String = """<manifest package="$packageName"></manifest>"""
+    manifest: String = """<manifest package="$packageName"></manifest>""",
+    extraFiles: List<Pair<String, ByteArray>> = emptyList()
 ): ByteArray {
     val entries = mutableMapOf<String, ByteArray>()
     entries[SdkConstants.FN_ANDROID_MANIFEST_XML] = manifest.toByteArray()
@@ -52,6 +53,8 @@ fun generateAarWithContent(
     }
     apiJar?.let { entries["api.jar"] = it }
     lintJar?.let { entries["lint.jar"] = it }
-
+    extraFiles.forEach { (path, byteArray) ->
+        entries[path] = byteArray
+    }
     return ZipContents(entries).toByteArray()
 }
