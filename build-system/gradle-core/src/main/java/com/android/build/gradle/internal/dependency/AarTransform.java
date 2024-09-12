@@ -27,21 +27,22 @@ import static com.android.SdkConstants.FN_ANDROID_MANIFEST_XML;
 import static com.android.SdkConstants.FN_ANNOTATIONS_ZIP;
 import static com.android.SdkConstants.FN_CLASSES_JAR;
 import static com.android.SdkConstants.FN_LINT_JAR;
+import static com.android.SdkConstants.FN_NAMESPACED_SHARED_LIBRARY_ANDROID_MANIFEST_XML;
 import static com.android.SdkConstants.FN_NAVIGATION_JSON;
 import static com.android.SdkConstants.FN_PROGUARD_TXT;
 import static com.android.SdkConstants.FN_PUBLIC_TXT;
 import static com.android.SdkConstants.FN_RESOURCE_STATIC_LIBRARY;
 import static com.android.SdkConstants.FN_RESOURCE_TEXT;
-import static com.android.SdkConstants.FN_SHARED_LIBRARY_ANDROID_MANIFEST_XML;
 
 import android.databinding.tool.DataBindingBuilder;
+
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType;
 import com.android.build.gradle.internal.tasks.AarMetadataTask;
 import com.android.utils.FileUtils;
-import java.io.File;
+
 import org.gradle.api.artifacts.transform.InputArtifact;
 import org.gradle.api.artifacts.transform.TransformAction;
 import org.gradle.api.artifacts.transform.TransformOutputs;
@@ -52,6 +53,8 @@ import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.work.DisableCachingByDefault;
 
+import java.io.File;
+
 /** Transform that returns the content of an extracted AAR folder. */
 @DisableCachingByDefault
 public abstract class AarTransform implements TransformAction<AarTransform.Parameters> {
@@ -61,7 +64,7 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
         Property<ArtifactType> getTargetType();
 
         @Input
-        Property<Boolean> getSharedLibSupport();
+        Property<Boolean> getNamespacedSharedLibSupport();
     }
 
     @Classpath
@@ -113,14 +116,15 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
                 // even though resources are supposed to only be in the main jar of the AAR, this
                 // is not necessarily enforced by all build systems generating AAR so it's safer to
                 // read all jars from the manifest.
-                // For shared libraries, these are provided via SHARED_CLASSES and SHARED_JAVA_RES.
-                if (!isShared(input)) {
+                // For namespaced shared libraries, these are provided via SHARED_CLASSES and
+                // SHARED_JAVA_RES.
+                if (!isNamespacedSharedLibrary(input)) {
                     AarTransformUtil.getJars(input).forEach(transformOutputs::file);
                 }
                 break;
             case SHARED_CLASSES:
             case SHARED_JAVA_RES:
-                if (isShared(input)) {
+                if (isNamespacedSharedLibrary(input)) {
                     AarTransformUtil.getJars(input).forEach(transformOutputs::file);
                 }
                 break;
@@ -128,11 +132,11 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
                 outputIfExists(FileUtils.join(input, FD_JARS, FN_LINT_JAR), transformOutputs);
                 break;
             case MANIFEST:
-                // Return both the manifest and the extra snippet for the shared library.
+                // Return both the manifest and the extra snippet for the namespaced shared library.
                 outputIfExists(new File(input, FN_ANDROID_MANIFEST_XML), transformOutputs);
-                if (isShared(input)) {
+                if (isNamespacedSharedLibrary(input)) {
                     outputIfExists(
-                            new File(input, FN_SHARED_LIBRARY_ANDROID_MANIFEST_XML),
+                            new File(input, FN_NAMESPACED_SHARED_LIBRARY_ANDROID_MANIFEST_XML),
                             transformOutputs);
                 }
                 break;
@@ -167,12 +171,12 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
                 outputIfExists(new File(input, FN_RESOURCE_TEXT), transformOutputs);
                 break;
             case RES_STATIC_LIBRARY:
-                if (!isShared(input)) {
+                if (!isNamespacedSharedLibrary(input)) {
                     outputIfExists(new File(input, FN_RESOURCE_STATIC_LIBRARY), transformOutputs);
                 }
                 break;
             case RES_SHARED_STATIC_LIBRARY:
-                if (isShared(input)) {
+                if (isNamespacedSharedLibrary(input)) {
                     outputIfExists(
                             new File(input, SdkConstants.FN_RESOURCE_SHARED_STATIC_LIBRARY),
                             transformOutputs);
@@ -213,9 +217,10 @@ public abstract class AarTransform implements TransformAction<AarTransform.Param
         }
     }
 
-    private boolean isShared(@NonNull File explodedAar) {
-        return getParameters().getSharedLibSupport().get()
-                && new File(explodedAar, FN_SHARED_LIBRARY_ANDROID_MANIFEST_XML).exists();
+    private boolean isNamespacedSharedLibrary(@NonNull File explodedAar) {
+        return getParameters().getNamespacedSharedLibSupport().get()
+                && new File(explodedAar, FN_NAMESPACED_SHARED_LIBRARY_ANDROID_MANIFEST_XML)
+                        .exists();
     }
 
     private static void outputIfExists(@NonNull File file, @NonNull TransformOutputs outputs) {

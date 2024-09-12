@@ -260,7 +260,7 @@ class DependencyConfigurator(
             AndroidArtifacts.TYPE_PLATFORM_ATTR
         )
 
-        val sharedLibSupport = projectOptions[BooleanOption.CONSUME_DEPENDENCIES_AS_SHARED_LIBRARIES]
+        val namespacedSharedLibSupportEnabled = projectOptions[BooleanOption.CONSUME_DEPENDENCIES_AS_SHARED_LIBRARIES]
 
         val libraryCategory = project.objects.named(Category::class.java, Category.LIBRARY)
         for (transformTarget in AarTransform.getTransformTargets(aarOrJarTypeToConsume)) {
@@ -273,7 +273,7 @@ class DependencyConfigurator(
                 spec.to.attribute(Category.CATEGORY_ATTRIBUTE, libraryCategory)
                 spec.parameters.projectName.setDisallowChanges(project.name)
                 spec.parameters.targetType.setDisallowChanges(transformTarget)
-                spec.parameters.sharedLibSupport.setDisallowChanges(sharedLibSupport)
+                spec.parameters.namespacedSharedLibSupport.setDisallowChanges(namespacedSharedLibSupportEnabled)
             }
         }
         if (projectOptions[BooleanOption.PRECOMPILE_DEPENDENCIES_RESOURCES]) {
