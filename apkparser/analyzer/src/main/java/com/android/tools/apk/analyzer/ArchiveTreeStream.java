@@ -17,9 +17,26 @@
 package com.android.tools.apk.analyzer;
 
 import com.android.annotations.NonNull;
+
 import java.util.stream.Stream;
 
 public class ArchiveTreeStream {
+    @NonNull
+    public static Stream<ArchiveNode> preOrderStreamNoInnerArchiveExpansion(
+            @NonNull ArchiveNode node) {
+        return Stream.concat(
+                Stream.of(node),
+                node.getChildren().stream()
+                        .flatMap(
+                                child -> {
+                                    if (child.getData() instanceof InnerArchiveEntry) {
+                                        return Stream.of(child);
+                                    } else {
+                                        return preOrderStreamNoInnerArchiveExpansion(child);
+                                    }
+                                }));
+    }
+
     @NonNull
     public static Stream<ArchiveNode> preOrderStream(@NonNull ArchiveNode node) {
         return Stream.concat(

@@ -18,6 +18,7 @@ package com.android.tools.apk.analyzer;
 
 import com.android.annotations.NonNull;
 import com.android.tools.apk.analyzer.internal.ArchiveTreeNode;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.zip.ZipError;
+
 import javax.swing.tree.MutableTreeNode;
 
 public class ArchiveTreeStructure {
@@ -129,7 +131,7 @@ public class ArchiveTreeStructure {
         }
 
         // first set the file sizes for all child nodes
-        ArchiveTreeStream.preOrderStream(root)
+        ArchiveTreeStream.preOrderStreamNoInnerArchiveExpansion(root)
                 .forEach(
                         node -> {
                             ArchiveEntry data = node.getData();
@@ -176,7 +178,7 @@ public class ArchiveTreeStructure {
         }
 
         // first set the file sizes for all child nodes
-        ArchiveTreeStream.preOrderStream(root)
+        ArchiveTreeStream.preOrderStreamNoInnerArchiveExpansion(root)
                 .forEach(
                         node -> {
                             ArchiveEntry data = node.getData();
