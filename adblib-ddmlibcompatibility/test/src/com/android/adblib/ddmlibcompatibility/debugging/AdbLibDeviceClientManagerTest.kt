@@ -382,7 +382,7 @@ class AdbLibDeviceClientManagerTest {
         yieldUntil {
             listener.filterEvents { events -> events.any { it.kind == PROCESS_NAME_UPDATED } }
                     && listener.filterEvents { events -> events.any { it.kind == PROCESS_LIST_UPDATED } }
-                    && deviceClientManager.clients.any { it.clientData.clientDescription == "foo.bar" }
+                    && deviceClientManager.clients.any { it.clientData.processName == "foo.bar" }
         }
 
         // Assert

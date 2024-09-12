@@ -254,7 +254,7 @@ public class DeployServerTest {
         when(client.getClientData()).thenReturn(clientData);
         when(clientData.getPid()).thenReturn(1234);
         when(clientData.getPackageName()).thenReturn(clientName);
-        when(clientData.getClientDescription()).thenReturn(clientDescription);
+        when(clientData.getProcessName()).thenReturn(clientDescription);
         when(client.getDebuggerListenPort()).thenReturn(4321);
         return client;
     }

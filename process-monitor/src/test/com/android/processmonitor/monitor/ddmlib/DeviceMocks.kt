@@ -68,6 +68,6 @@ private fun mockClientData(pid: Int, packageName: String?, processName: String?)
     return MockitoKt.mock<ClientData>().also {
         whenever(it.pid).thenReturn(pid)
         whenever(it.packageName).thenReturn(packageName)
-        whenever(it.clientDescription).thenReturn(processName)
+        whenever(it.processName).thenReturn(processName)
     }
 }

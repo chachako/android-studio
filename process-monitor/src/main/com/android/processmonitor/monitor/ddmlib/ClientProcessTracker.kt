@@ -112,7 +112,7 @@ internal class ClientProcessTracker(
 }
 
 private fun Client.pid(): Int = clientData.pid
-private fun Client.processName(): String = clientData.clientDescription ?: ""
+private fun Client.processName(): String = clientData.processName ?: ""
 private fun Client.packageName(): String = clientData.packageName ?: ""
 private fun Client.isInitialized(): Boolean = clientData.packageName != null
 private fun Client.toProcessAddedEvent(): ProcessAdded =

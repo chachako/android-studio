@@ -82,7 +82,7 @@ internal class ClientMonitorListener(
 
             override fun toString(): String {
                 return clients.joinToString(prefix = "ClientListChanged: ") {
-                    "${it.clientData.pid}: ${it.clientData.packageName} ${it.clientData.clientDescription}"
+                    "${it.clientData.pid}: ${it.clientData.packageName} ${it.clientData.processName}"
                 }
             }
         }
@@ -93,7 +93,7 @@ internal class ClientMonitorListener(
         class ClientChanged(val client: Client) : ClientEvent() {
 
             override fun toString(): String {
-                return "ClientChanged: ${client.clientData.pid}: ${client.clientData.packageName} ${client.clientData.clientDescription}"
+                return "ClientChanged: ${client.clientData.pid}: ${client.clientData.packageName} ${client.clientData.processName}"
             }
         }
 

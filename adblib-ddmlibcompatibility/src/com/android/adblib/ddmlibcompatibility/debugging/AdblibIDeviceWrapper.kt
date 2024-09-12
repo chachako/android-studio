@@ -408,7 +408,7 @@ internal class AdblibIDeviceWrapper(
      * to maintain backward compatibility.
      */
     override fun getClient(processName: String?): Client? {
-        return clients.firstOrNull { processName == it.clientData.clientDescription }
+        return clients.firstOrNull { processName == it.clientData.processName }
     }
 
     override fun getProfileableClients(): Array<ProfileableClient> {

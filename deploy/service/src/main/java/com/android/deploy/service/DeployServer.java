@@ -334,7 +334,7 @@ public class DeployServer extends DeployServiceGrpc.DeployServiceImplBase {
 
     private static Service.Client ddmClientToRpcClient(Client client) {
         String packageName = client.getClientData().getPackageName();
-        String description = client.getClientData().getClientDescription();
+        String description = client.getClientData().getProcessName();
 
         Service.Client.Builder builder = Service.Client.newBuilder();
 
