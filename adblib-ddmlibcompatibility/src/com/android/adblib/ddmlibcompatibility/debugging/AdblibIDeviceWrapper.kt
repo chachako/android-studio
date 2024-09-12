@@ -349,11 +349,11 @@ internal class AdblibIDeviceWrapper(
             } catch (e: IOException) {
                 // Note that this block handles `AdbFailResponseException` as well.
                 // ignore to match the behavior in the `DeviceImpl`
-                logger.error(e, "Error querying `availableFeatures`")
+                logger.warn(e, "Error querying `availableFeatures`")
                 emptySet()
             } catch (e: TimeoutException) {
                 // ignore to match the behavior in the `DeviceImpl`
-                logger.error(e, "Error querying `availableFeatures`")
+                logger.warn(e, "Error querying `availableFeatures`")
                 emptySet()
             }
 
