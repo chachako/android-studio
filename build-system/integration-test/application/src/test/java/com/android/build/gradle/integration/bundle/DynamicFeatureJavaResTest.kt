@@ -124,9 +124,16 @@ class DynamicFeatureJavaResTest {
         project.getSubproject("dynamicFeature").getApk(apkType).use { apk ->
             assertThat(apk.file).exists()
             assertThat(apk).containsJavaResourceWithContent("pickFirst.txt", "dynamicFeature")
-            assertThat(apk).doesNotContainJavaResource("META-INF/services/com.example.Service")
-            assertThat(apk).doesNotContainJavaResource(
-                "META-INF/services/com.example.feature.Service"
+            assertThat(apk).containsJavaResourceWithContent(
+                "META-INF/services/com.example.Service",
+                """
+                    com.example.dynamicFeature.impl.DynamicFeatureService
+                    com.example.lib.impl.LibService
+                    """.trimIndent()
+            )
+            assertThat(apk).containsJavaResourceWithContent(
+                "META-INF/services/com.example.feature.Service",
+                "com.example.dynamicFeature.impl.DynamicFeatureService"
             )
         }
         project.getSubproject("baseModule").getApk(apkType).use { apk ->
@@ -134,17 +141,10 @@ class DynamicFeatureJavaResTest {
             assertThat(apk).containsJavaResourceWithContent("collide.txt", "base")
             assertThat(apk).containsJavaResourceWithContent(
                 "META-INF/services/com.example.Service",
-                """
-                    com.example.baseModule.impl.BaseModuleService
-                    com.example.dynamicFeature.impl.DynamicFeatureService
-                    com.example.lib.impl.LibService
-                    """.trimIndent()
+                "com.example.baseModule.impl.BaseModuleService"
             )
-            // All services go to base the APK, even if they come from only a dynamic feature.
-            assertThat(apk).containsJavaResourceWithContent(
-                "META-INF/services/com.example.feature.Service",
-                "com.example.dynamicFeature.impl.DynamicFeatureService"
-            )
+            assertThat(apk).doesNotContainJavaResource(
+              "META-INF/services/com.example.feature.Service")
         }
     }
 }
@@ -154,4 +154,3 @@ val apkType = object : GradleTestProject.ApkType {
     override val testName: String? = null
     override val isSigned: Boolean = true
 }
-
