@@ -166,6 +166,7 @@ fun getMaterialComponentName(mavenCoordinate: String, useAndroidX: Boolean): Str
     "android.support.v4.app.FragmentActivity" to "androidx.fragment.app.FragmentActivity",
     "android.support.v4.app.FragmentManager" to "androidx.fragment.app.FragmentManager",
     "android.support.v4.app.FragmentPagerAdapter" to "androidx.fragment.app.FragmentPagerAdapter",
+    "android.support.v4.app.NotificationChannelCompat" to "androidx.core.app.NotificationChannelCompat",
     "android.support.v4.app.NotificationCompat" to "androidx.core.app.NotificationCompat",
     "android.support.v4.app.NotificationCompat.CarExtender" to "androidx.core.app.NotificationCompat.CarExtender",
     "android.support.v4.app.NotificationCompat.CarExtender.UnreadConversation" to "androidx.core.app.NotificationCompat.CarExtender.UnreadConversation",

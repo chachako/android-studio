@@ -16,6 +16,7 @@
 
 package com.android.tools.idea.wizard.template.impl.other.automotiveMessagingService.src.app_package
 
+import com.android.tools.idea.wizard.template.ApiVersion
 import com.android.tools.idea.wizard.template.escapeKotlinIdentifier
 import com.android.tools.idea.wizard.template.getMaterialComponentName
 
@@ -34,12 +35,14 @@ import android.os.Looper
 import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
+import ${getMaterialComponentName("android.support.v4.app.NotificationChannelCompat", useAndroidX)}
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat", useAndroidX)}
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat.CarExtender", useAndroidX)}
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat.CarExtender.UnreadConversation", useAndroidX)}
 import ${getMaterialComponentName("android.support.v4.app.NotificationManagerCompat", useAndroidX)}
 import ${getMaterialComponentName("android.support.v4.app.RemoteInput", useAndroidX)}
 
+const val CHANNEL_ID = "${packageName}.CHANNEL_ID"
 const val READ_ACTION = "${packageName}.ACTION_MESSAGE_READ"
 const val REPLY_ACTION = "${packageName}.ACTION_MESSAGE_REPLY"
 const val CONVERSATION_ID = "conversation_id"
@@ -98,7 +101,13 @@ class ${serviceName} : Service() {
                 .setReadPendingIntent(readPendingIntent)
                 .setReplyAction(replyIntent, remoteInput)
 
-        val builder = NotificationCompat.Builder(applicationContext)
+        val channel = NotificationChannelCompat
+                .Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setName(resources.getText(R.string.app_name))
+                .build()
+        NotificationManagerCompat.from(applicationContext).createNotificationChannel(channel)
+
+        val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 // Set the application notification icon:
                 //.setSmallIcon(R.drawable.notification_icon)
 

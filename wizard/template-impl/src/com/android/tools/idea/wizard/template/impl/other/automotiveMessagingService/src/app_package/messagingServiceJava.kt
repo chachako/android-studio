@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import ${getMaterialComponentName("android.support.v4.app.NotificationChannelCompat", useAndroidX)};
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat", useAndroidX)};
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat.CarExtender", useAndroidX)};
 import ${getMaterialComponentName("android.support.v4.app.NotificationCompat.CarExtender.UnreadConversation", useAndroidX)};
@@ -41,6 +42,8 @@ import ${getMaterialComponentName("android.support.v4.app.RemoteInput", useAndro
 public class ${serviceName} extends Service {
     private static final String TAG = ${serviceName}.class.getSimpleName();
 
+    public static final String CHANNEL_ID =
+            "${packageName}.CHANNEL_ID";
     public static final String READ_ACTION =
             "${packageName}.ACTION_MESSAGE_READ";
     public static final String REPLY_ACTION =
@@ -112,7 +115,13 @@ public class ${serviceName} extends Service {
                 .setReadPendingIntent(readPendingIntent)
                 .setReplyAction(replyIntent, remoteInput);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+        NotificationChannelCompat channel = new NotificationChannelCompat
+                .Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setName(getResources().getText(R.string.app_name))
+                .build();
+        NotificationManagerCompat.from(getApplicationContext()).createNotificationChannel(channel);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 // Set the application notification icon:
                 //.setSmallIcon(R.drawable.notification_icon)
 
