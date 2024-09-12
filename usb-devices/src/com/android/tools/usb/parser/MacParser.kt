@@ -20,8 +20,7 @@ import com.android.tools.usb.UsbDevice
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.HashMap
-import java.util.concurrent.CompletableFuture
+import java.nio.charset.Charset
 import java.util.function.BiConsumer
 import java.util.function.BinaryOperator
 import java.util.function.Function
@@ -108,7 +107,7 @@ class MacParser : OutputParser {
   }
 
   override fun parse(output: InputStream): List<UsbDevice> {
-    return BufferedReader(InputStreamReader(output, Charsets.UTF_8))
+    return BufferedReader(InputStreamReader(output, Charset.defaultCharset()))
       .lines().skip(1) // skip the first line USB: output
       .collect(USBDeclarationCollector)
       .map { usbLines -> extractValues(usbLines) }
