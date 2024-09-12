@@ -34,26 +34,35 @@ import com.android.SdkConstants.TAG_RESOURCES
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GradleCoordinate
+import com.android.ide.common.resources.ResourceRepository
 import com.android.resources.ResourceFolderType
 import com.android.support.AndroidxNameUtils
 import com.android.tools.lint.LintCliClient.Companion.printWriter
 import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
 import com.android.tools.lint.LintCliFlags.ERRNO_USAGE
+import com.android.tools.lint.UastEnvironment.Companion.create
 import com.android.tools.lint.checks.BuiltinIssueRegistry
+import com.android.tools.lint.client.api.GradleVisitor
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.IssueRegistry.Companion.AOSP_VENDOR
 import com.android.tools.lint.client.api.JarFileIssueRegistry
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintJarApiMigration
 import com.android.tools.lint.client.api.LintJarVerifier
+import com.android.tools.lint.client.api.ResourceRepositoryScope
+import com.android.tools.lint.client.api.UastParser
 import com.android.tools.lint.client.api.Vendor
+import com.android.tools.lint.client.api.XmlParser
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Option
 import com.android.tools.lint.detector.api.Platform
+import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.ResourceXmlDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -1815,6 +1824,8 @@ class LintIssueDocGenerator(
       }
     )
 
+    scanTestsForQuickFixes(methods, issueData)
+
     for (method in methods) {
       val inferred = method.rank() >= 3
       issueData.example = findExampleInMethod(fileName, method, issueData, inferred, false)
@@ -1824,6 +1835,77 @@ class LintIssueDocGenerator(
         }
         break
       }
+    }
+  }
+
+  private fun scanTestsForQuickFixes(methods: List<UMethod>, issueData: IssueData) {
+
+    fun UMethod.hasFixCalls(): Boolean {
+      var found = false
+      this.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            if (found) return true
+            val name = node.methodName ?: node.methodIdentifier?.name
+            when (name) {
+              "expectFixDiffs",
+              "verifyFixes" -> {
+                node.valueArguments.firstOrNull()?.let {
+                  val output = evaluateString(it)
+                  if (output != null && output.contains("Show URL for")) {
+                    // Quickfix just mentions URLs; let's not consider this a "fix" to
+                    // highlight in the report
+                    return true
+                  }
+                }
+                found = true
+              }
+            }
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+      return found
+    }
+
+    fun UMethod.issueIdsReported(): Set<String> {
+      val result = HashSet<String>()
+      this.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val name = node.methodName ?: node.methodIdentifier?.name
+            when (name) {
+              "expect" -> {
+                val valueArgument = node.valueArguments.firstOrNull() ?: return true
+                val expected = evaluateString(valueArgument) ?: return true
+                result.addAll(getOutputIncidents(expected).map { it.id })
+              }
+            }
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+      return result
+    }
+
+    if (issueData.quickFixable) return
+
+    if (methods.none { it.hasFixCalls() }) return
+
+    if (singleIssueDetector(issueData.issue)) {
+      issueData.quickFixable = true
+      return
+    }
+
+    // There are calls that indicate quick-fixes, but we don't know which issue id they relate to.
+
+    // If we can find a test method where only our issue id is reported, and there are quick-fixes
+    // being tested, then the issue has quick-fixes.
+    if (
+      methods.any { it.hasFixCalls() && it.issueIdsReported().singleOrNull() == issueData.issue.id }
+    ) {
+      issueData.quickFixable = true
+      return
     }
   }
 
@@ -1843,21 +1925,6 @@ class LintIssueDocGenerator(
           if (example == null && name == "expect") {
             example = findExample(issueData, issue, fileName, method, node, inferred, suppress)
           }
-          if ((name == "expectFixDiffs" || name == "verifyFixes") && singleIssueDetector(issue)) {
-            // If we find a unit test for quickfixes, we assume that this issue
-            // has a quickfix (though we only do this when a detector analyzes a
-            // single issue, since the quickfix output has id in the output
-            // to attribute the fix to one issue id or another)
-            node.valueArguments.firstOrNull()?.let {
-              val output = evaluateString(it)
-              if (output != null && output.contains("Show URL for")) {
-                // Quickfix just mentions URLs; let's not consider this a "fix" to
-                // highlight in the report
-                return super.visitCallExpression(node)
-              }
-            }
-            issueData.quickFixable = true
-          }
           return super.visitCallExpression(node)
         }
       }
@@ -1871,8 +1938,27 @@ class LintIssueDocGenerator(
   }
 
   private fun createUastEnvironment(): UastEnvironment {
+
+    fun File.toModule(): UastEnvironment.Module {
+      val root = this
+      val lintProject = Project.create(FakeClient(), root, root)
+      lintProject.name = "jvm"
+      lintProject.javaSourceFolders.add(root)
+      return UastEnvironment.Module(
+        lintProject,
+        null,
+        false,
+        includeTestFixtureSources = false,
+        isUnitTest = false,
+      )
+    }
+
     val config = UastEnvironment.Configuration.create()
-    config.addSourceRoots(testPath.values.flatten())
+
+    val modules = testPath.values.flatten().map { it.toModule() }
+    if (modules.isNotEmpty()) {
+      config.addModules(modules, null)
+    }
 
     val libs = mutableListOf<File>()
     val classPath: String = System.getProperty("java.class.path")
@@ -1891,6 +1977,42 @@ class LintIssueDocGenerator(
     config.addClasspathRoots(libs)
 
     return UastEnvironment.create(config)
+  }
+
+  class FakeClient : LintClient() {
+    private fun unsupported(): Nothing {
+      error("Not supported")
+    }
+
+    override fun report(context: Context, incident: Incident, format: TextFormat) {
+      unsupported()
+    }
+
+    override fun log(severity: Severity, exception: Throwable?, format: String?, vararg args: Any) {
+      unsupported()
+    }
+
+    override val xmlParser: XmlParser
+      get() = unsupported()
+
+    override fun getUastParser(project: Project?): UastParser {
+      unsupported()
+    }
+
+    override fun getGradleVisitor(): GradleVisitor {
+      unsupported()
+    }
+
+    override fun readFile(file: File): CharSequence {
+      unsupported()
+    }
+
+    override fun getResources(
+      project: Project,
+      scope: ResourceRepositoryScope,
+    ): ResourceRepository {
+      unsupported()
+    }
   }
 
   private fun disposeUastEnvironment() {

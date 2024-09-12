@@ -27,6 +27,7 @@ import java.io.File
 import java.io.File.pathSeparator
 import java.io.PrintWriter
 import java.io.StringWriter
+import kotlin.test.assertContains
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -1448,6 +1449,156 @@ class LintIssueDocGeneratorTest {
     assertFalse(isStubSource("class Test { // This stubbornly refuses to work\n}"))
     assertTrue(isStubSource("class Test { /* HIDE-FROM-DOCUMENTATION */ }"))
     assertTrue(isStubSource("class R { };"))
+  }
+
+  @Test
+  fun testQuickFixFound() {
+    val outputFolder = temporaryFolder.newFolder("output")
+    val testSources = temporaryFolder.newFolder("test-sources")
+
+    // TypedefDetector has more than one issue id, but from the test case, we can tell
+    // that WrongConstant has a quick-fix.
+    val testSourceFile = File(testSources, "com/android/tools/lint/checks/TypedefDetectorTest.kt")
+
+    testSourceFile.parentFile?.mkdirs()
+    testSourceFile.writeText(
+      """
+      /*
+       * Copyright (C) 2017 The Android Open Source Project
+       *
+       * Licensed under the Apache License, Version 2.0 (the "License");
+       * you may not use this file except in compliance with the License.
+       * You may obtain a copy of the License at
+       *
+       *      http://www.apache.org/licenses/LICENSE-2.0
+       *
+       * Unless required by applicable law or agreed to in writing, software
+       * distributed under the License is distributed on an "AS IS" BASIS,
+       * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       * See the License for the specific language governing permissions and
+       * limitations under the License.
+       */
+
+      package com.android.tools.lint.checks
+
+      import com.android.tools.lint.checks.infrastructure.TestMode
+      import com.android.tools.lint.client.api.LintBaseline
+      import com.android.tools.lint.detector.api.Detector
+      import java.io.File
+      import org.junit.ComparisonFailure
+
+      class TypedefDetectorTest : AbstractCheckTest() {
+        override fun getDetector(): Detector = TypedefDetector()
+        fun testQuickfix() {
+          lint()
+            .files(
+              java(
+                  ""${'"'}
+                      package test.pkg;
+                      import android.app.AlarmManager;
+                      import android.app.PendingIntent;
+
+                      public class ExactAlarmTest {
+                          public void test(AlarmManager alarmManager, PendingIntent operation) {
+                              alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                          }
+                      }
+                      ""${'"'}
+                )
+                .indented(),
+              kotlin(
+                  ""${'"'}
+                      package test.pkg
+
+                      import android.app.PendingIntent
+
+                      fun test(alarmManager: android.app.AlarmManager, operation: PendingIntent?) {
+                          alarmManager.setExact(1, 0L, operation)
+                      }
+                      ""${'"'}
+                )
+                .indented(),
+            )
+            .allowNonAlphabeticalFixOrder(true)
+            .run()
+            .expect(
+              ""${'"'}
+                  src/test/pkg/ExactAlarmTest.java:7: Error: Must be one of: AlarmManager.RTC_WAKEUP, AlarmManager.RTC, AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.ELAPSED_REALTIME [WrongConstant]
+                          alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                                                ~~~~~~~~~~~~~~~~~
+                  src/test/pkg/test.kt:6: Error: Must be one of: AlarmManager.RTC_WAKEUP, AlarmManager.RTC, AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.ELAPSED_REALTIME [WrongConstant]
+                      alarmManager.setExact(1, 0L, operation)
+                                            ~
+                  2 errors, 0 warnings
+                  ""${'"'}
+            )
+            .expectFixDiffs(
+              ""${'"'}
+                  Fix for src/test/pkg/ExactAlarmTest.java line 7: Change to AlarmManager.RTC_WAKEUP:
+                  @@ -7 +7
+                  -         alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                  +         alarmManager.setExact(AlarmManager.RTC_WAKEUP, 0L, operation);
+                  Fix for src/test/pkg/ExactAlarmTest.java line 7: Change to AlarmManager.RTC:
+                  @@ -7 +7
+                  -         alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                  +         alarmManager.setExact(AlarmManager.RTC, 0L, operation);
+                  Fix for src/test/pkg/ExactAlarmTest.java line 7: Change to AlarmManager.ELAPSED_REALTIME_WAKEUP:
+                  @@ -7 +7
+                  -         alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                  +         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0L, operation);
+                  Fix for src/test/pkg/ExactAlarmTest.java line 7: Change to AlarmManager.ELAPSED_REALTIME:
+                  @@ -7 +7
+                  -         alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
+                  +         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0L, operation);
+                  Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.RTC (1):
+                  @@ -3 +3
+                  + import android.app.AlarmManager
+                  @@ -6 +7
+                  -     alarmManager.setExact(1, 0L, operation)
+                  +     alarmManager.setExact(AlarmManager.RTC, 0L, operation)
+                  Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.RTC_WAKEUP:
+                  @@ -3 +3
+                  + import android.app.AlarmManager
+                  @@ -6 +7
+                  -     alarmManager.setExact(1, 0L, operation)
+                  +     alarmManager.setExact(AlarmManager.RTC_WAKEUP, 0L, operation)
+                  Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.ELAPSED_REALTIME_WAKEUP:
+                  @@ -3 +3
+                  + import android.app.AlarmManager
+                  @@ -6 +7
+                  -     alarmManager.setExact(1, 0L, operation)
+                  +     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0L, operation)
+                  Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.ELAPSED_REALTIME:
+                  @@ -3 +3
+                  + import android.app.AlarmManager
+                  @@ -6 +7
+                  -     alarmManager.setExact(1, 0L, operation)
+                  +     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0L, operation)
+                  ""${'"'}
+            )
+        }
+      }
+      """
+        .trimIndent()
+    )
+
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--no-index",
+        "--test-url",
+        "",
+        testSources.path,
+        "--issues",
+        "WrongConstant",
+        "--output",
+        outputFolder.path,
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("WrongConstant.md.html", names)
+    val text = files[0].readText()
+    assertContains(text, "This lint check has an associated quickfix")
   }
 
   companion object {
