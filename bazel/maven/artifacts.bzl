@@ -236,7 +236,7 @@ DATA = [
     "androidx.collection:collection-ktx:1.4.0",  # Compose BOM 2024.04.01
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.animation:animation:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.animation:animation:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.animation:animation:1.7.0-beta05",
     "androidx.compose.animation:animation-android:1.8.0-alpha03",  # Compose Desktop Lint checks
     "androidx.compose.animation:animation-core:1.3.3",  # Dependency of architecture-samples
@@ -252,39 +252,39 @@ DATA = [
     "androidx.compose:compose-bom:pom:2023.01.00",  # Dependency of architecture-samples
     "androidx.compose:compose-bom:pom:2023.03.00",
     "androidx.compose:compose-bom:pom:2023.06.00",
-    "androidx.compose:compose-bom:pom:2024.04.01",
+    "androidx.compose:compose-bom:pom:2024.09.00",
     "androidx.compose.foundation:foundation:1.3.0",
     "androidx.compose.foundation:foundation:1.3.1",  # Dependency of architecture-samples
     "androidx.compose.foundation:foundation:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.foundation:foundation:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.foundation:foundation:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.foundation:foundation-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.foundation:foundation-android:1.8.0-alpha03",  # Compose Desktop Lint checks
     "androidx.compose.foundation:foundation-layout:1.3.1",  # Dependency of architecture-samples
-    "androidx.compose.foundation:foundation-layout:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.foundation:foundation-layout:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.material:material:1.3.0",  # Needed by //tools/base/build-system/integration-test/...
     "androidx.compose.material:material:1.4.3",  # Necessary for Compose for TV.
     "androidx.compose.material:material:1.5.0-alpha04",
-    "androidx.compose.material:material:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.material:material:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.material:material-android:1.8.0-alpha03",  # Compose Desktop Lint checks
-    "androidx.compose.material:material-icons-core:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.material:material-icons-core:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.material:material-icons-extended:1.3.0",
-    "androidx.compose.material:material-ripple:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.material:material-ripple:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.material3:material3:1.0.0",
     "androidx.compose.material3:material3:1.1.1",
-    "androidx.compose.material3:material3:1.2.1",  # Compose BOM 2024.04.01
+    "androidx.compose.material3:material3:1.3.0",  # Compose BOM 2024.09.00
     "androidx.compose.material3:material3-android:1.3.0",  # Compose Desktop Lint checks
     "androidx.compose.runtime:runtime:1.3.3",  # Dependency of architecture-samples
-    "androidx.compose.runtime:runtime:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.runtime:runtime:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.runtime:runtime-android:1.8.0-alpha03",  # Compose Desktop Lint checks
     "androidx.compose.runtime:runtime-livedata:1.3.0",
     "androidx.compose.runtime:runtime-saveable:1.3.3",  # Dependency of architecture-samples
-    "androidx.compose.runtime:runtime-saveable:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.runtime:runtime-saveable:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.runtime:runtime-saveable-android:1.8.0-alpha03",  # Compose Desktop Lint checks
     "androidx.compose.ui:ui:1.3.0",
     "androidx.compose.ui:ui:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.ui:ui:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.ui:ui:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.ui:ui-android:1.8.0-alpha03",  # Compose Desktop Lint checks
-    "androidx.compose.ui:ui-graphics:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.ui:ui-graphics:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.ui:ui-graphics-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-graphics-android:1.8.0-alpha03",  # Compose Desktop Lint checks
     "androidx.compose.ui:ui-test-android:1.5.0-beta01",  # Necessary for Compose for TV.
@@ -292,14 +292,15 @@ DATA = [
     "androidx.compose.ui:ui-test-junit4:1.3.0",
     "androidx.compose.ui:ui-test-junit4:1.3.3",  # Dependency of architecture-samples
     "androidx.compose.ui:ui-test-junit4:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.ui:ui-test-junit4:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.ui:ui-test-junit4:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.ui:ui-test-junit4:1.7.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-test-junit4:1.7.0-beta05",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-test-junit4-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-test-manifest:1.3.0",
     "androidx.compose.ui:ui-test-manifest:1.3.3",  # Dependency of architecture-samples
     "androidx.compose.ui:ui-test-manifest:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.ui:ui-test-manifest:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.ui:ui-test-manifest:1.6.5",  # Compose Desktop Lint checks
+    "androidx.compose.ui:ui-test-manifest:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.ui:ui-test-manifest:1.7.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-test-manifest:1.7.0-beta05",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-test-manifest:1.8.0-alpha03",  # Compose Desktop Lint checks
@@ -310,8 +311,8 @@ DATA = [
     "androidx.compose.ui:ui-tooling:1.3.3",  # Dependency of architecture-samples
     "androidx.compose.ui:ui-tooling:1.4.3",  # Still needed from //tools/adt/idea/integration:BuildAndRunKMPTest
     "androidx.compose.ui:ui-tooling:1.5.0-beta01",  # Necessary for Compose for TV.
-    "androidx.compose.ui:ui-tooling:1.6.5",
-    "androidx.compose.ui:ui-tooling:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.ui:ui-tooling:1.6.6",
+    "androidx.compose.ui:ui-tooling:1.7.0",  # Compose BOM 2024.09.00
     "androidx.compose.ui:ui-tooling:1.7.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-tooling:1.7.0-beta05",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.compose.ui:ui-tooling-android:1.5.0-beta01",  # Necessary for Compose for TV.
@@ -372,6 +373,7 @@ DATA = [
     "androidx.lifecycle:lifecycle-common-java8:2.4.0",
     "androidx.lifecycle:lifecycle-common-java8:2.6.1",
     "androidx.lifecycle:lifecycle-common-java8:2.6.2",
+    "androidx.lifecycle:lifecycle-common-java8:2.8.3",
     "androidx.lifecycle:lifecycle-extensions:2.2.0",
     "androidx.lifecycle:lifecycle-livedata:2.6.0-alpha03",  # Dependency of architecture-samples
     "androidx.lifecycle:lifecycle-livedata:2.8.3",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication

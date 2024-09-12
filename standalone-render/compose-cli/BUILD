@@ -79,25 +79,25 @@ maven_repository(
         "@maven//:androidx.collection.collection-ktx_1.4.0",
         "@maven//:androidx.compose.animation.animation_1.5.0",
         "@maven//:androidx.compose.compiler.compiler_1.5.1",
-        "@maven//:androidx.compose.compose-bom_2024.04.01",
+        "@maven//:androidx.compose.compose-bom_2024.09.00",
         "@maven//:androidx.compose.foundation.foundation-layout_1.5.0",
         "@maven//:androidx.compose.foundation.foundation_1.5.0",
         "@maven//:androidx.compose.material.material-icons-core_1.5.0",
         "@maven//:androidx.compose.material.material-ripple_1.5.0",
-        "@maven//:androidx.compose.material.material_1.6.6",  # Compose BOM 2024.04.01
-        "@maven//:androidx.compose.material3.material3_1.2.1",  # Compose BOM 2024.04.01
+        "@maven//:androidx.compose.material.material_1.7.0",  # Compose BOM 2024.09.00
+        "@maven//:androidx.compose.material3.material3_1.3.0",  # Compose BOM 2024.09.09
         "@maven//:androidx.compose.ui.ui-graphics_1.5.0",
-        "@maven//:androidx.compose.ui.ui-test-manifest_1.6.6",  # Compose BOM 2024.04.01
+        "@maven//:androidx.compose.ui.ui-test-manifest_1.7.0",  # Compose BOM 2024.09.00
         "@maven//:androidx.compose.ui.ui-tooling-preview_1.5.0",
-        "@maven//:androidx.compose.ui.ui-tooling_1.6.6",  # Compose BOM 2024.04.01
+        "@maven//:androidx.compose.ui.ui-tooling_1.7.0",  # Compose BOM 2024.09.00
         "@maven//:androidx.compose.ui.ui_1.5.0",
         "@maven//:androidx.core.core-ktx_1.12.0",
-        "@maven//:androidx.lifecycle.lifecycle-common-java8_2.6.2",
-        "@maven//:androidx.lifecycle.lifecycle-process_2.6.2",
-        "@maven//:androidx.lifecycle.lifecycle-runtime-ktx_2.6.2",
-        "@maven//:androidx.lifecycle.lifecycle-viewmodel-ktx_2.6.2",
-        "@maven//:androidx.lifecycle.lifecycle-viewmodel-savedstate_2.6.2",
-        "@maven//:androidx.lifecycle.lifecycle-viewmodel_2.6.2",
+        "@maven//:androidx.lifecycle.lifecycle-common-java8_2.8.3",
+        "@maven//:androidx.lifecycle.lifecycle-process_2.8.3",
+        "@maven//:androidx.lifecycle.lifecycle-runtime-ktx_2.8.3",
+        "@maven//:androidx.lifecycle.lifecycle-viewmodel-ktx_2.8.3",
+        "@maven//:androidx.lifecycle.lifecycle-viewmodel-savedstate_2.8.3",
+        "@maven//:androidx.lifecycle.lifecycle-viewmodel_2.8.3",
         "@maven//:com.android.application.com.android.application.gradle.plugin_8.2.0",
         "@maven//:com.android.tools.build.aapt2_8.2.0-10154469",
         "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.0",
@@ -135,9 +135,9 @@ kotlin_test(
         "//tools/base/standalone-render/compose-cli/testData",
     ],
     tags = [
-        "noci:studio-win",
-        "noci:studio-linux",
         "ci:perfgate-linux",
+        "noci:studio-linux",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.render.compose.PerfMainTest",
     deps = [
