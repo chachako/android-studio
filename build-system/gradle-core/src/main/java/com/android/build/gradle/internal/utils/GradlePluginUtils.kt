@@ -25,62 +25,11 @@ import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugi
 import com.android.build.gradle.internal.plugins.LibraryPlugin
 import com.android.build.gradle.internal.plugins.PrivacySandboxSdkPlugin
 import com.android.build.gradle.internal.plugins.TestPlugin
-import com.android.ide.common.repository.GradleVersion
-import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.initialization.dsl.ScriptHandler.CLASSPATH_CONFIGURATION
 import java.net.JarURLConnection
 import java.util.regex.Pattern
-
-
-
-
-/**
- * A data class to specify a [minimumVersion] requirement for a given [dependencyGroup] and
- * [dependencyName].
- *
- * If [pluginId] is specified, the [minimumVersion] requirement is enforced only if [pluginId] is
- * applied.
- */
-@VisibleForTesting
-internal data class DependencyInfo(
-    val displayName: String,
-    val dependencyGroup: String,
-    val dependencyName: String,
-    val minimumVersion: GradleVersion,
-    val pluginId: String? = null
-)
-
-
-@VisibleForTesting
-internal class ViolatingPluginDetector(
-        private val buildscriptClasspath: ResolutionResult,
-        private val pluginToSearch: DependencyInfo,
-        private val projectDisplayName: String
-) {
-
-    /** Returns the paths to violating plugins. */
-    fun detect(): List<String> {
-        val violatingPlugins = buildscriptClasspath.getModuleComponents { moduleComponentId ->
-            if (moduleComponentId.group == pluginToSearch.dependencyGroup
-                    && moduleComponentId.module == pluginToSearch.dependencyName) {
-                // Use GradleVersion to parse the version since the format accepted by GradleVersion
-                // is general enough. In the unlikely event that the version cannot be parsed,
-                // ignore the error.
-                val parsedVersion = GradleVersion.tryParse(moduleComponentId.version)
-                (parsedVersion != null) && (parsedVersion < pluginToSearch.minimumVersion)
-            } else {
-                false
-            }
-        }
-        return violatingPlugins.map {
-            buildscriptClasspath.getPathToComponent(it).getPathString(projectDisplayName)
-        }
-    }
-
-}
 
 /** Lists all module dependencies resolved for buildscript classpath. */
 fun getBuildscriptDependencies(project: Project): List<ModuleComponentIdentifier> {
