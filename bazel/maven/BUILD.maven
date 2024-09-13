@@ -20473,6 +20473,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.concurrent.concurrent-futures-ktx_1.2.0-alpha03",
+    pom = "repository/androidx/concurrent/concurrent-futures-ktx/1.2.0-alpha03/concurrent-futures-ktx-1.2.0-alpha03.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/concurrent/concurrent-futures-ktx/1.2.0-alpha03",
+    deps = [
+        "androidx.concurrent.concurrent-futures_1.2.0-alpha03",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.concurrent.concurrent-futures_1.0.0",
     pom = "repository/androidx/concurrent/concurrent-futures/1.0.0/concurrent-futures-1.0.0.pom",
     repo_root_path = "repository",
@@ -20513,6 +20526,18 @@ maven_artifact(
     pom = "repository/androidx/concurrent/concurrent-futures/1.2.0-alpha02/concurrent-futures-1.2.0-alpha02.pom",
     repo_root_path = "repository",
     repo_path = "androidx/concurrent/concurrent-futures/1.2.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "com.google.guava.listenablefuture_1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.concurrent.concurrent-futures_1.2.0-alpha03",
+    pom = "repository/androidx/concurrent/concurrent-futures/1.2.0-alpha03/concurrent-futures-1.2.0-alpha03.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/concurrent/concurrent-futures/1.2.0-alpha03",
     deps = [
         "androidx.annotation.annotation_1.1.0",
         "com.google.guava.listenablefuture_1.0",
@@ -48234,10 +48259,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.ai.client.generativeai.generativeai_0.2.2",
-    pom = "repository/com/google/ai/client/generativeai/generativeai/0.2.2/generativeai-0.2.2.pom",
+    name = "com.google.ai.client.generativeai.common_0.8.0",
+    pom = "repository/com/google/ai/client/generativeai/common/0.8.0/common-0.8.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/ai/client/generativeai/generativeai/0.2.2",
+    repo_path = "com/google/ai/client/generativeai/common/0.8.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.22",
         "io.ktor.ktor-client-okhttp_2.3.2",
@@ -48254,6 +48279,27 @@ maven_artifact(
         "com.google.guava.listenablefuture_1.0",
         "androidx.concurrent.concurrent-futures_1.2.0-alpha02",
         "androidx.concurrent.concurrent-futures-ktx_1.2.0-alpha02",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.ai.client.generativeai.generativeai_0.9.0",
+    pom = "repository/com/google/ai/client/generativeai/generativeai/0.9.0/generativeai-0.9.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/ai/client/generativeai/generativeai/0.9.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.22",
+        "com.google.ai.client.generativeai.common_0.8.0",
+        "androidx.core.core-ktx_1.12.0",
+        "org.slf4j.slf4j-nop_2.0.9",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.7.3",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-reactive_1.7.3",
+        "org.jetbrains.kotlinx.kotlinx-serialization-json_1.5.1",
+        "org.reactivestreams.reactive-streams_1.0.3",
+        "com.google.guava.listenablefuture_1.0",
+        "androidx.concurrent.concurrent-futures_1.2.0-alpha03",
+        "androidx.concurrent.concurrent-futures-ktx_1.2.0-alpha03",
     ],
     visibility = ["//visibility:public"],
 )

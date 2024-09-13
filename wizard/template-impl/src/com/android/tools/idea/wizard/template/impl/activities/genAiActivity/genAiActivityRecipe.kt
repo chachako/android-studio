@@ -50,7 +50,7 @@ fun RecipeExecutor.genAiActivityRecipe(
 
   addDependency(mavenCoordinate = "androidx.compose.material3:material3")
 
-  addDependency(mavenCoordinate = "com.google.ai.client.generativeai:generativeai:0.2.2")
+  addDependency(mavenCoordinate = "com.google.ai.client.generativeai:generativeai:0.9.0")
   addSecretsGradlePlugin()
 
   generateManifest(
