@@ -38,6 +38,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 private val logger = Logger.getLogger("PreviewFinder")
+private val invalidCharsRegex = """[\u0000-\u001F\\/:*?"<>|]+""".toRegex()
 
 fun configureInput (
     classPath: List<String>,
@@ -169,33 +170,37 @@ fun sortListOfSortedMaps(listToSort: List<SortedMap<String, String>>): List<Sort
 }
 
 private fun calcPreviewId(method: MethodRepresentation, annotation: BaseAnnotationRepresentation): String {
-    var previewId = method.methodFqn
-    if (annotation.parameters.containsKey("name")) {
-        val previewName = annotation.parameters["name"].toString()
-        val invalidCharacters = Regex("""[\u0000-\u001F\\/:*?"<>|]+""")
-        if (invalidCharacters.containsMatchIn(previewName)) {
-            logger.log(
-                Level.WARNING,
-                "Preview name $previewName contains characters that are not valid in file " +
-                        "names. It will be included in the test name in the HTML test report but " +
-                        "ignored in image file names for screenshot test results."
-            )
+    val previewIdBuilder = StringBuilder(method.methodFqn)
+
+    val previewName = annotation.parameters["name"]
+    if (previewName != null && previewName is CharSequence) {
+        if (previewName.contains(invalidCharsRegex)) {
+            logger.warning("Preview name '$previewName' contains invalid characters. It will be included in the HTML report but ignored in image file names.")
         } else {
-            previewId += "_${previewName}"
+            previewIdBuilder.append("_").append(previewName)
         }
     }
+
     val digest = MessageDigest.getInstance("SHA-1")
-    annotation.parameters.keys.sorted().forEach {
-        digest.update(it.toByteArray(StandardCharsets.UTF_8))
-        digest.update(annotation.parameters[it].toString().toByteArray(StandardCharsets.UTF_8))
-    }
-    val previewSettingsHash = calcHexString(digest.digest())
-    method.parameters.forEach { param ->
-        param.annotationParameters.keys.sorted().forEach {
-            digest.update(it.toByteArray(StandardCharsets.UTF_8))
-            digest.update(param.annotationParameters[it].toString().toByteArray(StandardCharsets.UTF_8))
+
+    updateAndAppendHash(digest, previewIdBuilder, "annotation-parameters", annotation.parameters)
+
+    if (method.parameters.isNotEmpty()) {
+        for (param in method.parameters) { //currently only one param is supported and max size of method.parameters is 1
+            updateAndAppendHash(digest, previewIdBuilder, "method-parameter-annotations", param.annotationParameters)
         }
     }
-    val methodParamHash = calcHexString(digest.digest())
-    return "${previewId}_${previewSettingsHash}_$methodParamHash"
+
+    return previewIdBuilder.toString()
+}
+
+private fun updateAndAppendHash(digest: MessageDigest, builder: StringBuilder, dataSectionName: String, dataMap: Map<String, *>) {
+    if (dataMap.isNotEmpty()) {
+        digest.update(dataSectionName.toByteArray())
+        for ((key, value) in dataMap.toSortedMap()) {
+            digest.update(key.toByteArray())
+            digest.update(value.toString().toByteArray())
+        }
+        builder.append("_").append(calcHexString(digest.digest()))
+    }
 }
