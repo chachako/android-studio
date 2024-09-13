@@ -1269,6 +1269,7 @@ public final class SdkConstants {
 
     // Tags: Drawables
     public static final String TAG_ANIMATION_LIST = "animation-list";
+    public static final String TAG_ANIMATED_IMAGE = "animated-image";
     public static final String TAG_ANIMATED_SELECTOR = "animated-selector";
     public static final String TAG_ANIMATED_VECTOR = "animated-vector";
     public static final String TAG_BITMAP = "bitmap";
