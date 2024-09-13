@@ -221,6 +221,7 @@ private val ALLOWED_ERRORS = listOf(
     "WARNING: System::setSecurityManager has been called by com.android.tools.rendering.security.RenderSecurityManager",
     "WARNING: Please consider reporting this to the maintainers of com.android.tools.rendering.security.RenderSecurityManager",
     "WARNING: System::setSecurityManager will be removed in a future release",
+    "Tracing Skia with Perfetto is not supported in this environment (host build?)",
 )
 
 private fun runComposeCliRender(settingsFile: File): String {
