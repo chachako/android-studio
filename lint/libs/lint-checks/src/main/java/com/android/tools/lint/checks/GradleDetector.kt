@@ -37,6 +37,7 @@ import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_KEY
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_URL
+import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.VulnerabilityDescription
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintTomlDocument
 import com.android.tools.lint.client.api.LintTomlMapValue
@@ -1008,7 +1009,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
     val sdkIndex = getGooglePlaySdkIndex(context.client)
     val versionFilter = getUpgradeVersionFilter(context, groupId, artifactId, version)
-    val sdkIndexFilter = getGooglePlaySdkIndexFilter(context, groupId, artifactId, sdkIndex)
+    val recommendedVersions = sdkIndex.recommendedVersions(groupId, artifactId, version.toString())
+    val sdkIndexFilter =
+      getGooglePlaySdkIndexFilter(context, groupId, artifactId, recommendedVersions, sdkIndex)
     fun Predicate<Version>?.and(other: Predicate<Version>?): Predicate<Version>? =
       when {
         this != null && other != null -> this.and(other)
@@ -1192,98 +1195,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
 
-    var hasSdkIndexIssues = false
-    if (sdkIndex.isReady()) {
-      val versionString = version.toString()
-      val buildFile = context.file
-      val isBlocking = sdkIndex.hasLibraryBlockingIssues(groupId, artifactId, versionString)
-      val severity =
-        if (isBlocking) {
-          Severity.ERROR
-        } else {
-          Severity.WARNING
-        }
-      // Report all SDK Index issues without grouping them following this order (b/316038712):
-      //  - Policy
-      //  - Critical (if blocking)
-      //  - Vulnerability
-      //  - Outdated
-      var fix: LintFix? = null
-      if (sdkIndex.isLibraryNonCompliant(groupId, artifactId, versionString, buildFile)) {
-        fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        val messages =
-          if (isBlocking) {
-            sdkIndex.generateBlockingPolicyMessages(groupId, artifactId, versionString)
-          } else {
-            sdkIndex.generatePolicyMessages(groupId, artifactId, versionString)
-          }
-        for (message in messages) {
-          hasSdkIndexIssues =
-            report(
-              context,
-              cookie,
-              PLAY_SDK_INDEX_NON_COMPLIANT,
-              message,
-              fix,
-              overrideSeverity = severity,
-            ) || hasSdkIndexIssues
-        }
-      }
-      if (
-        isBlocking &&
-          sdkIndex.hasLibraryCriticalIssues(groupId, artifactId, versionString, buildFile)
-      ) {
-        // Messages from developer that are not-blocking are not shown in lint
-        if (fix == null) {
-          fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        }
-        val message = sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
-        hasSdkIndexIssues =
-          report(context, cookie, RISKY_LIBRARY, message, fix, overrideSeverity = severity) ||
-            hasSdkIndexIssues
-      }
-      if (sdkIndex.hasLibraryVulnerabilityIssues(groupId, artifactId, versionString, buildFile)) {
-        if (fix == null) {
-          fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        }
-        val messages = sdkIndex.generateVulnerabilityMessages(groupId, artifactId, versionString)
-        for (message in messages) {
-          val compositeFix = LintFix.create().alternatives()
-          if (fix != null) {
-            compositeFix.add(fix)
-          }
-          if (!message.link.isNullOrBlank()) {
-            compositeFix.add(
-              LintFix.ShowUrl("Learn more about ${message.name} vulnerability", null, message.link)
-            )
-          }
-          hasSdkIndexIssues =
-            report(
-              context,
-              cookie,
-              PLAY_SDK_INDEX_VULNERABILITY,
-              message.description,
-              compositeFix.build(),
-              overrideSeverity = severity,
-            ) || hasSdkIndexIssues
-        }
-      }
-      if (sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)) {
-        if (fix == null) {
-          fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        }
-        val message =
-          if (isBlocking) {
-            sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
-          } else {
-            sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
-          }
-        hasSdkIndexIssues =
-          report(context, cookie, DEPRECATED_LIBRARY, message, fix, overrideSeverity = severity) ||
-            hasSdkIndexIssues
-      }
-    }
-
     // Network check for really up to date libraries? Only done in batch mode.
     var issue = DEPENDENCY
     if (
@@ -1327,6 +1238,18 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     // If it's available in maven.google.com, fetch latest available version.
     newerVersion = newerVersion maxOrNull getGoogleMavenRepoVersion(context, dependency, filter)
 
+    val hasSdkIndexIssues =
+      generateAndReportSdkIndexIssues(
+        sdkIndex,
+        groupId,
+        artifactId,
+        version,
+        richVersionIdentifier,
+        if (!isResolved) newerVersion else null,
+        context,
+        cookie,
+      )
+
     if (
       newerVersion != null &&
         version > Version.prefixInfimum("0") &&
@@ -1365,11 +1288,179 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       // Only show update message if there is a custom message or SDK Index issues not present
       // (b/301316600)
       if (isCustomMessage || !hasSdkIndexIssues) {
+        // A quick fix to change the current version was already displayed if there were SDK Index
+        // issues, no need to repeat that fix
         val fix =
-          if (!isResolved) getUpdateDependencyFix(richVersionIdentifier, versionString) else null
+          if (!isResolved && !hasSdkIndexIssues)
+            getUpdateDependencyFix(richVersionIdentifier, versionString)
+          else null
         report(context, cookie, issue, message, fix)
       }
     }
+  }
+
+  private fun generateAndReportSdkIndexIssues(
+    sdkIndex: GooglePlaySdkIndex,
+    groupId: String,
+    artifactId: String,
+    version: Version,
+    richVersionIdentifier: String,
+    newerVersion: Version?,
+    context: Context,
+    cookie: Any,
+  ): Boolean {
+    var reported = false
+    if (sdkIndex.isReady()) {
+      val versionString = version.toString()
+      val buildFile = context.file
+      val isBlocking = sdkIndex.hasLibraryBlockingIssues(groupId, artifactId, versionString)
+      val severity =
+        if (isBlocking) {
+          Severity.ERROR
+        } else {
+          Severity.WARNING
+        }
+      // Report all SDK Index issues without grouping them following this order (b/316038712):
+      //  - Policy
+      //  - Critical (if blocking)
+      //  - Vulnerability
+      //  - Outdated
+      if (sdkIndex.isLibraryNonCompliant(groupId, artifactId, versionString, buildFile)) {
+        val fix =
+          generateSdkIndexFixes(
+            groupId,
+            artifactId,
+            version,
+            richVersionIdentifier,
+            newerVersion,
+            buildFile,
+            sdkIndex,
+          )
+        val messages =
+          if (isBlocking) {
+            sdkIndex.generateBlockingPolicyMessages(groupId, artifactId, versionString)
+          } else {
+            sdkIndex.generatePolicyMessages(groupId, artifactId, versionString)
+          }
+        for (message in messages) {
+          reported =
+            report(
+              context,
+              cookie,
+              PLAY_SDK_INDEX_NON_COMPLIANT,
+              message,
+              fix,
+              overrideSeverity = severity,
+            ) || reported
+        }
+      }
+      if (
+        isBlocking &&
+          sdkIndex.hasLibraryCriticalIssues(groupId, artifactId, versionString, buildFile)
+      ) {
+        // Messages from developer that are not-blocking are not shown in lint
+        val fix =
+          generateSdkIndexFixes(
+            groupId,
+            artifactId,
+            version,
+            richVersionIdentifier,
+            newerVersion,
+            buildFile,
+            sdkIndex,
+          )
+        val message = sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
+        reported =
+          report(context, cookie, RISKY_LIBRARY, message, fix, overrideSeverity = severity) ||
+            reported
+      }
+      if (sdkIndex.hasLibraryVulnerabilityIssues(groupId, artifactId, versionString, buildFile)) {
+        val messages = sdkIndex.generateVulnerabilityMessages(groupId, artifactId, versionString)
+        for (message in messages) {
+          val fix =
+            generateSdkIndexFixes(
+              groupId,
+              artifactId,
+              version,
+              richVersionIdentifier,
+              newerVersion,
+              buildFile,
+              sdkIndex,
+              vulnerabilityMessage = message,
+            )
+          reported =
+            report(
+              context,
+              cookie,
+              PLAY_SDK_INDEX_VULNERABILITY,
+              message.description,
+              fix,
+              overrideSeverity = severity,
+            ) || reported
+        }
+      }
+      if (sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)) {
+        val fix =
+          generateSdkIndexFixes(
+            groupId,
+            artifactId,
+            version,
+            richVersionIdentifier,
+            newerVersion,
+            buildFile,
+            sdkIndex,
+          )
+        val message =
+          if (isBlocking) {
+            sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
+          } else {
+            sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
+          }
+        reported =
+          report(context, cookie, DEPRECATED_LIBRARY, message, fix, overrideSeverity = severity) ||
+            reported
+      }
+    }
+    return reported
+  }
+
+  private fun generateSdkIndexFixes(
+    groupId: String,
+    artifactId: String,
+    currentVersion: Version,
+    currentVersionIdentifier: String,
+    newerVersion: Version?,
+    buildFile: File,
+    sdkIndex: GooglePlaySdkIndex,
+    vulnerabilityMessage: VulnerabilityDescription? = null,
+  ): LintFix? {
+    val fixes = fix().group()
+    var empty = true
+    if ((newerVersion != null) && (newerVersion > currentVersion)) {
+      fixes.add(getUpdateDependencyFix(currentVersionIdentifier, newerVersion.toString()))
+      empty = false
+    }
+    val vulnerabilityLink = vulnerabilityMessage?.link
+    if (!vulnerabilityLink.isNullOrBlank()) {
+      fixes.add(
+        LintFix.ShowUrl(
+          "Learn more about ${vulnerabilityMessage.name} vulnerability",
+          null,
+          vulnerabilityLink,
+        )
+      )
+      empty = false
+    }
+    val viewMoreLink =
+      sdkIndex.generateSdkLinkLintFix(groupId, artifactId, currentVersion.toString(), buildFile)
+    if (viewMoreLink != null) {
+      fixes.add(viewMoreLink)
+      empty = false
+    }
+    if (empty) {
+      return null
+    }
+    return fixes.build()
   }
 
   private fun checkDuplication(
@@ -1398,14 +1489,40 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
+    recommendedVersions: Collection<LibraryVersionRange>,
     sdkIndex: GooglePlaySdkIndex?,
   ): Predicate<Version>? {
     return sdkIndex?.let {
       // Filter out versions with SDK Index errors or warnings (b/301295995)
       Predicate { v ->
-        it.isReady() && !it.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())
+        it.isReady() &&
+          (!it.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())) &&
+          isRecommendedVersion(v, recommendedVersions)
       }
     }
+  }
+
+  private fun isRecommendedVersion(
+    version: Version,
+    recommendedVersions: Collection<LibraryVersionRange>,
+  ): Boolean {
+    if (recommendedVersions.isEmpty()) {
+      return true
+    }
+    for (range in recommendedVersions) {
+      val lowerVersion = Version.parse(range.lowerBound)
+      if (version < lowerVersion) {
+        continue
+      }
+      if (range.upperBound.isNullOrBlank()) {
+        return true
+      }
+      val upperVersion = Version.parse(range.upperBound)
+      if (version <= upperVersion) {
+        return true
+      }
+    }
+    return false
   }
 
   /**

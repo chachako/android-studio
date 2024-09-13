@@ -4966,8 +4966,6 @@ class GradleDetectorTest : AbstractCheckTest() {
         http://another.example.url/
         Show URL for build.gradle line 23: View details in Google Play SDK Index:
         http://another.example.url/
-        Show URL for build.gradle line 25: View details in Google Play SDK Index:
-        http://another.example.url/
         Show URL for build.gradle line 25: Learn more about Unsafe SSL Error Handler vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 25: View details in Google Play SDK Index:
@@ -4978,15 +4976,15 @@ class GradleDetectorTest : AbstractCheckTest() {
         http://another.example.url/
         Show URL for build.gradle line 25: Learn more about Unsafe OAuth via WebView vulnerability:
         https://support.google.com/faqs/answer/12284343
-        Show URL for build.gradle line 13: View details in Google Play SDK Index:
+        Show URL for build.gradle line 25: View details in Google Play SDK Index:
         http://another.example.url/
         Show URL for build.gradle line 13: Learn more about Unsafe TrustManager vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
-        Show URL for build.gradle line 24: View details in Google Play SDK Index:
+        Show URL for build.gradle line 13: View details in Google Play SDK Index:
         http://another.example.url/
         Show URL for build.gradle line 24: Learn more about Unsafe HostnameVerifier vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
-        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        Show URL for build.gradle line 24: View details in Google Play SDK Index:
         http://another.example.url/
         Show URL for build.gradle line 26: Learn more about Implicit Internal Intent vulnerability:
         https://support.google.com/faqs/answer/10437428
@@ -5042,6 +5040,8 @@ class GradleDetectorTest : AbstractCheckTest() {
         http://another.example.url/
         Show URL for build.gradle line 26: Learn more about Cross-App Scripting vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 26: View details in Google Play SDK Index:
+        http://another.example.url/
         Show URL for build.gradle line 8: View details in Google Play SDK Index:
         http://index.example.url/
         Show URL for build.gradle line 5: View details in Google Play SDK Index:
@@ -5426,12 +5426,24 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -4 +4
         -     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
         +     compile 'log4j:log4j:1.2.11' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+        Fix for build.gradle line 2: Change to 8.0.0:
+        @@ -2 +2
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
-        Show URL for build.gradle line 2: View details in Google Play SDK Index:
-        http://another.example.url/
+        Fix for build.gradle line 2: Change to 8.0.0:
+        @@ -2 +2
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: Learn more about Unsafe TrustManager vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
+        Show URL for build.gradle line 2: View details in Google Play SDK Index:
+        http://another.example.url/
+        Fix for build.gradle line 2: Change to 8.0.0:
+        @@ -2 +2
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
       """
@@ -5440,7 +5452,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         gradle(
             """
                 dependencies {
-                    compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+                    compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                 }
@@ -5494,13 +5506,13 @@ class GradleDetectorTest : AbstractCheckTest() {
               compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+              compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
-              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+              compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
-              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
+              compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 5 warnings
         """
@@ -5585,6 +5597,10 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSdkIndexLibraryUpgradeToVersionWithCustomMessage() {
     val expectedFixes =
       """
+        Fix for build.gradle line 4: Change to 18.3.0:
+        @@ -4 +4
+        -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
+        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
         Fix for build.gradle line 2: Change to 1.2.0:
         @@ -2 +2
         -     compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
@@ -5593,10 +5609,6 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -3 +3
         -     compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
         +     compile 'com.google.android.gms:play-services-maps:18.3.0' // Current has issues but there is a custom message
-        Fix for build.gradle line 4: Change to 18.3.0:
-        @@ -4 +4
-        -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
-        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
       """
     lint()
       .files(

@@ -639,6 +639,28 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     }
   }
 
+  /**
+   * Generate a list of versions that the library owner has recommended to use instead of the passed
+   * version.
+   */
+  fun recommendedVersions(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+  ): Collection<LibraryVersionRange> {
+    val recommendations = LinkedHashSet<LibraryVersionRange>()
+    val labels = getLabels(groupId, artifactId, versionString)
+    if (labels != null) {
+      labels.policyIssuesInfo.recommendedVersionsList?.filterNotNull()?.forEach {
+        recommendations.add(it)
+      }
+      labels.outdatedIssueInfo.recommendedVersionsList?.filterNotNull()?.forEach {
+        recommendations.add(it)
+      }
+    }
+    return recommendations
+  }
+
   protected open fun logHasCriticalIssues(
     groupId: String,
     artifactId: String,
