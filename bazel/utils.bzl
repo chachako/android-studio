@@ -81,13 +81,14 @@ def fileset(name, srcs = [], mappings = {}, tags = [], **kwargs):
         **kwargs
     )
 
-def java_jarjar(name, rules, srcs = [], visibility = None, rename_services = False, manifest_lines = []):
+def java_jarjar(name, rules, srcs = [], visibility = None, rename_services = False, native_classloader = None, manifest_lines = []):
     jarjar(
         name = name,
         rule_file = rules,
         src_jars = srcs,
         manifest_lines = manifest_lines,
         rename_services = rename_services,
+        native_classloader = native_classloader,
         visibility = visibility,
     )
     native.alias(

@@ -20,18 +20,22 @@ import shutil
 import sys
 import zipfile
 
-# This tool is meant to fix a jarjar deficiency where it doesn't properly rename services in the
-# jar. It takes a jarjar output and the rules used to generate it and applies the shade (rename)
-# rules to the META-INF/services folder.
+# This tool is meant to fix a jarjar deficiency where it doesn't properly rename services or
+# native libraries in the jar. It takes a jarjar output and the rules used to generate it and
+# applies the shade (rename) rules to the META-INF/services and META-INF/native folders.
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Rename META-INF resources via jarjar rules.')
     parser.add_argument('-i', '--in', dest='jar_in', metavar='jar_in', nargs=1, required=True,
                         help='the input jar')
     parser.add_argument('-o', '--out', dest='jar_out', metavar='jar_out', nargs=1, required=True,
                         help='the output jar')
     parser.add_argument('-r', '--rules', dest='rules', metavar='rules', nargs=1, required=True,
                         help='the rules file')
+    parser.add_argument('--rename_services', action=argparse.BooleanOptionalAction,
+                        help='rename META-INF/services')
+    parser.add_argument('--native_classloader', required=False,
+                        help='native classloader path used for renaming META-INF/native')
 
     return parser.parse_args()
 
@@ -110,14 +114,56 @@ def copy_entry(entry_name, src_archive, dst_archive):
     else:
         dst_archive.writestr(entry_name, src_archive.read(entry_name))
 
-def shade_services(jar_file, rules_file, output, compression=zipfile.ZIP_STORED):
+def get_native_library_prefix(rules, native_classloader):
+    """
+    If the netty native library class loader has been shaded, its search path will change based
+    on the same package prefix applied during shading. Specifically, it will calculate the
+    corresponding prefix against the original path of the class loader [native_classloader].
+
+    We can determine this simply by applying the existing jarjar rules to the original path, then
+    extracting the prefix and applying a required transformation of converting all "." chars to "_".
+    Next, files in META-INF/native should be renamed by prepending this string. Note that there is a
+    special case for files beginning with "lib", in which case the prefix should be inserted after "lib".
+
+    Example:
+
+    META-INF/native
+        -> somefile.so
+        -> libanotherfile.jnilib
+
+    Apply:
+        rule io.netty.** a.b.c.io.netty.@1
+        native_classloader = io.netty.util.internal.NativeLibraryLoader
+
+    1. Shade "io.netty.util.internal.NativeLibraryLoader" to "a.b.c.io.netty.util.internal.NativeLibraryLoader"
+    2. Extract prefix "a.b.c" and convert to "a_b_c_"
+    3. Rename "somefile.so" to "a_b_c_somefile.so", and "libanotherfile.jnilib" to "liba_b_c_anotherfile.jnilib"
+    """
+
+    # Return null if class loader is null or empty
+    if not native_classloader:
+        return None
+
+    # Shade original class loader with existing jarjar rules
+    shaded_native_classloader = shade_name(native_classloader, rules)
+
+    # Calculate prefix (can be empty string). Note that the native class loader supports
+    # shading with only prefixes, so return null here if a non-prefix rename is detected.
+    if not shaded_native_classloader.endswith(native_classloader):
+        return None
+
+    return shaded_native_classloader[:len(shaded_native_classloader) - len(native_classloader)].replace('.', '_')
+
+def shade_resources(jar_file, rules_file, output, rename_services, native_classloader, compression=zipfile.ZIP_STORED):
     rules = unwrap_rules(open(rules_file).readlines())
+    native_library_prefix = get_native_library_prefix(rules, native_classloader)
+
     with zipfile.ZipFile(jar_file, mode="r") as src_archive:
         with zipfile.ZipFile(output, mode="w", compression=compression) as dst_archive:
             # Copy every entry, shading service file names and content as needed
             for entry in src_archive.infolist():
                 entry_name = entry.filename
-                if entry_name.startswith("META-INF/services") and not entry.is_dir():
+                if rename_services and entry_name.startswith("META-INF/services") and not entry.is_dir():
                     dir_name, base_name = os.path.split(entry_name)
 
                     # Calculate new entry name and content
@@ -127,13 +173,27 @@ def shade_services(jar_file, rules_file, output, compression=zipfile.ZIP_STORED)
 
                     # Write new content to new file name
                     dst_archive.writestr(shaded_entry_name, "\n".join(shaded_lines))
+                elif native_library_prefix and entry_name.startswith("META-INF/native") and not entry.is_dir():
+                    dir_name, base_name = os.path.split(entry_name)
+
+                    # Calculate new native library name
+                    lib_prefix = "lib"
+                    new_base_name = (
+                        lib_prefix + native_library_prefix + base_name[len(lib_prefix):]
+                        if base_name.startswith(lib_prefix)
+                        else native_library_prefix + base_name
+                    )
+                    shaded_entry_name = dir_name + "/" + new_base_name
+
+                    # Write existing content to new file name
+                    dst_archive.writestr(shaded_entry_name, src_archive.read(entry_name))
                 else:
                     # Just copy the file
                     copy_entry(entry_name, src_archive, dst_archive)
 
 def main():
     args = parse_args()
-    shade_services(args.jar_in[0], args.rules[0], args.jar_out[0], zipfile.ZIP_DEFLATED)
+    shade_resources(args.jar_in[0], args.rules[0], args.jar_out[0], args.rename_services, args.native_classloader, zipfile.ZIP_DEFLATED)
 
 if __name__ == '__main__':
     main()
