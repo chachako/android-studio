@@ -1129,7 +1129,72 @@ public class ApiDetectorTest extends AbstractCheckTest {
                             + "    <MyView\n"
                             + "    ^\n"
                             + "1 errors, 0 warnings");
-          }
+    }
+
+    public void testXmlApiWithRequiresAnnotation_innerClass() {
+        // b/365828305
+        @Language("XML")
+        String xml =
+              "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                  + "<merge xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                  + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                  + "    tools:viewBindingIgnore=\"true\">\n"
+                  + "\n"
+                  + "    <Outer.MyView\n"
+                  + "        style=\"?spinnerStyle\"\n"
+                  + "        android:id=\"@+id/txt_date\"\n"
+                  + "        android:layout_width=\"wrap_content\"\n"
+                  + "        android:layout_height=\"wrap_content\"\n"
+                  + "        android:paddingRight=\"40dp\"\n"
+                  + "        android:singleLine=\"true\"\n"
+                  + "        tools:text=\"Nov.\"\n"
+                  + "        android:textSize=\"18sp\" />\n"
+                  + "\n"
+                  + "</merge>";
+        lint().files(
+                        manifest().minSdk(1).pkg(""),
+                        kotlin(
+                                "import android.content.Context\n"
+                                    + "import androidx.annotation.RequiresApi\n"
+                                    + "\n"
+                                    + "class Outer {\n"
+                                    + "  @RequiresApi(21)\n"
+                                    + "  inner class MyView(context: Context) :"
+                                    + " android.view.View(context)\n"
+                                    + "}"),
+                        xml("res/layout-v11/error.xml", xml),
+                        xml(
+                                "res/layout-v11/ok1.xml",
+                                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                    + "<Outer.MyView"
+                                    + " xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                                    + "    tools:targetApi='21' />"),
+                        xml("res/layout-v21/ok2.xml", xml),
+                        xml("res/layout-v33/ok3.xml", xml),
+                        xml(
+                                "res/key_template.xml",
+                                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                    + "<framework>\n"
+                                    + "  <softkeys>\n"
+                                    + "    <softkey_template id=\"@id/softkey_template_back_key\"\n"
+                                    + "        layout=\"@layout/softkey_function_key_back_icon\" multi_touch=\"false\"\n"
+                                    + "        disable_lift_to_tap=\"true\"\n"
+                                    + "        content_description=\"$desc$\"\n"
+                                    + "        alpha=\"@attr/IconAlphaOpaque\">\n"
+                                    + "      <action type=\"PRESS\" keycode=\"$keycode$\" data=\"$param_data$\" />\n"
+                                    + "      <icon location=\"@id/icon\" value=\"$param_icon$\" />\n"
+                                    + "    </softkey_template>\n"
+                                    + "  </softkeys>\n"
+                                    + "</framework>"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expect(
+                        "res/layout-v11/error.xml:6: Error: <Outer.MyView> requires API level 21"
+                            + " (current min is 1) [NewApi]\n"
+                            + "    <Outer.MyView\n"
+                            + "    ^\n"
+                            + "1 errors, 0 warnings");
+    }
 
     public void testXmlApiFolderVersion14() {
         //noinspection all // Sample code

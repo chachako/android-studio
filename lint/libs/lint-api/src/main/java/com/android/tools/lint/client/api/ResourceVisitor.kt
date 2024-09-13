@@ -145,20 +145,21 @@ internal class ResourceVisitor(
         prev = c
       }
       // e.g. "Nov."
-      return prev != '.'
+      return prev != '.' && prev != '$'
     } else if (!inPackage && isNotEmpty()) {
-      var index = 0
+      var prev = '$'
       for (c in this) {
-        if (index == 0 && c.isJavaIdentifierStart()) {
+        if (prev == '$' && c.isJavaIdentifierStart()) {
           // ok
         } else if (c.isJavaIdentifierPart()) {
           // ok
         } else {
           return false
         }
-        index++
+        prev = c
       }
-      return true
+      // E.g., "$param_icon$"
+      return prev != '$'
     }
     return false
   }
