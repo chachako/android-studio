@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
+import com.android.build.gradle.internal.tasks.factory.FusedLibraryTaskGlobalCreationAction
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
@@ -177,17 +178,22 @@ class TaskMethodModifiersAndAnnotationsTest {
 
     @Test
     fun `check that task creation actions should extend a set of base task creation actions`() {
-        val violations = taskCreationActions.filter {
-            !VariantTaskCreationAction::class.java.isAssignableFrom(it)
-                    && !GlobalTaskCreationAction::class.java.isAssignableFrom(it)
-                    && !PrivacySandboxSdkTaskCreationAction::class.java.isAssignableFrom(it)
+        val permittedCreationActionTypes = listOf(
+            VariantTaskCreationAction::class.java,
+            GlobalTaskCreationAction::class.java,
+            PrivacySandboxSdkTaskCreationAction::class.java,
+            FusedLibraryTaskGlobalCreationAction::class.java
+        )
+        val violations = taskCreationActions.filter { creationAction ->
+            permittedCreationActionTypes.none { permittedCreationActionType ->
+                permittedCreationActionType.isAssignableFrom(creationAction)
+            }
         }
             .minus(TaskCreationAction::class.java)
             .map { it.name }.sorted()
 
         assertWithMessage(
-            "All AGP task creation actions should extend ${VariantTaskCreationAction::class.java.simpleName}, ${PrivacySandboxSdkTaskCreationAction::class.java.simpleName} or " +
-                    "${GlobalTaskCreationAction::class.java.simpleName}."
+            "All AGP task creation actions should extend ${permittedCreationActionTypes.map { it.simpleName }}"
         )
             .that(violations).containsExactly(
                 // Don't add new items to this list

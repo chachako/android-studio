@@ -17,14 +17,15 @@
 package com.android.build.gradle.integration.library
 
 import com.android.SdkConstants
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.tasks.FusedLibraryReport
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
@@ -232,6 +233,13 @@ class FusedLibraryClassesVerificationTest {
         )
 
         assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
+        checkFusedLibReportContents(
+            listOf("project :androidLib1", "project :androidLib2"),
+            listOf(
+                "org.jetbrains.kotlin:kotlin-stdlib:<version>",
+                "org.jetbrains:annotations:<version>"
+            ),
+        )
     }
 
     @Test
@@ -250,6 +258,14 @@ class FusedLibraryClassesVerificationTest {
         )
 
         assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
+        checkFusedLibReportContents(
+            listOf("project :androidLib1", "project :androidLib2", "project :androidLib3"),
+            listOf(
+                "org.jetbrains.kotlin:kotlin-stdlib:<version>",
+                "org.jetbrains:annotations:<version>",
+                "com.externaldep:externalaar:1"
+            )
+        )
     }
 
     @Test
@@ -265,6 +281,14 @@ class FusedLibraryClassesVerificationTest {
         )
 
         assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
+
+        checkFusedLibReportContents(
+            listOf("com.externaldep:externalaar:1", "project :androidLib1"),
+            listOf(
+                "org.jetbrains.kotlin:kotlin-stdlib:<version>",
+                "org.jetbrains:annotations:<version>"
+            )
+        )
     }
 
     @Test
@@ -328,6 +352,24 @@ class FusedLibraryClassesVerificationTest {
 
             failure.assertErrorContains(
                 "Fused Library plugin does not allow dependencies with databinding.")
+        }
+    }
+
+    private fun checkFusedLibReportContents(
+        included: List<String>,
+        dependencies: List<String>
+    ) {
+        project.execute(":$FUSED_LIBRARY_PROJECT_NAME:report")
+        val reportFile = project.getSubproject(":$FUSED_LIBRARY_PROJECT_NAME:").buildDir.resolve(
+            "reports/${FusedLibraryInternalArtifactType.FUSED_LIBRARY_REPORT.getFolderName()}/single/report.json"
+        )
+        val fusedLibReport = FusedLibraryReport.readFromFile(reportFile)
+        assertThat(fusedLibReport.included).containsExactlyElementsIn(included)
+        val idWithoutVersionPlaceholder =
+            { str: String -> str.substringBeforeLast(":<version>") }
+        assertThat(dependencies.count()).isEqualTo(fusedLibReport.dependencies.count())
+        dependencies.map(idWithoutVersionPlaceholder).zip(fusedLibReport.dependencies).forEach() {
+            assertThat(it.first).isEqualTo(it.second.substring(0, it.first.length))
         }
     }
 

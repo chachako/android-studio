@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks.factory
 
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.tasks.AndroidVariantTask
 import com.android.build.gradle.internal.tasks.BaseTask
@@ -125,6 +126,20 @@ abstract class PrivacySandboxSdkTaskCreationAction<TaskT>(
         super.configure(task)
         task.variantName = variantScope.name
         BaseTask.ConfigureAction.configure(task)
+    }
+}
+
+/** [TaskCreationAction] for a tasks created with FusedLibraryGlobalScope. */
+abstract class FusedLibraryTaskGlobalCreationAction<TaskT>(
+    protected val creationConfig: FusedLibraryGlobalScope
+) : TaskCreationAction<TaskT>() where TaskT: Task, TaskT: GlobalTask {
+
+    override fun configure(task: TaskT) {
+        super.configure(task)
+        if (task is BaseTask) {
+            BaseTask.ConfigureAction.configure(task)
+        }
+        GlobalTask.ConfigureAction.configure(task)
     }
 }
 

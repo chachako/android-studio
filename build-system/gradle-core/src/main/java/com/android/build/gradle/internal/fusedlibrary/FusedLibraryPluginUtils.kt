@@ -47,6 +47,10 @@ import org.gradle.api.provider.Provider
 
 const val NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED = false
 
+object FusedLibraryConstants {
+    const val INCLUDE_CONFIGURATION_NAME = "include"
+}
+
 internal fun createTasks(
         project: Project,
         artifacts: ArtifactsImpl,

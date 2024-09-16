@@ -21,6 +21,7 @@ import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryConstants
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScopeImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
@@ -45,6 +46,7 @@ import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.build.gradle.tasks.FusedLibraryMergeClasses
 import com.android.build.gradle.tasks.FusedLibraryMergeResourceCompileSymbolsTask
 import com.android.build.gradle.tasks.FusedLibraryMergeResourcesTask
+import com.android.build.gradle.tasks.FusedLibraryReportTask
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import groovy.namespace.QName
 import groovy.util.Node
@@ -231,7 +233,8 @@ class FusedLibraryPlugin @Inject constructor(
                         FusedLibraryBundleClasses.CreationAction(variantScope),
                         FusedLibraryBundleAar.CreationAction(variantScope),
                         MergeJavaResourceTask.FusedLibraryCreationAction(variantScope),
-                        FusedLibraryMergeResourceCompileSymbolsTask.CreationAction(variantScope)
+                        FusedLibraryMergeResourceCompileSymbolsTask.CreationAction(variantScope),
+                        FusedLibraryReportTask.CreationAction(variantScope)
                 ) + FusedLibraryMergeArtifactTask.getCreationActions(variantScope),
         )
     }
@@ -252,7 +255,7 @@ class FusedLibraryPlugin @Inject constructor(
 
         // 'include' is the configuration that users will use to indicate which dependencies should
         // be fused.
-        val include = project.configurations.create("include").also {
+        val include = project.configurations.create(FusedLibraryConstants.INCLUDE_CONFIGURATION_NAME).also {
             it.isCanBeConsumed = false
             val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
             it.attributes.attribute(
