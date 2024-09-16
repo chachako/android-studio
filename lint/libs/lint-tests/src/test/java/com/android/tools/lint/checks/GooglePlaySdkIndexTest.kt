@@ -18,6 +18,7 @@ package com.android.tools.lint.checks
 import com.android.ide.common.repository.NetworkCache
 import com.android.tools.lint.detector.api.LintFix
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import org.junit.Assert.fail
@@ -32,6 +33,7 @@ class GooglePlaySdkIndexTest {
   fun prepareIndex() {
     proto =
       Index.newBuilder()
+        // Has some issues, "1.2.18" flagged as latest
         .addSdks(
           Sdk.newBuilder()
             .setIndexUrl("http://index.example.url/")
@@ -100,6 +102,7 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
+        // Has multiple versions with different issues each, "8.0.0" is flagged as latest
         .addSdks(
           Sdk.newBuilder()
             .setIndexUrl("http://another.example.url/")
@@ -732,7 +735,7 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
-        // No URL set (causes blank result for indexUrl)
+        // No URL set (causes blank result for indexUrl), "2.0.0" flagged as latest
         .addSdks(
           Sdk.newBuilder()
             .setIndexAvailability(Sdk.IndexAvailability.NOT_AVAILABLE)
@@ -803,7 +806,7 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
-        // URL set not in SDK Index
+        // URL set, not in SDK Index, "3.0.4" flagged as latest
         .addSdks(
           Sdk.newBuilder()
             .setIndexUrl("http://not.in.sdk.index.url/")
@@ -850,7 +853,7 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
-        // First party libraries
+        // First party libraries, does not have a version flagged as the latest
         .addSdks(
           Sdk.newBuilder()
             .setIsGoogleOwned(true)
@@ -1360,6 +1363,47 @@ class GooglePlaySdkIndexTest {
         "${it.lowerBound} to ${if (it.upperBound.isNullOrBlank()) "<null>" else it.upperBound}"
       }
     assertThat(asText).containsAllIn(expectedVersions)
+  }
+
+  @Test
+  fun `Latest versions reported correctly`() {
+    val failures = mutableListOf<String>()
+    for (sdk in proto.sdksList) {
+      for (library in sdk.librariesList) {
+        val group = library.libraryId.mavenId.groupId
+        val artifact = library.libraryId.mavenId.artifactId
+        val latestInProto = mutableListOf<String>()
+        for (version in library.versionsList) {
+          if (version.isLatestVersion) {
+            latestInProto.add(version.versionString)
+          }
+        }
+        if (latestInProto.size > 1) {
+          failures.add(
+            "Test proto is incorrect for $group:$artifact. $latestInProto are flagged as latest"
+          )
+        } else {
+          val latestFromIndex = index.getLatestVersion(group, artifact)
+          if (latestInProto.isEmpty()) {
+            if (latestFromIndex != null) {
+              failures.add(
+                "No $group:$artifact versions are flagged as latest but $latestFromIndex is returned as latest"
+              )
+            }
+          } else {
+            if (latestFromIndex != latestInProto.first())
+              failures.add(
+                "$group:$artifact latest version should be $latestInProto but $latestFromIndex is returned"
+              )
+          }
+        }
+      }
+    }
+    assertWithMessage(
+        "There were issues with latest versions:\n${failures.joinToString(separator = "\n") { it }}"
+      )
+      .that(failures)
+      .isEmpty()
   }
 
   private fun countOutdatedIssues(): Int {

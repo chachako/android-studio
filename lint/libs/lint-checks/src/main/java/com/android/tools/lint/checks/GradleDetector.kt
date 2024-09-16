@@ -1238,6 +1238,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     // If it's available in maven.google.com, fetch latest available version.
     newerVersion = newerVersion maxOrNull getGoogleMavenRepoVersion(context, dependency, filter)
 
+    // And also consider what is in the SDK Index
+    newerVersion = newerVersion maxOrNull getSdkIndexVersion(sdkIndex, groupId, artifactId, filter)
+
     val hasSdkIndexIssues =
       generateAndReportSdkIndexIssues(
         sdkIndex,
@@ -2627,6 +2630,21 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   ): Version? {
     val repository = getGoogleMavenRepository(context.client)
     return repository.findVersion(dependency, filter, dependency.explicitlyIncludesPreview)
+  }
+
+  private fun getSdkIndexVersion(
+    sdkIndex: GooglePlaySdkIndex,
+    groupId: String,
+    artifactId: String,
+    filter: Predicate<Version>?,
+  ): Version? {
+    val latestVersion = sdkIndex.getLatestVersion(groupId, artifactId) ?: return null
+    val parsedVersion = Version.parse(latestVersion)
+    val isValid = filter?.test(parsedVersion) ?: true
+    if (isValid && !parsedVersion.isPreview) {
+      return parsedVersion
+    }
+    return null
   }
 
   fun getGoogleMavenRepository(client: LintClient): GoogleMavenRepository {

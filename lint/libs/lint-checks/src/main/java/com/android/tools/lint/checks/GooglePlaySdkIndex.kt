@@ -464,6 +464,14 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     return sdk.sdk.indexUrl
   }
 
+  /** Get latest version known by the SDK Index for a particular library (if available) */
+  fun getLatestVersion(groupId: String, artifactId: String): String? {
+    if (!isReady()) {
+      return null
+    }
+    return libraryToSdk[createCoordinateString(groupId, artifactId)]?.getLatestVersion()
+  }
+
   private fun getLabels(
     groupId: String,
     artifactId: String,
@@ -530,6 +538,10 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
 
     fun getVersion(versionString: String): LibraryVersion? {
       return versionToLibraryVersion[versionString]
+    }
+
+    fun getLatestVersion(): String? {
+      return latestVersion
     }
   }
 

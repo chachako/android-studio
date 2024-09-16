@@ -4932,122 +4932,302 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSdkIndexLibrary() {
     val expectedFixes =
       """
+        Fix for build.gradle line 3: Change to 1.2.18:
+        @@ -3 +3
+        -     compile 'log4j:log4j:1.2.17' // OK
+        +     compile 'log4j:log4j:1.2.18' // OK
+        Fix for build.gradle line 4: Change to 1.2.18:
+        @@ -4 +4
+        -     compile 'log4j:log4j:1.2.16' // Critical NON_BLOCKING
+        +     compile 'log4j:log4j:1.2.18' // Critical NON_BLOCKING
+        Fix for build.gradle line 9: Change to 1.2.18:
+        @@ -9 +9
+        -     compile 'log4j:log4j:1.2.11' // Ok (not in Index)
+        +     compile 'log4j:log4j:1.2.18' // Ok (not in Index)
+        Fix for build.gradle line 11: Change to 8.0.0:
+        @@ -11 +11
+        -     compile 'com.example.ads.third.party:example:7.2.2' // OK
+        +     compile 'com.example.ads.third.party:example:8.0.0' // OK
+        Fix for build.gradle line 12: Change to 8.0.0:
+        @@ -12 +12
+        -     compile 'com.example.ads.third.party:example:7.2.1' // OK
+        +     compile 'com.example.ads.third.party:example:8.0.0' // OK
+        Fix for build.gradle line 7: Change to 1.2.18:
+        @@ -7 +7
+        -     compile 'log4j:log4j:1.2.13' // Critical BLOCKING
+        +     compile 'log4j:log4j:1.2.18' // Critical BLOCKING
         Show URL for build.gradle line 7: View details in Google Play SDK Index:
         http://index.example.url/
+        Fix for build.gradle line 15: Change to 8.0.0:
+        @@ -15 +15
+        -     compile 'com.example.ads.third.party:example:7.1.1' // Policy (Device and Network Abuse), blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Device and Network Abuse), blocking
         Show URL for build.gradle line 15: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 18: Change to 8.0.0:
+        @@ -18 +18
+        -     compile 'com.example.ads.third.party:example:7.1.4' // Policy (Permissions), blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Permissions), blocking
         Show URL for build.gradle line 18: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 22: Change to 8.0.0:
+        @@ -22 +22
+        -     compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple types), blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), blocking
         Show URL for build.gradle line 22: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 22: Change to 8.0.0:
+        @@ -22 +22
+        -     compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple types), blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), blocking
         Show URL for build.gradle line 22: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 6: Change to 1.2.18:
+        @@ -6 +6
+        -     compile 'log4j:log4j:1.2.14' // Non compliant
+        +     compile 'log4j:log4j:1.2.18' // Non compliant
         Show URL for build.gradle line 6: View details in Google Play SDK Index:
         http://index.example.url/
+        Fix for build.gradle line 13: Change to 8.0.0:
+        @@ -13 +13
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Outdated + Critical + Policy (multiple issues), no severity
         Show URL for build.gradle line 13: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 14: Change to 8.0.0:
+        @@ -14 +14
+        -     compile 'com.example.ads.third.party:example:7.1.0' // Policy (Ads), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Ads), non-blocking
         Show URL for build.gradle line 14: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 16: Change to 8.0.0:
+        @@ -16 +16
+        -     compile 'com.example.ads.third.party:example:7.1.2' // Policy (Deceptive Behavior), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Deceptive Behavior), no severity
         Show URL for build.gradle line 16: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 17: Change to 8.0.0:
+        @@ -17 +17
+        -     compile 'com.example.ads.third.party:example:7.1.3' // Policy (User Data), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (User Data), non-blocking
         Show URL for build.gradle line 17: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 19: Change to 8.0.0:
+        @@ -19 +19
+        -     compile 'com.example.ads.third.party:example:7.1.5' // Policy (Mobile Unwanted Software), no-severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Mobile Unwanted Software), no-severity
         Show URL for build.gradle line 19: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 20: Change to 8.0.0:
+        @@ -20 +20
+        -     compile 'com.example.ads.third.party:example:7.1.6' // Policy (Malware), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (Malware), non-blocking
         Show URL for build.gradle line 20: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 21: Change to 8.0.0:
+        @@ -21 +21
+        -     compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple types), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), non-blocking
         Show URL for build.gradle line 21: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 21: Change to 8.0.0:
+        @@ -21 +21
+        -     compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple types), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), non-blocking
         Show URL for build.gradle line 21: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 21: Change to 8.0.0:
+        @@ -21 +21
+        -     compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple types), non-blocking
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), non-blocking
         Show URL for build.gradle line 21: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 23: Change to 8.0.0:
+        @@ -23 +23
+        -     compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple types), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), no severity
         Show URL for build.gradle line 23: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 23: Change to 8.0.0:
+        @@ -23 +23
+        -     compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple types), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Policy (multiple types), no severity
         Show URL for build.gradle line 23: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 25: Change to 8.0.0:
+        @@ -25 +25
+        -     compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
         Show URL for build.gradle line 25: Learn more about Unsafe SSL Error Handler vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 25: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 25: Change to 8.0.0:
+        @@ -25 +25
+        -     compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
         Show URL for build.gradle line 25: Learn more about Zip Path Traversal vulnerability:
         https://support.google.com/faqs/answer/9294009
         Show URL for build.gradle line 25: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 25: Change to 8.0.0:
+        @@ -25 +25
+        -     compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
         Show URL for build.gradle line 25: Learn more about Unsafe OAuth via WebView vulnerability:
         https://support.google.com/faqs/answer/12284343
         Show URL for build.gradle line 25: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 13: Change to 8.0.0:
+        @@ -13 +13
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Outdated + Critical + Policy (multiple issues), no severity
         Show URL for build.gradle line 13: Learn more about Unsafe TrustManager vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 13: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 24: Change to 8.0.0:
+        @@ -24 +24
+        -     compile 'com.example.ads.third.party:example:7.1.10' // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
         Show URL for build.gradle line 24: Learn more about Unsafe HostnameVerifier vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 24: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Implicit Internal Intent vulnerability:
         https://support.google.com/faqs/answer/10437428
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Implicit PendingIntent vulnerability:
         https://support.google.com/faqs/answer/10437428
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Fragment Injection vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Unsafe Encryption Mode Usage vulnerability:
         https://support.google.com/faqs/answer/10046138
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Leaked GCP keys vulnerability:
         https://support.google.com/faqs/answer/9287711
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Known Vulnerable Library (JS) vulnerability:
         https://support.google.com/faqs/answer/9464300
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Unsafe Cryptographic Encryption vulnerability:
         https://support.google.com/faqs/answer/9450925
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about ContentProvider Path Traversal vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about ContentProvider SQL Injection vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about File Based XSS vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Intent Redirection vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Intent Scheme Hijacking vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about JavaScript Interface Injection vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 26: Change to 8.0.0:
+        @@ -26 +26
+        -     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Vulnerability multiple (non-blocking)
         Show URL for build.gradle line 26: Learn more about Cross-App Scripting vulnerability:
         https://support.google.com/googleplay/android-developer/answer/9888379
         Show URL for build.gradle line 26: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 8: Change to 1.2.18:
+        @@ -8 +8
+        -     compile 'log4j:log4j:1.2.12' // OUTDATED BLOCKING
+        +     compile 'log4j:log4j:1.2.18' // OUTDATED BLOCKING
         Show URL for build.gradle line 8: View details in Google Play SDK Index:
         http://index.example.url/
+        Fix for build.gradle line 5: Change to 1.2.18:
+        @@ -5 +5
+        -     compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
+        +     compile 'log4j:log4j:1.2.18' // Outdated NON_BLOCKING
         Show URL for build.gradle line 5: View details in Google Play SDK Index:
         http://index.example.url/
+        Fix for build.gradle line 13: Change to 8.0.0:
+        @@ -13 +13
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Outdated + Critical + Policy (multiple issues), no severity
         Show URL for build.gradle line 13: View details in Google Play SDK Index:
         http://another.example.url/
+        Show URL for build.gradle line 27: View details in Google Play SDK Index:
+        http://sdk.google.com/
+        Show URL for build.gradle line 28: View details in Google Play SDK Index:
+        http://sdk.google.com/
       """
     lint()
       .files(
@@ -5079,6 +5259,8 @@ class GradleDetectorTest : AbstractCheckTest() {
                     compile 'com.example.ads.third.party:example:7.1.10' // Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
                     compile 'com.example.ads.third.party:example:7.1.11' // Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
                     compile 'com.example.ads.third.party:example:7.1.12' // Vulnerability multiple (non-blocking)
+                    compile 'com.example.issues:issues-on-latest:1.8.0' // Outdated blocking
+                    compile 'com.example.issues:latest-is-preview:1.0.0' // Outdated non-blocking
 
                     compile 'log4j:log4j:latest.release' // OK
                     compile 'log4j:log4j' // OK
@@ -5102,6 +5284,21 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+          build.gradle:3: Warning: A newer version of log4j:log4j than 1.2.17 is available: 1.2.18 [GradleDependency]
+              compile 'log4j:log4j:1.2.17' // OK
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:4: Warning: A newer version of log4j:log4j than 1.2.16 is available: 1.2.18 [GradleDependency]
+              compile 'log4j:log4j:1.2.16' // Critical NON_BLOCKING
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:9: Warning: A newer version of log4j:log4j than 1.2.11 is available: 1.2.18 [GradleDependency]
+              compile 'log4j:log4j:1.2.11' // Ok (not in Index)
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:11: Warning: A newer version of com.example.ads.third.party:example than 7.2.2 is available: 8.0.0 [GradleDependency]
+              compile 'com.example.ads.third.party:example:7.2.2' // OK
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:12: Warning: A newer version of com.example.ads.third.party:example than 7.2.1 is available: 8.0.0 [GradleDependency]
+              compile 'com.example.ads.third.party:example:7.2.1' // OK
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:7: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
               compile 'log4j:log4j:1.2.13' // Critical BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
@@ -5223,7 +5420,17 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          9 errors, 30 warnings
+          build.gradle:27: Warning: com.example.issues:issues-on-latest version 1.8.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.9.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:issues-on-latest:1.8.0' // Outdated blocking
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:28: Warning: com.example.issues:latest-is-preview version 1.0.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.1.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:latest-is-preview:1.0.0' // Outdated non-blocking
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          9 errors, 37 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -5255,6 +5462,8 @@ class GradleDetectorTest : AbstractCheckTest() {
                 exVulHost = "7.1.10"            # Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
                 exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
                 exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                exOutdated = "1.8.0"            # Outdated NON_BLOCKING
+                exOutPreview = "1.0.0"          # Outdated NON_BLOCKING
 
                 [libraries]
                 critical_log4j = { module = "log4j:log4j", version.ref = "log4Critical"}
@@ -5274,8 +5483,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                 policyMultiBlock_ex = { module = "com.example.ads.third.party:example", version.ref = "exPolicyMultiBlock"}
                 policyMulti_ex = { module = "com.example.ads.third.party:example", version.ref = "exPolicyMulti"}
                 vulHost = { module = "com.example.ads.third.party:example", version.ref = "exVulHost"}
-                VulMultiBlock = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiBlock"}
-                VulMultiNon = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiNon"}
+                vulMultiBlock = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiBlock"}
+                vulMultiNon = { module = "com.example.ads.third.party:example", version.ref = "exVulMultiNon"}
+                outdated_latest = {module = "com.example.issues:issues-on-latest", version.ref = "exOutdated"}
+                outdated_preview = {module = "com.example.issues:latest-is-preview", version.ref = "exOutPreview"}
                 """
         )
       )
@@ -5291,123 +5502,142 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-                ../gradle/libs.versions.toml:4: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
-                                log4CriticalBlock = "1.2.13"    # Critical BLOCKING
-                                                    ~~~~~~~~
-                ../gradle/libs.versions.toml:11: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
-                                exPolicyDevNetBlock = "7.1.1"   # Policy (Device and Network Abuse), blocking
-                                                      ~~~~~~~
-                ../gradle/libs.versions.toml:14: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
-                                exPolicyPermBlock = "7.1.4"     # Policy (Permissions), blocking
-                                                    ~~~~~~~
-                ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
-                                exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
-                                                     ~~~~~~~
-                ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
-                                exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
-                                                     ~~~~~~~
-                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:10: Warning: com.example.ads.third.party:example version 7.1.0 has Ads policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyAds = "7.1.0"           # Policy (Ads), non-blocking
+          ../gradle/libs.versions.toml:3: Warning: A newer version of log4j:log4j than 1.2.16 is available: 1.2.18 [GradleDependency]
+                          log4Critical = "1.2.16"         # Critical NON_BLOCKING
+                                         ~~~~~~~~
+          ../gradle/libs.versions.toml:7: Warning: A newer version of log4j:log4j than 1.2.13 is available: 1.2.18 [GradleDependency]
+                          log4Suppressed = "1.2.13"       # Suppressed
+                                           ~~~~~~~~
+          ../gradle/libs.versions.toml:8: Warning: A newer version of log4j:log4j than 1.2.17 is available: 1.2.18 [GradleDependency]
+                          log4Ok = "1.2.17"               # OK
+                                   ~~~~~~~~
+          ../gradle/libs.versions.toml:4: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
+                          log4CriticalBlock = "1.2.13"    # Critical BLOCKING
+                                              ~~~~~~~~
+          ../gradle/libs.versions.toml:11: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                          exPolicyDevNetBlock = "7.1.1"   # Policy (Device and Network Abuse), blocking
+                                                ~~~~~~~
+          ../gradle/libs.versions.toml:14: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                          exPolicyPermBlock = "7.1.4"     # Policy (Permissions), blocking
                                               ~~~~~~~
-                ../gradle/libs.versions.toml:12: Warning: com.example.ads.third.party:example version 7.1.2 has Deceptive Behavior policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyBehavior = "7.1.2"      # Policy (Deceptive Behavior), no severity
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:13: Warning: com.example.ads.third.party:example version 7.1.3 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyUseData = "7.1.3"       # Policy (User Data), non-blocking
-                                                  ~~~~~~~
-                ../gradle/libs.versions.toml:15: Warning: com.example.ads.third.party:example version 7.1.5 has Mobile Unwanted Software policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMobile = "7.1.5"        # Policy (Mobile Unwanted Software), no-severity
-                                                 ~~~~~~~
-                ../gradle/libs.versions.toml:16: Warning: com.example.ads.third.party:example version 7.1.6 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMalware = "7.1.6"       # Policy (Malware), non-blocking
-                                                  ~~~~~~~
-                ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
-                                                ~~~~~~~
-                ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-                                exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
-                                                ~~~~~~~
-                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains an unsafe implementation of the onReceivedSslError handler. [PlaySdkIndexVulnerability]
-                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
-                                                  ~~~~~~~~
-                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains unsafe unzipping patterns. [PlaySdkIndexVulnerability]
-                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
-                                                  ~~~~~~~~
-                ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 uses WebView for authentication, which is not recommended. [PlaySdkIndexVulnerability]
-                                exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
-                                                  ~~~~~~~~
-                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
-                                exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
-                                                   ~~~~~~~
-                ../gradle/libs.versions.toml:20: Warning: com.example.ads.third.party:example version 7.1.10 contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier. [PlaySdkIndexVulnerability]
-                                exVulHost = "7.1.10"            # Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+          ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                          exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
+                                               ~~~~~~~
+          ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                          exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
+                                               ~~~~~~~
+          ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:10: Warning: com.example.ads.third.party:example version 7.1.0 has Ads policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyAds = "7.1.0"           # Policy (Ads), non-blocking
+                                        ~~~~~~~
+          ../gradle/libs.versions.toml:12: Warning: com.example.ads.third.party:example version 7.1.2 has Deceptive Behavior policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyBehavior = "7.1.2"      # Policy (Deceptive Behavior), no severity
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:13: Warning: com.example.ads.third.party:example version 7.1.3 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyUseData = "7.1.3"       # Policy (User Data), non-blocking
+                                            ~~~~~~~
+          ../gradle/libs.versions.toml:15: Warning: com.example.ads.third.party:example version 7.1.5 has Mobile Unwanted Software policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMobile = "7.1.5"        # Policy (Mobile Unwanted Software), no-severity
+                                           ~~~~~~~
+          ../gradle/libs.versions.toml:16: Warning: com.example.ads.third.party:example version 7.1.6 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMalware = "7.1.6"       # Policy (Malware), non-blocking
+                                            ~~~~~~~
+          ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:17: Warning: com.example.ads.third.party:example version 7.1.7 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMultiNon = "7.1.7"      # Policy (multiple types), non-blocking
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Malware policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
+                                          ~~~~~~~
+          ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+                          exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
+                                          ~~~~~~~
+          ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains an unsafe implementation of the onReceivedSslError handler. [PlaySdkIndexVulnerability]
+                          exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
                                             ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit Internal Intent issue. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit PendingIntent issue. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains encryption employing the less secure mode AES/ECB. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains exposed Google Cloud Platform (GCP) API key(s). [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains one or more JavaScript libraries with known security issues. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains unsafe encryption patterns. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider Path Traversal. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider SQL Injection. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to File-based Cross-Site Scripting. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent Redirection. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent-Scheme Hijacking. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to JavaScript Interface Injection. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to WebView Cross-App Scripting. [PlaySdkIndexVulnerability]
-                                exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
-                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:5: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console.
-                The library author recommends using versions:
-                  - 1.2.17
-                  - 1.2.18 or higher
-                These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. Carefully evaluate any third-party SDKs before integrating them into your app. [OutdatedLibrary]
-                                log4Outdated = "1.2.12"         # Outdated NON_BLOCKING
-                                               ~~~~~~~~
-                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
-                                exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
-                                                   ~~~~~~~
-                9 errors, 28 warnings
-                """
+          ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 contains unsafe unzipping patterns. [PlaySdkIndexVulnerability]
+                          exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                                            ~~~~~~~~
+          ../gradle/libs.versions.toml:21: Error: com.example.ads.third.party:example version 7.1.11 uses WebView for authentication, which is not recommended. [PlaySdkIndexVulnerability]
+                          exVulMultiBlock = "7.1.11"      # Vulnerability multiple (UNSAFE_SSL_ERROR_HANDLER, ZIP_PATH_TRAVERSAL, UNSAFE_WEBVIEW_OAUTH, blocking)
+                                            ~~~~~~~~
+          ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 contains an unsafe implementation of the X509TrustManager interface. [PlaySdkIndexVulnerability]
+                          exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:20: Warning: com.example.ads.third.party:example version 7.1.10 contains an unsafe implementation of the interfaces HostnameVerifier or X509HostnameVerifier. [PlaySdkIndexVulnerability]
+                          exVulHost = "7.1.10"            # Vulnerability (UNSAFE_HOSTNAME_VERIFIER, non-blocking)
+                                      ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit Internal Intent issue. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an Implicit PendingIntent issue. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains an unsafe PreferenceActivity implementation that may be vulnerable to Fragment Injection. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains encryption employing the less secure mode AES/ECB. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains exposed Google Cloud Platform (GCP) API key(s). [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains one or more JavaScript libraries with known security issues. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 contains unsafe encryption patterns. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider Path Traversal. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to ContentProvider SQL Injection. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to File-based Cross-Site Scripting. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent Redirection. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to Intent-Scheme Hijacking. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to JavaScript Interface Injection. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:22: Warning: com.example.ads.third.party:example version 7.1.12 may be vulnerable to WebView Cross-App Scripting. [PlaySdkIndexVulnerability]
+                          exVulMultiNon = "7.1.12"        # Vulnerability multiple (non-blocking)
+                                          ~~~~~~~~
+          ../gradle/libs.versions.toml:5: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console.
+          The library author recommends using versions:
+            - 1.2.17
+            - 1.2.18 or higher
+          These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. Carefully evaluate any third-party SDKs before integrating them into your app. [OutdatedLibrary]
+                          log4Outdated = "1.2.12"         # Outdated NON_BLOCKING
+                                         ~~~~~~~~
+          ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
+                          exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
+                                             ~~~~~~~
+          ../gradle/libs.versions.toml:23: Warning: com.example.issues:issues-on-latest version 1.8.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.9.0 or higher [OutdatedLibrary]
+                          exOutdated = "1.8.0"            # Outdated NON_BLOCKING
+                                       ~~~~~~~
+          ../gradle/libs.versions.toml:24: Warning: com.example.issues:latest-is-preview version 1.0.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.1.0 or higher [OutdatedLibrary]
+                          exOutPreview = "1.0.0"          # Outdated NON_BLOCKING
+                                         ~~~~~~~
+          9 errors, 33 warnings
+        """
       )
   }
 
@@ -5422,10 +5652,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -3 +3
         -     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
         +     compile 'com.example.ads.third.party:example:8.0.0' // suggest 8.0.0 since it does not have issues
-        Fix for build.gradle line 4: Change to 1.2.11:
+        Fix for build.gradle line 4: Change to 1.2.18:
         @@ -4 +4
-        -     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
-        +     compile 'log4j:log4j:1.2.11' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+        -     compile 'log4j:log4j:1.2.10' // Suggest 1.2.18 (it is latest in SDK Index, even if it is not in maven)
+        +     compile 'log4j:log4j:1.2.18' // Suggest 1.2.18 (it is latest in SDK Index, even if it is not in maven)
         Fix for build.gradle line 2: Change to 8.0.0:
         @@ -2 +2
         -     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
@@ -5446,6 +5676,18 @@ class GradleDetectorTest : AbstractCheckTest() {
         +     compile 'com.example.ads.third.party:example:8.0.0' // Show SDK Index link and suggest 8.0.0
         Show URL for build.gradle line 2: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 5: Change to 1.9.0:
+        @@ -5 +5
+        -     compile 'com.example.issues:issues-on-latest:1.8.0' // Should not suggest 2.0 because it has blocking issues
+        +     compile 'com.example.issues:issues-on-latest:1.9.0' // Should not suggest 2.0 because it has blocking issues
+        Show URL for build.gradle line 5: View details in Google Play SDK Index:
+        http://sdk.google.com/
+        Fix for build.gradle line 6: Change to 1.1.0:
+        @@ -6 +6
+        -     compile 'com.example.issues:latest-is-preview:1.0.0' // 1.2 is latest in SDK Index but is preview, should suggest 1.1
+        +     compile 'com.example.issues:latest-is-preview:1.1.0' // 1.2 is latest in SDK Index but is preview, should suggest 1.1
+        Show URL for build.gradle line 6: View details in Google Play SDK Index:
+        http://sdk.google.com/
       """
     lint()
       .files(
@@ -5454,7 +5696,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                 dependencies {
                     compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
-                    compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+                    compile 'log4j:log4j:1.2.10' // Suggest 1.2.18 (it is latest in SDK Index, even if it is not in maven)
+                    compile 'com.example.issues:issues-on-latest:1.8.0' // Should not suggest 2.0 because it has blocking issues
+                    compile 'com.example.issues:latest-is-preview:1.0.0' // 1.2 is latest in SDK Index but is preview, should suggest 1.1
                 }
                 """
           )
@@ -5486,6 +5730,29 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"log4j:log4j:1.2.10\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.10\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.issues%22+AND+a:%22issues-on-latest%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.issues\\\" AND a:\\\"issues-on-latest\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":3,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.issues:issues-on-latest:2.0.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"2.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:issues-on-latest:1.9.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"1.9.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:issues-on-latest:1.8.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"1.8.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]},",
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.issues%22+AND+a:%22latest-is-preview%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.issues\\\" AND a:\\\"latest-is-preview\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":2,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.issues:latest-is-preview:1.1.0\",\"g\":\"com.example.issues\",\"a\":\"latest-is-preview\",\"v\":\"1.1.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:latest-is-preview:1.0.0\",\"g\":\"com.example.issues\",\"a\":\"latest-is-preview\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]},",
+      )
       .issues(
         REMOTE_VERSION,
         RISKY_LIBRARY,
@@ -5502,8 +5769,8 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:3: Warning: A newer version of com.example.ads.third.party:example than 7.2.1 is available: 8.0.0 [NewerVersionAvailable]
               compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:4: Warning: A newer version of log4j:log4j than 1.2.10 is available: 1.2.11 [NewerVersionAvailable]
-              compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+          build.gradle:4: Warning: A newer version of log4j:log4j than 1.2.10 is available: 1.2.18 [NewerVersionAvailable]
+              compile 'log4j:log4j:1.2.10' // Suggest 1.2.18 (it is latest in SDK Index, even if it is not in maven)
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
@@ -5514,7 +5781,17 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Show SDK Index link and suggest 8.0.0
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 5 warnings
+          build.gradle:5: Warning: com.example.issues:issues-on-latest version 1.8.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.9.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:issues-on-latest:1.8.0' // Should not suggest 2.0 because it has blocking issues
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:6: Warning: com.example.issues:latest-is-preview version 1.0.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.1.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:latest-is-preview:1.0.0' // 1.2 is latest in SDK Index but is preview, should suggest 1.1
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 7 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -5527,16 +5804,38 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSdkIndexLibraryNoUpgradeToVersionWithWarningOrError() {
     val expectedFixes =
       """
+        Fix for build.gradle line 2: Change to 1.2.18:
+        @@ -2 +2
+        -     compile 'log4j:log4j:1.2.11' // No Issue, but should suggest 1.2.18 since it is the latest version from SDK Index
+        +     compile 'log4j:log4j:1.2.18' // No Issue, but should suggest 1.2.18 since it is the latest version from SDK Index
+        Fix for build.gradle line 3: Change to 8.0.0:
+        @@ -3 +3
+        -     compile 'com.example.ads.third.party:example:7.1.0' // Issue, suggest 8.0 (latest from SDK Index)
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Issue, suggest 8.0 (latest from SDK Index)
         Show URL for build.gradle line 3: View details in Google Play SDK Index:
         http://another.example.url/
+        Fix for build.gradle line 4: Change to 1.9.0:
+        @@ -4 +4
+        -     compile 'com.example.issues:issues-on-latest:1.8.0' // Suggest 1.9 (2.0 is marked as latest, but has issues)
+        +     compile 'com.example.issues:issues-on-latest:1.9.0' // Suggest 1.9 (2.0 is marked as latest, but has issues)
+        Show URL for build.gradle line 4: View details in Google Play SDK Index:
+        http://sdk.google.com/
+        Fix for build.gradle line 5: Change to 1.1.0:
+        @@ -5 +5
+        -     compile 'com.example.issues:latest-is-preview:1.0.0' // Should suggest 1.1 (1.2 is latest but is preview)
+        +     compile 'com.example.issues:latest-is-preview:1.1.0' // Should suggest 1.1 (1.2 is latest but is preview)
+        Show URL for build.gradle line 5: View details in Google Play SDK Index:
+        http://sdk.google.com/
       """
     lint()
       .files(
         gradle(
             """
                 dependencies {
-                    compile 'log4j:log4j:1.2.11' // No Issue but no suggestion since 1.2.15 has outdated non blocking issues (warning)
-                    compile 'com.example.ads.third.party:example:7.1.0' //Issue but no suggestion since 7.1.4 has issues (error)
+                    compile 'log4j:log4j:1.2.11' // No Issue, but should suggest 1.2.18 since it is the latest version from SDK Index
+                    compile 'com.example.ads.third.party:example:7.1.0' // Issue, suggest 8.0 (latest from SDK Index)
+                    compile 'com.example.issues:issues-on-latest:1.8.0' // Suggest 1.9 (2.0 is marked as latest, but has issues)
+                    compile 'com.example.issues:latest-is-preview:1.0.0' // Should suggest 1.1 (1.2 is latest but is preview)
                 }
                 """
           )
@@ -5568,6 +5867,29 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"com.example.ads.third.party:example:7.1.1\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.1\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"com.example.ads.third.party:example:7.1.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.issues%22+AND+a:%22issues-on-latest%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.issues\\\" AND a:\\\"issues-on-latest\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":3,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.issues:issues-on-latest:2.0.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"2.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:issues-on-latest:1.9.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"1.9.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:issues-on-latest:1.8.0\",\"g\":\"com.example.issues\",\"a\":\"issues-on-latest\",\"v\":\"1.8.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]},",
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.issues%22+AND+a:%22latest-is-preview%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.issues\\\" AND a:\\\"latest-is-preview\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":2,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.issues:latest-is-preview:1.1.0\",\"g\":\"com.example.issues\",\"a\":\"latest-is-preview\",\"v\":\"1.1.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.issues:latest-is-preview:1.0.0\",\"g\":\"com.example.issues\",\"a\":\"latest-is-preview\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]},",
+      )
       .issues(
         REMOTE_VERSION,
         RISKY_LIBRARY,
@@ -5581,10 +5903,23 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+          build.gradle:2: Warning: A newer version of log4j:log4j than 1.2.11 is available: 1.2.18 [GradleDependency]
+              compile 'log4j:log4j:1.2.11' // No Issue, but should suggest 1.2.18 since it is the latest version from SDK Index
+                      ~~~~~~~~~~~~~~~~~~~~
           build.gradle:3: Warning: com.example.ads.third.party:example version 7.1.0 has Ads policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
-              compile 'com.example.ads.third.party:example:7.1.0' //Issue but no suggestion since 7.1.4 has issues (error)
+              compile 'com.example.ads.third.party:example:7.1.0' // Issue, suggest 8.0 (latest from SDK Index)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 1 warnings
+          build.gradle:4: Warning: com.example.issues:issues-on-latest version 1.8.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.9.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:issues-on-latest:1.8.0' // Suggest 1.9 (2.0 is marked as latest, but has issues)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:5: Warning: com.example.issues:latest-is-preview version 1.0.0 has been reported as outdated by its author.
+          The library author recommends using versions:
+            - 1.1.0 or higher [OutdatedLibrary]
+              compile 'com.example.issues:latest-is-preview:1.0.0' // Should suggest 1.1 (1.2 is latest but is preview)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 4 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -8808,6 +9143,106 @@ class GradleDetectorTest : AbstractCheckTest() {
                               )
                           )
                           .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                      )
+                  )
+              )
+          )
+          // From Index, latest has issues
+          .addSdks(
+            Sdk.newBuilder()
+              .setIsGoogleOwned(true)
+              .setIndexUrl("http://sdk.google.com/")
+              .setIndexAvailability(Sdk.IndexAvailability.AVAILABLE_IN_PUBLIC_SDK_INDEX)
+              .addLibraries(
+                Library.newBuilder()
+                  .setLibraryId(
+                    LibraryIdentifier.newBuilder()
+                      .setMavenId(
+                        LibraryIdentifier.MavenIdentifier.newBuilder()
+                          .setGroupId("com.example.issues")
+                          .setArtifactId("issues-on-latest")
+                          .build()
+                      )
+                  )
+                  // Latest, has blocking issues
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("2.0.0")
+                      .setIsLatestVersion(true)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                      )
+                  )
+                  // Ok, no issues
+                  .addVersions(
+                    LibraryVersion.newBuilder().setVersionString("1.9.0").setIsLatestVersion(false)
+                  )
+                  // Outdated version (Warning)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("1.8.0")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setOutdatedIssueInfo(
+                            LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
+                              .addRecommendedVersions(
+                                LibraryVersionRange.newBuilder().setLowerBound("1.9.0")
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                      )
+                  )
+              )
+          )
+          // From Index, latest is preview
+          .addSdks(
+            Sdk.newBuilder()
+              .setIsGoogleOwned(true)
+              .setIndexUrl("http://sdk.google.com/")
+              .setIndexAvailability(Sdk.IndexAvailability.AVAILABLE_IN_PUBLIC_SDK_INDEX)
+              .addLibraries(
+                Library.newBuilder()
+                  .setLibraryId(
+                    LibraryIdentifier.newBuilder()
+                      .setMavenId(
+                        LibraryIdentifier.MavenIdentifier.newBuilder()
+                          .setGroupId("com.example.issues")
+                          .setArtifactId("latest-is-preview")
+                          .build()
+                      )
+                  )
+                  // Latest, Ok but is preview version
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("1.2.0-dev")
+                      .setIsLatestVersion(true)
+                  )
+                  // Ok, no issues
+                  .addVersions(
+                    LibraryVersion.newBuilder().setVersionString("1.1.0").setIsLatestVersion(false)
+                  )
+                  // Outdated version (Warning)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("1.0.0")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setOutdatedIssueInfo(
+                            LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
+                              .addRecommendedVersions(
+                                LibraryVersionRange.newBuilder().setLowerBound("1.1.0")
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
               )
