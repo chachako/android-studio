@@ -24,11 +24,15 @@ import com.android.tools.apk.analyzer.internal.ApkDiffParser;
 import com.android.tools.apk.analyzer.internal.ApkEntry;
 import com.android.utils.ILogger;
 import com.android.utils.StdLogger;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
+
 import javax.swing.tree.DefaultMutableTreeNode;
-import junit.framework.TestCase;
-import org.junit.Test;
 
 public class ApkDiffParserTest {
     private ILogger logger = new StdLogger(StdLogger.Level.VERBOSE);
@@ -43,13 +47,13 @@ public class ApkDiffParserTest {
                     ApkDiffParser.createTreeNode(archiveContext1, archiveContext2);
             TestCase.assertEquals(
                     "1.apk 649 960 311\n"
-                            + "  instant-run.zip 0 352 352\n"
+                            + "  instant-run.zip 0 153 153\n"
                             + "    instant-run/ 0 2 2\n"
                             + "      classes1.dex 0 2 2\n"
                             + "  res/ 6 6 0\n"
                             + "    anim/ 6 6 0\n"
                             + "      fade.xml 6 6 0\n"
-                            + "  AndroidManifest.xml 13 13 0\n",
+                            + "  AndroidManifest.xml 11 11 0\n",
                     dumpTree(treeNode));
         }
     }
@@ -67,8 +71,8 @@ public class ApkDiffParserTest {
                             + "  res/ 6 6 0\n"
                             + "    anim/ 6 6 0\n"
                             + "      fade.xml 6 6 0\n"
-                            + "  AndroidManifest.xml 13 13 0\n"
-                            + "  instant-run.zip 352 0 -352\n"
+                            + "  AndroidManifest.xml 11 11 0\n"
+                            + "  instant-run.zip 153 0 -153\n"
                             + "    instant-run/ 2 0 -2\n"
                             + "      classes1.dex 2 0 -2\n",
                     dumpTree(treeNode));

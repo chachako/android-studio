@@ -22,9 +22,11 @@ import com.android.tools.apk.analyzer.ArchiveEntry;
 import com.android.tools.apk.analyzer.ArchiveNode;
 import com.android.tools.apk.analyzer.ArchiveTreeStructure;
 import com.android.tools.apk.analyzer.PathUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ApkDiffParser {
@@ -32,7 +34,10 @@ public class ApkDiffParser {
     public static DefaultMutableTreeNode createTreeNode(
             @NonNull ArchiveContext oldFile, @NonNull ArchiveContext newFile) throws IOException {
         ArchiveNode oldRoot = ArchiveTreeStructure.create(oldFile);
+        GzipSizeCalculator calculator = new GzipSizeCalculator();
+        ArchiveTreeStructure.updateRawFileSizes(oldRoot, calculator);
         ArchiveNode newRoot = ArchiveTreeStructure.create(newFile);
+        ArchiveTreeStructure.updateRawFileSizes(newRoot, calculator);
         return createTreeNode(oldRoot, newRoot);
     }
 
@@ -45,8 +50,8 @@ public class ApkDiffParser {
 
         DefaultMutableTreeNode node = new DefaultMutableTreeNode();
 
-        long oldSize = 0;
-        long newSize = 0;
+        long oldSize = getSize(oldFile);
+        long newSize = getSize(newFile);
 
         HashSet<String> childrenInOldFile = new HashSet<>();
         final ArchiveEntry data = oldFile == null ? newFile.getData() : oldFile.getData();
@@ -57,42 +62,11 @@ public class ApkDiffParser {
         if (oldFile != null) {
             if (!oldFile.getChildren().isEmpty()) {
                 for (ArchiveNode oldChild : oldFile.getChildren()) {
-                    ArchiveNode newChild = null;
-                    if (newFile != null) {
-                        for (ArchiveNode archiveNode : newFile.getChildren()) {
-                            if (archiveNode
-                                    .getData()
-                                    .getPath()
-                                    .getFileName()
-                                    .toString()
-                                    .equals(
-                                            oldChild.getData()
-                                                    .getPath()
-                                                    .getFileName()
-                                                    .toString())) {
-                                newChild = archiveNode;
-                                break;
-                            }
-                        }
-                    }
-
-                    childrenInOldFile.add(oldChild.getData().getPath().getFileName().toString());
-                    DefaultMutableTreeNode childNode = createTreeNode(oldChild, newChild);
-                    node.add(childNode);
-
-                    ApkDiffEntry entry = (ApkDiffEntry) childNode.getUserObject();
-                    oldSize += entry.getOldSize();
-                    newSize += entry.getNewSize();
+                    String fileName = oldChild.getData().getPath().getFileName().toString();
+                    ArchiveNode newChild = findChildByFileName(newFile, fileName);
+                    childrenInOldFile.add(fileName);
+                    node.add(createTreeNode(oldChild, newChild));
                 }
-
-                if (Files.size(oldFile.getData().getPath()) > 0) {
-                    // This is probably a zip inside the apk, and we should use it's size
-                    oldSize = Files.size(oldFile.getData().getPath());
-                } else if (oldFile.getParent() == null) {
-                    oldSize = Files.size(oldFile.getData().getArchive().getPath());
-                }
-            } else {
-                oldSize += Files.size(oldFile.getData().getPath());
             }
         }
         if (newFile != null) {
@@ -105,25 +79,39 @@ public class ApkDiffParser {
 
                     DefaultMutableTreeNode childNode = createTreeNode(null, newChild);
                     node.add(childNode);
-
-                    ApkDiffEntry entry = (ApkDiffEntry) childNode.getUserObject();
-                    oldSize += entry.getOldSize();
-                    newSize += entry.getNewSize();
                 }
-
-                if (Files.size(newFile.getData().getPath()) > 0) {
-                    // This is probably a zip inside the apk, and we should use it's size
-                    newSize = Files.size(newFile.getData().getPath());
-                } else if (newFile.getParent() == null) {
-                    newSize = Files.size(newFile.getData().getArchive().getPath());
-                }
-            } else {
-                newSize += Files.size(newFile.getData().getPath());
             }
         }
 
         node.setUserObject(new ApkDiffEntry(name, oldFile, newFile, oldSize, newSize));
         ApkEntry.sort(node);
         return node;
+    }
+
+    private static long getSize(ArchiveNode node) throws IOException {
+        if (node == null) {
+            // Node doesn't exist, size == 0
+            return 0L;
+        }
+        if (node.getParent() == null) {
+            // The APK itself. Use size on disk rather than compressed size
+            return Files.size(node.getData().getArchive().getPath());
+        }
+        // Compressed size for everything else.
+        return node.getData().getRawFileSize();
+    }
+
+    private static @Nullable ArchiveNode findChildByFileName(
+            @Nullable ArchiveNode parent, String fileName) {
+        if (parent == null) {
+            return null;
+        }
+        for (ArchiveNode child : parent.getChildren()) {
+            String name = child.getData().getPath().getFileName().toString();
+            if (name.equals(fileName)) {
+                return child;
+            }
+        }
+        return null;
     }
 }
