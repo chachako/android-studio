@@ -19,16 +19,15 @@ package com.android.build.gradle.integration.api
 import com.android.Version
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
-import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
-import com.android.build.gradle.integration.common.truth.ApkSubject
+import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
+import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
-import kotlin.io.path.exists
 
 class SourceSetsTest {
     @JvmField
@@ -81,7 +80,6 @@ class SourceSetsTest {
                         import org.gradle.api.file.DirectoryProperty;
                         import org.gradle.api.tasks.OutputDirectory;
                         import org.gradle.api.tasks.TaskAction;
-                        import java.nio.file.Files;
 
                         /** Task to  generate a placeholder JNI lib */
                         public abstract class ReproducerTask extends DefaultTask {
@@ -90,11 +88,8 @@ class SourceSetsTest {
                             public abstract DirectoryProperty getOutputDirectory();
 
                             @TaskAction
-                            public final void generate() throws java.io.IOException {
+                            public final void generate() {
                                 System.out.println("ReproducerTask called !");
-                                Files.write(
-                                    new java.io.File(getOutputDirectory().get().getAsFile(), "some-res.bin").toPath(),
-                                    "Some text".getBytes());
                             }
                         }
                         """.trimIndent()
@@ -134,7 +129,7 @@ class SourceSetsTest {
                                                 System.out.println("ReproTask configured.");
                                             }
                                     );
-                                    variant.getSources().getAssets().addGeneratedSourceDirectory(reproTask, ReproducerTask::getOutputDirectory);
+                                    variant.getSources().getRes().addGeneratedSourceDirectory(reproTask, ReproducerTask::getOutputDirectory);
                                 });
                             }
                         }
@@ -260,39 +255,5 @@ class SourceSetsTest {
         ).readText()
 
         Truth.assertThat(content).contains("tmp_test")
-    }
-
-    @Test
-    fun testSettingCustomOutputPath() {
-        val subProject = project.getSubproject("api-use")
-
-        subProject.buildFile.appendText(
-            """
-               androidComponents {
-                    onVariants(selector().withBuildType("debug"), {
-                        tasks.named("debugReproTask").configure {
-                            it.getOutputDirectory().set(
-                                project.getLayout().getBuildDirectory().dir("my/custom/path")
-                            )
-                        }
-                        System.out.println("Task is " + tasks.named("debugReproTask"))
-                    })
-                }
-            """.trimIndent()
-        )
-        val result = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":api-use:assembleDebug")
-        Truth.assertThat(result.failedTasks).isEmpty()
-        // check the custom dir was used.
-        Truth.assertThat(
-            File(
-                project.getSubproject(":api-use").buildDir,
-                "my/custom/path/some-res.bin"
-            ).exists()
-        ).isTrue()
-        // check the file got packaged
-        val apk = project.getSubproject(":api-use").getApk(GradleTestProject.ApkType.DEBUG)
-        Truth.assertThat(apk.getEntry("assets/some-res.bin").exists()).isTrue()
     }
 }

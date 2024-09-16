@@ -70,7 +70,9 @@ class SourcesDirectoryModelTest : ModelComparator() {
                     onVariants(selector().all()) { variant ->
                     // use addGeneratedSourceDirectory for adding generated source directories
                     TaskProvider<AssetCreatorTask> assetCreationTask =
-                        project.tasks.register('create' + variant.getName() + 'Asset', AssetCreatorTask.class)
+                        project.tasks.register('create' + variant.getName() + 'Asset', AssetCreatorTask.class){
+                            getOutputDirectory().set(new File(project.layout.buildDirectory.asFile.get(), "assets"))
+                        }
 
                     variant.sources.assets?.addGeneratedSourceDirectory(
                             assetCreationTask,
@@ -79,7 +81,9 @@ class SourcesDirectoryModelTest : ModelComparator() {
 
                     // add java generator task
                     TaskProvider<JavaCreatorTask> javaCreationTask =
-                        project.tasks.register('create' + variant.getName() + 'JavaGenerator', JavaCreatorTask.class)
+                        project.tasks.register('create' + variant.getName() + 'JavaGenerator', JavaCreatorTask.class){
+                            getOutputDirectory().set(new File(project.layout.buildDirectory.asFile.get(), "java_stubs"))
+                        }
 
                     variant.sources.java?.addGeneratedSourceDirectory(
                             javaCreationTask,

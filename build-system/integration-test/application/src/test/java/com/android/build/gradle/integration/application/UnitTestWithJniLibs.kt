@@ -83,7 +83,7 @@ class UnitTestWithJniLibs {
                     println(System.getProperty("java.library.path"))
                     val libraryPath = System.getProperty("java.library.path")
                     if (!libraryPath.contains(
-                        "build/debugJniLibProducerTask".replace('/', File.separatorChar)
+                        "build/generated/jniLibs/debugJniLibProducerTask".replace('/', File.separatorChar)
                         )
                     ) {
                         fail("Cannot find generated so file in java.library.path system property")
