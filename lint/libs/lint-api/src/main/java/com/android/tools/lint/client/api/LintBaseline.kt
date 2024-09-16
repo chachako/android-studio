@@ -461,6 +461,22 @@ class LintBaseline(
           }
         }
       }
+      "ObsoleteSdkInt" -> {
+        val s1 = "Unnecessary; SDK_INT is"
+        val s2 = "Unnecessary; `SDK_INT` is"
+        // In some cases we now include the expression itself rather than the plain "SDK_INT is
+        // never X" message;
+        // treat these the same
+        if (
+          (old.startsWith(s1) || old.startsWith(s2)) &&
+            old.contains(" is never ") &&
+            !(new.startsWith(s1) || new.startsWith(s2))
+        ) {
+          new.contains(" is never ")
+        } else {
+          stringsEquivalent(old, new)
+        }
+      }
       "WebpUnsupported",
       "OverrideAbstract",
       "GetLocales" ->

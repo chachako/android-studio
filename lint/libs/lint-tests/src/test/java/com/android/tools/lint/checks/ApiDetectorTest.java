@@ -6042,10 +6042,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/test/pkg/TestVersionCheck.java:21: Warning: Unnecessary; SDK_INT is never < 23 [ObsoleteSdkInt]\n"
                         + "        if (Build.VERSION.SDK_INT < 23) { }\n"
                         + "            ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "src/test/pkg/TestVersionCheck.java:30: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 31` is never true here [ObsoleteSdkInt]\n"
+                        + "src/test/pkg/TestVersionCheck.java:30: Warning: Unnecessary; Build.VERSION.SDK_INT >= 31 is never true here [ObsoleteSdkInt]\n"
                         + "        if (Build.VERSION.SDK_INT < 31 && Build.VERSION.SDK_INT >= 31) { }\n"
                         + "                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "src/test/pkg/TestVersionCheck.java:31: Warning: Unnecessary;` Build.VERSION.SDK_INT < 29` is never true here [ObsoleteSdkInt]\n"
+                        + "src/test/pkg/TestVersionCheck.java:31: Warning: Unnecessary; Build.VERSION.SDK_INT < 29 is never true here [ObsoleteSdkInt]\n"
                         + "        if (Build.VERSION.SDK_INT < 31) { } else if (Build.VERSION.SDK_INT < 29) { }\n"
                         + "                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "0 errors, 14 warnings";
@@ -6086,7 +6086,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        if (Build.VERSION.SDK_INT < 31 && Build.VERSION.SDK_INT >= 31) { }\n"
                                         + "        if (Build.VERSION.SDK_INT < 31) { } else if (Build.VERSION.SDK_INT < 29) { }\n"
                                         + "        if (Build.VERSION.SDK_INT > 31) { } else if (Build.VERSION.SDK_INT > 29) { }\n"
-                                        + "\n"
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
@@ -6967,7 +6966,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
 
     public void test70784223() {
         // Regression test for 70784223: Linter doesn't detect API level check correctly using
-        // Kotlin
+        // Kotlin. Also tests a handful of scenarios around version checking for if/when statements.
         //noinspection all // Sample code
         lint().files(
                         kotlin(
@@ -6981,11 +6980,29 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "fun test(context: Context) {\n"
                                         + "    val channelName = context.getString(R.string.app_name)\n"
+                                        + "        val name = \"Something\"\n"
                                         + "\n"
                                         + "    if (Build.VERSION.SDK_INT > 26) {\n"
-                                        + "        val name = \"Something\"\n"
-                                        + "        val channel = NotificationChannel(channelName, name, NotificationManager.IMPORTANCE_HIGH)\n"
+                                        + "        NotificationChannel(channelName, name, NotificationManager.IMPORTANCE_HIGH)\n"
                                         + "    }\n"
+                                        + "\n"
+                                        + "    when {\n"
+                                        + "        Build.VERSION.SDK_INT > 26 -> {\n"
+                                        + "            NotificationChannel(channelName, name, NotificationManager.IMPORTANCE_HIGH)\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    when {\n"
+                                        + "        Build.VERSION.SDK_INT > 26 && context != null -> {\n"
+                                        + "            NotificationChannel(channelName, name, NotificationManager.IMPORTANCE_HIGH)\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    when {\n"
+                                        + "        (Build.VERSION.SDK_INT > 26) && (context != null) -> {\n"
+                                        + "            NotificationChannel(channelName, name, NotificationManager.IMPORTANCE_HIGH)\n"
+                                        + "        }\n"
+                                        + "    }"
                                         + "}"))
                 .run()
                 .expectClean();
@@ -9614,6 +9631,65 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}"))
                 .run()
                 .expectClean();
+    }
+
+    @SuppressWarnings("all") // sample code
+    public void testNestedObsolete() {
+        lint().files(
+                        manifest().minSdk(24),
+                        kotlin(
+                                "package test.pkg\n"
+                                    + "\n"
+                                    + "import android.os.Build.VERSION.SDK_INT\n"
+                                    + "import android.os.Build\n"
+                                    + "import androidx.annotation.RequiresApi\n"
+                                    + "import androidx.annotation.RequiresExtension\n"
+                                    + "\n"
+                                    + "@RequiresApi(36)\n"
+                                    + "fun obsoleteIf() {\n"
+                                    + "    if (SDK_INT >= 36) { } // Error 1: Always true, known from @RequiresApi\n"
+                                    + "    if (SDK_INT < 36) { } // Error 2: Always false, known from @RequiresApi\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "@RequiresApi(36)\n"
+                                    + "fun obsoleteWhen() {\n"
+                                    + "    when {\n"
+                                    + "        SDK_INT >= 36 -> { } // Error 3: Always true, known from @RequiresApi\n"
+                                    + "    }\n"
+                                    + "    when {\n"
+                                    + "        SDK_INT < 36 -> { } // Error 4: Always false, known from @RequiresApi\n"
+                                    + "    }\n"
+                                    + "}\n"
+                                    + "\n"
+                                    + "fun obsolete2() {\n"
+                                    + "    if (SDK_INT > 36) {\n"
+                                    + "        if (SDK_INT >= 36) { } // Error 5: Always true, known from outer check\n"
+                                    + "        if (SDK_INT < 36) { } // Error 6: Always false, known from outer check\n"
+                                    + "    }\n"
+                                    + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR,
+                        getRequiresExtensionStub())
+                .run()
+                .expect(
+                        "src/test/pkg/test.kt:10: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
+                            + "    if (SDK_INT >= 36) { } // Error 1: Always true, known from @RequiresApi\n"
+                            + "        ~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:11: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "    if (SDK_INT < 36) { } // Error 2: Always false, known from @RequiresApi\n"
+                            + "        ~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:17: Warning: Unnecessary; SDK_INT is always >= 36 [ObsoleteSdkInt]\n"
+                            + "        SDK_INT >= 36 -> { } // Error 3: Always true, known from @RequiresApi\n"
+                            + "        ~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:20: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "        SDK_INT < 36 -> { } // Error 4: Always false, known from @RequiresApi\n"
+                            + "        ~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:26: Warning: Unnecessary; SDK_INT is always >= 37 [ObsoleteSdkInt]\n"
+                            + "        if (SDK_INT >= 36) { } // Error 5: Always true, known from outer check\n"
+                            + "            ~~~~~~~~~~~~~\n"
+                            + "src/test/pkg/test.kt:27: Warning: Unnecessary; SDK_INT < 36 is never true here [ObsoleteSdkInt]\n"
+                            + "        if (SDK_INT < 36) { } // Error 6: Always false, known from outer check\n"
+                            + "            ~~~~~~~~~~~~\n"
+                            + "0 errors, 6 warnings");
     }
 
     @Override

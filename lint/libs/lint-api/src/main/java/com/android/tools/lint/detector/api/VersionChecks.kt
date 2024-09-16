@@ -792,10 +792,15 @@ class VersionChecks(
             current is UPolyadicExpression &&
               current.operator == UastBinaryOperator.LOGICAL_OR &&
               prev !== current.operands.first().skipParenthesizedExprDown()
+          val fromCondition = parent.caseValues.any { it === current }
           constraint =
             max(
               constraint,
-              getCumulativeCaseConstraint(parent, includeCurrent = !ored, apiLookup = apiLookup),
+              getCumulativeCaseConstraint(
+                parent,
+                includeCurrent = !ored && !fromCondition,
+                apiLookup = apiLookup,
+              ),
             )
           current = current.uastParent ?: break
         }
@@ -843,7 +848,12 @@ class VersionChecks(
         null
       }
     } else if (current is USwitchClauseExpressionWithBody) {
-      return getCumulativeCaseConstraint(current, includeCurrent = true, apiLookup = apiLookup)
+      val includeCurrent = !current.caseValues.any { it === prev }
+      return getCumulativeCaseConstraint(
+        current,
+        includeCurrent = includeCurrent,
+        apiLookup = apiLookup,
+      )
     } else if (
       current is UCallExpression &&
         (prev as? UExpression)?.skipParenthesizedExprDown() is ULambdaExpression

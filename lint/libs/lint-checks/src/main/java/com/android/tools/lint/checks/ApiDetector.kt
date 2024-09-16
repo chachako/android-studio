@@ -340,7 +340,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             SdkVersionInfo.getApiByBuildCode(targetApiString, true)
           }
         if (api != null) {
-          val message = "Unnecessary; SDK_INT is always >= $api"
+          val message = "Unnecessary; `SDK_INT` is always >= $api"
           val fix =
             fix()
               .replace()
@@ -782,12 +782,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val outerAnnotation =
           "@${targetAnnotation?.qualifiedName?.substringAfterLast('.')}(${target.minString()})"
         val message =
-          "Unnecessary; SDK_INT is always >= ${target.minString()} from outer annotation (`$outerAnnotation`)"
+          "Unnecessary; `SDK_INT` is always >= ${target.minString()} from outer annotation (`$outerAnnotation`)"
         context.report(
           Incident(OBSOLETE_SDK, message, context.getLocation(annotation), annotation, fix)
         )
       } else {
-        val message = "Unnecessary; SDK_INT is always >= ${api.minString()}"
+        val message = "Unnecessary; `SDK_INT` is always >= ${api.minString()}"
         context.report(
           Incident(OBSOLETE_SDK, message, context.getLocation(annotation), annotation, fix),
           minSdkAtLeast(api.min()),
@@ -2800,8 +2800,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
   private fun checkObsoleteSdkVersion(context: JavaContext, node: UElement) {
     val binary = node.getParentOfType(UBinaryExpression::class.java, true)
     if (binary != null) {
-      // Only applies to SDK 0
-      val minSdk = getMinSdk(context)?.findSdk(ANDROID_SDK_ID) ?: return
+      // Compute the cumulative effects of the app's minSdkVersion, any surrounding
+      // @RequiresApi annotations on classes and methods, and local "if (SDK_INT)" checks.
+      var environmentConstraint =
+        getMinSdk(context)
+          // Only applies to SDK 0
+          ?.findSdk(ANDROID_SDK_ID) ?: return
+
       // Note that we do NOT use the app's minSdkVersion here; the library's
       // minSdkVersion should be increased instead since it's possible that
       // this library is used elsewhere with a lower minSdkVersion than the
@@ -2809,20 +2814,39 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       // that usage.
       val constraint =
         getVersionCheckConditional(binary, context.client, context.evaluator, context.project)
-      if (constraint != null) {
-        val always = constraint.alwaysAtLeast(minSdk)
-        val never = constraint.not().alwaysAtLeast(minSdk)
-        val minString = minSdk.minString()
+          ?: return
+      val sdkId = constraint.getSdk()
+      if (sdkId == ANDROID_SDK_ID) {
+        // Merge in knowledge about SDK_INT from surrounding if-SDK_INT checks.
         val outer =
-          VersionChecks.Companion.getOuterVersionCheckConstraint(context, binary)
-            ?.findSdk(constraint.getSdk())
-        val both = constraint and outer
+          VersionChecks.Companion.getOuterVersionCheckConstraint(context, binary)?.findSdk(sdkId)
+
+        if (outer != null) {
+          environmentConstraint = environmentConstraint and outer
+        }
+
+        // Merge in annotation knowledge
+        val target = getTargetApiAnnotation(context.evaluator, binary, ::isTargetAnnotation).second
+        if (target != null) {
+          environmentConstraint = environmentConstraint and target
+        }
+
+        val both = constraint and environmentConstraint
+        val always = both.alwaysAtLeast(environmentConstraint)
+        val never = both.not().alwaysAtLeast(environmentConstraint)
         val message =
           when {
-            both.isEmpty() ->
-              "Unnecessary;` ${binary.sourcePsi?.text ?: binary.asSourceString()}` is never true here"
-            always -> "Unnecessary; SDK_INT is always >= $minString"
-            never -> "Unnecessary; SDK_INT is never < $minString"
+            both.isEmpty() && (outer != null || target != null) ||
+              (always || never) && !environmentConstraint.isOpenEnded() -> {
+              val source = binary.sourcePsi?.text ?: binary.asSourceString()
+              val suffix =
+                if (!both.isEmpty())
+                  " (`SDK_INT` " + environmentConstraint.toString().replace("API level ", "") + ")"
+                else ""
+              "Unnecessary; `$source` is never true here$suffix"
+            }
+            always -> "Unnecessary; `SDK_INT` is always >= ${environmentConstraint.minString()}"
+            never -> "Unnecessary; `SDK_INT` is never < ${environmentConstraint.minString()}"
             else -> return
           }
         context.report(

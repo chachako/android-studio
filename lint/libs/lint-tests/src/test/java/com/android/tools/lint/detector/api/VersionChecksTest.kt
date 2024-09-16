@@ -2195,6 +2195,47 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testNestedChecks2() {
+    lint()
+      .files(
+        manifest().minSdk(11),
+        java(
+            """
+            package p1.p2;
+
+            import android.os.Build;
+
+            public class Class {
+                public void testEarlyExit3(boolean nested) {
+                  if (Build.VERSION.SDK_INT < 31) {
+                        if (Build.VERSION.SDK_INT < 31) { // Unnecessary; SDK_INT is always >= 30
+                            // something
+                        }
+                        if (Build.VERSION.SDK_INT > 31) { // Impossible
+                            // something
+                        }
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+      )
+      .skipTestModes(PARTIAL)
+      .run()
+      .expect(
+        """
+        src/p1/p2/Class.java:8: Warning: Unnecessary; Build.VERSION.SDK_INT < 31 is never true here (SDK_INT ≥ 11 and < 31) [ObsoleteSdkInt]
+                    if (Build.VERSION.SDK_INT < 31) { // Unnecessary; SDK_INT is always >= 30
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/p1/p2/Class.java:11: Warning: Unnecessary; Build.VERSION.SDK_INT > 31 is never true here [ObsoleteSdkInt]
+                    if (Build.VERSION.SDK_INT > 31) { // Impossible
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
+        """
+      )
+  }
+
   fun testNestedChecksKotlin() {
     // Kotlin version of testNestedChecks. There are several important changes here:
     // The version check utility method is now defined as an expression body, so there
@@ -2476,14 +2517,14 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/test.kt:17: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 23` is never true here [ObsoleteSdkInt]
-                    Build.VERSION.SDK_INT >= 23 -> requires23() // never possible
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:18: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 25` is never true here [ObsoleteSdkInt]
-                    Build.VERSION.SDK_INT >= 25 -> requires23() // never possible
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            0 errors, 2 warnings
-            """
+        src/test/pkg/test.kt:17: Warning: Unnecessary; Build.VERSION.SDK_INT >= 23 is never true here [ObsoleteSdkInt]
+                Build.VERSION.SDK_INT >= 23 -> requires23() // never possible
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:18: Warning: Unnecessary; Build.VERSION.SDK_INT >= 25 is never true here [ObsoleteSdkInt]
+                Build.VERSION.SDK_INT >= 25 -> requires23() // never possible
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
+        """
       )
   }
 
@@ -2698,35 +2739,35 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/test.kt:32: Error: Call requires API level 23 (current min is 19): requires23 [NewApi]
-                    requires23()  // ERROR 1
+        src/test/pkg/test.kt:32: Error: Call requires API level 23 (current min is 19): requires23 [NewApi]
+                requires23()  // ERROR 1
+                ~~~~~~~~~~
+        src/test/pkg/test.kt:40: Error: Call requires API level 23 (current min is 19): requires23 [NewApi]
+            else if (true) requires23() // ERROR 2
+                           ~~~~~~~~~~
+        src/test/pkg/test.kt:49: Error: Call requires API level 23 (current min is 17): requires23 [NewApi]
+                requires23() // ERROR 3
+                ~~~~~~~~~~
+        src/test/pkg/test.kt:61: Error: Call requires API level 23 (current min is 17): requires23 [NewApi]
+                    requires23() // ERROR 4
                     ~~~~~~~~~~
-            src/test/pkg/test.kt:40: Error: Call requires API level 23 (current min is 19): requires23 [NewApi]
-                else if (true) requires23() // ERROR 2
-                               ~~~~~~~~~~
-            src/test/pkg/test.kt:49: Error: Call requires API level 23 (current min is 17): requires23 [NewApi]
-                    requires23() // ERROR 3
-                    ~~~~~~~~~~
-            src/test/pkg/test.kt:61: Error: Call requires API level 23 (current min is 17): requires23 [NewApi]
-                        requires23() // ERROR 4
-                        ~~~~~~~~~~
-            src/test/pkg/test.kt:16: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 23` is never true here [ObsoleteSdkInt]
-                else if (Build.VERSION.SDK_INT >= 23) requiresNothing() // Warn: never possible; we know SDK_INT < 21
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:17: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 25` is never true here [ObsoleteSdkInt]
-                else if (Build.VERSION.SDK_INT >= 25) requires23() // Warn: never possible; we know SDK_INT < 21
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:21: Warning: Unnecessary;` Build.VERSION.SDK_INT >= 23` is never true here [ObsoleteSdkInt]
-                else if (Build.VERSION.SDK_INT >= 23) requiresNothing() // Warn: SDK_INT is always < 21 here
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:58: Warning: Unnecessary;` Build.VERSION.SDK_INT < 11` is never true here [ObsoleteSdkInt]
-                    if (Build.VERSION.SDK_INT < 11) { // Warn: never possible
-                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:59: Warning: Unnecessary;` Build.VERSION.SDK_INT < 13` is never true here [ObsoleteSdkInt]
-                    } else if (Build.VERSION.SDK_INT < 13) { // Warn: never possible
-                               ~~~~~~~~~~~~~~~~~~~~~~~~~~
-            4 errors, 5 warnings
-            """
+        src/test/pkg/test.kt:16: Warning: Unnecessary; Build.VERSION.SDK_INT >= 23 is never true here [ObsoleteSdkInt]
+            else if (Build.VERSION.SDK_INT >= 23) requiresNothing() // Warn: never possible; we know SDK_INT < 21
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:17: Warning: Unnecessary; Build.VERSION.SDK_INT >= 25 is never true here [ObsoleteSdkInt]
+            else if (Build.VERSION.SDK_INT >= 25) requires23() // Warn: never possible; we know SDK_INT < 21
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:21: Warning: Unnecessary; Build.VERSION.SDK_INT >= 23 is never true here [ObsoleteSdkInt]
+            else if (Build.VERSION.SDK_INT >= 23) requiresNothing() // Warn: SDK_INT is always < 21 here
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:58: Warning: Unnecessary; Build.VERSION.SDK_INT < 11 is never true here [ObsoleteSdkInt]
+                if (Build.VERSION.SDK_INT < 11) { // Warn: never possible
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/test.kt:59: Warning: Unnecessary; Build.VERSION.SDK_INT < 13 is never true here [ObsoleteSdkInt]
+                } else if (Build.VERSION.SDK_INT < 13) { // Warn: never possible
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        4 errors, 5 warnings
+        """
       )
   }
 
@@ -3160,44 +3201,46 @@ class VersionChecksTest : AbstractCheckTest() {
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
+      // Error message varies in partial mode
+      .skipTestModes(PARTIAL)
       .run()
       .expect(
         """
-            src/test/pkg/test.kt:19: Error: Call requires API level 21 (current min is 16): requires21 [NewApi]
-                requires21() // ERROR 2: SDK_INT can be 1
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:34: Error: Call requires API level 21 (current min is 16): requires21 [NewApi]
-                requires21() // ERROR 3: SDK_INT can be 16 through 30
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:44: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
-                requires24() // ERROR 4: SDK_INT can be > 21
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:56: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
-                requires24() // ERROR 5: SDK_INT might be 23
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:67: Error: Call requires API level 22 (current min is 16): requires22 [NewApi]
-                requires22() // ERROR 6 -- SDK_INT can be 21
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:68: Error: Call requires API level 23 (current min is 16): requires23 [NewApi]
-                requires23() // ERROR 7
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:80: Error: Call requires API level 21 (current min is 20): requires21 [NewApi]
-                        requires21() // ERROR 8: SDK_INT can be 20
-                        ~~~~~~~~~~
-            src/test/pkg/test.kt:83: Error: Call requires API level 21 (current min is 19): requires21 [NewApi]
-                        requires21() // ERROR 9: SDK_INT can be 19
-                        ~~~~~~~~~~
-            src/test/pkg/test.kt:107: Error: Call requires API level 24 (current min is 22): requires24 [NewApi]
-                        requires24() // ERROR 10
-                        ~~~~~~~~~~
-            src/test/pkg/test.kt:112: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
-                requires24() // ERROR 11 -- SDK_INT could be 30 here
-                ~~~~~~~~~~
-            src/test/pkg/test.kt:62: Warning: Unnecessary;` SDK_INT > 30` is never true here [ObsoleteSdkInt]
-                    SDK_INT > 30 -> { } // never true
-                    ~~~~~~~~~~~~
-            10 errors, 1 warnings
-            """
+        src/test/pkg/test.kt:19: Error: Call requires API level 21 (current min is 16): requires21 [NewApi]
+            requires21() // ERROR 2: SDK_INT can be 1
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:34: Error: Call requires API level 21 (current min is 16): requires21 [NewApi]
+            requires21() // ERROR 3: SDK_INT can be 16 through 30
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:44: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
+            requires24() // ERROR 4: SDK_INT can be > 21
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:56: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
+            requires24() // ERROR 5: SDK_INT might be 23
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:67: Error: Call requires API level 22 (current min is 16): requires22 [NewApi]
+            requires22() // ERROR 6 -- SDK_INT can be 21
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:68: Error: Call requires API level 23 (current min is 16): requires23 [NewApi]
+            requires23() // ERROR 7
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:80: Error: Call requires API level 21 (current min is 20): requires21 [NewApi]
+                    requires21() // ERROR 8: SDK_INT can be 20
+                    ~~~~~~~~~~
+        src/test/pkg/test.kt:83: Error: Call requires API level 21 (current min is 19): requires21 [NewApi]
+                    requires21() // ERROR 9: SDK_INT can be 19
+                    ~~~~~~~~~~
+        src/test/pkg/test.kt:107: Error: Call requires API level 24 (current min is 22): requires24 [NewApi]
+                    requires24() // ERROR 10
+                    ~~~~~~~~~~
+        src/test/pkg/test.kt:112: Error: Call requires API level 24 (current min is 16): requires24 [NewApi]
+            requires24() // ERROR 11 -- SDK_INT could be 30 here
+            ~~~~~~~~~~
+        src/test/pkg/test.kt:62: Warning: Unnecessary; SDK_INT > 30 is never true here [ObsoleteSdkInt]
+                SDK_INT > 30 -> { } // never true
+                ~~~~~~~~~~~~
+        10 errors, 1 warnings
+        """
       )
   }
 
@@ -4982,17 +5025,23 @@ class VersionChecksTest : AbstractCheckTest() {
         }
         .expect(
           """
-                src/test/pkg/Test.kt:23: Error: Call requires API level 33 (current min is 30): android.provider.MediaStore#getPickImagesMaxLimit [NewApi]
-                                                MediaStore.getPickImagesMaxLimit() // ERROR 1
-                                                           ~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/Test.kt:27: Error: Call requires version 4 of the R-ext SDK (current min is 0): rOnly [NewApi]
-                                                    rOnly()  // ERROR 1: We may not have R, we may only have U
-                                                    ~~~~~
-                src/test/pkg/Test.kt:28: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
-                                                    uOnly()  // ERROR 2: We may not have U, we may only have R
-                                                    ~~~~~
-                3 errors, 0 warnings
-                """
+          src/test/pkg/Test.kt:23: Error: Call requires API level 33 (current min is 30): android.provider.MediaStore#getPickImagesMaxLimit [NewApi]
+                                          MediaStore.getPickImagesMaxLimit() // ERROR 1
+                                                     ~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Test.kt:27: Error: Call requires version 4 of the R-ext SDK (current min is 0): rOnly [NewApi]
+                                              rOnly()  // ERROR 1: We may not have R, we may only have U
+                                              ~~~~~
+          src/test/pkg/Test.kt:28: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
+                                              uOnly()  // ERROR 2: We may not have U, we may only have R
+                                              ~~~~~
+          src/test/pkg/Test.kt:38: Warning: Unnecessary; SDK_INT >= R is never true here (SDK_INT ≥ 30 and < 34) [ObsoleteSdkInt]
+                                          if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                                               ~~~~~~~~~~~~
+          src/test/pkg/Test.kt:42: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
+                                          if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                                               ~~~~~~~~~~~~
+          3 errors, 2 warnings
+          """
         )
     } else {
       // Like ApiDetector#testExtensionAndOr(), but we've replaced the annotations with surrounding
@@ -5114,7 +5163,13 @@ class VersionChecksTest : AbstractCheckTest() {
                 src/test/pkg/Test.kt:60: Error: Call requires API level 30 (current min is 1): android.os.ext.SdkExtensions#getExtensionVersion [NewApi]
                         if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
                                           ~~~~~~~~~~~~~~~~~~~
-                7 errors, 0 warnings
+                src/test/pkg/Test.kt:27: Warning: Unnecessary; SDK_INT is always >= 30 [ObsoleteSdkInt]
+                        if (SDK_INT >= 34 || SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                             ~~~~~~~~~~~~
+                src/test/pkg/Test.kt:33: Warning: Unnecessary; SDK_INT is always >= 34 [ObsoleteSdkInt]
+                        if (SDK_INT >= 34 && SDK_INT >= R && SdkExtensions.getExtensionVersion(R) >= 4) {
+                                             ~~~~~~~~~~~~
+                7 errors, 2 warnings
                 """
         )
     }
@@ -5208,14 +5263,20 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/SdkExtensionsTest.java:13: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
-                    requiresExtRv4(); // ERROR 1
+        src/test/pkg/SdkExtensionsTest.java:13: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
+                requiresExtRv4(); // ERROR 1
+                ~~~~~~~~~~~~~~
+        src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R Extensions SDK (current min is 3): requiresExtRv4 [NewApi]
+                    requiresExtRv4(); // ERROR 2
                     ~~~~~~~~~~~~~~
-            src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R Extensions SDK (current min is 3): requiresExtRv4 [NewApi]
-                        requiresExtRv4(); // ERROR 2
-                        ~~~~~~~~~~~~~~
-            2 errors, 0 warnings
-            """
+        src/test/pkg/SdkExtensionsTest.java:53: Warning: Unnecessary; SDK_INT is always >= 33 [ObsoleteSdkInt]
+            public static final boolean HAS_R_4B = SDK_INT >= TIRAMISU && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4;
+                                                   ~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/SdkExtensionsTest.java:62: Warning: Unnecessary; SDK_INT is always >= 33 [ObsoleteSdkInt]
+                return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        2 errors, 2 warnings
+        """
       )
   }
 
@@ -5478,23 +5539,23 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/test.kt:15: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
-                    requires21() // ERROR 1
+        src/test/pkg/test.kt:15: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
+                requires21() // ERROR 1
+                ~~~~~~~~~~
+        src/test/pkg/test.kt:22: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
+                requires21() // ERROR 2
+                ~~~~~~~~~~
+        src/test/pkg/test.kt:32: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
+                    requires21() // ERROR 3
                     ~~~~~~~~~~
-            src/test/pkg/test.kt:22: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
-                    requires21() // ERROR 2
-                    ~~~~~~~~~~
-            src/test/pkg/test.kt:32: Error: Call requires API level 21 (current min is 1): requires21 [NewApi]
-                        requires21() // ERROR 3
-                        ~~~~~~~~~~
-            src/test/pkg/test.kt:53: Warning: Unnecessary;` SDK_INT < 21` is never true here [ObsoleteSdkInt]
-                } else if (b2 || SDK_INT < 21) { // Warn: SDK_INT can never be < 21 here
-                                 ~~~~~~~~~~~~
-            src/test/pkg/test.kt:59: Warning: Unnecessary;` SDK_INT < 21` is never true here [ObsoleteSdkInt]
-                } else if (SDK_INT < 21 || b2) { // Warn: SDK_INT can never be < 21 here
-                           ~~~~~~~~~~~~
-            3 errors, 2 warnings
-            """
+        src/test/pkg/test.kt:53: Warning: Unnecessary; SDK_INT < 21 is never true here [ObsoleteSdkInt]
+            } else if (b2 || SDK_INT < 21) { // Warn: SDK_INT can never be < 21 here
+                             ~~~~~~~~~~~~
+        src/test/pkg/test.kt:59: Warning: Unnecessary; SDK_INT < 21 is never true here [ObsoleteSdkInt]
+            } else if (SDK_INT < 21 || b2) { // Warn: SDK_INT can never be < 21 here
+                       ~~~~~~~~~~~~
+        3 errors, 2 warnings
+        """
       )
   }
 

@@ -432,6 +432,14 @@ sealed class ApiConstraint {
       return fromInternalApiLevel(bit + 1) // it's exclusive; bit is the inclusive position
     }
 
+    /**
+     * Returns true if this is an "open ended" constraint, e.g. it goes up to infinity. True for
+     * something like "SDK_INT >= 31", and false for "SDK_INT < 24".
+     */
+    fun isOpenEnded(): Boolean {
+      return this.toExclusive() >= INFINITY
+    }
+
     override fun isAtLeast(constraint: ApiConstraint): Boolean {
       assert(this !== UNKNOWN && constraint !== UNKNOWN)
       if (bits == 0UL) {
@@ -516,6 +524,9 @@ sealed class ApiConstraint {
     override fun alwaysAtLeast(minSdk: ApiConstraint): Boolean {
       when (minSdk) {
         is SdkApiConstraint -> {
+          if (minSdk == NONE || this == NONE) {
+            return true
+          }
           assert(sdkId == minSdk.sdkId)
           return minSdk.bits and bits == minSdk.bits
         }
@@ -534,7 +545,13 @@ sealed class ApiConstraint {
     }
 
     override operator fun not(): SdkApiConstraint {
-      return SdkApiConstraint(bits.inv(), sdkId)
+      if (this == NONE) {
+        return ALL
+      } else if (this == ALL) {
+        return NONE
+      } else {
+        return SdkApiConstraint(bits.inv(), sdkId)
+      }
     }
 
     override fun isEmpty(): Boolean {
@@ -578,7 +595,7 @@ sealed class ApiConstraint {
       }
     }
 
-    override infix fun and(other: ApiConstraint?): ApiConstraint {
+    override infix fun and(other: ApiConstraint?): SdkApiConstraint {
       assert(this !== UNKNOWN && other !== UNKNOWN)
       if (this.isEmpty() || other != null && other.isEmpty()) return NONE
       when (other) {

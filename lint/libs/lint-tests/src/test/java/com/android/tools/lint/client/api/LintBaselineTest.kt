@@ -751,6 +751,54 @@ class LintBaselineTest {
   }
 
   @Test
+  fun tolerateObsoleteSdkMessageChanges() {
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new =
+          "Unnecessary; `Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN` is never true here",
+        old = "Unnecessary; SDK_INT is never < 21",
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new =
+          "Unnecessary; `Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN` is never true here",
+        old = "Unnecessary; `SDK_INT` is never < 21",
+      )
+    )
+
+    assertFalse(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new =
+          "Unnecessary; `Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN` is never true here",
+        old = "Unnecessary; SDK_INT is always > 21",
+      )
+    )
+
+    assertFalse(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new = "Unnecessary; SDK_INT is always > 23",
+        old = "Unnecessary; SDK_INT is always > 21",
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.OBSOLETE_SDK,
+        new = "Unnecessary; `SDK_INT` is always > 21",
+        old = "Unnecessary; SDK_INT is always > 21",
+      )
+    )
+  }
+
+  @Test
   fun tolerateTypoMessageChange() {
     // Generic test for grammar change to remove spaces before question marks
     // as now enforced by LintImplTextFormat
