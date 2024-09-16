@@ -89,10 +89,11 @@ private fun View.toNodeImpl(
             val transform = Matrix()
             view.transformMatrixToGlobal(transform)
 
-            // Move the transformation to (0,0) before checking for identity.
-            // An identity would then mean the shape is the same as the bounds
-            // computed above - so no need to send Quad coordinates.
-            // A rotation will typically require Quad coordinates.
+            // If the view is rotated (View#setRotation), we don't want to render the actual layout bounds,
+            // instead we want to rotate them, to highlight the fact that the view is rotated.
+            // In this case layout bound != render bound. In all other cases layout bounds == render bounds.
+            // To determine if a view is rotated we take the view transformation and subtract the view's location.
+            // If the result is not the identity matrix, it means the view is rotated.
             transform.postTranslate(-absPos.x.toFloat(), -absPos.y.toFloat())
             if (!transform.isIdentity) {
                 transform.postTranslate(absPos.x.toFloat(), absPos.y.toFloat())
@@ -106,6 +107,7 @@ private fun View.toNodeImpl(
                 )
                 transform.mapPoints(corners)
                 if (corners.none { it.isNaN() }) {
+                    // If the view is rotated its bounds are not a rectangle anymore, for this reason we use a quad.
                     render = Quad.newBuilder().apply {
                         x0 = corners[0].roundToInt()
                         y0 = corners[1].roundToInt()

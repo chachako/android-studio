@@ -57,9 +57,11 @@ message Quad {
 }
 
 message Bounds {
-    // The bounds of some element in the layout tree
+    // The actual bounds of a view.
     Rect layout = 1;
-    // Bounds transformed in preparation for final rendering
+    // In some cases we don't want to render the actual bounds of a view, for example if the view is rotated (View#setRotation).
+    // In this case we want to rotate the layout bounds so that they match the rotation of the view.
+    // These render bounds are not used in the rendering, except when the view is rotated.
     Quad render = 2;
 }
 
