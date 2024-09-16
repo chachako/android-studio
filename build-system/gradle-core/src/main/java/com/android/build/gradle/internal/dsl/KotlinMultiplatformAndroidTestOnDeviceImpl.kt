@@ -39,6 +39,7 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceImpl @Inject constructor(
     override var applicationId: String? = null
     override var functionalTest: Boolean? = null
     override var handleProfiling: Boolean? = null
+    override var instrumentationRunner: String? = DEFAULT_INSTRUMENTATION_RUNNER
 
     override var animationsDisabled: Boolean = false
     override var enableCoverage: Boolean = false
@@ -124,5 +125,9 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceImpl @Inject constructor(
 
     fun multidex(action: Action<MultiDexConfig>) {
         action.execute(multidex)
+    }
+
+    companion object {
+        const val DEFAULT_INSTRUMENTATION_RUNNER = "androidx.test.runner.AndroidJUnitRunner"
     }
 }
