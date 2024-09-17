@@ -1355,8 +1355,8 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 val lazyValue by lazy { MyClass.platform() } // ERROR 5
                 val lazyValue2 by lazy { MyClass.nullable() } // OK 8
 
-                val ANSWER_THROWS = Answer { 42 } // ERROR 6
-                val ANSWER_THROWS: Answer<Int?> = Answer { 42 } // OK 9
+                val ANSWER_THROWS = Answer { 42 } // OK 9
+                val ANSWER_THROWS: Answer<Int?> = Answer { 42 } // OK 10
                 """
           )
           .indented(),
@@ -1380,10 +1380,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             src/test/pkg/test.kt:14: Warning: Should explicitly declare type here since implicit type does not specify nullness (Lazy<(String..String?)>) [UnknownNullness]
             val lazyValue by lazy { MyClass.platform() } // ERROR 5
                 ~~~~~~~~~
-            src/test/pkg/test.kt:17: Warning: Should explicitly declare type here since implicit type does not specify nullness (Answer<(Int..Int?)>) [UnknownNullness]
-            val ANSWER_THROWS = Answer { 42 } // ERROR 6
-                ~~~~~~~~~~~~~
-            0 errors, 6 warnings
+            0 errors, 5 warnings
             """
       )
   }
