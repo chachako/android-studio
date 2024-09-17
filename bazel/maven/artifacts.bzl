@@ -237,6 +237,7 @@ DATA = [
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation:1.6.6",  # Compose BOM 2024.04.01
+    "androidx.compose.animation:animation:1.7.0-beta05",
     "androidx.compose.animation:animation-android:1.6.5",  # Compose Desktop Lint checks
     "androidx.compose.animation:animation-core:1.3.3",  # Dependency of architecture-samples
     "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.

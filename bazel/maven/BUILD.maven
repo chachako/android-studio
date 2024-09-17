@@ -13397,24 +13397,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.compose.animation.animation-android_1.5.0",
-    pom = "repository/androidx/compose/animation/animation-android/1.5.0/animation-android-1.5.0.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/compose/animation/animation-android/1.5.0",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "androidx.compose.animation.animation-core_1.5.0",
-        "androidx.compose.foundation.foundation-layout-android_1.5.0",
-        "androidx.compose.runtime.runtime-android_1.5.0",
-        "androidx.compose.ui.ui-android_1.5.0",
-        "androidx.compose.ui.ui-geometry-android_1.5.0",
-        "androidx.compose.ui.ui-util-android_1.5.0",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.compose.animation.animation-android_1.7.0-beta05",
     pom = "repository/androidx/compose/animation/animation-android/1.7.0-beta05/animation-android-1.7.0-beta05.pom",
     repo_root_path = "repository",
@@ -13430,6 +13412,25 @@ maven_artifact(
         "androidx.compose.ui.ui-geometry_1.6.0",
         "androidx.compose.ui.ui-graphics-android_1.7.0-beta05",
         "androidx.compose.ui.ui-util-android_1.7.0-beta05",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.animation.animation-android_1.5.0",
+    pom = "repository/androidx/compose/animation/animation-android/1.5.0/animation-android-1.5.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/animation/animation-android/1.5.0",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.compose.animation.animation-core_1.5.0",
+        "androidx.compose.foundation.foundation-layout-android_1.5.0",
+        "androidx.compose.runtime.runtime-android_1.5.0",
+        "androidx.compose.ui.ui-android_1.5.0",
+        "androidx.compose.ui.ui-geometry-android_1.5.0",
+        "androidx.compose.ui.ui-util-android_1.5.0",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -13544,6 +13545,7 @@ maven_artifact(
         "androidx.compose.ui.ui-unit_1.6.0",
         "androidx.compose.ui.ui-util-android_1.7.0-beta05",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.22",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.7.3",
     ],
     visibility = ["//visibility:public"],
@@ -14047,6 +14049,21 @@ maven_artifact(
         "androidx.compose.animation.animation-core_1.7.0-beta03",
         "androidx.compose.foundation.foundation-layout_1.6.0",
         "androidx.compose.runtime.runtime_1.7.0-beta03",
+        "androidx.compose.ui.ui-geometry_1.6.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.animation.animation_1.7.0-beta05",
+    pom = "repository/androidx/compose/animation/animation/1.7.0-beta05/animation-1.7.0-beta05.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/animation/animation/1.7.0-beta05",
+    deps = [
+        "androidx.compose.animation.animation-android_1.7.0-beta05",
+        "androidx.compose.animation.animation-core_1.7.0-beta05",
+        "androidx.compose.foundation.foundation-layout_1.6.0",
+        "androidx.compose.runtime.runtime_1.7.0-beta05",
         "androidx.compose.ui.ui-geometry_1.6.0",
     ],
     visibility = ["//visibility:public"],
