@@ -23,10 +23,32 @@ cc_toolchain_suite(
     },
 )
 
+# The latest version of clang contains a BUILD.bazel file, meaning we cannot
+# use glob() the same way. Instead, use the filegroups targets directly.
 filegroup(
-    name = "toolchain_deps",
-    srcs =
-        glob([clang_latest + "/**/*" for clang_latest in CLANG_LATEST.values()]),
+    name = "linux-files",
+    srcs = [
+        "//" + clang_latest_linux + ":includes",
+        "//" + clang_latest_linux + ":binaries",
+    ],
+ )
+
+filegroup(
+    name = "windows-files",
+    srcs = glob([
+        clang_latest_windows + "/bin/*",
+        clang_latest_windows + "/lib/**/*",
+        clang_latest_windows + "/include/**/*",
+    ]),
+)
+
+filegroup(
+    name = "darwin-files",
+    srcs = glob([
+        clang_latest_darwin + "/bin/*",
+        clang_latest_darwin + "/lib/**/*",
+        clang_latest_darwin + "/include/**/*",
+    ]),
 )
 
 filegroup(
@@ -36,12 +58,12 @@ filegroup(
 
 cc_toolchain(
     name = "cc-compiler-k8",
-    all_files = ":toolchain_deps",
-    ar_files = ":toolchain_deps",
-    as_files = ":toolchain_deps",
-    compiler_files = ":toolchain_deps",
+    all_files = ":linux-files",
+    ar_files = ":linux-files",
+    as_files = ":linux-files",
+    compiler_files = ":linux-files",
     dwp_files = ":empty",
-    linker_files = ":toolchain_deps",
+    linker_files = ":linux-files",
     objcopy_files = ":empty",
     strip_files = ":empty",
     supports_param_files = 1,
@@ -51,14 +73,14 @@ cc_toolchain(
 
 cc_toolchain(
     name = "cc-compiler-darwin",
-    all_files = ":toolchain_deps",
-    ar_files = ":toolchain_deps",
-    as_files = ":toolchain_deps",
-    compiler_files = ":toolchain_deps",
-    dwp_files = ":toolchain_deps",
-    linker_files = ":toolchain_deps",
-    objcopy_files = ":toolchain_deps",
-    strip_files = ":toolchain_deps",
+    all_files = ":darwin-files",
+    ar_files = ":darwin-files",
+    as_files = ":darwin-files",
+    compiler_files = ":darwin-files",
+    dwp_files = ":darwin-files",
+    linker_files = ":darwin-files",
+    objcopy_files = ":darwin-files",
+    strip_files = ":darwin-files",
     supports_param_files = 0,
     toolchain_config = ":local_darwin",
     toolchain_identifier = "local_darwin",
@@ -66,12 +88,12 @@ cc_toolchain(
 
 cc_toolchain(
     name = "cc-compiler-x64_windows-clang-cl",
-    all_files = ":toolchain_deps",
-    ar_files = ":toolchain_deps",
+    all_files = ":windows-files",
+    ar_files = ":windows-files",
     as_files = ":empty",
-    compiler_files = ":toolchain_deps",
-    dwp_files = ":toolchain_deps",
-    linker_files = ":toolchain_deps",
+    compiler_files = ":windows-files",
+    dwp_files = ":windows-files",
+    linker_files = ":windows-files",
     objcopy_files = ":empty",
     strip_files = ":empty",
     supports_param_files = 1,
@@ -98,7 +120,7 @@ cc_toolchain_config(
     cpu = "k8",
     cxx_builtin_include_directories = [
         "/usr/local/include",
-        clang_latest_linux + "/lib64/clang/14.0.0/include",
+        clang_latest_linux + "/lib/clang/19/include",
         "/usr/include/x86_64-linux-gnu",
         "/usr/include",
         "/usr/include/c++/8.0.1",
