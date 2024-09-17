@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.AppLinksValidDetector.Companion.VALIDATION
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.utils.XmlUtils
@@ -1937,6 +1938,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       context: XmlContext,
     ): List<AppLinksValidDetector.UriInfo> =
       detector.checkActivityIntentFiltersAndGetUriInfos(activity, context)
+
     fun testElement(testUrl: URL, infos: List<AppLinksValidDetector.UriInfo>): String? =
       detector.checkTestUrlMatchesAtLeastOneInfo(testUrl, infos)
 
@@ -2411,5 +2413,13 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testSameMessage() {
+    assertThat(
+        AppLinksValidDetector()
+          .sameMessage(VALIDATION, new = "VIEW actions require a URI", old = "Missing URL")
+      )
+      .isTrue()
   }
 }

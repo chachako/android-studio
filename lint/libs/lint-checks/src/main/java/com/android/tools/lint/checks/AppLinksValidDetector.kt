@@ -1153,4 +1153,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       return isDataBindingExpression(expression) || isManifestPlaceHolderExpression(expression)
     }
   }
+
+  override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+    if (issue == VALIDATION && old == "Missing URL" && new == "VIEW actions require a URI")
+      return true // See commit 406811b
+    return super.sameMessage(issue, new, old)
+  }
 }
