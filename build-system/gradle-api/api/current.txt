@@ -1259,14 +1259,14 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidCompilationBuilder {
-    method @org.gradle.api.Incubating public String getCompilationName();
-    method @org.gradle.api.Incubating public String getDefaultSourceSetName();
+    method @Deprecated @org.gradle.api.Incubating public String getCompilationName();
+    method @Deprecated @org.gradle.api.Incubating public String getDefaultSourceSetName();
     method @org.gradle.api.Incubating public String? getSourceSetTreeName();
-    method @org.gradle.api.Incubating public void setCompilationName(String);
-    method @org.gradle.api.Incubating public void setDefaultSourceSetName(String);
+    method @Deprecated @org.gradle.api.Incubating public void setCompilationName(String);
+    method @Deprecated @org.gradle.api.Incubating public void setDefaultSourceSetName(String);
     method @org.gradle.api.Incubating public void setSourceSetTreeName(String?);
-    property @org.gradle.api.Incubating public abstract String compilationName;
-    property @org.gradle.api.Incubating public abstract String defaultSourceSetName;
+    property @Deprecated @org.gradle.api.Incubating public abstract String compilationName;
+    property @Deprecated @org.gradle.api.Incubating public abstract String defaultSourceSetName;
     property @org.gradle.api.Incubating public abstract String? sourceSetTreeName;
   }
 

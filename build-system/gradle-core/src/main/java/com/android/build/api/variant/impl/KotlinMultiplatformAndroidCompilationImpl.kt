@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
-import org.jetbrains.kotlin.gradle.plugin.KotlinTargetHierarchy
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinCompilation
 
 @OptIn(ExternalKotlinTargetApi::class)
@@ -65,11 +65,13 @@ internal enum class KmpAndroidCompilationType(
 ) {
     MAIN(
         defaultCompilationName = "main",
-        defaultSourceSetTreeName = KotlinTargetHierarchy.SourceSetTree.main.name
-    ), TEST_ON_JVM(
+        defaultSourceSetTreeName = KotlinSourceSetTree.main.name
+    ),
+    TEST_ON_JVM(
         defaultCompilationName = "testOnJvm",
-        defaultSourceSetTreeName = KotlinTargetHierarchy.SourceSetTree.test.name
-    ), TEST_ON_DEVICE(
+        defaultSourceSetTreeName = KotlinSourceSetTree.test.name
+    ),
+    TEST_ON_DEVICE(
         defaultCompilationName = "testOnDevice",
         defaultSourceSetTreeName = null
     )
