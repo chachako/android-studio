@@ -9,7 +9,7 @@ gradle_build(
         "//tools/base/build-system:gradle-distrib",
         "//prebuilts/studio/sdk:platforms/android-34",
         "//prebuilts/studio/sdk:platform-tools",
-        "//prebuilts/studio/sdk:build-tools/latest",
+        "//prebuilts/studio/sdk:build-tools/34.0.0",
     ] + glob(["library/**"]),
     gradle_properties = select({
         "//tools/base/bazel:release": {"androidGradlePluginVersion": RELEASE_BUILD_VERSION},
