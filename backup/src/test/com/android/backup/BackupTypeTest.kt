@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.backup
 
-enum class ErrorCode {
-  SUCCESS,
-  CANNOT_ENABLE_BMGR,
-  TRANSPORT_NOT_SELECTED,
-  TRANSPORT_INIT_FAILED,
-  GMSCORE_NOT_FOUND,
-  @Suppress("unused") // Will use when testing for GmsCore version is implemented
-  GMSCORE_IS_TOO_OLD,
-  BACKUP_FAILED,
-  RESTORE_FAILED,
-  INVALID_BACKUP_FILE,
-  PLAY_STORE_NOT_INSTALLED,
-  BACKUP_NOT_ALLOWED,
-  UNEXPECTED_ERROR,
+import com.google.common.truth.Truth.assertThat
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
+/**
+ * Tests for [BackupType]
+ */
+@RunWith(JUnit4::class)
+class BackupTypeTest {
+
+  /**
+   * Ordinals ore used to track in studio_stats so they must not change.
+   *
+   * Add new values to the test as needed.
+   */
+  @Test
+  fun ordinals() {
+    assertThat(BackupType.CLOUD.ordinal).isEqualTo(0)
+    assertThat(BackupType.DEVICE_TO_DEVICE.ordinal).isEqualTo(1)
+    assertThat(BackupType.entries).hasSize(2)
+  }
 }
