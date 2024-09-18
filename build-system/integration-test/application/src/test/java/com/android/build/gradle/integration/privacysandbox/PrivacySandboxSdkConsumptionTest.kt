@@ -370,7 +370,7 @@ class PrivacySandboxSdkConsumptionTest {
     }
 
     @Test
-    fun testPublicationAndConsumptionCanBeToggledSeparately() {
+    fun testBuildFailureWhenPublicationNotEnabled() {
         val buildFailsPublicationNotEnabled = executor()
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, false)
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
@@ -385,10 +385,11 @@ class PrivacySandboxSdkConsumptionTest {
                 ScannerSubject.assertThat(it).contains(line)
             }
         }
+    }
 
+    @Test
+    fun testPublicationAndConsumptionCanBeToggledSeparately() {
         executor()
-            .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
-            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
             .run(":privacy-sandbox-sdk:assemble")
         val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
         assertThat(
@@ -398,6 +399,7 @@ class PrivacySandboxSdkConsumptionTest {
         val buildFailsConsumptionNotEnabled = executor()
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
             .expectFailure()
             .run(":example-app:assemble")
         assertThat(buildFailsConsumptionNotEnabled.failureMessage).isEqualTo(

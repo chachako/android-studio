@@ -411,7 +411,7 @@ class LintTaskManager constructor(
         internal fun File.isLintStdout() = this.path == File("stdout").path
         internal fun File.isLintStderr() = this.path == File("stderr").path
 
-        internal fun needsCopyReportTask(lintOptions: Lint) : Boolean {
+        fun needsCopyReportTask(lintOptions: Lint) : Boolean {
             val textOutput = lintOptions.textOutput
             return (lintOptions.textReport && textOutput != null && !textOutput.isLintStdout() && !textOutput.isLintStderr()) ||
                     (lintOptions.htmlReport && lintOptions.htmlOutput != null) ||

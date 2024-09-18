@@ -800,6 +800,11 @@ allprojects { proj ->
         return FileUtils.join(intermediatesDir, *paths)
     }
 
+    /** Return a File under the reports directory from Android plugins.  */
+    fun getReportsFile(vararg paths: String?): File {
+        return FileUtils.join(buildDir, "reports", *paths)
+    }
+
     /** Returns a File under the generated folder.  */
     fun getGeneratedSourceFile(vararg paths: String?): File {
         return FileUtils.join(generatedDir, *paths)

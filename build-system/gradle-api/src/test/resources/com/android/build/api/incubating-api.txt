@@ -767,3 +767,6 @@ https://issuetracker.google.com/362941219
   * com.android.build.api.variant.DeviceSpec.hashCode: int ()
   * com.android.build.api.variant.DeviceSpec.toString: java.lang.String ()
   * com.android.build.api.variant.TestVariant.getOutputProviders: com.android.build.api.variant.ApkOutputProviders ()
+https://issuetracker.google.com/368059518
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getLint: com.android.build.api.dsl.Lint ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.lint: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint, kotlin.Unit>)

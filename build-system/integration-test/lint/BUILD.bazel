@@ -51,6 +51,10 @@ KOTLIN_MULTIPLATFORM_TESTS = [
     "src/test/java/com/android/build/gradle/integration/lint/KotlinMultiplatformAndroidLintTest.kt",
 ]
 
+PRIVACY_SANDBOX_SDK_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/lint/PrivacySandboxSdkLintTest.kt",
+]
+
 # create a bazel target for some long-running tests
 gradle_integration_test(
     name = "long-running-tests",
@@ -63,6 +67,21 @@ gradle_integration_test(
     ],
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
+gradle_integration_test(
+    name = "privacy-sandbox-sdk-tests",
+    timeout = "long",
+    srcs = glob(
+        include = PRIVACY_SANDBOX_SDK_TESTS,
+    ),
+    data = DATA,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS + [
+        "//tools/base/build-system/integration-test:ksp_gradle_plugin",
+    ],
+    tags = ["noci:studio-win"],
     deps = DEPS,
 )
 
@@ -90,7 +109,7 @@ gradle_integration_test(
             "src/test/java/**/*.java",
             "src/test/java/**/*.kt",
         ],
-        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS,
+        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS + PRIVACY_SANDBOX_SDK_TESTS,
     ),
     data = DATA + [
         "//tools/base/build-system/integration-test:test-projects/dynamicApp",
@@ -125,10 +144,25 @@ maven_repository(
     name = "prebuilts",
     # keep sorted
     artifacts = [
+        "@maven//:androidx.annotation.annotation-jvm_1.6.0",
         "@maven//:androidx.annotation.annotation_1.1.0",
         "@maven//:androidx.appcompat.appcompat_1.6.1",
         "@maven//:androidx.constraintlayout.constraintlayout_2.1.4",
+        "@maven//:androidx.core.core-ktx_1.13.0",
         "@maven//:androidx.core.core-ktx_1.9.0",
+        "@maven//:androidx.lifecycle.lifecycle-viewmodel-savedstate_2.6.2",
+        "@maven//:androidx.lifecycle.lifecycle-viewmodel_2.6.2",
+        "@maven//:androidx.privacysandbox.activity.activity-client_1.0.0-alpha01",
+        "@maven//:androidx.privacysandbox.activity.activity-core_1.0.0-alpha01",
+        "@maven//:androidx.privacysandbox.activity.activity-provider_1.0.0-alpha01",
+        "@maven//:androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha13",
+        "@maven//:androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha13",
+        "@maven//:androidx.privacysandbox.tools.tools-apicompiler_1.0.0-alpha09",
+        "@maven//:androidx.privacysandbox.tools.tools-apigenerator_1.0.0-alpha09",
+        "@maven//:androidx.privacysandbox.tools.tools-apipackager_1.0.0-alpha09",
+        "@maven//:androidx.privacysandbox.tools.tools_1.0.0-alpha09",
+        "@maven//:androidx.privacysandbox.ui.ui-client_1.0.0-alpha09",
+        "@maven//:androidx.privacysandbox.ui.ui-core_1.0.0-alpha09",
         "@maven//:androidx.test.core_1.4.0-alpha06",
         "@maven//:androidx.test.espresso.espresso-core_3.5.1",
         "@maven//:androidx.test.ext.junit_1.1.5",
@@ -142,6 +176,9 @@ maven_repository(
         "@maven//:com.google.protobuf.protobuf-java-util_3.22.3",
         "@maven//:com.google.truth.truth_0.44",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
+        "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.8.10",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.7.3",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-serialization-core_1.6.3",
         "@maven//:org.jetbrains.skiko.skiko-awt_0.7.7",
         "@maven//:org.jetbrains.skiko.skiko_0.7.7",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_" + KGP_VERSION_FOR_TESTS,

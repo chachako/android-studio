@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.tasks.PackageAndroidArtifact
@@ -175,12 +176,13 @@ class TaskMethodModifiersAndAnnotationsTest {
         val violations = taskCreationActions.filter {
             !VariantTaskCreationAction::class.java.isAssignableFrom(it)
                     && !GlobalTaskCreationAction::class.java.isAssignableFrom(it)
+                    && !PrivacySandboxSdkTaskCreationAction::class.java.isAssignableFrom(it)
         }
             .minus(TaskCreationAction::class.java)
             .map { it.name }.sorted()
 
         assertWithMessage(
-            "All AGP task creation actions should extend ${VariantTaskCreationAction::class.java.simpleName} or " +
+            "All AGP task creation actions should extend ${VariantTaskCreationAction::class.java.simpleName}, ${PrivacySandboxSdkTaskCreationAction::class.java.simpleName} or " +
                     "${GlobalTaskCreationAction::class.java.simpleName}."
         )
             .that(violations).containsExactly(

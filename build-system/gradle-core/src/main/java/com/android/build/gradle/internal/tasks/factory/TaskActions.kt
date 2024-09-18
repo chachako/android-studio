@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks.factory
 
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.tasks.AndroidVariantTask
 import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.GlobalTask
@@ -112,6 +113,18 @@ abstract class GlobalTaskCreationAction<TaskT>(
         }
 
         GlobalTask.ConfigureAction.configure(task)
+    }
+}
+
+/** [TaskCreationAction] for a PrivacySandboxSdkTask. */
+abstract class PrivacySandboxSdkTaskCreationAction<TaskT>(
+    @JvmField protected val variantScope: PrivacySandboxSdkVariantScope
+) : TaskCreationAction<TaskT>() where TaskT : AndroidVariantTask {
+
+    override fun configure(task: TaskT) {
+        super.configure(task)
+        task.variantName = variantScope.name
+        BaseTask.ConfigureAction.configure(task)
     }
 }
 

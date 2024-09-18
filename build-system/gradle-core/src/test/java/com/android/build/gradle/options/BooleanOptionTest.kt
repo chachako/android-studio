@@ -76,7 +76,7 @@ class BooleanOptionTest {
 
     @Test
     fun `check softly-enforced, enforced features have default value 'true'`() {
-        
+
         val violatingOptions = BooleanOption.values().filter {
             (it.stage is FeatureStage.SoftlyEnforced || it.stage is FeatureStage.Enforced)
                     && !it.defaultValue
@@ -102,7 +102,7 @@ class BooleanOptionTest {
                 BooleanOption.MINIMAL_KEEP_RULES,
                 BooleanOption.EXCLUDE_RES_SOURCES_FOR_RELEASE_BUNDLES,
                 BooleanOption.RUN_LINT_IN_PROCESS,
-                BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES
+                BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES,
         )
 
         val violatingOptions = BooleanOption.values().filter {
