@@ -56,7 +56,7 @@ class AppInspectionRule(activityClass: String, sdkLevel: SdkLevel) : ExternalRes
   private val unexpectedResponses: MutableList<Common.Event> = ArrayList()
   private val commandIdToFuture = ConcurrentHashMap<Int, CompletableFuture<Common.Event>>()
   private val events = LinkedBlockingQueue<Common.Event>()
-  private val payloads: MutableMap<Long, MutableList<Byte>> = ConcurrentHashMap()
+  private val payloads: MutableMap<Long, PayloadEventChecker> = ConcurrentHashMap()
 
   override fun apply(base: Statement, description: Description): Statement {
     return RuleChain.outerRule(transportRule).apply(super.apply(base, description), description)
@@ -129,7 +129,7 @@ class AppInspectionRule(activityClass: String, sdkLevel: SdkLevel) : ExternalRes
   }
 
   fun removePayload(payloadId: Long): List<Byte>? {
-    return payloads.remove(payloadId)
+    return payloads.remove(payloadId)?.bytes
   }
 
   override fun before() {
@@ -160,10 +160,25 @@ class AppInspectionRule(activityClass: String, sdkLevel: SdkLevel) : ExternalRes
 
   private fun handlePayload(event: Common.Event) {
     val payloadId = event.groupId
-    val payload = event.appInspectionPayload
-    val bytes = payloads.computeIfAbsent(payloadId) { mutableListOf() }
-    for (b in payload.chunk.toByteArray()) {
-      bytes.add(b)
+    val checker = payloads.computeIfAbsent(payloadId) { PayloadEventChecker() }
+    checker.checkEvent(event)
+  }
+
+  private inner class PayloadEventChecker {
+    private var nextChunkIndex = 0
+    private var chunkCount = 0
+    val bytes = mutableListOf<Byte>()
+
+    fun checkEvent(event: Common.Event) {
+      val payload = event.appInspectionPayload
+      if (nextChunkIndex == 0) {
+        chunkCount = payload.chunkCount
+      } else {
+        assertThat(payload.chunkCount).isEqualTo(chunkCount)
+      }
+      assertThat(payload.chunkIndex).isEqualTo(nextChunkIndex++)
+      assertThat(event.isEnded).isEqualTo(nextChunkIndex == chunkCount)
+      event.appInspectionPayload.chunk.toByteArray().mapTo(bytes) { it }
     }
   }
 

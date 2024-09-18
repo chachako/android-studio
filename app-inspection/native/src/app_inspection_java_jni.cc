@@ -59,20 +59,24 @@ jlong EnqueueAppInspectionPayloadChunks(JNIEnv *env, jbyteArray data,
   profiler::JByteArrayWrapper chunk_data(env, data, length);
 
   int32_t chunk_index = 0;
+  int32_t chunks_required = (length + chunk_size - 1) / chunk_size;
   int64_t payload_id = CreateUniqueId();
   while (true) {
     int32_t chunk_start = chunk_index * chunk_size;
     bool is_final_chunk = (chunk_start + chunk_size) >= length;
-    EnqueueTransportEvent(env, [payload_id, chunk_data, chunk_start, chunk_size,
-                                is_final_chunk](profiler::proto::Event *event) {
-      event->set_kind(profiler::proto::Event::APP_INSPECTION_PAYLOAD);
-      event->set_group_id(payload_id);
-      event->set_is_ended(is_final_chunk);
+    EnqueueTransportEvent(
+        env, [payload_id, chunk_index, chunks_required, chunk_data, chunk_start,
+              chunk_size, is_final_chunk](profiler::proto::Event *event) {
+          event->set_kind(profiler::proto::Event::APP_INSPECTION_PAYLOAD);
+          event->set_group_id(payload_id);
+          event->set_is_ended(is_final_chunk);
 
-      auto chunk = chunk_data.get().substr(chunk_start, chunk_size);
-      auto *payload_event = event->mutable_app_inspection_payload();
-      payload_event->set_chunk(chunk);
-    });
+          auto chunk = chunk_data.get().substr(chunk_start, chunk_size);
+          auto *payload_event = event->mutable_app_inspection_payload();
+          payload_event->set_chunk(chunk);
+          payload_event->set_chunk_count(chunks_required);
+          payload_event->set_chunk_index(chunk_index);
+        });
 
     if (is_final_chunk) {
       break;
