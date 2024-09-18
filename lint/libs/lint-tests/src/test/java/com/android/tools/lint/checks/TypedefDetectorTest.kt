@@ -2511,7 +2511,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testToLong() {
+  fun testToLong_useSite() {
     // b/352609562 and b/364261817
     lint()
       .files(
@@ -2534,10 +2534,10 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 test(CONST_1.toLong()) // OK
                 test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
 
-                with(CONST_2) {
+                with(CONST_2.toLong()) {
                   test(toLong()) // OK
                 }
-                with(UNRELATED) {
+                with(UNRELATED.toLong()) {
                   test(toLong()) // TODO?
                 }
             }
@@ -2549,6 +2549,97 @@ class TypedefDetectorTest : AbstractCheckTest() {
       .expect(
         """
 src/DetailInfoTab.kt:17: Error: Must be one of: DetailInfoTabKt.CONST_1, DetailInfoTabKt.CONST_2 [WrongConstant]
+                test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
+                     ~~~~~~~~~~~~~~~~~~
+1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testToLong_declarationSite() {
+    // b/367752734
+    lint()
+      .files(
+        kotlin(
+          """
+            import androidx.annotation.LongDef
+
+            const val CONST_1 = 1
+            const val CONST_2 = 4096
+            const val UNRELATED = -1
+
+            @LongDef(CONST_1.toLong(), CONST_2.toLong())
+            @Retention(AnnotationRetention.SOURCE)
+            annotation class DetailInfoTab
+
+            fun test(@DetailInfoTab tab: Long) {
+            }
+
+            fun test() {
+                test(CONST_1) // OK
+                test(UNRELATED) // ERROR - not part of the @DetailsInfoTab list
+
+                with(CONST_2) {
+                  test(toLong()) // OK
+                }
+                with(UNRELATED) {
+                  test(toLong()) // TODO?
+                }
+            }
+          """
+        ),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .skipTestModes(TestMode.JVM_OVERLOADS)
+      .run()
+      .expect(
+        """
+src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong() [WrongConstant]
+                test(UNRELATED) // ERROR - not part of the @DetailsInfoTab list
+                     ~~~~~~~~~
+1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testToLong_both() {
+    // b/367752734
+    lint()
+      .files(
+        kotlin(
+          """
+            import androidx.annotation.LongDef
+
+            const val CONST_1 = 1
+            const val CONST_2 = 4096
+            const val UNRELATED = -1
+
+            @LongDef(CONST_1.toLong(), CONST_2.toLong())
+            @Retention(AnnotationRetention.SOURCE)
+            annotation class DetailInfoTab
+
+            fun test(@DetailInfoTab tab: Long) {
+            }
+
+            fun test() {
+                test(CONST_1.toLong()) // OK
+                test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
+
+                with(CONST_2.toLong()) {
+                  test(toLong()) // OK
+                }
+                with(UNRELATED.toLong()) {
+                  test(toLong()) // TODO?
+                }
+            }
+          """
+        ),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong() [WrongConstant]
                 test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
                      ~~~~~~~~~~~~~~~~~~
 1 errors, 0 warnings
