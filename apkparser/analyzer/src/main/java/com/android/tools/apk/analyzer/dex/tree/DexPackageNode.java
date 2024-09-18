@@ -19,6 +19,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference;
+
 import javax.swing.*;
 
 public class DexPackageNode extends DexElementNode {
@@ -112,5 +113,10 @@ public class DexPackageNode extends DexElementNode {
     @Nullable
     public String getPackageName() {
         return packageName;
+    }
+
+    @Override
+    public String toString() {
+        return packageName == null ? "" : packageName;
     }
 }

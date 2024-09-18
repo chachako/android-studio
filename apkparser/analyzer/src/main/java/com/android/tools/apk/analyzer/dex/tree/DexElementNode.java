@@ -21,8 +21,10 @@ import com.android.tools.proguard.ProguardMap;
 import com.android.tools.proguard.ProguardSeedsMap;
 import com.android.tools.smali.dexlib2.iface.reference.Reference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableReference;
+
 import java.util.Comparator;
 import java.util.List;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public abstract class DexElementNode extends DefaultMutableTreeNode {
@@ -157,4 +159,9 @@ public abstract class DexElementNode extends DefaultMutableTreeNode {
      * @return private size of node in bytes
      */
     public abstract long getSize();
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
