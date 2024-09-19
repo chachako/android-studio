@@ -19,7 +19,7 @@ package com.android.build.api.variant.impl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidCompilationBuilderImpl
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
@@ -36,7 +36,7 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
     private val project: Project,
     private val target: KotlinMultiplatformAndroidTargetImpl,
     private val kotlinExtension: KotlinMultiplatformExtension,
-    private val androidExtension: KotlinMultiplatformAndroidExtensionImpl
+    private val androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
 ): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilation> {
 
     @Suppress("INVISIBLE_MEMBER")

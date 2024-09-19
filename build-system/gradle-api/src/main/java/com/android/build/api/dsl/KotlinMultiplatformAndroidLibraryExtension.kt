@@ -22,12 +22,8 @@ import org.gradle.api.Incubating
  * Extension properties for Kotlin multiplatform Android libraries.
  *
  * Only the Kotlin Multiplatform Android Plugin should create instances of this interface.
- *
- * Warning: this is an experimental API and will change in the near future,
- * and you shouldn't publish plugins depending on it.
  */
- @Incubating
-interface KotlinMultiplatformAndroidExtension {
+interface KotlinMultiplatformAndroidLibraryExtension {
     /**
      * The minimum SDK version.
      * Setting this it will override previous calls of [minSdk] and [minSdkPreview] setters. Only
@@ -35,12 +31,8 @@ interface KotlinMultiplatformAndroidExtension {
      *
      * See [uses-sdk element documentation](http://developer.android.com/guide/topics/manifest/uses-sdk-element.html).
      */
-    @get:Incubating
-    @set:Incubating
     var minSdk: Int?
 
-    @get:Incubating
-    @set:Incubating
     var minSdkPreview: String?
 
     /**
@@ -61,27 +53,11 @@ interface KotlinMultiplatformAndroidExtension {
      * The value you assign to this property is parsed and stored in a normalized form, so
      * reading it back may return a slightly different value.
      */
-    @get:Incubating
-    @set:Incubating
     var compileSdk: Int?
 
-    @get:Incubating
-    @set:Incubating
     var compileSdkExtension: Int?
 
-    @get:Incubating
-    @set:Incubating
     var compileSdkPreview: String?
-
-    /**
-     * The maxSdkVersion, or null if not specified. This is only the value set on this produce
-     * flavor.
-     *
-     * See [uses-sdk element documentation](http://developer.android.com/guide/topics/manifest/uses-sdk-element.html).
-     */
-    @get:Incubating
-    @set:Incubating
-    var maxSdk: Int?
 
     /**
      * Includes the specified library to the classpath.
@@ -106,7 +82,6 @@ interface KotlinMultiplatformAndroidExtension {
      *
      * @param name the name of the library.
      */
-    @Incubating
     fun useLibrary(name: String)
 
     /**
@@ -134,23 +109,18 @@ interface KotlinMultiplatformAndroidExtension {
      * @param required if using the library requires a manifest entry, the entry will indicate that
      *     the library is not required.
      */
-    @Incubating
     fun useLibrary(name: String, required: Boolean)
 
     /**
      * The namespace of the generated R and BuildConfig classes. Also, the namespace used to resolve
      * any relative class names that are declared in the AndroidManifest.xml.
      */
-    @get:Incubating
-    @set:Incubating
     var namespace: String?
 
     /**
      * The namespace used by the android test and unit test components for the generated R and
      * BuildConfig classes.
      */
-    @get:Incubating
-    @set:Incubating
     var testNamespace: String?
 
     /**
@@ -177,14 +147,11 @@ interface KotlinMultiplatformAndroidExtension {
      * Note that the value assigned to this property is parsed and stored in a normalized form,
      * so reading it back may give a slightly different result.
      */
-    @get:Incubating
-    @set:Incubating
     var buildToolsVersion: String
 
     /**
      * Additional per module experimental properties.
      */
-    @get:Incubating
     val experimentalProperties: MutableMap<String, Any>
 
     /**

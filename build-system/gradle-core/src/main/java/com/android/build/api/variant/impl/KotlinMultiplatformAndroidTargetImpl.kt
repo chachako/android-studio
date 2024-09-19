@@ -17,9 +17,9 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import org.gradle.api.NamedDomainObjectContainer
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -29,10 +29,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinTa
 internal class KotlinMultiplatformAndroidTargetImpl(
     delegate: Delegate,
     kotlinExtension: KotlinMultiplatformExtension,
-    androidExtension: KotlinMultiplatformAndroidExtensionImpl
+    androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
 ) : DecoratedExternalKotlinTarget(delegate),
     KotlinMultiplatformAndroidTarget,
-    KotlinMultiplatformAndroidExtension by androidExtension {
+    KotlinMultiplatformAndroidLibraryExtension by androidExtension {
 
     internal var enableJavaSources = false
         private set

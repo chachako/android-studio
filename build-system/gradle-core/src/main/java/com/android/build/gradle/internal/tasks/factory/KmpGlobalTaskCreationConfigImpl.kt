@@ -36,7 +36,7 @@ import com.android.build.gradle.internal.core.SettingsOptions
 import com.android.build.gradle.internal.core.dsl.impl.features.KmpDeviceTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.features.KmpUnitTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.instrumentation.ASM_API_VERSION_FOR_INSTRUMENTATION
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecks
@@ -68,7 +68,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 internal class KmpGlobalTaskCreationConfigImpl(
     project: Project,
-    private val extension: KotlinMultiplatformAndroidExtensionImpl,
+    private val extension: KotlinMultiplatformAndroidLibraryExtensionImpl,
     private val settingsExtension: SettingsExtension?,
     private val versionedSdkLoaderService: VersionedSdkLoaderService,
     bootClasspathConfig: BootClasspathConfigImpl,

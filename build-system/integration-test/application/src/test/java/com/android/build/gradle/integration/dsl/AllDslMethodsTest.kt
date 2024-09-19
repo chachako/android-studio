@@ -21,7 +21,7 @@ import com.android.build.api.dsl.ApplicationDefaultConfig
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BaselineProfile
 import com.android.build.api.dsl.DefaultConfig
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm
 import com.android.build.api.dsl.LibraryBuildType
@@ -74,7 +74,7 @@ class AllDslMethodsTest(
         fun parameters() = listOf(
             arrayOf(
                 "com.android.kotlin.multiplatform.library",
-                KotlinMultiplatformAndroidExtension::class.java,
+                KotlinMultiplatformAndroidLibraryExtension::class.java,
                 "kotlin.androidLibrary",
                 null,
                 null
@@ -134,7 +134,7 @@ class AllDslMethodsTest(
                 """
                     plugins {
                         id("$pluginId")
-                        ${"kotlin(\"multiplatform\")".takeIf { extensionClass == KotlinMultiplatformAndroidExtension::class.java } ?: ""}
+                        ${"kotlin(\"multiplatform\")".takeIf { extensionClass == KotlinMultiplatformAndroidLibraryExtension::class.java } ?: ""}
                     }
                 """.trimIndent() + generator.getScript(index - 1)
             )
@@ -400,8 +400,8 @@ private class DslScriptGenerator(
 
         private val methodsToIgnore = setOf(
             // Intentionally ignored
-            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvmBuilder(kotlin.jvm.functions.Function1)",
-            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnDeviceBuilder(kotlin.jvm.functions.Function1)",
+            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvmBuilder(kotlin.jvm.functions.Function1)",
+            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDeviceBuilder(kotlin.jvm.functions.Function1)",
 
             "public abstract com.android.build.api.dsl.LibraryPublishing com.android.build.api.dsl.LibraryExtension.getPublishing()",
             "public abstract void com.android.build.api.dsl.LibraryExtension.publishing(kotlin.jvm.functions.Function1)",

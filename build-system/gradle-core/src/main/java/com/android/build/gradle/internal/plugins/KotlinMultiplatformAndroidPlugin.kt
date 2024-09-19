@@ -26,7 +26,7 @@ import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpComponentImpl
 import com.android.build.api.component.impl.KmpHostTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.SettingsExtension
@@ -54,7 +54,7 @@ import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRu
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.SdkComponentsImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
@@ -117,7 +117,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
     private lateinit var global: GlobalTaskCreationConfig
-    private lateinit var androidExtension: KotlinMultiplatformAndroidExtensionImpl
+    private lateinit var androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
     private lateinit var kotlinMultiplatformAndroidComponentsExtension: KotlinMultiplatformAndroidComponentsExtension
     private lateinit var kmpVariantApiOperationsRegistrar: MultiplatformVariantApiOperationsRegistrar
 
@@ -258,7 +258,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         }
     }
 
-    protected open fun KotlinMultiplatformAndroidExtension.initExtensionFromSettings(
+    protected open fun KotlinMultiplatformAndroidLibraryExtension.initExtensionFromSettings(
         settings: SettingsExtension
     ) {
         settings.compileSdk?.let { compileSdk ->

@@ -25,7 +25,7 @@ import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
@@ -56,7 +56,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
 ): KotlinMultiplatformAndroidHandler {
 
     private lateinit var kotlinExtension: KotlinMultiplatformExtension
-    private lateinit var androidExtension: KotlinMultiplatformAndroidExtensionImpl
+    private lateinit var androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
     private lateinit var androidTarget: KotlinMultiplatformAndroidTargetImpl
 
     private lateinit var mainVariant: KmpVariantImpl
@@ -65,9 +65,9 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
 
     private val extraSourceSetsToIncludeInResolution = mutableSetOf<KotlinSourceSet>()
 
-    override fun createAndroidExtension(): KotlinMultiplatformAndroidExtensionImpl {
+    override fun createAndroidExtension(): KotlinMultiplatformAndroidLibraryExtensionImpl {
         val extensionImplClass = androidPluginDslDecorator
-            .decorate(KotlinMultiplatformAndroidExtensionImpl::class.java)
+            .decorate(KotlinMultiplatformAndroidLibraryExtensionImpl::class.java)
 
         androidExtension = dslServices.newInstance(
             extensionImplClass,

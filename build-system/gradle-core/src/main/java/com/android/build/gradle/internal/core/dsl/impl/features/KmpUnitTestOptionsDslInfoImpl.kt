@@ -18,13 +18,13 @@ package com.android.build.gradle.internal.core.dsl.impl.features
 
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin
 import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import org.gradle.api.tasks.testing.Test
 
 internal class KmpUnitTestOptionsDslInfoImpl(
-    private val extension: KotlinMultiplatformAndroidExtensionImpl,
+    private val extension: KotlinMultiplatformAndroidLibraryExtensionImpl,
 ): UnitTestOptionsDslInfo {
 
     private val testOnJvmConfig

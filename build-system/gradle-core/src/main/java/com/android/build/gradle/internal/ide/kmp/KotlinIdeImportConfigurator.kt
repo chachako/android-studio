@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.ide.kmp
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryCacheImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
@@ -59,7 +59,7 @@ internal object KotlinIdeImportConfigurator {
     fun configure(
         project: Project,
         androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
-        androidExtension: KotlinMultiplatformAndroidExtensionImpl,
+        androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
         extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>
@@ -81,7 +81,7 @@ internal object KotlinIdeImportConfigurator {
     private fun registerDependencyResolvers(
         project: Project,
         androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
-        androidExtension: KotlinMultiplatformAndroidExtensionImpl,
+        androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
         extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>

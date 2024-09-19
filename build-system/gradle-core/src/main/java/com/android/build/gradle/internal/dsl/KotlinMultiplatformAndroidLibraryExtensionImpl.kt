@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.api.dsl.DependencyVariantSelection
 import com.android.build.api.dsl.HasConfigurableValue
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm
 import com.android.build.api.variant.impl.KmpAndroidCompilationType
@@ -38,11 +38,11 @@ import com.android.builder.signing.DefaultSigningConfig
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
-internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
+internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
     private val dslServices: DslServices,
     objectFactory: ObjectFactory,
     private val compilationEnabledCallback: (KotlinMultiplatformAndroidCompilationBuilder) -> Unit,
-): KotlinMultiplatformAndroidExtension, Lockable {
+): KotlinMultiplatformAndroidLibraryExtension, Lockable {
 
     fun lazyInit() {
         buildToolsVersion = ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION.toString()

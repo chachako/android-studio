@@ -23,7 +23,7 @@ import org.gradle.api.plugins.ExtensionAware
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 @Incubating
-interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidExtension {
+interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidLibraryExtension {
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
 
     /**
