@@ -934,7 +934,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(25)
+    assertThat(countHasErrorOrWarning()).isEqualTo(38)
   }
 
   @Test

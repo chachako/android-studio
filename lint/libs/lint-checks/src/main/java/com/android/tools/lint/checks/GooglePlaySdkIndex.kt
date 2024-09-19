@@ -434,18 +434,15 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
    * @param artifactId: artifact id for library coordinates
    * @param versionString: version to check
    * @return true if the index has information about this particular version, and it has issues that
-   *   will cause an error or warning. (Any blocking issue is an error, non blocking outdated or
-   *   policy issues are warnings)
+   *   will cause an error or warning. (Any blocking issue is an error, non blocking outdated,
+   *   policy or vulnerability issues are warnings)
    */
   fun hasLibraryErrorOrWarning(
     groupId: String,
     artifactId: String,
     versionString: String,
   ): Boolean {
-    val labels = getLabels(groupId, artifactId, versionString) ?: return false
-    return labels.severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY ||
-      labels.hasOutdatedIssueInfo() ||
-      labels.hasPolicyIssuesInfo()
+    return getLabels(groupId, artifactId, versionString).hasErrorOrWarning()
   }
 
   /**
@@ -469,7 +466,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (!isReady()) {
       return null
     }
-    return libraryToSdk[createCoordinateString(groupId, artifactId)]?.getLatestVersion()
+    return getSdk(groupId, artifactId)?.getLatestVersion()
   }
 
   private fun getLabels(
@@ -870,4 +867,14 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     }
     return result
   }
+}
+
+private fun LibraryVersionLabels?.hasErrorOrWarning(): Boolean {
+  if (this == null) {
+    return false
+  }
+  return this.severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY ||
+    this.hasOutdatedIssueInfo() ||
+    this.hasPolicyIssuesInfo() ||
+    this.hasSecurityVulnerabilitiesInfo()
 }
