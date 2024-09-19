@@ -45,20 +45,23 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 3,6,198\n"
-                        + "  Test: 3,3,174\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "  ~java: 0,3,24\n"
-                        + "    ~lang: 0,2,16\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n",
+                "root: 3,6,198\n" +
+                "  Test: 3,3,174\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "  ~java: 0,3,24\n" +
+                "    ~lang: 0,2,16\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n",
                 sb.toString());
     }
 
@@ -83,34 +86,40 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 6,11,532\n"
-                        + "  ~java: 0,4,40\n"
-                        + "    ~lang: 0,3,32\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n"
-                        + "  Test2: 3,3,192\n"
-                        + "    <init>(): 1,1,52\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "    a aClassField: 0,0,10\n"
-                        + "    int aField: 0,0,10\n"
-                        + "  TestSubclass: 2,3,124\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.util.List getAnotherList(): 1,1,38\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "  a: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "  SomeAnnotation: 0,0,66\n",
+                "root: 6,11,532\n" +
+                "  ~java: 0,4,40\n" +
+                "    ~lang: 0,3,32\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n" +
+                "  Test2: 3,3,192\n" +
+                "    <init>(): 1,1,52\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "    a aClassField: 0,0,10\n" +
+                "    int aField: 0,0,10\n" +
+                "  TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.util.List getAnotherList(): 1,1,38\n" +
+                "  a: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "  SomeAnnotation: 0,0,66\n",
                 sb.toString());
     }
 
@@ -126,38 +135,44 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 9,14,730\n"
-                        + "  SomeAnnotation: 0,0,66\n"
-                        + "  Test: 3,3,174\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "  Test2: 3,3,192\n"
-                        + "    <init>(): 1,1,52\n"
-                        + "    a aClassField: 0,0,10\n"
-                        + "    int aField: 0,0,10\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "  TestSubclass: 2,3,124\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.util.List getAnotherList(): 1,1,38\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "  a: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "  ~java: 0,4,64\n"
-                        + "    ~lang: 0,3,48\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~Integer: 0,1,16\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,16\n"
-                        + "      ~Object: 0,1,16\n"
-                        + "        ~<init>(): 0,1,16\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "    ~util: 0,1,16\n"
-                        + "      ~Collections: 0,1,16\n"
-                        + "        ~java.util.List emptyList(): 0,1,16\n",
+                "root: 9,14,730\n" +
+                "  SomeAnnotation: 0,0,66\n" +
+                "  Test: 3,3,174\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "  Test2: 3,3,192\n" +
+                "    <init>(): 1,1,52\n" +
+                "    a aClassField: 0,0,10\n" +
+                "    int aField: 0,0,10\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "  TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.util.List getAnotherList(): 1,1,38\n" +
+                "  a: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "  ~java: 0,4,64\n" +
+                "    ~lang: 0,3,48\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~Integer: 0,1,16\n" +
+                "        ~References: 0,1,16\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,16\n" +
+                "      ~Object: 0,1,16\n" +
+                "        ~References: 0,1,16\n" +
+                "          ~<init>(): 0,1,16\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "    ~util: 0,1,16\n" +
+                "      ~Collections: 0,1,16\n" +
+                "        ~References: 0,1,16\n" +
+                "          ~java.util.List emptyList(): 0,1,16\n",
                 sb.toString());
     }
 
@@ -181,36 +196,42 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, seedsMap, map);
         assertEquals(
-                "O-root: 6,11,532\n"
-                        + "  ~java: 0,4,40\n"
-                        + "    ~lang: 0,3,32\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n"
-                        + "  O-Test2: 3,3,192\n"
-                        + "    O-<init>(): 1,1,52\n"
-                        + "    O-java.lang.Integer get(): 1,1,42\n"
-                        + "    O-java.util.List getList(): 1,1,38\n"
-                        + "    O-AnotherClass aClassField: 0,0,10\n"
-                        + "    O-int aField: 0,0,10\n"
-                        + "  O-TestSubclass: 2,3,124\n"
-                        + "    O-<init>(): 1,1,38\n"
-                        + "    O-java.util.List getAnotherList(): 1,1,38\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "  AnotherClass: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "    X-AnotherClass(int,TestSubclass): 0,0,0\n"
-                        + "  O-SomeAnnotation: 0,0,66\n"
-                        + "  X-RemovedSubclass: 0,0,0\n",
+                "O-root: 6,11,532\n" +
+                "  ~java: 0,4,40\n" +
+                "    ~lang: 0,3,32\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n" +
+                "  O-Test2: 3,3,192\n" +
+                "    O-<init>(): 1,1,52\n" +
+                "    O-java.lang.Integer get(): 1,1,42\n" +
+                "    O-java.util.List getList(): 1,1,38\n" +
+                "    O-AnotherClass aClassField: 0,0,10\n" +
+                "    O-int aField: 0,0,10\n" +
+                "  O-TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    O-<init>(): 1,1,38\n" +
+                "    O-java.util.List getAnotherList(): 1,1,38\n" +
+                "  AnotherClass: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "    X-AnotherClass(int,TestSubclass): 0,0,0\n" +
+                "  O-SomeAnnotation: 0,0,66\n" +
+                "  X-RemovedSubclass: 0,0,0\n",
                 sb.toString());
     }
 
@@ -224,101 +245,119 @@ public class PackageTreeCreatorTest {
         packageTreeNode.sort(Comparator.comparing(DexElementNode::getMethodDefinitionsCount));
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 6,11,532\n"
-                        + "  ~java: 0,4,40\n"
-                        + "    ~lang: 0,3,32\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n"
-                        + "  SomeAnnotation: 0,0,66\n"
-                        + "  a: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "  TestSubclass: 2,3,124\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.util.List getAnotherList(): 1,1,38\n"
-                        + "  Test2: 3,3,192\n"
-                        + "    a aClassField: 0,0,10\n"
-                        + "    int aField: 0,0,10\n"
-                        + "    <init>(): 1,1,52\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n",
+                "root: 6,11,532\n" +
+                "  ~java: 0,4,40\n" +
+                "    ~lang: 0,3,32\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n" +
+                "  SomeAnnotation: 0,0,66\n" +
+                "  a: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "  TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.util.List getAnotherList(): 1,1,38\n" +
+                "  Test2: 3,3,192\n" +
+                "    a aClassField: 0,0,10\n" +
+                "    int aField: 0,0,10\n" +
+                "    <init>(): 1,1,52\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n",
                 sb.toString());
 
         sb.setLength(0);
         packageTreeNode.sort(Comparator.comparing(DexElementNode::getName));
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 6,11,532\n"
-                        + "  SomeAnnotation: 0,0,66\n"
-                        + "  Test2: 3,3,192\n"
-                        + "    <init>(): 1,1,52\n"
-                        + "    a aClassField: 0,0,10\n"
-                        + "    int aField: 0,0,10\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "  TestSubclass: 2,3,124\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.util.List getAnotherList(): 1,1,38\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "  a: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "  ~java: 0,4,40\n"
-                        + "    ~lang: 0,3,32\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n",
+                "root: 6,11,532\n" +
+                "  SomeAnnotation: 0,0,66\n" +
+                "  Test2: 3,3,192\n" +
+                "    <init>(): 1,1,52\n" +
+                "    a aClassField: 0,0,10\n" +
+                "    int aField: 0,0,10\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "  TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.util.List getAnotherList(): 1,1,38\n" +
+                "  a: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "  ~java: 0,4,40\n" +
+                "    ~lang: 0,3,32\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n",
                 sb.toString());
         sb.setLength(0);
         packageTreeNode.sort(Comparator.comparing(DexElementNode::getMethodReferencesCount));
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 6,11,532\n"
-                        + "  SomeAnnotation: 0,0,66\n"
-                        + "  a: 1,1,110\n"
-                        + "    <init>(): 1,1,46\n"
-                        + "  Test2: 3,3,192\n"
-                        + "    a aClassField: 0,0,10\n"
-                        + "    int aField: 0,0,10\n"
-                        + "    <init>(): 1,1,52\n"
-                        + "    java.lang.Integer get(): 1,1,42\n"
-                        + "    java.util.List getList(): 1,1,38\n"
-                        + "  TestSubclass: 2,3,124\n"
-                        + "    <init>(): 1,1,38\n"
-                        + "    java.util.List getAnotherList(): 1,1,38\n"
-                        + "    ~java.util.List getList(): 0,1,8\n"
-                        + "  ~java: 0,4,40\n"
-                        + "    ~util: 0,1,8\n"
-                        + "      ~Collections: 0,1,8\n"
-                        + "        ~java.util.List emptyList(): 0,1,8\n"
-                        + "    ~lang: 0,3,32\n"
-                        + "      ~annotation: 0,0,8\n"
-                        + "        ~RetentionPolicy: 0,0,8\n"
-                        + "          ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n"
-                        + "      ~Boolean: 0,1,8\n"
-                        + "        ~java.lang.Boolean valueOf(boolean): 0,1,8\n"
-                        + "      ~Integer: 0,1,8\n"
-                        + "        ~java.lang.Integer valueOf(int): 0,1,8\n"
-                        + "      ~Object: 0,1,8\n"
-                        + "        ~<init>(): 0,1,8\n",
+                "root: 6,11,532\n" +
+                "  SomeAnnotation: 0,0,66\n" +
+                "  a: 1,1,110\n" +
+                "    <init>(): 1,1,46\n" +
+                "  Test2: 3,3,192\n" +
+                "    a aClassField: 0,0,10\n" +
+                "    int aField: 0,0,10\n" +
+                "    <init>(): 1,1,52\n" +
+                "    java.lang.Integer get(): 1,1,42\n" +
+                "    java.util.List getList(): 1,1,38\n" +
+                "  TestSubclass: 2,3,124\n" +
+                "    ~References: 0,1,8\n" +
+                "      ~java.util.List getList(): 0,1,8\n" +
+                "    <init>(): 1,1,38\n" +
+                "    java.util.List getAnotherList(): 1,1,38\n" +
+                "  ~java: 0,4,40\n" +
+                "    ~util: 0,1,8\n" +
+                "      ~Collections: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.util.List emptyList(): 0,1,8\n" +
+                "    ~lang: 0,3,32\n" +
+                "      ~annotation: 0,0,8\n" +
+                "        ~RetentionPolicy: 0,0,8\n" +
+                "          ~References: 0,0,8\n" +
+                "            ~java.lang.annotation.RetentionPolicy RUNTIME: 0,0,8\n" +
+                "      ~Boolean: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Boolean valueOf(boolean): 0,1,8\n" +
+                "      ~Integer: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~java.lang.Integer valueOf(int): 0,1,8\n" +
+                "      ~Object: 0,1,8\n" +
+                "        ~References: 0,1,8\n" +
+                "          ~<init>(): 0,1,8\n",
                 sb.toString());
     }
 
@@ -333,9 +372,7 @@ public class PackageTreeCreatorTest {
             int depth,
             ProguardSeedsMap seeds,
             ProguardMap map) {
-        for (int i = 0; i < depth * 2; i++) {
-            sb.append(' ');
-        }
+        sb.append(" ".repeat(Math.max(0, depth * 2)));
         if (node.isRemoved()) {
             sb.append("X-");
         } else if (node.isSeed(seeds, map, true)) {
@@ -353,7 +390,7 @@ public class PackageTreeCreatorTest {
         sb.append('\n');
 
         for (int i = 0; i < node.getChildCount(); i++) {
-            dumpTree(sb, (DexElementNode) node.getChildAt(i), depth + 1, seeds, map);
+            dumpTree(sb, node.getChildAt(i), depth + 1, seeds, map);
         }
     }
 }

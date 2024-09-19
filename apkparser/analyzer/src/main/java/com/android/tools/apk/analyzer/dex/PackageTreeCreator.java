@@ -48,11 +48,21 @@ public class PackageTreeCreator {
 
     @Nullable private final ProguardMap proguardMap;
     @Nullable private final ProguardUsagesMap usagesMap;
+    private final boolean addReferencesNode;
 
     public PackageTreeCreator(
-            @Nullable ProguardMappings proguardMappings, boolean deobfuscateNames) {
+            @Nullable ProguardMappings proguardMappings,
+            boolean deobfuscateNames) {
+        this(proguardMappings, deobfuscateNames, true);
+    }
+
+    public PackageTreeCreator(
+            @Nullable ProguardMappings proguardMappings,
+            boolean deobfuscateNames,
+            boolean addReferencesNode) {
         proguardMap = (deobfuscateNames && proguardMappings != null) ? proguardMappings.map : null;
         usagesMap = proguardMappings == null ? null : proguardMappings.usage;
+        this.addReferencesNode = addReferencesNode;
     }
 
     @NonNull
@@ -201,18 +211,22 @@ public class PackageTreeCreator {
             if (methodSig.startsWith("void <init>") || methodSig.startsWith("void <clinit>")) {
                 methodSig = methodName + params;
             }
-            DexMethodNode methodNode = classNode.getChildByType(methodSig, DexMethodNode.class);
-            if (methodNode == null) {
-                methodNode = new DexMethodNode(methodSig, ImmutableMethodReference.of(methodRef));
-                classNode.add(methodNode);
-            }
             if (methodRef instanceof DexBackedMethod) {
+                DexMethodNode methodNode = getOrAddMethod(classNode, methodSig, methodRef);
                 methodNode.setDefined(true);
                 methodNode.setUserObject(dexFilePath);
                 methodNode.setSize(methodNode.getSize() + ((DexBackedMethod) methodRef).getSize());
             } else if (methodRef instanceof DexBackedMethodReference) {
+                final DexMethodNode methodNode;
+                if (addReferencesNode) {
+                    DexReferencesNode referencesNode = getOrCreateReferencesNode(classNode);
+                    methodNode = getOrAddMethod(referencesNode, methodSig, methodRef);
+                }
+                else {
+                    methodNode = getOrAddMethod(classNode, methodSig, methodRef);
+                }
                 methodNode.setSize(
-                        methodNode.getSize() + ((DexBackedMethodReference) methodRef).getSize());
+                        methodNode.getSize() + ((DexBackedMethodReference)methodRef).getSize());
             }
         }
     }
@@ -225,18 +239,22 @@ public class PackageTreeCreator {
             String fieldName = decodeFieldName(fieldRef, proguardMap);
             String fieldType = decodeClassName(fieldRef.getType(), proguardMap);
             String fieldSig = fieldType + " " + fieldName;
-            DexFieldNode fieldNode = classNode.getChildByType(fieldSig, DexFieldNode.class);
-            if (fieldNode == null) {
-                fieldNode = new DexFieldNode(fieldSig, ImmutableFieldReference.of(fieldRef));
-                classNode.add(fieldNode);
-            }
             if (fieldRef instanceof DexBackedField) {
+                DexFieldNode fieldNode = getOrAddField(classNode, fieldSig, fieldRef);
                 fieldNode.setDefined(true);
                 fieldNode.setUserObject(dexFilePath);
                 fieldNode.setSize(fieldNode.getSize() + ((DexBackedField) fieldRef).getSize());
             } else if (fieldRef instanceof DexBackedFieldReference) {
+                final DexFieldNode fieldNode;
+                if (addReferencesNode) {
+                    DexReferencesNode referencesNode = getOrCreateReferencesNode(classNode);
+                    fieldNode = getOrAddField(referencesNode, fieldSig, fieldRef);
+                }
+                else {
+                    fieldNode = getOrAddField(classNode, fieldSig, fieldRef);
+                }
                 fieldNode.setSize(
-                        fieldNode.getSize() + ((DexBackedFieldReference) fieldRef).getSize());
+                        fieldNode.getSize() + ((DexBackedFieldReference)fieldRef).getSize());
             }
         }
     }
@@ -299,5 +317,33 @@ public class PackageTreeCreator {
             className = proguardMap.getClassName(className);
         }
         return className;
+    }
+
+    private static DexReferencesNode getOrCreateReferencesNode(DexClassNode classNode) {
+        DexReferencesNode references = classNode.getChildByType(
+                DexReferencesNode.NAME, DexReferencesNode.class);
+        if (references == null) {
+            references = new DexReferencesNode();
+            classNode.insert(references, 0);
+        }
+        return references;
+    }
+
+    private DexMethodNode getOrAddMethod(DexElementNode parent, String sig, MethodReference ref) {
+        DexMethodNode node = parent.getChildByType(sig, DexMethodNode.class);
+        if (node == null) {
+            node = new DexMethodNode(sig, ImmutableMethodReference.of(ref));
+            parent.add(node);
+        }
+        return node;
+    }
+
+    private DexFieldNode getOrAddField(DexElementNode parent, String sig, FieldReference ref) {
+        DexFieldNode node = parent.getChildByType(sig, DexFieldNode.class);
+        if (node == null) {
+            node = new DexFieldNode(sig, ImmutableFieldReference.of(ref));
+            parent.add(node);
+        }
+        return node;
     }
 }

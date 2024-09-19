@@ -23,6 +23,8 @@ import com.android.tools.proguard.ProguardSeedsMap;
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference;
 
+import java.util.Comparator;
+
 public class DexClassNode extends DexElementNode {
     private long size = 0;
 
@@ -91,5 +93,23 @@ public class DexClassNode extends DexElementNode {
         }
         setMethodDefinitionsCount(methodDefinitions);
         setMethodReferencesCount(methodReferences);
+    }
+
+    /*
+     * Ensure that DexReferencesNode is always the first node.
+     */
+    @Override
+    public void sort(Comparator<DexElementNode> comparator) {
+        if (getChildCount() == 0) {
+            return;
+        }
+        DexElementNode first = getChildAt(0);
+        if (first instanceof DexReferencesNode) {
+            remove(0);
+        }
+        super.sort(comparator);
+        if (first instanceof DexReferencesNode) {
+            insert(first, 0);
+        }
     }
 }

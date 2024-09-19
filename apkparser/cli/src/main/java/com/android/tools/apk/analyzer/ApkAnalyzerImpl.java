@@ -463,7 +463,7 @@ public class ApkAnalyzerImpl {
             }
 
             PackageTreeCreator treeCreator =
-                    new PackageTreeCreator(proguardMappings, deobfuscateNames);
+                    new PackageTreeCreator(proguardMappings, deobfuscateNames, false);
             DexPackageNode rootNode = treeCreator.constructPackageTree(dexFiles);
 
             DexViewFilters filters = new DexViewFilters();
@@ -662,7 +662,7 @@ public class ApkAnalyzerImpl {
             }
 
             PackageTreeCreator treeCreator =
-                    new PackageTreeCreator(proguardMappings, deobfuscateNames);
+                    new PackageTreeCreator(proguardMappings, deobfuscateNames, false);
             DexPackageNode rootNode = treeCreator.constructPackageTree(dexFiles);
             ArrayList<Descriptor> descriptors = new ArrayList<Descriptor>();
             if (descriptorCommandLine != null) {

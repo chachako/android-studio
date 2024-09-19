@@ -47,39 +47,46 @@ public class FilteredTreeModelTest {
         options.setShowMethods(true);
         options.setShowReferencedNodes(true);
 
-        FilteredTreeModel filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
+        FilteredTreeModel<DexElementNode>
+                filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
 
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  java: 0,4\n"
-                        + "    lang: 0,3\n"
-                        + "      Integer: 0,1\n"
-                        + "        java.lang.Integer valueOf(int): 0,1\n"
-                        + "      Object: 0,1\n"
-                        + "        <init>(): 0,1\n"
-                        + "      Boolean: 0,1\n"
-                        + "        java.lang.Boolean valueOf(boolean): 0,1\n"
-                        + "      annotation: 0,0\n"
-                        + "        RetentionPolicy: 0,0\n"
-                        + "          java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n"
-                        + "    util: 0,1\n"
-                        + "      Collections: 0,1\n"
-                        + "        java.util.List emptyList(): 0,1\n"
-                        + "  Test2: 3,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.lang.Integer get(): 1,1\n"
-                        + "    java.util.List getList(): 1,1\n"
-                        + "    a aClassField: 0,0\n"
-                        + "    int aField: 0,0\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.util.List getAnotherList(): 1,1\n"
-                        + "    java.util.List getList(): 0,1\n"
-                        + "  a: 1,1\n"
-                        + "    <init>(): 1,1\n"
-                        + "  SomeAnnotation: 0,0\n",
+                "root: 6,11\n" +
+                "  java: 0,4\n" +
+                "    lang: 0,3\n" +
+                "      Integer: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Integer valueOf(int): 0,1\n" +
+                "      Object: 0,1\n" +
+                "        References: 0,1\n" +
+                "          <init>(): 0,1\n" +
+                "      Boolean: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Boolean valueOf(boolean): 0,1\n" +
+                "      annotation: 0,0\n" +
+                "        RetentionPolicy: 0,0\n" +
+                "          References: 0,0\n" +
+                "            java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n" +
+                "    util: 0,1\n" +
+                "      Collections: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.util.List emptyList(): 0,1\n" +
+                "  Test2: 3,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.lang.Integer get(): 1,1\n" +
+                "    java.util.List getList(): 1,1\n" +
+                "    a aClassField: 0,0\n" +
+                "    int aField: 0,0\n" +
+                "  TestSubclass: 2,3\n" +
+                "    References: 0,1\n" +
+                "      java.util.List getList(): 0,1\n" +
+                "    <init>(): 1,1\n" +
+                "    java.util.List getAnotherList(): 1,1\n" +
+                "  a: 1,1\n" +
+                "    <init>(): 1,1\n" +
+                "  SomeAnnotation: 0,0\n",
                 sb.toString());
     }
 
@@ -92,28 +99,35 @@ public class FilteredTreeModelTest {
         options.setShowFields(true);
         options.setShowMethods(false);
         options.setShowReferencedNodes(true);
-        FilteredTreeModel filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
+        FilteredTreeModel<DexElementNode>
+                filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
 
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  java: 0,4\n"
-                        + "    lang: 0,3\n"
-                        + "      Integer: 0,1\n"
-                        + "      Object: 0,1\n"
-                        + "      Boolean: 0,1\n"
-                        + "      annotation: 0,0\n"
-                        + "        RetentionPolicy: 0,0\n"
-                        + "          java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n"
-                        + "    util: 0,1\n"
-                        + "      Collections: 0,1\n"
-                        + "  Test2: 3,3\n"
-                        + "    a aClassField: 0,0\n"
-                        + "    int aField: 0,0\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "  a: 1,1\n"
-                        + "  SomeAnnotation: 0,0\n",
+                "root: 6,11\n" +
+                "  java: 0,4\n" +
+                "    lang: 0,3\n" +
+                "      Integer: 0,1\n" +
+                "        References: 0,1\n" +
+                "      Object: 0,1\n" +
+                "        References: 0,1\n" +
+                "      Boolean: 0,1\n" +
+                "        References: 0,1\n" +
+                "      annotation: 0,0\n" +
+                "        RetentionPolicy: 0,0\n" +
+                "          References: 0,0\n" +
+                "            java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n" +
+                "    util: 0,1\n" +
+                "      Collections: 0,1\n" +
+                "        References: 0,1\n" +
+                "  Test2: 3,3\n" +
+                "    a aClassField: 0,0\n" +
+                "    int aField: 0,0\n" +
+                "  TestSubclass: 2,3\n" +
+                "    References: 0,1\n" +
+                "  a: 1,1\n" +
+                "  SomeAnnotation: 0,0\n",
                 sb.toString());
     }
 
@@ -126,24 +140,25 @@ public class FilteredTreeModelTest {
         options.setShowFields(true);
         options.setShowMethods(true);
         options.setShowReferencedNodes(false);
-        FilteredTreeModel filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
+        FilteredTreeModel<DexElementNode>
+                filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
 
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  Test2: 3,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.lang.Integer get(): 1,1\n"
-                        + "    java.util.List getList(): 1,1\n"
-                        + "    a aClassField: 0,0\n"
-                        + "    int aField: 0,0\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.util.List getAnotherList(): 1,1\n"
-                        + "  a: 1,1\n"
-                        + "    <init>(): 1,1\n"
-                        + "  SomeAnnotation: 0,0\n",
+                "root: 6,11\n" +
+                "  Test2: 3,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.lang.Integer get(): 1,1\n" +
+                "    java.util.List getList(): 1,1\n" +
+                "    a aClassField: 0,0\n" +
+                "    int aField: 0,0\n" +
+                "  TestSubclass: 2,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.util.List getAnotherList(): 1,1\n" +
+                "  a: 1,1\n" +
+                "    <init>(): 1,1\n" +
+                "  SomeAnnotation: 0,0\n",
                 sb.toString());
     }
 
@@ -156,36 +171,43 @@ public class FilteredTreeModelTest {
         options.setShowFields(false);
         options.setShowMethods(true);
         options.setShowReferencedNodes(true);
-        FilteredTreeModel filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
+        FilteredTreeModel<DexElementNode>
+                filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
 
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  java: 0,4\n"
-                        + "    lang: 0,3\n"
-                        + "      Integer: 0,1\n"
-                        + "        java.lang.Integer valueOf(int): 0,1\n"
-                        + "      Object: 0,1\n"
-                        + "        <init>(): 0,1\n"
-                        + "      Boolean: 0,1\n"
-                        + "        java.lang.Boolean valueOf(boolean): 0,1\n"
-                        + "      annotation: 0,0\n"
-                        + "        RetentionPolicy: 0,0\n"
-                        + "    util: 0,1\n"
-                        + "      Collections: 0,1\n"
-                        + "        java.util.List emptyList(): 0,1\n"
-                        + "  Test2: 3,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.lang.Integer get(): 1,1\n"
-                        + "    java.util.List getList(): 1,1\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.util.List getAnotherList(): 1,1\n"
-                        + "    java.util.List getList(): 0,1\n"
-                        + "  a: 1,1\n"
-                        + "    <init>(): 1,1\n"
-                        + "  SomeAnnotation: 0,0\n",
+                "root: 6,11\n" +
+                "  java: 0,4\n" +
+                "    lang: 0,3\n" +
+                "      Integer: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Integer valueOf(int): 0,1\n" +
+                "      Object: 0,1\n" +
+                "        References: 0,1\n" +
+                "          <init>(): 0,1\n" +
+                "      Boolean: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Boolean valueOf(boolean): 0,1\n" +
+                "      annotation: 0,0\n" +
+                "        RetentionPolicy: 0,0\n" +
+                "          References: 0,0\n" +
+                "    util: 0,1\n" +
+                "      Collections: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.util.List emptyList(): 0,1\n" +
+                "  Test2: 3,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.lang.Integer get(): 1,1\n" +
+                "    java.util.List getList(): 1,1\n" +
+                "  TestSubclass: 2,3\n" +
+                "    References: 0,1\n" +
+                "      java.util.List getList(): 0,1\n" +
+                "    <init>(): 1,1\n" +
+                "    java.util.List getAnotherList(): 1,1\n" +
+                "  a: 1,1\n" +
+                "    <init>(): 1,1\n" +
+                "  SomeAnnotation: 0,0\n",
                 sb.toString());
     }
 
@@ -210,89 +232,99 @@ public class FilteredTreeModelTest {
         options.setShowMethods(true);
         options.setShowReferencedNodes(true);
         options.setShowRemovedNodes(false);
-        FilteredTreeModel filteredTreeModel = new FilteredTreeModel(packageTreeNode, options);
+        FilteredTreeModel<DexElementNode> filteredTreeModel = new FilteredTreeModel<>(packageTreeNode, options);
 
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  java: 0,4\n"
-                        + "    lang: 0,3\n"
-                        + "      Integer: 0,1\n"
-                        + "        java.lang.Integer valueOf(int): 0,1\n"
-                        + "      Object: 0,1\n"
-                        + "        <init>(): 0,1\n"
-                        + "      Boolean: 0,1\n"
-                        + "        java.lang.Boolean valueOf(boolean): 0,1\n"
-                        + "      annotation: 0,0\n"
-                        + "        RetentionPolicy: 0,0\n"
-                        + "          java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n"
-                        + "    util: 0,1\n"
-                        + "      Collections: 0,1\n"
-                        + "        java.util.List emptyList(): 0,1\n"
-                        + "  Test2: 3,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.lang.Integer get(): 1,1\n"
-                        + "    java.util.List getList(): 1,1\n"
-                        + "    AnotherClass aClassField: 0,0\n"
-                        + "    int aField: 0,0\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.util.List getAnotherList(): 1,1\n"
-                        + "    java.util.List getList(): 0,1\n"
-                        + "  AnotherClass: 1,1\n"
-                        + "    <init>(): 1,1\n"
-                        + "  SomeAnnotation: 0,0\n",
+                "root: 6,11\n" +
+                "  java: 0,4\n" +
+                "    lang: 0,3\n" +
+                "      Integer: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Integer valueOf(int): 0,1\n" +
+                "      Object: 0,1\n" +
+                "        References: 0,1\n" +
+                "          <init>(): 0,1\n" +
+                "      Boolean: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Boolean valueOf(boolean): 0,1\n" +
+                "      annotation: 0,0\n" +
+                "        RetentionPolicy: 0,0\n" +
+                "          References: 0,0\n" +
+                "            java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n" +
+                "    util: 0,1\n" +
+                "      Collections: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.util.List emptyList(): 0,1\n" +
+                "  Test2: 3,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.lang.Integer get(): 1,1\n" +
+                "    java.util.List getList(): 1,1\n" +
+                "    AnotherClass aClassField: 0,0\n" +
+                "    int aField: 0,0\n" +
+                "  TestSubclass: 2,3\n" +
+                "    References: 0,1\n" +
+                "      java.util.List getList(): 0,1\n" +
+                "    <init>(): 1,1\n" +
+                "    java.util.List getAnotherList(): 1,1\n" +
+                "  AnotherClass: 1,1\n" +
+                "    <init>(): 1,1\n" +
+                "  SomeAnnotation: 0,0\n",
                 sb.toString());
 
         options.setShowRemovedNodes(true);
         sb.setLength(0);
         dumpTree(sb, filteredTreeModel, packageTreeNode, 0);
         assertEquals(
-                "root: 6,11\n"
-                        + "  java: 0,4\n"
-                        + "    lang: 0,3\n"
-                        + "      Integer: 0,1\n"
-                        + "        java.lang.Integer valueOf(int): 0,1\n"
-                        + "      Object: 0,1\n"
-                        + "        <init>(): 0,1\n"
-                        + "      Boolean: 0,1\n"
-                        + "        java.lang.Boolean valueOf(boolean): 0,1\n"
-                        + "      annotation: 0,0\n"
-                        + "        RetentionPolicy: 0,0\n"
-                        + "          java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n"
-                        + "    util: 0,1\n"
-                        + "      Collections: 0,1\n"
-                        + "        java.util.List emptyList(): 0,1\n"
-                        + "  Test2: 3,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.lang.Integer get(): 1,1\n"
-                        + "    java.util.List getList(): 1,1\n"
-                        + "    AnotherClass aClassField: 0,0\n"
-                        + "    int aField: 0,0\n"
-                        + "  TestSubclass: 2,3\n"
-                        + "    <init>(): 1,1\n"
-                        + "    java.util.List getAnotherList(): 1,1\n"
-                        + "    java.util.List getList(): 0,1\n"
-                        + "  AnotherClass: 1,1\n"
-                        + "    <init>(): 1,1\n"
-                        + "    AnotherClass(int,TestSubclass): 0,0\n"
-                        + "  SomeAnnotation: 0,0\n"
-                        + "  RemovedSubclass: 0,0\n",
+                "root: 6,11\n" +
+                "  java: 0,4\n" +
+                "    lang: 0,3\n" +
+                "      Integer: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Integer valueOf(int): 0,1\n" +
+                "      Object: 0,1\n" +
+                "        References: 0,1\n" +
+                "          <init>(): 0,1\n" +
+                "      Boolean: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.lang.Boolean valueOf(boolean): 0,1\n" +
+                "      annotation: 0,0\n" +
+                "        RetentionPolicy: 0,0\n" +
+                "          References: 0,0\n" +
+                "            java.lang.annotation.RetentionPolicy RUNTIME: 0,0\n" +
+                "    util: 0,1\n" +
+                "      Collections: 0,1\n" +
+                "        References: 0,1\n" +
+                "          java.util.List emptyList(): 0,1\n" +
+                "  Test2: 3,3\n" +
+                "    <init>(): 1,1\n" +
+                "    java.lang.Integer get(): 1,1\n" +
+                "    java.util.List getList(): 1,1\n" +
+                "    AnotherClass aClassField: 0,0\n" +
+                "    int aField: 0,0\n" +
+                "  TestSubclass: 2,3\n" +
+                "    References: 0,1\n" +
+                "      java.util.List getList(): 0,1\n" +
+                "    <init>(): 1,1\n" +
+                "    java.util.List getAnotherList(): 1,1\n" +
+                "  AnotherClass: 1,1\n" +
+                "    <init>(): 1,1\n" +
+                "    AnotherClass(int,TestSubclass): 0,0\n" +
+                "  SomeAnnotation: 0,0\n" +
+                "  RemovedSubclass: 0,0\n",
                 sb.toString());
     }
 
     @NonNull
-    private static DexBackedDexFile getTestDexFile(String filename) throws IOException {
+    private static DexBackedDexFile getTestDexFile(@SuppressWarnings("SameParameterValue") String filename) throws IOException {
         Path dexPath = TestResources.getFile("/" + filename).toPath();
         return getDexFile(Files.readAllBytes(dexPath));
     }
 
     private static void dumpTree(
             StringBuffer sb, @NonNull TreeModel model, DexElementNode node, int depth) {
-        for (int i = 0; i < depth * 2; i++) {
-            sb.append(' ');
-        }
+        sb.append(" ".repeat(Math.max(0, depth * 2)));
         sb.append(node.getName());
         sb.append(": ");
         sb.append(node.getMethodDefinitionsCount());
