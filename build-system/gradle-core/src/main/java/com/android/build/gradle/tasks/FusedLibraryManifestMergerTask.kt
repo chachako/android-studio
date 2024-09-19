@@ -177,9 +177,8 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
             super.configure(task)
 
             val libraryManifests = creationConfig.dependencies.getArtifactCollection(
-                    Usage.JAVA_RUNTIME,
-                    creationConfig.mergeSpec,
-                    AndroidArtifacts.ArtifactType.MANIFEST
+                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                AndroidArtifacts.ArtifactType.MANIFEST
             )
             task.libraryManifests.set(libraryManifests)
             task.minSdkVersion.setDisallowChanges(creationConfig.extension.minSdk.toString())

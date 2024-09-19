@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.fusedlibrary
+package com.android.build.gradle.internal.privaysandboxsdk
 
 import com.android.build.gradle.internal.dependency.PluginConfigurations
 import com.android.build.gradle.internal.dependency.PluginDependencies
@@ -23,8 +23,7 @@ import com.android.build.gradle.internal.publishing.getComponentFilter
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.specs.Spec
 
-class FusedLibraryDependencies(
+class PrivacySandboxSdkDependencies(
     override val configurations: PluginConfigurations = PluginConfigurations(),
-    override val spec: Spec<ComponentIdentifier> =
-        AndroidArtifacts.ArtifactScope.PROJECT.getComponentFilter()
+    override val spec: Spec<ComponentIdentifier> = AndroidArtifacts.ArtifactScope.ALL.getComponentFilter()
 ) : PluginDependencies

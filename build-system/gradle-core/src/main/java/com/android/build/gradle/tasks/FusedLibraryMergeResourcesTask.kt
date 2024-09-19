@@ -132,9 +132,8 @@ abstract class FusedLibraryMergeResourcesTask : NonIncrementalGlobalTask() {
             task.minSdk.setDisallowChanges(creationConfig.extension.minSdk)
             task.resourceSets.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
-                            AndroidArtifacts.ArtifactType.ANDROID_RES
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactType.ANDROID_RES
                     )
             )
         }

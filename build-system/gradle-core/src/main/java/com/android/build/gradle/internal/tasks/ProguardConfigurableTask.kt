@@ -310,8 +310,7 @@ abstract class ProguardConfigurableTask(
             inputProguardMapping: FileCollection?,
         ) {
             task.libraryKeepRules = creationConfig.dependencies.getArtifactCollection(
-                JAVA_RUNTIME,
-                ALL,
+                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                 AndroidArtifacts.ArtifactType.FILTERED_PROGUARD_RULES
             )
             task.libraryKeepRulesFileCollection.from(task.libraryKeepRules.artifactFiles)

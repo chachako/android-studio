@@ -103,8 +103,7 @@ abstract class FusedLibraryMergeResourceCompileSymbolsTask : NonIncrementalTask(
                 getBuildService(creationConfig.services.buildServiceRegistry))
             task.symbolDependencyTables.fromDisallowChanges(
                 creationConfig.dependencies.getArtifactFileCollection(
-                    Usage.JAVA_RUNTIME,
-                    creationConfig.mergeSpec,
+                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                     AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME
                 )
             )

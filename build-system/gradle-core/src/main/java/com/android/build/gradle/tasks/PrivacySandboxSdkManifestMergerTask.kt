@@ -38,7 +38,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
@@ -152,9 +151,8 @@ abstract class PrivacySandboxSdkManifestMergerTask: FusedLibraryManifestMergerTa
             super.configure(task)
 
             val libraryManifests = creationConfig.dependencies.getArtifactCollection(
-                    Usage.JAVA_RUNTIME,
-                    creationConfig.mergeSpec,
-                    AndroidArtifacts.ArtifactType.MANIFEST
+                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                AndroidArtifacts.ArtifactType.MANIFEST
             )
             task.libraryManifests.set(libraryManifests)
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.apiString)

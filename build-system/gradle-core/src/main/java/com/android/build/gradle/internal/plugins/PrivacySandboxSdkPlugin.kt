@@ -268,9 +268,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
             runtimeElements.extendsFrom(requiredSdkConfiguration)
         }
         val incomingConfigurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
-        incomingConfigurationsToAdd.forEach { configuration ->
-            variantScope.incomingConfigurations.addConfiguration(configuration)
-        }
+        variantScope.incomingConfigurations.addAll(incomingConfigurationsToAdd)
     }
 
     private fun instantiateExtension(project: Project): PrivacySandboxSdkExtension {

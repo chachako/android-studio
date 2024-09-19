@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.Aapt2FromMaven
 import com.android.build.gradle.internal.services.Aapt2Input
-import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
@@ -154,9 +153,8 @@ abstract class PrivacySandboxSdkMergeResourcesTask : NonIncrementalTask() {
             task.minSdk.setDisallowChanges(creationConfig.minSdkVersion.apiLevel)
             task.resourceSets.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
-                            AndroidArtifacts.ArtifactType.ANDROID_RES
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactType.ANDROID_RES
                     )
             )
         }

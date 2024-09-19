@@ -131,8 +131,7 @@ abstract class PrivacySandboxSdkGenerateRClassTask : NonIncrementalTask() {
             )
             task.symbolListWithPackageNames.from(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME)
             )
             task.symbolTableBuildService.set(getBuildService(creationConfig.services.buildServiceRegistry))

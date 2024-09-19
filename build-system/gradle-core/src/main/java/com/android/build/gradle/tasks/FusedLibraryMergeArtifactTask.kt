@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifa
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -176,8 +177,7 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
 
             task.artifactFiles.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             androidArtifactType
                     )
             )
@@ -230,9 +230,8 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
 
             task.artifactFiles.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
-                            androidArtifactType
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        androidArtifactType
                     )
             )
             task.artifactType.setDisallowChanges(androidArtifactType)

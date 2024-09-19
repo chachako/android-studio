@@ -19,6 +19,7 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkInternalArtifactType
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.DEFAULT_NUM_BUCKETS
@@ -162,8 +163,7 @@ abstract class PrivacySandboxSdkDexTask: NewIncrementalTask() {
                 if (minSdk < AndroidVersion.VersionCodes.N) {
                     desugarClasspath.from(
                         creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             creationConfig.aarOrJarTypeToConsume.jar
                         )
                     )

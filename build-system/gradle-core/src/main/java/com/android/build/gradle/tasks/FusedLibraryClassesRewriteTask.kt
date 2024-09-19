@@ -30,7 +30,6 @@ import com.android.build.gradle.internal.utils.toImmutableList
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.symbols.SymbolTable
 import com.android.utils.FileUtils
-import org.gradle.api.attributes.Usage
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -152,8 +151,7 @@ abstract class FusedLibraryClassesRewriteTask : NonIncrementalTask() {
             )
             task.librariesSymbolLists.from(
                 creationConfig.dependencies.getArtifactFileCollection(
-                    Usage.JAVA_RUNTIME,
-                    creationConfig.mergeSpec,
+                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                     AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME
                 )
             )

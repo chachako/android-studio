@@ -102,9 +102,8 @@ abstract class FusedLibraryMergeClasses: DefaultTask() {
         override fun configure(task: FusedLibraryMergeClasses) {
             task.incoming.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
-                            AndroidArtifacts.ArtifactType.CLASSES_JAR)
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactType.CLASSES_JAR)
             )
         }
     }
@@ -127,8 +126,7 @@ abstract class FusedLibraryMergeClasses: DefaultTask() {
         override fun configure(task: FusedLibraryMergeClasses) {
             task.incoming.from(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactType.CLASSES_JAR)
             )
             task.incoming.from(creationConfig.artifacts.get(PrivacySandboxSdkInternalArtifactType.RUNTIME_R_CLASS))

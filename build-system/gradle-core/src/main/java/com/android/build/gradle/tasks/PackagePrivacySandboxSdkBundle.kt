@@ -245,8 +245,7 @@ abstract class PackagePrivacySandboxSdkBundle: NonIncrementalTask() {
 
             task.sdkArchives.setFrom(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE))
 
             task.interfaceDescriptors.setDisallowChanges(

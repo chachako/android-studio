@@ -151,9 +151,8 @@ abstract class PrivacySandboxValidateConfigurationTask : NonIncrementalTask() {
             )
 
             task.sdkArchives = creationConfig.dependencies.getArtifactCollection(
-                    Usage.JAVA_RUNTIME,
-                    creationConfig.mergeSpec,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE
+                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE
             )
         }
     }

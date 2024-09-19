@@ -293,8 +293,7 @@ abstract class MergeJavaResourceTask
 
             task.subProjectJavaRes.from(
                     creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactType.JAVA_RES
                     )
             )
@@ -344,11 +343,10 @@ abstract class MergeJavaResourceTask
             super.configure(task)
 
             task.subProjectJavaRes.from(
-                    creationConfig.dependencies.getArtifactFileCollection(
-                            Usage.JAVA_RUNTIME,
-                            creationConfig.mergeSpec,
-                            AndroidArtifacts.ArtifactType.JAVA_RES
-                    )
+                creationConfig.dependencies.getArtifactFileCollection(
+                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                    AndroidArtifacts.ArtifactType.JAVA_RES
+                )
             )
 
             // For configuring the merging rules (we may want to add DSL for this in the future.

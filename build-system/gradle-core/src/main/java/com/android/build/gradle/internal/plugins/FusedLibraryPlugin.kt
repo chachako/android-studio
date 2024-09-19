@@ -172,7 +172,6 @@ class FusedLibraryPlugin @Inject constructor(
                     project.objects.named(BuildTypeAttr::class.java, "debug")
             )
             it.dependencies.addAllLater(fusedAarApiDependenciesProvider)
-            variantScope.outgoingConfigurations.addConfiguration(it)
             it.outgoing.artifact(bundleTaskProvider) { artifact ->
                 artifact.type = AndroidArtifacts.ArtifactType.AAR.type
             }
@@ -206,7 +205,6 @@ class FusedLibraryPlugin @Inject constructor(
                     project.objects.named(BuildTypeAttr::class.java, "debug")
             )
             it.dependencies.addAllLater(fusedAarRuntimeDependenciesProvider)
-            variantScope.outgoingConfigurations.addConfiguration(it)
             it.outgoing.artifact(bundleTaskProvider) { artifact ->
                 artifact.type = AndroidArtifacts.ArtifactType.AAR.type
             }
@@ -410,7 +408,7 @@ class FusedLibraryPlugin @Inject constructor(
 
         val configurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
         configurationsToAdd.forEach { configuration ->
-            variantScope.incomingConfigurations.addConfiguration(configuration)
+            variantScope.incomingConfigurations.add(configuration)
         }
         maybePublishToMaven(
             project,
