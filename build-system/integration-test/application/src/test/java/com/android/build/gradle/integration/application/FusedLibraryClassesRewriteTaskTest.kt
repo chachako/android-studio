@@ -39,8 +39,7 @@ internal class FusedLibraryClassesRewriteTaskTest {
             addFile(
                 "src/main/res/values/strings.xml",
                 """<resources>
-                <string name="greeting">Hello</string>
-                <string name="farewell">Goodbye</string>
+                <string name="androidlib1_str">A string from androidLib1</string>
               </resources>"""
             )
             addFile("src/main/layout/main_activity.xml", "<root></root>")
@@ -52,13 +51,19 @@ internal class FusedLibraryClassesRewriteTaskTest {
                 namespace = "com.example.androidLib2"
             }
             addFile(
+                "src/main/res/values/strings.xml",
+                """<resources>
+                <string name="androidlib2_str">A string from androidLib2</string>
+              </resources>"""
+            )
+            addFile(
                 "src/main/java/com/example/androidLib2/MyClass.java",
                 // language=JAVA
                 """package com.example.androidLib2;
                 public class MyClass {
                     public static void methodUsingNamespacedResource() {
-                        int string = com.example.androidLib1.R.string.greeting;
-                        int string2 = com.example.androidLib1.R.string.farewell;
+                        int string1 = com.example.androidLib1.R.string.androidlib1_str;
+                        int string2 = com.example.androidLib2.R.string.androidlib2_str;
                     }
                 }
             """.trimIndent()
@@ -71,6 +76,7 @@ internal class FusedLibraryClassesRewriteTaskTest {
             plugins.add(PluginType.FUSED_LIBRARY)
             appendToBuildFile { """androidFusedLibrary.namespace="com.example.fusedLib1" """ }
             dependencies {
+                include(project(":androidLib1"))
                 include(project(":androidLib2"))
             }
         }
@@ -108,7 +114,7 @@ internal class FusedLibraryClassesRewriteTaskTest {
             val fusedLibraryRClassStringFieldNames =
                 (fusedLibraryRStringsClass.declaredFields).map { it.name }
             assertThat(fusedLibraryRClassStringFieldNames)
-                .containsAtLeast("greeting", "farewell")
+                .containsExactly("androidlib2_str", "androidlib1_str")
 
             // Check that R class references use the fused library R Class
             try {

@@ -89,10 +89,10 @@ class FusedLibraryClassesVerificationTest {
                 }
             }
             addFile(
-                "src/main/java/com/example/androidlib1/ClassFromAndroidLib1.kt",
+                "src/main/java/com/example/androidLib1/ClassFromAndroidLib1.kt",
                 // language=kotlin
                 """
-                    package com.example.androidlib1
+                    package com.example.androidLib1
 
                     class ClassFromAndroidLib1 {
 
@@ -190,6 +190,7 @@ class FusedLibraryClassesVerificationTest {
         }
         subProject(":$FUSED_LIBRARY_PROJECT_NAME") {
             plugins.add(PluginType.FUSED_LIBRARY)
+            plugins.add(PluginType.MAVEN_PUBLISH)
             androidFusedLibrary {
                 namespace = "com.example.fusedLib1"
                 minSdk = 34
@@ -227,7 +228,7 @@ class FusedLibraryClassesVerificationTest {
         addDependenciesToFusedLibProject(dependenciesBlock)
         val classesFromDirectDependencies = listOf(
             "com/example/androidLib2/ClassFromAndroidLib2.class",
-            "com/example/androidlib1/ClassFromAndroidLib1.class",
+            "com/example/androidLib1/ClassFromAndroidLib1.class",
         )
 
         assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
@@ -245,7 +246,7 @@ class FusedLibraryClassesVerificationTest {
         val classesFromDirectDependencies = listOf(
             "com/example/androidLib2/ClassFromAndroidLib2.class", // From :androidLib2
             "com/example/androidLib3/ClassFromAndroidLib3.class", // From :androidLib3
-            "com/example/androidlib1/ClassFromAndroidLib1.class" // From :androidLib1
+            "com/example/androidLib1/ClassFromAndroidLib1.class" // From :androidLib1
         )
 
         assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
@@ -295,7 +296,7 @@ class FusedLibraryClassesVerificationTest {
     }
 
     @Test
-    fun checkBuildFailsForLibrariesWithDatabinding() {
+    fun checkPublishingFailsForLibrariesWithDatabinding() {
         val dependenciesBlock = """
 
             include(project(":androidLib1"))
@@ -308,7 +309,7 @@ class FusedLibraryClassesVerificationTest {
                 project.executor()
                     .with(BooleanOption.USE_ANDROID_X, enableAndroidx)
                     .expectFailure()
-                    .run(":$FUSED_LIBRARY_PROJECT_NAME:bundle")
+                    .run(":$FUSED_LIBRARY_PROJECT_NAME:generatePomFileForMavenPublication")
 
             failure.assertErrorContains(
                 "Fused Library plugin does not allow dependencies with databinding.")
@@ -326,7 +327,6 @@ class FusedLibraryClassesVerificationTest {
 
     private fun assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies: List<String>) {
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":$FUSED_LIBRARY_PROJECT_NAME:bundle")
         val fusedLib1Project = project.getSubproject(":$FUSED_LIBRARY_PROJECT_NAME")
         val classesJar = extractClassesJar(fusedLib1Project)
@@ -336,7 +336,8 @@ class FusedLibraryClassesVerificationTest {
                 it.entries()
                     .asSequence()
                     .map { it.toString() }
-                    .filter { it.endsWith(SdkConstants.DOT_CLASS) }.toList()
+                    .filter { it.endsWith(SdkConstants.DOT_CLASS) }
+                    .toList()
             ).containsExactlyElementsIn(classesFromDirectDependencies)
         }
     }

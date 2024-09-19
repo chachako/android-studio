@@ -121,6 +121,7 @@ internal class FusedLibraryMergeArtifactTaskTest {
             dependencies {
                 include(project(":androidLib3"))
                 include(project(":androidLib2"))
+                include(project(":androidLib1"))
             }
         }
         gradleProperties {

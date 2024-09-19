@@ -94,6 +94,12 @@ class FusedLibraryMergeResourcesTaskTest {
                             "        android:layout_height=\"wrap_content\"\n" +
                             "        android:layout_weight=\"1\"\n" +
                             "        android:text=\"TextView\" />\n" +
+                            "    <TextView\n" +
+                            "        android:id=\"@+id/string_from_android_lib_1\"\n" +
+                            "        android:layout_width=\"match_parent\"\n" +
+                            "        android:layout_height=\"wrap_content\"\n" +
+                            "        android:layout_weight=\"1\"\n" +
+                            "        android:text=\"TextView\" />\n" +
                             "</LinearLayout>"
             )
             dependencies {
@@ -172,7 +178,6 @@ class FusedLibraryMergeResourcesTaskTest {
             assertThat(mergedValuesContents).isEqualTo(
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                             "<resources>\n" +
-                            "    <string name=\"string_from_android_lib_1\">androidLib1</string>\n" +
                             "    <string name=\"string_from_android_lib_2\">androidLib2</string>\n" +
                             "    <string name=\"string_from_android_lib_3\">androidLib3</string>\n" +
                             "    <string name=\"string_from_remote_lib\">Remote String</string>\n" +
@@ -187,6 +192,12 @@ class FusedLibraryMergeResourcesTaskTest {
                             "\n" +
                             "    <TextView\n" +
                             "        android:id=\"@+id/androidlib3_textview\"\n" +
+                            "        android:layout_width=\"match_parent\"\n" +
+                            "        android:layout_height=\"wrap_content\"\n" +
+                            "        android:layout_weight=\"1\"\n" +
+                            "        android:text=\"TextView\" />\n" +
+                            "    <TextView\n" +
+                            "        android:id=\"@+id/string_from_android_lib_1\"\n" +
                             "        android:layout_width=\"match_parent\"\n" +
                             "        android:layout_height=\"wrap_content\"\n" +
                             "        android:layout_weight=\"1\"\n" +
@@ -220,7 +231,6 @@ class FusedLibraryMergeResourcesTaskTest {
                 .containsExactly(
                         "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
                         "<resources>",
-                        "<string name=\"string_from_android_lib_1\">androidLib1</string>",
                         "<string name=\"string_from_android_lib_2\">androidLib2</string>",
                         "<string name=\"string_from_android_lib_3\">androidLib3</string>",
                         "<string name=\"string_from_app\">app</string>",
@@ -248,14 +258,14 @@ class FusedLibraryMergeResourcesTaskTest {
         rTxtContent.bufferedReader().use {
             readAarRTxt(it.lines().iterator(), symbolTableFromRTxt)
         }
-        assertThat(symbolTableFromRTxt.symbolTable.symbols.columnKeySet())
-            .containsExactly(
-                "androidlib3_textview",
-                "layout",
-                "string_from_android_lib_2",
-                "string_from_android_lib_3",
-                "string_from_android_lib_1",
-                "string_overridden"
+        assertThat(symbolTableFromRTxt.symbolTable.symbols.values().associate { it.name to it.resourceType.displayName }).isEqualTo(
+            mapOf("string_from_android_lib_1" to "ID",
+                "androidlib3_textview" to "ID",
+                "layout" to "Layout",
+                "string_from_android_lib_2" to "String",
+                "string_from_android_lib_3" to "String",
+                "string_overridden" to "String"
+                )
         )
 
         ApkSubject.assertThat(appProject.getApk(GradleTestProject.ApkType.DEBUG))
@@ -268,7 +278,6 @@ class FusedLibraryMergeResourcesTaskTest {
             assertThat(rClassStrings?.map { it.name }).containsExactly(
                 "string_from_android_lib_2",
                 "string_from_android_lib_3",
-                "string_from_android_lib_1",
                 "string_overridden"
             )
         }

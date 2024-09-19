@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.generateAarWithContent
@@ -42,6 +43,7 @@ class FusedLibraryTest {
         it.appendToBuild("""
         dependencies {
             implementation 'junit:junit:4.12'
+            implementation project(":androidLib3")
         }
         """.trimIndent())
         it.addFile(
@@ -52,6 +54,10 @@ class FusedLibraryTest {
         )
     }
     private val androidLib2 = MinimalSubProject.lib("com.example.androidLib2")
+    private val androidLib3 = MinimalSubProject.lib("com.example.androidLib3")
+        .appendToBuild(
+            "group = \"fusedlib\"\n" +
+                    "version = \"1.0.0\"\n")
 
     private val mavenRepo = mavenRepo()
 
@@ -118,13 +124,13 @@ class FusedLibraryTest {
                     MultiModuleTestProject.builder()
                             .subproject("androidLib1", androidLib1)
                             .subproject("androidLib2", androidLib2)
+                            .subproject("androidLib3", androidLib3)
                             .subproject("fusedLib1", fusedLibrary)
                             .build()
             )
             .withAdditionalMavenRepo(mavenRepo)
             .addGradleProperties("${BooleanOption.FUSED_LIBRARY_SUPPORT.propertyName}=true")
             .create()
-
 
     @Test
     fun checkAarNoPublishing() {
@@ -137,8 +143,11 @@ class FusedLibraryTest {
 
     @Test
     fun checkAarPublishing() {
-        executor().run("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
-        project.getSubproject(":fusedLib1").buildDir.resolve("publications/maven")
+        val fusedLibProject = project.getSubproject(":fusedLib1")
+
+        executor()
+            .run("generatePomFileForMavenPublication", "generateMetadataFileForMavenPublication")
+        fusedLibProject.buildDir.resolve("publications/maven")
             .also { publicationDir ->
             val pom = File(publicationDir, "pom-default.xml")
             Truth.assertThat(pom.exists()).isTrue()
@@ -151,6 +160,7 @@ class FusedLibraryTest {
                     .containsExactly(
                         "junit:junit:4.12 scope:runtime",
                         "org.hamcrest:hamcrest-core:1.3 scope:runtime",
+                        "fusedlib:androidLib3:1.0.0 scope:runtime",
                         "com.remotedep:remoteaar-b:1 scope:runtime"
                     )
             }
