@@ -190,6 +190,7 @@ abstract class BundleAar : Zip(), VariantTask {
                     prependToCopyPath(SdkConstants.FD_ASSETS)
                 )
             }
+
             task.from(
                 artifacts.get(InternalArtifactType.AAR_METADATA)
             ) {
@@ -426,6 +427,13 @@ abstract class BundleAar : Zip(), VariantTask {
             task.archiveExtension.set(BuilderConstants.EXT_LIB_ARCHIVE)
 
             task.from(creationConfig.artifacts.get(InternalArtifactType.LINT_PUBLISH_JAR))
+
+            if (creationConfig.buildFeatures.androidResources) {
+                task.from(
+                    creationConfig.artifacts.get(InternalArtifactType.LIBRARY_ASSETS),
+                    prependToCopyPath(SdkConstants.FD_ASSETS)
+                )
+            }
         }
     }
 
