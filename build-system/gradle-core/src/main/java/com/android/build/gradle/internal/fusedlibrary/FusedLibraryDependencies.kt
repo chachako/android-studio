@@ -25,6 +25,10 @@ import org.gradle.api.specs.Spec
 
 class FusedLibraryDependencies(
     override val configurations: PluginConfigurations = PluginConfigurations(),
-    override val spec: Spec<ComponentIdentifier> =
-        AndroidArtifacts.ArtifactScope.PROJECT.getComponentFilter()
+    override val spec: Spec<ComponentIdentifier> = Spec {
+        // Exclude file dependencies from being included
+        AndroidArtifacts.ArtifactScope.PROJECT.getComponentFilter().isSatisfiedBy(it) ||
+                AndroidArtifacts.ArtifactScope.REPOSITORY_MODULE.getComponentFilter()
+                    .isSatisfiedBy(it)
+    }
 ) : PluginDependencies

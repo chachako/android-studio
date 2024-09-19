@@ -167,7 +167,6 @@ class FusedLibraryMergeResourcesTaskTest {
     }
 
     @Test
-    @Ignore("b/236828934")
     fun testMerge() {
         val fusedLibraryAar = getFusedLibraryAar()
         ZipFile(fusedLibraryAar).use { aar ->
@@ -208,7 +207,6 @@ class FusedLibraryMergeResourcesTaskTest {
     }
 
     @Test
-    @Ignore("b/236828934")
     fun testAppResourceMergingWithFusedLib() {
         val publishedFusedLibrary = getFusedLibraryAar()
         val appSubproject = project.getSubproject("app")

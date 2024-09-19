@@ -253,6 +253,21 @@ class FusedLibraryClassesVerificationTest {
     }
 
     @Test
+    fun checkExternalLibraryClassesIncludedInFusedAar() {
+        val dependenciesBlock = """
+            include("com.externaldep:externalaar:1")
+            include(project(":androidLib1"))
+        """.trimIndent()
+        addDependenciesToFusedLibProject(dependenciesBlock)
+        val classesFromDirectDependencies = listOf(
+            "com/example/androidLib1/ClassFromAndroidLib1.class", // From :androidLib1
+            "com/externaldep/externaljar/ExternalClass.class" // From com.externaldep:externalaar:1
+        )
+
+        assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
+    }
+
+    @Test
     fun checkFusedLibraryAarForClassesFromLocalJarDependencies() {
         val localProjectTestJar = project.projectDir.resolve("testClass.jar")
         val appProject = project.getSubproject(":app")
