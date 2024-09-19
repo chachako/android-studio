@@ -119,6 +119,7 @@
     {
       "name": "releaseApiElements-published",
       "attributes": {
+        "com.android.build.api.attributes.BuildTypeAttr": "release",
         "org.gradle.category": "library",
         "org.gradle.jvm.environment": "android",
         "org.gradle.usage": "java-api",
@@ -134,6 +135,7 @@
     {
       "name": "releaseRuntimeElements-published",
       "attributes": {
+        "com.android.build.api.attributes.BuildTypeAttr": "release",
         "org.gradle.category": "library",
         "org.gradle.jvm.environment": "android",
         "org.gradle.usage": "java-runtime",
@@ -149,6 +151,7 @@
     {
       "name": "releaseSourcesElements-published",
       "attributes": {
+        "com.android.build.api.attributes.BuildTypeAttr": "release",
         "org.gradle.category": "documentation",
         "org.gradle.dependency.bundling": "external",
         "org.gradle.docstype": "sources",

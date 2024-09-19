@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.dsl.ModulePropertyKey.OptionalBoolean
 import com.android.build.gradle.options.OptionalBooleanOption
+import com.android.testutils.TestUtils
 import org.junit.Rule
 import org.junit.Test
 
@@ -33,6 +34,8 @@ class LintAlignUastWithLanguageVersionTest {
     @get:Rule
     val project: GradleTestProject = createGradleTestProject()
 
+    private val kotlinLanguageVersion = TestUtils.KOTLIN_VERSION_FOR_TESTS.substringBeforeLast(".")
+
     /**
      * Test default behavior
      */
@@ -40,13 +43,13 @@ class LintAlignUastWithLanguageVersionTest {
     fun testDefaultBehavior() {
 
         addLanguageVersionsToProject(
-            appExpectedLanguageVersion = "2.0",
-            libExpectedLanguageVersion = "2.0",
-            featureExpectedLanguageVersion = "2.0",
+            appExpectedLanguageVersion = kotlinLanguageVersion,
+            libExpectedLanguageVersion = kotlinLanguageVersion,
+            featureExpectedLanguageVersion = kotlinLanguageVersion,
             javaLibExpectedLanguageVersion = null,
-            kotlinLibExpectedLanguageVersion = "2.0",
-            kmpAndroidLibExpectedLanguageVersion = "2.0",
-            kmpJvmLibExpectedLanguageVersion = "2.0",
+            kotlinLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpAndroidLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpJvmLibExpectedLanguageVersion = kotlinLanguageVersion,
             appExpectedUseK2Uast = true,
             libExpectedUseK2Uast = true,
             featureExpectedUseK2Uast = true,
@@ -95,13 +98,13 @@ class LintAlignUastWithLanguageVersionTest {
     fun testKotlinExperimentalTryNext() {
 
         addLanguageVersionsToProject(
-            appExpectedLanguageVersion = "2.1",
-            libExpectedLanguageVersion = "2.1",
-            featureExpectedLanguageVersion = "2.1",
+            appExpectedLanguageVersion = "2.2",
+            libExpectedLanguageVersion = "2.2",
+            featureExpectedLanguageVersion = "2.2",
             javaLibExpectedLanguageVersion = null,
-            kotlinLibExpectedLanguageVersion = "2.1",
-            kmpAndroidLibExpectedLanguageVersion = "2.1",
-            kmpJvmLibExpectedLanguageVersion = "2.1",
+            kotlinLibExpectedLanguageVersion = "2.2",
+            kmpAndroidLibExpectedLanguageVersion = "2.2",
+            kmpJvmLibExpectedLanguageVersion = "2.2",
             appExpectedUseK2Uast = true,
             libExpectedUseK2Uast = true,
             featureExpectedUseK2Uast = true,
@@ -222,13 +225,13 @@ class LintAlignUastWithLanguageVersionTest {
     fun testDisableK2UastGlobally() {
 
         addLanguageVersionsToProject(
-            appExpectedLanguageVersion = "2.0",
-            libExpectedLanguageVersion = "2.0",
-            featureExpectedLanguageVersion = "2.0",
+            appExpectedLanguageVersion = kotlinLanguageVersion,
+            libExpectedLanguageVersion = kotlinLanguageVersion,
+            featureExpectedLanguageVersion = kotlinLanguageVersion,
             javaLibExpectedLanguageVersion = null,
-            kotlinLibExpectedLanguageVersion = "2.0",
-            kmpAndroidLibExpectedLanguageVersion = "2.0",
-            kmpJvmLibExpectedLanguageVersion = "2.0",
+            kotlinLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpAndroidLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpJvmLibExpectedLanguageVersion = kotlinLanguageVersion,
             appExpectedUseK2Uast = false,
             libExpectedUseK2Uast = false,
             featureExpectedUseK2Uast = false,
@@ -250,13 +253,13 @@ class LintAlignUastWithLanguageVersionTest {
     fun testDisableK2UastInAppOnly() {
 
         addLanguageVersionsToProject(
-            appExpectedLanguageVersion = "2.0",
-            libExpectedLanguageVersion = "2.0",
-            featureExpectedLanguageVersion = "2.0",
+            appExpectedLanguageVersion = kotlinLanguageVersion,
+            libExpectedLanguageVersion = kotlinLanguageVersion,
+            featureExpectedLanguageVersion = kotlinLanguageVersion,
             javaLibExpectedLanguageVersion = null,
-            kotlinLibExpectedLanguageVersion = "2.0",
-            kmpAndroidLibExpectedLanguageVersion = "2.0",
-            kmpJvmLibExpectedLanguageVersion = "2.0",
+            kotlinLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpAndroidLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpJvmLibExpectedLanguageVersion = kotlinLanguageVersion,
             appExpectedUseK2Uast = false,
             libExpectedUseK2Uast = true,
             featureExpectedUseK2Uast = true,
@@ -284,13 +287,13 @@ class LintAlignUastWithLanguageVersionTest {
     fun testDisableK2UastInLibOnly() {
 
         addLanguageVersionsToProject(
-            appExpectedLanguageVersion = "2.0",
-            libExpectedLanguageVersion = "2.0",
-            featureExpectedLanguageVersion = "2.0",
+            appExpectedLanguageVersion = kotlinLanguageVersion,
+            libExpectedLanguageVersion = kotlinLanguageVersion,
+            featureExpectedLanguageVersion = kotlinLanguageVersion,
             javaLibExpectedLanguageVersion = null,
-            kotlinLibExpectedLanguageVersion = "2.0",
-            kmpAndroidLibExpectedLanguageVersion = "2.0",
-            kmpJvmLibExpectedLanguageVersion = "2.0",
+            kotlinLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpAndroidLibExpectedLanguageVersion = kotlinLanguageVersion,
+            kmpJvmLibExpectedLanguageVersion = kotlinLanguageVersion,
             appExpectedUseK2Uast = true,
             libExpectedUseK2Uast = false,
             featureExpectedUseK2Uast = true,
