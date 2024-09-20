@@ -23,8 +23,8 @@ import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.testutils.NoErrorsOrWarningsLogger
 import com.android.testutils.file.createInMemoryFileSystemAndFolder
 import com.google.common.truth.Truth.assertThat
-import org.junit.Test
 import java.awt.Dimension
+import org.junit.Test
 
 class DeviceTest {
 
@@ -96,16 +96,36 @@ class DeviceTest {
   @Test
   fun testGetScreenSize() {
     assertThat(qvgaPhone?.getScreenSize(ScreenOrientation.PORTRAIT)).isEqualTo(Dimension(240, 320))
-    assertThat(nexus5Phone?.getScreenSize(ScreenOrientation.PORTRAIT)).isEqualTo(Dimension(1080, 1920))
-    assertThat(nexus5XPhone?.getScreenSize(ScreenOrientation.PORTRAIT)).isEqualTo(Dimension(1080, 1920))
-    assertThat(pixelPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(1920, 1080))
-    assertThat(pixelXLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2560, 1440))
-    assertThat(pixel2Phone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(1920, 1080))
-    assertThat(pixel2XLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2880, 1440))
-    assertThat(pixel3Phone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2160, 1080))
-    assertThat(pixel3XLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2960, 1440))
-    assertThat(pixel3aPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2220, 1080))
-    assertThat(pixel3aXLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE)).isEqualTo(Dimension(2160, 1080))
+    assertThat(nexus5Phone?.getScreenSize(ScreenOrientation.PORTRAIT))
+      .isEqualTo(Dimension(1080, 1920))
+    assertThat(nexus5XPhone?.getScreenSize(ScreenOrientation.PORTRAIT))
+      .isEqualTo(Dimension(1080, 1920))
+    assertThat(pixelPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(1920, 1080))
+    assertThat(pixelXLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2560, 1440))
+    assertThat(pixel2Phone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(1920, 1080))
+    assertThat(pixel2XLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2880, 1440))
+    assertThat(pixel3Phone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2160, 1080))
+    assertThat(pixel3XLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2960, 1440))
+    assertThat(pixel3aPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2220, 1080))
+    assertThat(pixel3aXLPhone?.getScreenSize(ScreenOrientation.LANDSCAPE))
+      .isEqualTo(Dimension(2160, 1080))
   }
 
+  @Test
+  fun equals() {
+    assertThat(pixelPhone).isNotEqualTo(pixelXLPhone)
+
+    val pixelClone = Device.Builder(pixelPhone).build()
+    assertThat(pixelPhone).isEqualTo(pixelClone)
+
+    val pixelCloneNewId = Device.Builder(pixelPhone).apply { setId("pixel_clone") }.build()
+    assertThat(pixelPhone).isNotEqualTo(pixelCloneNewId)
+  }
 }
