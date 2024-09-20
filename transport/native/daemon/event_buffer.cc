@@ -58,11 +58,19 @@ void EventBuffer::WriteEventsTo(EventWriter* writer) {
       events_added_ = events_.size();
     }
     while (events_added_ > 0) {
-      bool success = writer->Write(events_.Get(events_.size() - events_added_));
+      proto::Event event = events_.Get(events_.size() - events_added_);
+
+      // Unlock during writes such that events from the agent are not blocked.
+      // Assume there are not multiple threads calling the Write() method for a
+      // given writer.
+      lock.unlock();
+      bool success = writer->Write(event);
+
       // If we fail to send data to a client.
       if (!success) {
         return;
       }
+      lock.lock();
       events_added_--;
     }
     events_cv_.wait_for(lock, std::chrono::milliseconds(500), [this] {
