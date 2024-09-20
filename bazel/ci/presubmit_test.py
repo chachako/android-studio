@@ -63,6 +63,23 @@ class PresubmitTest(parameterized.TestCase):
         mock.ANY,
     )
 
+  def test_change_set_hash(self):
+    changes = [
+        gce.GerritChange(
+            change_id='',
+            change_number='123',
+            patchset='2',
+            owner='owner',
+            message='message',
+            topic='topic',
+            tags=[],
+      ),
+    ]
+    self.assertEqual(
+        presubmit.change_set_hash(changes),
+        'e894ae70705dfaee4674cb48c5194c2c56a51be1c3f6fb80aa2510a98512e908',
+    )
+
   @parameterized.named_parameters(
       dict(
           testcase_name='basic',
@@ -137,6 +154,7 @@ class PresubmitTest(parameterized.TestCase):
     self.assertEqual(targets.flags, [
         f'--build_metadata=selective_presubmit_found={expected_found}',
         f'--build_metadata=selective_presubmit_impacted_target_count={expected_selected_target_count}',
+        '--build_metadata=gerrit_change_set_hash=15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b',
         '--build_metadata=gerrit_owner=owner@google.com',
         '--build_metadata=gerrit_change_id=changeid0',
         '--build_metadata=gerrit_change_number=0',

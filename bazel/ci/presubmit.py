@@ -1,6 +1,7 @@
 """Implements shared functions for selective presubmit."""
 
 import dataclasses
+import hashlib
 import logging
 import os
 import pathlib
@@ -11,7 +12,6 @@ from typing import Iterator, List, Sequence
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import bazel_diff
 from tools.base.bazel.ci import gce
-
 
 _HASH_FILE_BUCKET = 'adt-byob'
 _HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
@@ -180,6 +180,16 @@ def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
   logging.info('Uploaded hash file to GCS with object name: %s', object_name)
 
 
+def change_set_hash(changes: Sequence[gce.GerritChange]) -> str:
+  """Returns a hash of the change set."""
+  changes = sorted(changes, key=lambda c: int(c.change_number))
+  hasher = hashlib.new('sha256')
+  for c in changes:
+    hasher.update(int(c.change_number).to_bytes(length=8, byteorder='little'))
+    hasher.update(int(c.patchset).to_bytes(length=4, byteorder='little'))
+  return hasher.hexdigest()
+
+
 def find_test_targets(
     build_env: bazel.BuildEnv,
     base_targets: Sequence[str],
@@ -226,7 +236,9 @@ def find_test_targets(
   found = impacted_targets != base_targets
   impacted_target_count = len(impacted_targets) if found else 0
   targets = impacted_targets + explicit_targets
-  change = gce.get_gerrit_changes(build_env.build_number)[0]
+  gerrit_changes = gce.get_gerrit_changes(build_env.build_number)
+  change = gerrit_changes[0]
+  changes_hash = change_set_hash(gerrit_changes)
 
   if found:
     logging.info('Found %d impacted targets', impacted_target_count)
@@ -236,6 +248,7 @@ def find_test_targets(
   flags = [
       f'--build_metadata=selective_presubmit_found={found}',
       f'--build_metadata=selective_presubmit_impacted_target_count={impacted_target_count}',
+      f'--build_metadata=gerrit_change_set_hash={changes_hash}',
       f'--build_metadata=gerrit_owner={change.owner}',
       f'--build_metadata=gerrit_change_id={change.change_id}',
       f'--build_metadata=gerrit_change_number={change.change_number}',
