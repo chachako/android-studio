@@ -251,7 +251,7 @@ fun RecipeExecutor.generateResponsiveActivity(
     useAndroidX = true,
     isViewBindingSupported = isViewBindingSupported)
   if (language == Language.Kotlin) {
-    requireJavaVersion("11", true)
+    setJavaKotlinCompileOptions(true)
   }
   val generateKotlin = language == Language.Kotlin
   navigationDependencies(generateKotlin, true, apis.appCompatVersion)

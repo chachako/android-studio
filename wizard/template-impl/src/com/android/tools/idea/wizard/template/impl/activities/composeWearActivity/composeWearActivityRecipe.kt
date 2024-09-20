@@ -110,7 +110,7 @@ private fun RecipeExecutor.commonComposeRecipe(
         moduleData.rootDir.resolve("lint.xml")
     )
 
-    requireJavaVersion("11", true)
+    setJavaKotlinCompileOptions(true)
     setBuildFeature("compose", true)
 }
 

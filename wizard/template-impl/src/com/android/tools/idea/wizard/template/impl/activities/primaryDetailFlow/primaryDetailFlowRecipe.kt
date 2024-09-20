@@ -92,7 +92,7 @@ fun RecipeExecutor.primaryDetailFlowRecipe(
 
   navigationDependencies(generateKotlin, useAndroidX, moduleData.apis.appCompatVersion)
   if (generateKotlin) {
-   requireJavaVersion("11", true)
+    setJavaKotlinCompileOptions(true)
   }
 
   generateThemeStyles(moduleData.themesData.main, useAndroidX, moduleData.baseFeature?.resDir ?: resOut)

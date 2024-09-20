@@ -98,7 +98,7 @@ fun RecipeExecutor.bottomNavigationActivityRecipe(
     isViewBindingSupported = isViewBindingSupported)
   navigationDependencies(generateKotlin, useAndroidX, moduleData.apis.appCompatVersion)
   if (generateKotlin) {
-    requireJavaVersion("11", true)
+    setJavaKotlinCompileOptions(true)
   }
 
   save(

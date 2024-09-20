@@ -82,7 +82,7 @@ fun RecipeExecutor.composeTvActivityRecipe(
   save(typeKt(packageName), srcOut.resolve("$uiThemeFolder/Type.kt"))
   save(themeKt(packageName, themeName), srcOut.resolve("$uiThemeFolder/Theme.kt"))
 
-  requireJavaVersion("11", true)
+  setJavaKotlinCompileOptions(true)
   setBuildFeature("compose", true)
 
   open(srcOut.resolve(mainActivity))
