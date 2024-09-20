@@ -1179,8 +1179,6 @@ DATA = [
     "org.jetbrains.jewel:jewel-ui-242:jar:sources:0.24.2",
     "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.9.22",
     "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.9.23",
-    "org.jetbrains.kotlin:kotlin-test:jar:sources:1.9.22",
-    "org.jetbrains.kotlin:kotlin-test:jar:sources:1.9.23",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:jar:sources:1.6.4",
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:jar:sources:1.6.4",
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:jar:sources:1.8.0-RC2",
