@@ -345,7 +345,7 @@ class AnnotationHandlerTest {
           .indented(),
         kotlin(
             """
-                package test.usage
+                package test.usage.kt
                 import test.api.Api
                 abstract class C {
                   abstract val api: Api
@@ -426,74 +426,74 @@ class AnnotationHandlerTest {
         src/test/usage/C.java:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
                 Api x = null;
                 ~~~
-        src/test/usage/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           abstract val api: Api
                             ~~~
-        src/test/usage/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           abstract val api: Api
                             ~~~
-        src/test/usage/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           abstract val list: List<Api>
                                   ~~~
-        src/test/usage/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           abstract val list: List<Api>
                                   ~~~
-        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun get(): Api = Api()
                      ~~~
-        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun get(): Api = Api()
                      ~~~
-        src/test/usage/C.kt:6: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:6: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun get(): Api = Api()
                            ~~~~~
-        src/test/usage/C.kt:6: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:6: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun get(): Api = Api()
                            ~~~~~
-        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           val x = get() // Implicit type reference
           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           val x = get() // Implicit type reference
           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           abstract fun doSomething(api: Api): Api
                                         ~~~
-        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           abstract fun doSomething(api: Api): Api
                                               ~~~
-        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           abstract fun doSomething(api: Api): Api
                                         ~~~
-        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           abstract fun doSomething(api: Api): Api
                                               ~~~
-        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                           ~~~
-        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                                       ~~~
-        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                           ~~~
-        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                                       ~~~
-        src/test/usage/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
             val x: Api? = null
                    ~~~~
-        src/test/usage/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
             val x: Api? = null
                    ~~~~
-        src/test/usage/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
             val y = get() // Implicit type reference
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        src/test/usage/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/kt/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
             val y = get() // Implicit type reference
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         36 errors, 0 warnings
-            """
+        """
       )
   }
 
@@ -830,48 +830,48 @@ class AnnotationHandlerTest {
       .files(
         kotlin(
             """
-          package test.pkg
-          import pkg.kotlin.MyKotlinAnnotation
+            package test.pkg
+            import pkg.kotlin.MyKotlinAnnotation
 
-          class MyClass {
-            @MyKotlinAnnotation
-            var property = 1 // ERROR1 - ASSIGNMENT_RHS
+            class MyClass {
+              @MyKotlinAnnotation
+              var property = 1 // ERROR1 - ASSIGNMENT_RHS
 
-            fun f() {
-              var x = property // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
-              x = property // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
-              property = 2 // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
-            }
+              fun f() {
+                var x = property // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
+                x = property // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
+                property = 2 // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
+              }
 
-            @MyKotlinAnnotation
-            lateinit var manager: Manager
-              private set
+              @MyKotlinAnnotation
+              lateinit var manager: Manager
+                private set
 
-            fun g() {
-              Manager().use {
-                manager = it // ERROR7 - ASSIGNMENT_RHS, ERROR8 - FIELD_REFERENCE
+              fun g() {
+                Manager().use {
+                  manager = it // ERROR7 - ASSIGNMENT_RHS, ERROR8 - FIELD_REFERENCE
+                }
               }
             }
-          }
-          """
+            """
           )
           .indented(),
         java(
             """
-          package test.pkg;
-          import pkg.java.MyJavaAnnotation;
+            package test.pkg.java;
+            import pkg.java.MyJavaAnnotation;
 
-          class MyClass {
-            @MyJavaAnnotation
-            int field = 1; // ERROR1 - ASSIGNMENT_RHS
+            class MyClass {
+              @MyJavaAnnotation
+              int field = 1; // ERROR1 - ASSIGNMENT_RHS
 
-            public void f() {
-              int x = field; // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
-              x = field; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
-              field = 2; // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
+              public void f() {
+                int x = field; // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
+                x = field; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
+                field = 2; // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
+              }
             }
-          }
-          """
+            """
           )
           .indented(),
         kotlin(
@@ -889,25 +889,25 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
-        src/test/pkg/MyClass.java:6: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:6: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
           int field = 1; // ERROR1 - ASSIGNMENT_RHS
                       ~
-        src/test/pkg/MyClass.java:9: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:9: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             int x = field; // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
             ~~~~~~~~~~~~~~
-        src/test/pkg/MyClass.java:9: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:9: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             int x = field; // ERROR2 - ASSIGNMENT_LHS, ERROR3 - FIELD_REFERENCE
                     ~~~~~
-        src/test/pkg/MyClass.java:10: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:10: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             x = field; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
             ~
-        src/test/pkg/MyClass.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             x = field; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
                 ~~~~~
-        src/test/pkg/MyClass.java:11: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:11: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             field = 2; // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
                     ~
-        src/test/pkg/MyClass.java:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
+        src/test/pkg/java/MyClass.java:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on FIELD [_AnnotationIssue]
             field = 2; // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
             ~~~~~
         src/test/pkg/MyClass.kt:6: Error: ASSIGNMENT_RHS usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
@@ -948,40 +948,40 @@ class AnnotationHandlerTest {
       .files(
         kotlin(
             """
-          package test.pkg
-          import pkg.kotlin.MyKotlinAnnotation
+            package test.pkg
+            import pkg.kotlin.MyKotlinAnnotation
 
-          class MyClass {
-            fun use(o: Any) {}
+            class MyClass {
+              fun use(o: Any) {}
 
-            fun f() {
-              @MyKotlinAnnotation
-              var x = 1 // ERROR1 - ASSIGNMENT_RHS
-              x = 2 // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
-              val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-              use(x) // ERROR6 - VARIABLE_REFERENCE
+              fun f() {
+                @MyKotlinAnnotation
+                var x = 1 // ERROR1 - ASSIGNMENT_RHS
+                x = 2 // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
+                val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+                use(x) // ERROR6 - VARIABLE_REFERENCE
+              }
             }
-          }
-          """
+            """
           )
           .indented(),
         java(
             """
-          package test.pkg;
-          import pkg.java.MyJavaAnnotation;
+            package test.pkg.java;
+            import pkg.java.MyJavaAnnotation;
 
-          class MyClass {
-            void use(Object o) {}
+            class MyClass {
+              void use(Object o) {}
 
-            void f() {
-              @MyJavaAnnotation
-              int x = 1; // ERROR1 - ASSIGNMENT_RHS
-              x = 2; // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
-              int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-              use(x); // ERROR6 - VARIABLE_REFERENCE
+              void f() {
+                @MyJavaAnnotation
+                int x = 1; // ERROR1 - ASSIGNMENT_RHS
+                x = 2; // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
+                int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+                use(x); // ERROR6 - VARIABLE_REFERENCE
+              }
             }
-          }
-          """
+            """
           )
           .indented(),
         kotlinAnnotation,
@@ -990,37 +990,37 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
-      src/test/pkg/MyClass.java:9: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
-          int x = 1; // ERROR1 - ASSIGNMENT_RHS
-                  ~
-      src/test/pkg/MyClass.java:10: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
-          x = 2; // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
-          ~
-      src/test/pkg/MyClass.java:11: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
-          int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-          ~~~~~~~~~~
-      src/test/pkg/MyClass.java:11: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
-          int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-                  ~
-      src/test/pkg/MyClass.java:12: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
-          use(x); // ERROR6 - VARIABLE_REFERENCE
-              ~
-      src/test/pkg/MyClass.kt:9: Error: ASSIGNMENT_RHS usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
-          var x = 1 // ERROR1 - ASSIGNMENT_RHS
-                  ~
-      src/test/pkg/MyClass.kt:10: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
-          x = 2 // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
-          ~
-      src/test/pkg/MyClass.kt:11: Error: ASSIGNMENT_LHS usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
-          val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      src/test/pkg/MyClass.kt:11: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
-          val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
-                  ~
-      src/test/pkg/MyClass.kt:12: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
-          use(x) // ERROR6 - VARIABLE_REFERENCE
-              ~
-      10 errors, 0 warnings
+        src/test/pkg/java/MyClass.java:9: Error: ASSIGNMENT_RHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+            int x = 1; // ERROR1 - ASSIGNMENT_RHS
+                    ~
+        src/test/pkg/java/MyClass.java:10: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+            x = 2; // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
+            ~
+        src/test/pkg/java/MyClass.java:11: Error: ASSIGNMENT_LHS usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+            int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+            ~~~~~~~~~~
+        src/test/pkg/java/MyClass.java:11: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+            int y = x; // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+                    ~
+        src/test/pkg/java/MyClass.java:12: Error: VARIABLE_REFERENCE usage associated with @MyJavaAnnotation on VARIABLE [_AnnotationIssue]
+            use(x); // ERROR6 - VARIABLE_REFERENCE
+                ~
+        src/test/pkg/MyClass.kt:9: Error: ASSIGNMENT_RHS usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
+            var x = 1 // ERROR1 - ASSIGNMENT_RHS
+                    ~
+        src/test/pkg/MyClass.kt:10: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
+            x = 2 // ERROR2 - ASSIGNMENT_RHS, ERROR3 - VARIABLE_REFERENCE
+            ~
+        src/test/pkg/MyClass.kt:11: Error: ASSIGNMENT_LHS usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
+            val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyClass.kt:11: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
+            val y = x // ERROR4 - ASSIGNMENT_LHS, ERROR5 - VARIABLE_REFERENCE
+                    ~
+        src/test/pkg/MyClass.kt:12: Error: VARIABLE_REFERENCE usage associated with @MyKotlinAnnotation on VARIABLE [_AnnotationIssue]
+            use(x) // ERROR6 - VARIABLE_REFERENCE
+                ~
+        10 errors, 0 warnings
         """
       )
   }

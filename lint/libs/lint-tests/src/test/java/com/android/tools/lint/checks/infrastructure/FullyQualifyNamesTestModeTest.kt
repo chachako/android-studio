@@ -41,10 +41,12 @@ class FullyQualifyNamesTestModeTest {
     return expand(java(source))
   }
 
-  private fun expand(testFile: TestFile): String {
+  private fun expand(testFile: TestFile, utils: List<TestFile> = emptyList()): String {
     val sdkHome = TestUtils.getSdk().toFile()
     var source = testFile.contents
-    FullyQualifyNamesTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+    FullyQualifyNamesTestMode().processTestFiles(listOf(testFile) + utils, sdkHome) { _, s ->
+      source = s
+    }
     return source
   }
 
@@ -164,21 +166,21 @@ class FullyQualifyNamesTestModeTest {
     @Language("kotlin")
     val expected =
       """
-            package test.pkg
+      package test.pkg
 
-            import java.util.concurrent.LinkedBlockingQueue
-            import java.util.concurrent.TimeUnit
+      import java.util.concurrent.LinkedBlockingQueue
+      import java.util.concurrent.TimeUnit
 
-            class Foo(val requestQueue: java.util.concurrent.LinkedBlockingQueue<String>) {
-                fun takeRequest(timeout: Long, unit: java.util.concurrent.TimeUnit) = requestQueue.poll(timeout, unit)
-                fun something(): List<String> = listOf<String>("foo", "bar")
-                fun takeRequestOk(timeout: Long, unit: java.util.concurrent.TimeUnit): String = requestQueue.poll(timeout, unit)
-                fun takeRequestOkTransitive(timeout: Long, unit: java.util.concurrent.TimeUnit) = takeRequestOk(timeout, unit)
-                val type = Integer.TYPE
-                val typeClz: java.lang.Class<Int> = Integer.TYPE
-                val typeClz2 = typeClz
-            }
-        """
+      class Foo(val requestQueue: java.util.concurrent.LinkedBlockingQueue<String>) {
+          fun takeRequest(timeout: Long, unit: java.util.concurrent.TimeUnit) = requestQueue.poll(timeout, unit)
+          fun something(): List<String> = kotlin.collections.listOf<String>("foo", "bar")
+          fun takeRequestOk(timeout: Long, unit: java.util.concurrent.TimeUnit): String = requestQueue.poll(timeout, unit)
+          fun takeRequestOkTransitive(timeout: Long, unit: java.util.concurrent.TimeUnit) = takeRequestOk(timeout, unit)
+          val type = Integer.TYPE
+          val typeClz: java.lang.Class<Int> = Integer.TYPE
+          val typeClz2 = typeClz
+      }
+      """
         .trimIndent()
         .trim()
 
@@ -393,30 +395,30 @@ class FullyQualifyNamesTestModeTest {
     @Language("kotlin")
     val expected =
       """
-            package test.pkg
+      package test.pkg
 
-            import android.app.Activity
-            import android.os.Bundle
-            import test.pkg.R as RC
-            import test.pkg.LongerName as AliasIsLongerThanName
-            import test.pkg.ShortName as SN
+      import android.app.Activity
+      import android.os.Bundle
+      import test.pkg.R as RC
+      import test.pkg.LongerName as AliasIsLongerThanName
+      import test.pkg.ShortName as SN
 
-            class MainIsUsed : android.app.Activity() {
-                override fun onCreate(savedInstanceState: android.os.Bundle?) {
-                    super.onCreate(savedInstanceState)
-                    setContentView(test.pkg.R.layout.main)
-                    println(test.pkg.LongerName())
-                    println(test.pkg.ShortName().toString())
-                }
-            }
-            class R {
-                class layout {
-                    val main = 1
-                }
-            }
-            class LongerName
-            class ShortName
-        """
+      class MainIsUsed : android.app.Activity() {
+          override fun onCreate(savedInstanceState: android.os.Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(test.pkg.R.layout.main)
+              kotlin.io.println(test.pkg.LongerName())
+              kotlin.io.println(test.pkg.ShortName().toString())
+          }
+      }
+      class R {
+          class layout {
+              val main = 1
+          }
+      }
+      class LongerName
+      class ShortName
+      """
         .trimIndent()
         .trim()
 
@@ -720,6 +722,231 @@ class FullyQualifyNamesTestModeTest {
         .trim()
 
     val expanded = expandJava(java)
+    assertEquals(expected, expanded)
+  }
+
+  @Test
+  fun testStaticImportMembersKotlin() {
+    @Language("kotlin")
+    val original =
+      """
+      package test.pkg
+
+      import java.util.Arrays.asList
+      import java.io.File.separator
+      import java.io.File.separator as fileSeparator
+      import kotlin.math.E
+      import kotlin.math.sign
+      import java.io.File
+      import android.graphics.Bitmap.CompressFormat
+
+      fun test() {
+          asList(1, 2, 3)
+          println(separator)
+          println(fileSeparator)
+          println(sign(E))
+      }
+
+      fun test(format: CompressFormat) {
+          when (format) {
+              CompressFormat.JPEG -> println("jpeg")
+              else -> println("Default")
+          }
+      }
+
+      fun printBinding(binding: Binding) {
+          with(binding) {
+            println(label.text)
+          }
+      }
+
+      fun File.isXml() = endsWith(".xml")
+      fun File.isJson() = extension == ".json"
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      package test.pkg
+
+      import java.util.Arrays.asList
+      import java.io.File.separator
+      import java.io.File.separator as fileSeparator
+      import kotlin.math.E
+      import kotlin.math.sign
+      import java.io.File
+      import android.graphics.Bitmap.CompressFormat
+
+      fun test() {
+          java.util.Arrays.asList(1, 2, 3)
+          kotlin.io.println(java.io.File.separator)
+          kotlin.io.println(java.io.File.separator)
+          kotlin.io.println(kotlin.math.sign(E))
+      }
+
+      fun test(format: android.graphics.Bitmap.CompressFormat) {
+          when (format) {
+              android.graphics.Bitmap.CompressFormat.JPEG -> kotlin.io.println("jpeg")
+              else -> kotlin.io.println("Default")
+          }
+      }
+
+      fun printBinding(binding: test.pkg.Binding) {
+          kotlin.with(binding) {
+            kotlin.io.println(label.text)
+          }
+      }
+
+      fun File.isXml() = endsWith(".xml")
+      fun File.isJson() = extension == ".json"
+      """
+        .trimIndent()
+        .trim()
+
+    val expanded =
+      expand(
+        kotlin(original),
+        listOf(
+          java(
+            "" +
+              "package test.pkg;\n" +
+              "public class Binding {\n" +
+              "    public android.widget.TextView label = null;\n" +
+              "}"
+          )
+        ),
+      )
+    assertEquals(expected, expanded)
+  }
+
+  @Suppress("SwitchStatementWithTooFewBranches")
+  @Test
+  fun testStaticImportMembersJava() {
+    @Language("java")
+    val java =
+      """
+      package test.pkg;
+
+      import static java.io.File.listRoots;
+      import static java.io.File.separator;
+      import static java.lang.System.out;
+      import android.graphics.Bitmap.CompressFormat;
+
+      public class Test {
+          public void test() {
+              //noinspection ImplicitArrayToString
+              println("hello" + listRoots());
+          }
+
+          public static void println(String str) {
+              out.println(str);
+              out.println(separator);
+          }
+
+          // An enum switch case label must be the unqualified name of an enumeration constant
+          public static void test(CompressFormat format) {
+              switch (format) {
+                  case JPEG: {
+                      java.lang.System.out.println("jpeg");
+                      break;
+                  }
+                  default: {
+                      java.lang.System.out.println("Default");
+                  }
+              }
+          }
+      }
+      """
+        .trimIndent()
+
+    @Language("java")
+    val expected =
+      """
+      package test.pkg;
+
+      import static java.io.File.listRoots;
+      import static java.io.File.separator;
+      import static java.lang.System.out;
+      import android.graphics.Bitmap.CompressFormat;
+
+      public class Test {
+          public void test() {
+              //noinspection ImplicitArrayToString
+              test.pkg.Test.println("hello" + java.io.File.listRoots());
+          }
+
+          public static void println(java.lang.String str) {
+              java.lang.System.out.println(str);
+              java.lang.System.out.println(java.io.File.separator);
+          }
+
+          // An enum switch case label must be the unqualified name of an enumeration constant
+          public static void test(android.graphics.Bitmap.CompressFormat format) {
+              switch (format) {
+                  case JPEG: {
+                      java.lang.System.out.println("jpeg");
+                      break;
+                  }
+                  default: {
+                      java.lang.System.out.println("Default");
+                  }
+              }
+          }
+      }
+      """
+        .trimIndent()
+
+    val expanded = expandJava(java)
+    assertEquals(expected, expanded)
+  }
+
+  @Test
+  fun testEscapedNames() {
+    @Language("kotlin")
+    val kotlin =
+      """
+      package test.pkg
+
+      import test.pkg.Test.Companion.`if`
+
+      fun test(args: List<String>) {
+          `when`(args)
+          `if`(args)
+      }
+      fun <T> `when`(arg: List<T>) {}
+      class Test {
+          companion object {
+              fun `if`(arg: List<String>) {}
+          }
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      package test.pkg
+
+      import test.pkg.Test.Companion.`if`
+
+      fun test(args: List<String>) {
+          test.pkg.`when`(args)
+          `if`(args)
+      }
+      fun <T> `when`(arg: List<T>) {}
+      class Test {
+          companion object {
+              fun `if`(arg: List<String>) {}
+          }
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    val expanded = expandKotlin(kotlin)
     assertEquals(expected, expanded)
   }
 }

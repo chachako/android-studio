@@ -592,23 +592,23 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "\n" +
             "import android.view.View;\n" +
             "\n" +
-            "import test.pkg.myapplication.R;\n" +
+            "import test.pkg.R;\n" +
             "\n" +
             "public class ImplicitCastTest2 extends MyActivityStub {\n" +
             "    public void test() {\n" +
             "        checkNotNull1(findViewById(R.id.textView)).setAlpha(0.5f); // WARN\n" +
-            "        checkNotNull2(findViewById(R.id.textView)).setAlpha(0.5f); // OK\n" +
-            "        checkNotNull3(findViewById(R.id.textView)).setAlpha(0.5f); // OK\n" +
-            "        checkNotNull1(findViewById(R.id.textView)); // OK\n" +
-            "        checkNotNull2(findViewById(R.id.textView)); // OK\n" +
-            "        checkNotNull3(findViewById(R.id.textView)); // OK\n" +
-            "        checkNotNull1((View)findViewById(R.id.textView)); // OK\n" +
-            "        checkNotNull2((View)findViewById(R.id.textView)); // OK\n" +
-            "        checkNotNull3((View)findViewById(R.id.textView)); // OK\n" +
-            "        View view1 = checkNotNull1(findViewById(R.id.textView)); // OK\n" +
-            "        View view2 = checkNotNull2(findViewById(R.id.textView)); // OK\n" +
-            "        View view3 = checkNotNull3(findViewById(R.id.textView)); // OK\n" +
-            "        findViewById(R.id.textView); // OK\n" +
+            "        checkNotNull2(findViewById(R.id.textView)).setAlpha(0.5f); // OK 1\n" +
+            "        checkNotNull3(findViewById(R.id.textView)).setAlpha(0.5f); // OK 2\n" +
+            "        checkNotNull1(findViewById(R.id.textView)); // OK 3\n" +
+            "        checkNotNull2(findViewById(R.id.textView)); // OK 4\n" +
+            "        checkNotNull3(findViewById(R.id.textView)); // OK 5\n" +
+            "        checkNotNull1((View)findViewById(R.id.textView)); // OK 6\n" +
+            "        checkNotNull2((View)findViewById(R.id.textView)); // OK 7\n" +
+            "        checkNotNull3((View)findViewById(R.id.textView)); // OK 8 \n" +
+            "        View view1 = checkNotNull1(findViewById(R.id.textView)); // OK 9\n" +
+            "        View view2 = checkNotNull2(findViewById(R.id.textView)); // OK 10\n" +
+            "        View view3 = checkNotNull3(findViewById(R.id.textView)); // OK 11\n" +
+            "        findViewById(R.id.textView); // OK 12\n" +
             "    }\n" +
             "\n" +
             "    public static <T> T checkNotNull1(T reference) {\n" +

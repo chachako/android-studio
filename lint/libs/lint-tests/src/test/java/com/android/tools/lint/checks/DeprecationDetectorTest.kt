@@ -631,7 +631,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
           .indented(),
         kotlin(
             """
-                package test.pkg
+                package test.pkg.kt
 
                 import androidx.wear.watchface.WatchFaceService
 
@@ -641,7 +641,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
           .indented(),
         kotlin(
             """
-                package test.pkg
+                package test.pkg.kt
 
                 import android.support.wearable.watchface.WatchFaceService
 
@@ -657,13 +657,13 @@ class DeprecationDetectorTest : AbstractCheckTest() {
           src/test/pkg/MyWatchFaceServiceAndroidx.java:5: Warning: MyWatchFaceServiceAndroidx extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
           class MyWatchFaceServiceAndroidx extends WatchFaceService {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-          src/test/pkg/MyWatchFaceServiceAndroidx.kt:5: Warning: MyWatchFaceServiceAndroidx extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          src/test/pkg/kt/MyWatchFaceServiceAndroidx.kt:5: Warning: MyWatchFaceServiceAndroidx extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
           class MyWatchFaceServiceAndroidx : WatchFaceService()
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~
           src/test/pkg/MyWatchFaceServiceWSL.java:5: Warning: MyWatchFaceServiceWSL extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
           class MyWatchFaceServiceWSL extends WatchFaceService {
                 ~~~~~~~~~~~~~~~~~~~~~
-          src/test/pkg/MyWatchFaceServiceWSL.kt:5: Warning: MyWatchFaceServiceWSL extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
+          src/test/pkg/kt/MyWatchFaceServiceWSL.kt:5: Warning: MyWatchFaceServiceWSL extends the deprecated WatchFaceService: Use Watch Face Format instead [Deprecated]
           class MyWatchFaceServiceWSL : WatchFaceService()
                 ~~~~~~~~~~~~~~~~~~~~~
           0 errors, 4 warnings
@@ -672,9 +672,9 @@ class DeprecationDetectorTest : AbstractCheckTest() {
       .expectFixDiffs(
         """
           Show URL for src/test/pkg/MyWatchFaceServiceAndroidx.java line 5: https://developer.android.com/training/wearables/wff
-          Show URL for src/test/pkg/MyWatchFaceServiceAndroidx.kt line 5: https://developer.android.com/training/wearables/wff
+          Show URL for src/test/pkg/kt/MyWatchFaceServiceAndroidx.kt line 5: https://developer.android.com/training/wearables/wff
           Show URL for src/test/pkg/MyWatchFaceServiceWSL.java line 5: https://developer.android.com/training/wearables/wff
-          Show URL for src/test/pkg/MyWatchFaceServiceWSL.kt line 5: https://developer.android.com/training/wearables/wff
+          Show URL for src/test/pkg/kt/MyWatchFaceServiceWSL.kt line 5: https://developer.android.com/training/wearables/wff
         """
       )
   }

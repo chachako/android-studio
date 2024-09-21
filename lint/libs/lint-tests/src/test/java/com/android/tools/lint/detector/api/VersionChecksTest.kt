@@ -3796,28 +3796,28 @@ class VersionChecksTest : AbstractCheckTest() {
                         if (SDK_INT < 11) {
                             throw IllegalStateException()
                         }
-                        val actionBar = getActionBar() // OK
+                        val actionBar = getActionBar() // OK 1
                     }
 
                     fun testError() {
                         if (SDK_INT < 11) {
                             error("Api")
                         }
-                        val actionBar = getActionBar() // OK
+                        val actionBar = getActionBar() // OK 2
                     }
 
                     fun testTodo() {
                         if (SDK_INT < 11) {
                             TODO()
                         }
-                        val actionBar = getActionBar() // OK
+                        val actionBar = getActionBar() // OK 3
                     }
 
                     fun testCustomMethod() {
                         if (SDK_INT < 11) {
                             willThrow()
                         }
-                        val actionBar = getActionBar() // OK
+                        val actionBar = getActionBar() // OK 4
                     }
 
                     private fun willThrow(): Nothing {

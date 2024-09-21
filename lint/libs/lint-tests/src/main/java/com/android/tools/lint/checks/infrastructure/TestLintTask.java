@@ -126,6 +126,7 @@ public class TestLintTask {
     File[] customRules;
     boolean ignoreUnknownGradleConstructs;
     boolean allowMissingSdk;
+    boolean allowClassNameClashes;
     boolean requireCompileSdk;
     boolean vital;
     TextFormat textFormat = TextFormat.TEXT;
@@ -326,6 +327,17 @@ public class TestLintTask {
     }
 
     /**
+     * Configures the test task to allow the SDK to be missing. To set a specific SDK home, use
+     * {@link #sdkHome(File)}.
+     *
+     * @return this, for constructor chaining
+     */
+    public TestLintTask allowClassNameClashes(boolean allow) {
+        this.allowClassNameClashes = allow;
+        return this;
+    }
+
+  /**
      * Sets whether the test task should allow lint checks to include absolute paths to local files
      * in error messages. This is normally false.
      *

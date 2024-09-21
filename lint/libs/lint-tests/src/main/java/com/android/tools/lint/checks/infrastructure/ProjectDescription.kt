@@ -18,6 +18,7 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.DOT_JAR
+import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.tools.lint.ClassName
 import com.android.tools.lint.checks.infrastructure.TestFile.GradleTestFile
@@ -289,6 +290,40 @@ class ProjectDescription : Comparable<ProjectDescription> {
       val jars: MutableList<String> = ArrayList()
       val compiled: MutableList<CompiledSourceFile> = ArrayList()
       var missingClasses = false
+
+      if (!allowClassNameClashes) {
+        val files =
+          testFiles
+            .filter { it.targetPath.endsWith(DOT_JAVA) || it.targetPath.endsWith(DOT_KT) }
+            .mapNotNull { testFile ->
+              val className = ClassName(testFile.contents)
+              val name = className.className ?: className.jvmName
+              if (name != null) {
+                val prefix = className.packageName?.let { "$it." } ?: ""
+                val parent = testFile.targetRelativePath.substringBeforeLast('/')
+                val path = "$parent: $prefix$name"
+                Pair(path, testFile)
+              } else {
+                null
+              }
+            }
+            .groupBy { it.first }
+        for ((className, locations) in files) {
+          if (locations.size > 1) {
+            fail(
+              "Found more than one Java or Kotlin class in the same " +
+                "package that have the same class name (" +
+                className.substringAfterLast(": ").replace("/", ".") +
+                "), this can lead to subtle errors (and in a real project, would result in " +
+                "duplicate class compilation warnings). This scenario often happens when you're " +
+                "creating a Kotlin specific test from a Java example, and end up with both versions " +
+                "in the same folder. To address this, rename one of the classes, or put it into its " +
+                "own package, or set `allowClassNameClashes(true)` on the test lint task."
+            )
+          }
+        }
+      }
+
       for (fp in testFiles) {
         if (haveGradle) {
           fp.adjustGradleSourceSet()

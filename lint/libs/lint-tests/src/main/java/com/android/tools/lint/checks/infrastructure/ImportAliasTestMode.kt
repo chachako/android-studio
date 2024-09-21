@@ -24,6 +24,9 @@ import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiEllipsisType
+import com.intellij.psi.PsiField
+import com.intellij.psi.PsiMember
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
 import java.util.Locale
@@ -33,6 +36,8 @@ import org.jetbrains.uast.UClassLiteralExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UImportStatement
+import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.textRange
 
 /**
@@ -99,6 +104,12 @@ class ImportAliasTestMode :
                 if (qualifiedName != null) {
                   imported.add(qualifiedName)
                 }
+              } else if (resolved is PsiMember) {
+                val qualifiedName =
+                  getQualifiedName(reference, resolved)
+                    // Analysis API doesn't always resolve import names
+                    ?: text
+                imported.add(qualifiedName)
               }
             }
           }
@@ -112,6 +123,26 @@ class ImportAliasTestMode :
                 .also { aliasNames[qualified] = it }
           } else {
             null
+          }
+        }
+
+        override fun checkFieldReference(node: UElement, field: PsiField) {
+          checkMember(node, field)
+        }
+
+        override fun checkMethodReference(node: UElement, method: PsiMethod) {
+          checkMember(node, method)
+        }
+
+        private fun checkMember(node: UElement, member: PsiMember) {
+          val parent = skipParenthesizedExprUp(node.uastParent)
+          if (parent is UQualifiedReferenceExpression) {
+            return
+          }
+          val qualified = getQualifiedName(node, member) ?: return
+          val range = node.sourcePsi?.textRange ?: return
+          getImportAlias(qualified)?.let { aliasName ->
+            editMap[range.startOffset] = replace(range.startOffset, range.endOffset, aliasName)
           }
         }
 

@@ -366,22 +366,33 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       if (unit != typeUnit && unit.isDimension()) {
         reportUnitMismatch(unit, typeUnit, context, argument)
       } else {
-        val parent = skipParenthesizedExprUp(argument.uastParent)
-        if (
-          parent is UQualifiedReferenceExpression &&
-            parent.receiver.skipParenthesizedExprDown() === argument
-        ) {
-          val selector = parent.selector.skipParenthesizedExprDown()
+        val outer = argument.outermostQualified() ?: return
+        if (argument === outer.receiver.findSelector()) {
+          val selector = outer.findSelector()
           if (selector is USimpleNameReferenceExpression) {
-            val name = selector.identifier
-            if (name == "dp" && unit != DIMENSION_DP_MARKER_TYPE) {
+            if (
+              unit != DIMENSION_DP_MARKER_TYPE &&
+                (selector.identifier == "dp" || selector.resolvedName == "getDp")
+            ) {
               reportUnitMismatch(DIMENSION_DP_MARKER_TYPE, unit, context, argument)
-            } else if (name == "sp" && unit != DIMENSION_SP_MARKER_TYPE) {
+            } else if (
+              unit != DIMENSION_SP_MARKER_TYPE &&
+                (selector.identifier == "sp" || selector.resolvedName == "getSp")
+            ) {
               reportUnitMismatch(DIMENSION_SP_MARKER_TYPE, unit, context, argument)
             }
           }
         }
       }
+    }
+  }
+
+  private fun UElement.outermostQualified(): UQualifiedReferenceExpression? {
+    var curr = skipParenthesizedExprUp(uastParent) as? UQualifiedReferenceExpression ?: return null
+    while (true) {
+      val parent =
+        skipParenthesizedExprUp(curr.uastParent) as? UQualifiedReferenceExpression ?: return curr
+      curr = parent
     }
   }
 

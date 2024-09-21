@@ -23,15 +23,32 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiCompiledFile
 import com.intellij.psi.PsiDisjunctionType
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiEnumConstant
+import com.intellij.psi.PsiField
+import com.intellij.psi.PsiMember
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.ArrayDeque
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.resolution.KaCallableMemberCall
+import org.jetbrains.kotlin.analysis.api.resolution.successfulCallOrNull
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaJavaFieldSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaNamedFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.isTopLevel
 import org.jetbrains.kotlin.psi.KtClassLiteralExpression
 import org.jetbrains.kotlin.psi.KtConstructorCalleeExpression
 import org.jetbrains.kotlin.psi.KtConstructorDelegationCall
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtImportDirective
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
 import org.jetbrains.kotlin.psi.KtThisExpression
+import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBinaryExpressionWithType
 import org.jetbrains.uast.UBlockExpression
@@ -50,7 +67,9 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isConstructorCall
 
 /**
@@ -111,6 +130,27 @@ class FullyQualifyNamesTestMode :
         }
 
         override fun allowKotlinCoreTypes(): Boolean = false
+
+        override fun checkFieldReference(node: UElement, field: PsiField) {
+          checkMember(node, field)
+        }
+
+        override fun checkMethodReference(node: UElement, method: PsiMethod) {
+          checkMember(node, method)
+        }
+
+        private fun checkMember(node: UElement, member: PsiMember) {
+          val parent = skipParenthesizedExprUp(node.uastParent)
+          if (
+            parent is UQualifiedReferenceExpression &&
+              parent.receiver.skipParenthesizedExprDown() !== node
+          ) {
+            return
+          }
+          val qualified = getQualifiedName(node, member) ?: return
+          val range = node.sourcePsi?.textRange ?: return
+          editMap[range.startOffset] = replace(range.startOffset, range.endOffset, qualified)
+        }
       }
     )
 
@@ -119,6 +159,40 @@ class FullyQualifyNamesTestMode :
 
   abstract class TypeVisitor(private val context: JavaContext, private val source: String) :
     EditVisitor() {
+
+    open fun getQualifiedName(reference: UElement, member: PsiMember): String? {
+      if (isKotlin(reference.lang)) {
+        val sourcePsi = reference.sourcePsi ?: return null
+        val expression =
+          PsiTreeUtil.getParentOfType(sourcePsi, KtExpression::class.java, false)
+            as? KtReferenceExpression ?: return null
+        analyze(expression) {
+          val symbol =
+            expression.resolveToCall()?.successfulCallOrNull<KaCallableMemberCall<*, *>>()?.symbol
+              ?: return null
+
+          if (
+            symbol.isExtension ||
+              symbol is KaPropertySymbol && !(symbol.isStatic || symbol.isTopLevel) ||
+              symbol is KaNamedFunctionSymbol && !(symbol.isStatic || symbol.isTopLevel) ||
+              symbol is KaJavaFieldSymbol && !symbol.isStatic
+          ) {
+            return null
+          }
+          val callableId = symbol.callableId
+          if (callableId != null) {
+            return callableId.asSingleFqName().render()
+          }
+        }
+      } else if (
+        member.modifierList?.hasModifierProperty(PsiModifier.STATIC) == true &&
+          member !is PsiEnumConstant
+      ) {
+        return (member.containingClass?.qualifiedName ?: return null) + "." + member.name
+      }
+      return null
+    }
+
     open fun checkClassReference(node: UElement, cls: PsiClass, offset: Int, name: String) {}
 
     open fun checkTypeReference(node: UElement, cls: PsiClass?, offset: Int, type: PsiType) {}
@@ -228,12 +302,16 @@ class FullyQualifyNamesTestMode :
 
     private fun checkNameReference(node: USimpleNameReferenceExpression) {
       val parent = node.uastParent
+      val resolved = node.resolve()
 
-      if (
+      if (resolved is PsiMethod) {
+        checkMethodReference(node, resolved)
+      } else if (resolved is PsiField) {
+        checkFieldReference(node, resolved)
+      } else if (
         parent is UQualifiedReferenceExpression &&
           parent.receiver.skipParenthesizedExprDown() === node
       ) {
-        val resolved = node.resolve()
         if (resolved is PsiClass) {
           if (!allowClassReference(node, parent)) {
             return
@@ -243,6 +321,10 @@ class FullyQualifyNamesTestMode :
         }
       }
     }
+
+    protected open fun checkMethodReference(node: UElement, method: PsiMethod) {}
+
+    protected open fun checkFieldReference(node: UElement, field: PsiField) {}
 
     // Stack of scopes; each one just a list of variable names
     private val scopes = ArrayDeque<MutableList<String>>()
@@ -357,11 +439,18 @@ class FullyQualifyNamesTestMode :
     }
 
     private fun checkCall(node: UCallExpression) {
-      if (node.receiver != null || !node.isConstructorCall()) {
+      if (node.receiver != null) {
+        return
+      }
+      val identifier = node.methodIdentifier
+      if (!node.isConstructorCall()) {
+        val method = node.tryResolve() as? PsiMethod
+        if (identifier != null && method != null) {
+          checkMethodReference(identifier, method)
+        }
         return
       }
       val reference = node.classReference ?: return
-      val identifier = node.methodIdentifier
       if (reference is UQualifiedReferenceExpression || identifier == null) {
         return
       }

@@ -36,6 +36,7 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.callNeverReturns
+import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.resolveManifestName
 import com.android.utils.next
 import com.android.utils.subtag
@@ -182,7 +183,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
   }
 
   private fun UExpression?.isNeverReturningCall(): Boolean {
-    val call = this.getInsideReturnOrThis() as? UCallExpression ?: return false
+    val call = this.getInsideReturnOrThis()?.findSelector() as? UCallExpression ?: return false
     return callNeverReturns(call)
   }
 

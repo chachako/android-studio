@@ -1062,6 +1062,11 @@ fun UExpression.isUnconditionalReturn(): Boolean {
       }
     }
     return true
+  } else if (statement is UQualifiedReferenceExpression) {
+    val selector = statement.findSelector()
+    if (selector is UExpression) {
+      return selector.isUnconditionalReturn()
+    }
   }
 
   if (statement is UReturnExpression || statement is UThrowExpression) {

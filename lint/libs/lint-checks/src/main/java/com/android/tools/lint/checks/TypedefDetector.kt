@@ -836,14 +836,13 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     if (node is ULiteralExpression) {
       currentValue = node.value
     } else if (node is UReferenceExpression) {
-      val field = node.resolve() as? PsiField ?: return null
+      val field = node.resolve() as? PsiField
       if (
-        field.hasModifierProperty(PsiModifier.FINAL) &&
+        field != null &&
+          field.hasModifierProperty(PsiModifier.FINAL) &&
           field.hasModifierProperty(PsiModifier.STATIC)
       ) {
         currentValue = field.computeConstantValue()
-      } else {
-        return null
       }
     }
 

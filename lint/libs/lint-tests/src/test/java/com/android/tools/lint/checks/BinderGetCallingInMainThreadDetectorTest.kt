@@ -222,6 +222,7 @@ class BinderGetCallingInMainThreadDetectorTest : AbstractCheckTest() {
         correctUsageJavaExample,
         correctUsageKotlinExample,
       )
+      .allowClassNameClashes(true)
       .run()
       .expect(
         """

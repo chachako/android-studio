@@ -126,7 +126,7 @@ class CanvasSizeDetectorTest : AbstractCheckTest() {
                 import android.graphics.Canvas
                 import android.graphics.drawable.Drawable
 
-                abstract class MyDrawable : Drawable() {
+                abstract class MyDrawableKotlin : Drawable() {
                     override fun draw(canvas: Canvas) {
                         val width1 = bounds.width() // OK
                         val width2 = canvas.width // WARN
@@ -140,96 +140,96 @@ class CanvasSizeDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/MyCustomView1.java:27: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
-                    int width4 = canvas.getWidth(); // WARN
-                                 ~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView1.java:28: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
-                    int height4 = canvas.getHeight(); // WARN
-                                  ~~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView1.java:34: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
-                    int width4 = canvas.getWidth(); // WARN
-                                 ~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView1.java:35: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
-                    int height4 = canvas.getHeight(); // WARN
-                                  ~~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView2.kt:17: Warning: Referencing Canvas.width is usually wrong; you should be referencing width instead [CanvasSize]
-                    val width4 = canvas.width // WARN
-                                 ~~~~~~~~~~~~
-            src/test/pkg/MyCustomView2.kt:18: Warning: Referencing Canvas.height is usually wrong; you should be referencing height instead [CanvasSize]
-                    val height4 = canvas.height // WARN
-                                  ~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView2.kt:19: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
-                    val width5 = canvas.getWidth() // WARN
-                                 ~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyCustomView2.kt:20: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
-                    val height5 = canvas.getHeight() // WARN
-                                  ~~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyDrawable.java:11: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getBounds().getWidth() instead [CanvasSize]
-                    int width2 = canvas.getWidth(); // WARN
-                                 ~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyDrawable.java:12: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getBounds().getHeight() instead [CanvasSize]
-                    int height2 = canvas.getHeight(); // WARN
-                                  ~~~~~~~~~~~~~~~~~~
-            src/test/pkg/MyDrawable.kt:9: Warning: Referencing Canvas.width is usually wrong; you should be referencing bounds.width instead [CanvasSize]
-                    val width2 = canvas.width // WARN
-                                 ~~~~~~~~~~~~
-            src/test/pkg/MyDrawable.kt:10: Warning: Referencing Canvas.height is usually wrong; you should be referencing bounds.height instead [CanvasSize]
-                    val height2 = canvas.height // WARN
-                                  ~~~~~~~~~~~~~
-            0 errors, 12 warnings
-            """
+        src/test/pkg/MyCustomView1.java:27: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
+                int width4 = canvas.getWidth(); // WARN
+                             ~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView1.java:28: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
+                int height4 = canvas.getHeight(); // WARN
+                              ~~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView1.java:34: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
+                int width4 = canvas.getWidth(); // WARN
+                             ~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView1.java:35: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
+                int height4 = canvas.getHeight(); // WARN
+                              ~~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView2.kt:17: Warning: Referencing Canvas.width is usually wrong; you should be referencing width instead [CanvasSize]
+                val width4 = canvas.width // WARN
+                             ~~~~~~~~~~~~
+        src/test/pkg/MyCustomView2.kt:18: Warning: Referencing Canvas.height is usually wrong; you should be referencing height instead [CanvasSize]
+                val height4 = canvas.height // WARN
+                              ~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView2.kt:19: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getWidth() instead [CanvasSize]
+                val width5 = canvas.getWidth() // WARN
+                             ~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyCustomView2.kt:20: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getHeight() instead [CanvasSize]
+                val height5 = canvas.getHeight() // WARN
+                              ~~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyDrawable.java:11: Warning: Calling Canvas.getWidth() is usually wrong; you should be calling getBounds().getWidth() instead [CanvasSize]
+                int width2 = canvas.getWidth(); // WARN
+                             ~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyDrawable.java:12: Warning: Calling Canvas.getHeight() is usually wrong; you should be calling getBounds().getHeight() instead [CanvasSize]
+                int height2 = canvas.getHeight(); // WARN
+                              ~~~~~~~~~~~~~~~~~~
+        src/test/pkg/MyDrawableKotlin.kt:9: Warning: Referencing Canvas.width is usually wrong; you should be referencing bounds.width instead [CanvasSize]
+                val width2 = canvas.width // WARN
+                             ~~~~~~~~~~~~
+        src/test/pkg/MyDrawableKotlin.kt:10: Warning: Referencing Canvas.height is usually wrong; you should be referencing bounds.height instead [CanvasSize]
+                val height2 = canvas.height // WARN
+                              ~~~~~~~~~~~~~
+        0 errors, 12 warnings
+        """
       )
       .expectFixDiffs(
         """
-                Fix for src/test/pkg/MyCustomView1.java line 27: Call getWidth() instead:
-                @@ -27 +27
-                -         int width4 = canvas.getWidth(); // WARN
-                +         int width4 = getWidth(); // WARN
-                Fix for src/test/pkg/MyCustomView1.java line 28: Call getHeight() instead:
-                @@ -28 +28
-                -         int height4 = canvas.getHeight(); // WARN
-                +         int height4 = getHeight(); // WARN
-                Fix for src/test/pkg/MyCustomView1.java line 34: Call getWidth() instead:
-                @@ -34 +34
-                -         int width4 = canvas.getWidth(); // WARN
-                +         int width4 = getWidth(); // WARN
-                Fix for src/test/pkg/MyCustomView1.java line 35: Call getHeight() instead:
-                @@ -35 +35
-                -         int height4 = canvas.getHeight(); // WARN
-                +         int height4 = getHeight(); // WARN
-                Fix for src/test/pkg/MyCustomView2.kt line 17: Reference width instead:
-                @@ -17 +17
-                -         val width4 = canvas.width // WARN
-                +         val width4 = width // WARN
-                Fix for src/test/pkg/MyCustomView2.kt line 18: Reference height instead:
-                @@ -18 +18
-                -         val height4 = canvas.height // WARN
-                +         val height4 = height // WARN
-                Fix for src/test/pkg/MyCustomView2.kt line 19: Call getWidth() instead:
-                @@ -19 +19
-                -         val width5 = canvas.getWidth() // WARN
-                +         val width5 = getWidth() // WARN
-                Fix for src/test/pkg/MyCustomView2.kt line 20: Call getHeight() instead:
-                @@ -20 +20
-                -         val height5 = canvas.getHeight() // WARN
-                +         val height5 = getHeight() // WARN
-                Fix for src/test/pkg/MyDrawable.java line 11: Call getBounds().width() instead:
-                @@ -11 +11
-                -         int width2 = canvas.getWidth(); // WARN
-                +         int width2 = getBounds().width(); // WARN
-                Fix for src/test/pkg/MyDrawable.java line 12: Call getBounds().height() instead:
-                @@ -12 +12
-                -         int height2 = canvas.getHeight(); // WARN
-                +         int height2 = getBounds().height(); // WARN
-                Fix for src/test/pkg/MyDrawable.kt line 9: Call bounds.width() instead:
-                @@ -9 +9
-                -         val width2 = canvas.width // WARN
-                +         val width2 = bounds.width() // WARN
-                Fix for src/test/pkg/MyDrawable.kt line 10: Call bounds.height() instead:
-                @@ -10 +10
-                -         val height2 = canvas.height // WARN
-                +         val height2 = bounds.height() // WARN
-                """
+        Fix for src/test/pkg/MyCustomView1.java line 27: Call getWidth() instead:
+        @@ -27 +27
+        -         int width4 = canvas.getWidth(); // WARN
+        +         int width4 = getWidth(); // WARN
+        Fix for src/test/pkg/MyCustomView1.java line 28: Call getHeight() instead:
+        @@ -28 +28
+        -         int height4 = canvas.getHeight(); // WARN
+        +         int height4 = getHeight(); // WARN
+        Fix for src/test/pkg/MyCustomView1.java line 34: Call getWidth() instead:
+        @@ -34 +34
+        -         int width4 = canvas.getWidth(); // WARN
+        +         int width4 = getWidth(); // WARN
+        Fix for src/test/pkg/MyCustomView1.java line 35: Call getHeight() instead:
+        @@ -35 +35
+        -         int height4 = canvas.getHeight(); // WARN
+        +         int height4 = getHeight(); // WARN
+        Fix for src/test/pkg/MyCustomView2.kt line 17: Reference width instead:
+        @@ -17 +17
+        -         val width4 = canvas.width // WARN
+        +         val width4 = width // WARN
+        Fix for src/test/pkg/MyCustomView2.kt line 18: Reference height instead:
+        @@ -18 +18
+        -         val height4 = canvas.height // WARN
+        +         val height4 = height // WARN
+        Fix for src/test/pkg/MyCustomView2.kt line 19: Call getWidth() instead:
+        @@ -19 +19
+        -         val width5 = canvas.getWidth() // WARN
+        +         val width5 = getWidth() // WARN
+        Fix for src/test/pkg/MyCustomView2.kt line 20: Call getHeight() instead:
+        @@ -20 +20
+        -         val height5 = canvas.getHeight() // WARN
+        +         val height5 = getHeight() // WARN
+        Fix for src/test/pkg/MyDrawable.java line 11: Call getBounds().width() instead:
+        @@ -11 +11
+        -         int width2 = canvas.getWidth(); // WARN
+        +         int width2 = getBounds().width(); // WARN
+        Fix for src/test/pkg/MyDrawable.java line 12: Call getBounds().height() instead:
+        @@ -12 +12
+        -         int height2 = canvas.getHeight(); // WARN
+        +         int height2 = getBounds().height(); // WARN
+        Fix for src/test/pkg/MyDrawableKotlin.kt line 9: Call bounds.width() instead:
+        @@ -9 +9
+        -         val width2 = canvas.width // WARN
+        +         val width2 = bounds.width() // WARN
+        Fix for src/test/pkg/MyDrawableKotlin.kt line 10: Call bounds.height() instead:
+        @@ -10 +10
+        -         val height2 = canvas.height // WARN
+        +         val height2 = bounds.height() // WARN
+        """
       )
   }
 

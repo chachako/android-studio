@@ -78,7 +78,7 @@ class IteratorDetectorTest : AbstractCheckTest() {
           .indented(),
         kotlin(
             """
-                package test.pkg
+                package test.pkg.kt
 
                 import android.os.Build
                 import androidx.annotation.RequiresApi
@@ -137,19 +137,19 @@ class IteratorDetectorTest : AbstractCheckTest() {
             src/test/pkg/LinkedHashmapTest.java:40: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2a, c2a.spliterator().characteristics()) [BrokenIterator]
                     StreamSupport.stream(c2a.spliterator(), false); // Warn
                                          ~~~~~~~~~~~~~~~~~
-            src/test/pkg/LinkedHashmapTest.kt:25: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2a, c2a.spliterator().characteristics()) [BrokenIterator]
+            src/test/pkg/kt/LinkedHashmapTest.kt:25: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2a, c2a.spliterator().characteristics()) [BrokenIterator]
                     val keys2a = c2a.spliterator() // Warn
                                  ~~~~~~~~~~~~~~~~~
-            src/test/pkg/LinkedHashmapTest.kt:26: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2b, c2b.spliterator().characteristics()) [BrokenIterator]
+            src/test/pkg/kt/LinkedHashmapTest.kt:26: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2b, c2b.spliterator().characteristics()) [BrokenIterator]
                     val keys2b = c2b.spliterator() // Warn
                                  ~~~~~~~~~~~~~~~~~
-            src/test/pkg/LinkedHashmapTest.kt:27: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2c, c2c.spliterator().characteristics()) [BrokenIterator]
+            src/test/pkg/kt/LinkedHashmapTest.kt:27: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2c, c2c.spliterator().characteristics()) [BrokenIterator]
                     val keys2c = c2c.spliterator() // Warn
                                  ~~~~~~~~~~~~~~~~~
-            src/test/pkg/LinkedHashmapTest.kt:30: Warning: LinkedHashMap#stream was broken in API 24 and 25. Workaround: Use java.util.stream.StreamSupport.stream(spliterator, false) [BrokenIterator]
+            src/test/pkg/kt/LinkedHashmapTest.kt:30: Warning: LinkedHashMap#stream was broken in API 24 and 25. Workaround: Use java.util.stream.StreamSupport.stream(spliterator, false) [BrokenIterator]
                     val stream1 = c2a.stream() // Warn
                                   ~~~~~~~~~~~~
-            src/test/pkg/LinkedHashmapTest.kt:31: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2a, c2a.spliterator().characteristics()) [BrokenIterator]
+            src/test/pkg/kt/LinkedHashmapTest.kt:31: Warning: LinkedHashMap#spliterator was broken in API 24 and 25. Workaround: Use java.util.Spliterators.spliterator(c2a, c2a.spliterator().characteristics()) [BrokenIterator]
                     StreamSupport.stream(c2a.spliterator(), false) // Warn
                                          ~~~~~~~~~~~~~~~~~
             0 errors, 10 warnings

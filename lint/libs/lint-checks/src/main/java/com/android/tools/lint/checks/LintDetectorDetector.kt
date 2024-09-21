@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.Severity.WARNING
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.TextFormat.Companion.HTTPS_PREFIX
 import com.android.tools.lint.detector.api.TextFormat.Companion.HTTP_PREFIX
+import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.isDuplicatedOverload
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
@@ -158,7 +159,8 @@ class LintDetectorDetector : Detector(), UastScanner {
     }
   }
 
-  private fun checkTestFile(testFile: UExpression, visitor: LintDetectorVisitor) {
+  private fun checkTestFile(testFileExpression: UExpression, visitor: LintDetectorVisitor) {
+    val testFile = testFileExpression.findSelector()
     if (testFile is UCallExpression) {
       visitor.checkTestFile(testFile)
     } else if (testFile is UReferenceExpression) {

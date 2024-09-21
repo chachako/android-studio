@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.detector.api.Detector
@@ -24,6 +25,10 @@ import org.junit.ComparisonFailure
 
 class TypedefDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector = TypedefDetector()
+
+  override fun lint(): TestLintTask {
+    return super.lint().allowNonAlphabeticalFixOrder(true)
+  }
 
   fun testDocumentationExample() {
     lint()
@@ -1222,6 +1227,30 @@ class TypedefDetectorTest : AbstractCheckTest() {
           "                ~~~~~~~~~~~~~~~~~~~~~~~\n" +
           "5 errors, 0 warnings"
       )
+      .expectFixDiffs(
+        """
+        Fix for src/test/pkg/IntDefTest.kt line 6: Change to TestType.LOL:
+        @@ -6 +6
+        -         wantInt(100) // ERROR
+        +         wantInt(TestType.LOL) // ERROR
+        Fix for src/test/pkg/IntDefTest.kt line 7: Change to TestType.LOL:
+        @@ -7 +7
+        -         wantInt(WrongType.NO) // ERROR
+        +         wantInt(TestType.LOL) // ERROR
+        Fix for src/test/pkg/IntDefTest.kt line 8: Change to TestType.LOL:
+        @@ -8 +8
+        -         wantInt(giveRandomInt()) // ERROR
+        +         wantInt(TestType.LOL) // ERROR
+        Fix for src/test/pkg/IntDefTest.kt line 9: Change to TestType.LOL:
+        @@ -9 +9
+        -         wantInt(giveWrongInt()) //ERROR
+        +         wantInt(TestType.LOL) //ERROR
+        Fix for src/test/pkg/IntDefTest.kt line 10: Change to TestType.LOL:
+        @@ -10 +10
+        -         wantInt(giveWrongIntAnnotated()) //ERROR
+        +         wantInt(TestType.LOL) //ERROR
+        """
+      )
   }
 
   fun testStringDefInitialization() {
@@ -1867,11 +1896,15 @@ class TypedefDetectorTest : AbstractCheckTest() {
       )
       .expectFixDiffs(
         """
-            Fix for src/com/example/android/linttest/MainActivity.java line 15: Change to FragmentNames.HOME:
-            @@ -15 +15
-            -         toastFragmentNameAndText(getSomeTextFromThisClass(), FragmentNames.HOME); // ERROR
-            +         toastFragmentNameAndText(FragmentNames.HOME, FragmentNames.HOME); // ERROR
-            """
+        Fix for src/com/example/android/linttest/MainActivity.java line 15: Change to FragmentNames.HOME:
+        @@ -15 +15
+        -         toastFragmentNameAndText(getSomeTextFromThisClass(), FragmentNames.HOME); // ERROR
+        +         toastFragmentNameAndText(FragmentNames.HOME, FragmentNames.HOME); // ERROR
+        Fix for src/com/example/android/linttest/MainActivity.java line 16: Change to FragmentNames.HOME:
+        @@ -16 +16
+        -         toastFragmentNameAndText(FragmentUtils.getSomeTextFromOtherClass(), FragmentNames.HOME); // ERROR
+        +         toastFragmentNameAndText(FragmentNames.HOME, FragmentNames.HOME); // ERROR
+        """
       )
   }
 
@@ -2048,14 +2081,24 @@ class TypedefDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expect(
-        // , but could be X, Y or Z
-        // and add baseline matching
         """
             src/androidx/camera/view/CameraController.java:14: Error: Must be one of: AspectRatio.RATIO_4_3, AspectRatio.RATIO_16_9, but could be OutputSize.UNASSIGNED_ASPECT_RATIO [WrongConstant]
                                     builder.setTargetAspectRatio(outputSize.getAspectRatio()); // ERROR
                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
+      )
+      .expectFixDiffs(
+        """
+        Fix for src/androidx/camera/view/CameraController.java line 14: Change to AspectRatio.RATIO_4_3:
+        @@ -14 +14
+        -                         builder.setTargetAspectRatio(outputSize.getAspectRatio()); // ERROR
+        +                         builder.setTargetAspectRatio(AspectRatio.RATIO_4_3); // ERROR
+        Fix for src/androidx/camera/view/CameraController.java line 14: Change to AspectRatio.RATIO_16_9:
+        @@ -14 +14
+        -                         builder.setTargetAspectRatio(outputSize.getAspectRatio()); // ERROR
+        +                         builder.setTargetAspectRatio(AspectRatio.RATIO_16_9); // ERROR
+        """
       )
   }
 
@@ -2375,6 +2418,18 @@ class TypedefDetectorTest : AbstractCheckTest() {
         2 errors, 0 warnings
         """
       )
+      .expectFixDiffs(
+        """
+        Fix for src/test/pkg/Playground.java line 21: Change to FirstIntDef.CONST_0:
+        @@ -21 +21
+        -                 second, // ERROR 1
+        +                 Playground.FirstIntDef.CONST_0, // ERROR 1
+        Fix for src/test/pkg/Playground.java line 22: Change to SecondIntDef.ANOTHER_0:
+        @@ -22 +22
+        -                 first   // ERROR 2
+        +                 Playground.SecondIntDef.ANOTHER_0   // ERROR 2
+        """
+      )
   }
 
   fun testVariableChecked() {
@@ -2594,10 +2649,10 @@ src/DetailInfoTab.kt:17: Error: Must be one of: DetailInfoTabKt.CONST_1, DetailI
       .run()
       .expect(
         """
-src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong() [WrongConstant]
-                test(UNRELATED) // ERROR - not part of the @DetailsInfoTab list
-                     ~~~~~~~~~
-1 errors, 0 warnings
+        src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong() [WrongConstant]
+                        test(UNRELATED) // ERROR - not part of the @DetailsInfoTab list
+                             ~~~~~~~~~
+        1 errors, 0 warnings
         """
       )
   }

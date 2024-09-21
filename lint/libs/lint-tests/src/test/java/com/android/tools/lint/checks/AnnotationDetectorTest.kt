@@ -1264,110 +1264,111 @@ class AnnotationDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         kotlin(
-          """
-                package test.pkg
+            """
+            package test.pkg
 
-                import android.util.SparseIntArray
-                import androidx.annotation.IntDef
-                import androidx.annotation.LongDef
-                import java.util.function.Consumer
+            import android.util.SparseIntArray
+            import androidx.annotation.IntDef
+            import androidx.annotation.LongDef
+            import java.util.function.Consumer
 
-                const val STYLE_NORMAL = 0
-                const val STYLE_NO_TITLE = 1
-                const val STYLE_NO_FRAME = 2
-                const val STYLE_NO_INPUT = 3
-                @Deprecated("blah blah") const val STYLE_NO_INPUT_OLD = 3
+            const val STYLE_NORMAL = 0
+            const val STYLE_NO_TITLE = 1
+            const val STYLE_NO_FRAME = 2
+            const val STYLE_NO_INPUT = 3
+            @Deprecated("blah blah") const val STYLE_NO_INPUT_OLD = 3
 
-                // Make sure constant value is printed in source format (e.g. hex 0x840 instead of 2112)
-                const val VALUE_1 = 0x840
-                const val VALUE_2 = 0x840
+            // Make sure constant value is printed in source format (e.g. hex 0x840 instead of 2112)
+            const val VALUE_1 = 0x840
+            const val VALUE_2 = 0x840
 
-                // Allow explicit aliasing
-                const val VALUE_3 = 0x840
-                const val VALUE_4 = VALUE_3
+            // Allow explicit aliasing
+            const val VALUE_3 = 0x840
+            const val VALUE_4 = VALUE_3
 
-                class TypedefWarnings {
-                    @IntDef(STYLE_NORMAL, STYLE_NO_TITLE, STYLE_NO_FRAME, STYLE_NO_INPUT)
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class DialogStyle
+            class TypedefWarningsKotlin {
+                @IntDef(STYLE_NORMAL, STYLE_NO_TITLE, STYLE_NO_FRAME, STYLE_NO_INPUT)
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class DialogStyle
 
-                    // Allow collections holding typedefs, similar to resource type convention
-                    fun test(@DialogStyle consumer: Consumer<Int?>?) {} // OK 10
-                    fun test(@DialogStyle array: SparseIntArray?) {} // OK 11
-                    fun test(@DialogStyle id: Byte) {} // OK 12
+                // Allow collections holding typedefs, similar to resource type convention
+                fun test(@DialogStyle consumer: Consumer<Int?>?) {} // OK 10
+                fun test(@DialogStyle array: SparseIntArray?) {} // OK 11
+                fun test(@DialogStyle id: Byte) {} // OK 12
 
-                    // Repeated values are okay if exactly one of them is deprecated
-                    @IntDef(STYLE_NORMAL, STYLE_NO_INPUT, STYLE_NO_INPUT_OLD) // OK 13
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class DialogStyle2
+                // Repeated values are okay if exactly one of them is deprecated
+                @IntDef(STYLE_NORMAL, STYLE_NO_INPUT, STYLE_NO_INPUT_OLD) // OK 13
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class DialogStyle2
 
-                    // Repeated values are okay if scoped in different classes and same name
-                    internal object Atsc3FrontendSettings {
-                        const val MODULATION_UNDEFINED = 512
-                    }
-
-                    internal object AtscFrontendSettings {
-                        const val MODULATION_UNDEFINED = 512
-                    }
-
-                    @IntDef(Atsc3FrontendSettings.MODULATION_UNDEFINED, AtscFrontendSettings.MODULATION_UNDEFINED) // OK 14
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class DialogStyle3
-
-                    // Allow ints holding long typedef
-                    @LongDef(
-                        flag = true,
-                        value = [STYLE_NORMAL.toLong(), STYLE_NO_TITLE.toLong()]
-                    )
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class LongDialogStyle
-
-                    @LongDialogStyle private val mBearerBitmask = 0 // OK 15
-
-                    @IntDef(VALUE_1, VALUE_2) // ERROR 3
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class DialogStyle4
-
-                    @IntDef(VALUE_3, VALUE_4) // OK 16
-                    @Retention(AnnotationRetention.SOURCE)
-                    private annotation class DialogStyle5
-
-                    @DialogStyle
-                    private val sAppOpsToNote = ByteArray(5) // OK 17
-
-                    @DialogStyle
-                    private val sAppOpsToNote2 = ShortArray(5) // OK 18
-
-                    // Error; message should ask if you meant to use @StringDef?
-                    @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
+                // Repeated values are okay if scoped in different classes and same name
+                internal object Atsc3FrontendSettings {
+                    const val MODULATION_UNDEFINED = 512
                 }
-                """
-        ),
+
+                internal object AtscFrontendSettings {
+                    const val MODULATION_UNDEFINED = 512
+                }
+
+                @IntDef(Atsc3FrontendSettings.MODULATION_UNDEFINED, AtscFrontendSettings.MODULATION_UNDEFINED) // OK 14
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class DialogStyle3
+
+                // Allow ints holding long typedef
+                @LongDef(
+                    flag = true,
+                    value = [STYLE_NORMAL.toLong(), STYLE_NO_TITLE.toLong()]
+                )
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class LongDialogStyle
+
+                @LongDialogStyle private val mBearerBitmask = 0 // OK 15
+
+                @IntDef(VALUE_1, VALUE_2) // ERROR 3
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class DialogStyle4
+
+                @IntDef(VALUE_3, VALUE_4) // OK 16
+                @Retention(AnnotationRetention.SOURCE)
+                private annotation class DialogStyle5
+
+                @DialogStyle
+                private val sAppOpsToNote = ByteArray(5) // OK 17
+
+                @DialogStyle
+                private val sAppOpsToNote2 = ShortArray(5) // OK 18
+
+                // Error; message should ask if you meant to use @StringDef?
+                @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
+            }
+            """
+          )
+          .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
         """
-            src/test/pkg/TypedefWarnings.java:56: Error: Constants VALUE_2 and VALUE_1 specify the same exact value (0x840); this is usually a cut & paste or merge error [UniqueConstants]
-                @IntDef({VALUE_1, VALUE_2}) // ERROR 2
-                                  ~~~~~~~
-                src/test/pkg/TypedefWarnings.java:56: Previous same value
-                @IntDef({VALUE_1, VALUE_2}) // ERROR 2
-                         ~~~~~~~
-            src/test/pkg/TypedefWarnings.kt:61: Error: Constants VALUE_2 and VALUE_1 specify the same exact value (0x840); this is usually a cut & paste or merge error [UniqueConstants]
-                                @IntDef(VALUE_1, VALUE_2) // ERROR 3
-                                                 ~~~~~~~
-                src/test/pkg/TypedefWarnings.kt:61: Previous same value
-                                @IntDef(VALUE_1, VALUE_2) // ERROR 3
-                                        ~~~~~~~
-            src/test/pkg/TypedefWarnings.java:51: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
-                public static @DialogStyle String EXTRA_AUDIO_CODEC; // ERROR 1
-                              ~~~~~~~~~~~~
-            src/test/pkg/TypedefWarnings.kt:76: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
-                                @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
-                                ~~~~~~~~~~~~
-            4 errors, 0 warnings
-            """
+        src/test/pkg/TypedefWarnings.java:56: Error: Constants VALUE_2 and VALUE_1 specify the same exact value (0x840); this is usually a cut & paste or merge error [UniqueConstants]
+            @IntDef({VALUE_1, VALUE_2}) // ERROR 2
+                              ~~~~~~~
+            src/test/pkg/TypedefWarnings.java:56: Previous same value
+            @IntDef({VALUE_1, VALUE_2}) // ERROR 2
+                     ~~~~~~~
+        src/test/pkg/TypedefWarningsKotlin.kt:60: Error: Constants VALUE_2 and VALUE_1 specify the same exact value (0x840); this is usually a cut & paste or merge error [UniqueConstants]
+            @IntDef(VALUE_1, VALUE_2) // ERROR 3
+                             ~~~~~~~
+            src/test/pkg/TypedefWarningsKotlin.kt:60: Previous same value
+            @IntDef(VALUE_1, VALUE_2) // ERROR 3
+                    ~~~~~~~
+        src/test/pkg/TypedefWarnings.java:51: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
+            public static @DialogStyle String EXTRA_AUDIO_CODEC; // ERROR 1
+                          ~~~~~~~~~~~~
+        src/test/pkg/TypedefWarningsKotlin.kt:75: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
+            @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
+            ~~~~~~~~~~~~
+        4 errors, 0 warnings
+        """
       )
   }
 

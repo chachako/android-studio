@@ -7,6 +7,9 @@ Guide.
 
 **8.7**
 
+* The unit testing support now checks to make sure that you
+  don't have duplicate class names across Java and Kotlin
+  (which can lead to subtle and confusing errors.)
 * The `build.gradle.kts` unit testing support (`TestFiles.kts()`)
   now performs the same mocking of the builder model that the
   corresponding Groovy Gradle support (`Testfiles.gradle()`)

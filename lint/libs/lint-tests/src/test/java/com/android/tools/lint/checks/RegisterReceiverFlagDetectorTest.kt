@@ -1055,7 +1055,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
       .files(
         kotlin(
             """
-          package test.pkg
+          package test.pkg.kt
           import android.content.BroadcastReceiver
           import android.content.Context
           import android.content.Intent
@@ -1095,7 +1095,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
       .files(
         kotlin(
             """
-          package test.pkg
+          package test.pkg.kt
           import android.content.BroadcastReceiver
           import android.content.Context
           import android.content.Intent
@@ -1132,7 +1132,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
           src/test/pkg/TestClass1.java:9: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
                   context.registerReceiver(receiver, filter, "", scheduler);
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          src/test/pkg/TestClass1.kt:9: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
+          src/test/pkg/kt/TestClass1.kt:9: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
                   context.registerReceiver(receiver, filter, "", scheduler)
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 2 warnings
@@ -1152,13 +1152,13 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
           @@ -9 +10
           -         context.registerReceiver(receiver, filter, "", scheduler);
           +         ContextCompat.registerReceiver(context, receiver, filter, "", scheduler, ContextCompat.RECEIVER_EXPORTED);
-          Fix for src/test/pkg/TestClass1.kt line 9: Add RECEIVER_NOT_EXPORTED (preferred):
+          Fix for src/test/pkg/kt/TestClass1.kt line 9: Add RECEIVER_NOT_EXPORTED (preferred):
           @@ -7 +7
           + import androidx.core.content.ContextCompat
           @@ -9 +10
           -         context.registerReceiver(receiver, filter, "", scheduler)
           +         ContextCompat.registerReceiver(context, receiver, filter, "", scheduler, ContextCompat.RECEIVER_NOT_EXPORTED)
-          Fix for src/test/pkg/TestClass1.kt line 9: Add RECEIVER_EXPORTED:
+          Fix for src/test/pkg/kt/TestClass1.kt line 9: Add RECEIVER_EXPORTED:
           @@ -7 +7
           + import androidx.core.content.ContextCompat
           @@ -9 +10

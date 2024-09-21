@@ -560,7 +560,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
         java(
             "src/test/java/TestA.java",
             """
-                class TestB {
+                class TestA {
                   void m(java.util.List<Object> xs) {
                     xs.forEach(Lib::consume); // OK 22
                   }

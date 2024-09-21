@@ -15,10 +15,18 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestLintTask
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector = PendingIntentMutableImplicitDetector()
+
+  override fun lint(): TestLintTask {
+    // Source code doesn't compile (uses listOf where it should be arrayOf);
+    // has bad interactions with the fully qualified name test mode.
+    return super.lint().skipTestModes(TestMode.FULLY_QUALIFIED)
+  }
 
   fun testDocumentationExample() {
     lint()

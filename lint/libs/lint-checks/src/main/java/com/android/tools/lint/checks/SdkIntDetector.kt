@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.VersionChecks.Companion.CHECKS_SDK_INT_AT_LEAST_ANNOTATION
 import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT_VERSION_DATA
+import com.android.tools.lint.detector.api.VersionChecks.Companion.getVersionCheckConditional
 import com.android.tools.lint.detector.api.VersionChecks.SdkIntAnnotation.Companion.getFieldKey
 import com.android.tools.lint.detector.api.VersionChecks.SdkIntAnnotation.Companion.getMethodKey
 import com.intellij.psi.PsiClassType
@@ -171,9 +172,8 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       var parent = skipParenthesizedExprUp(comparison.uastParent)
       if (
         sdkId != ANDROID_SDK_ID &&
-          parent is UBinaryExpression &&
-          parent.rightOperand.skipParenthesizedExprDown() === comparison &&
-          parent.sourcePsi?.text?.contains("SDK_INT") == true
+          parent != null &&
+          isRhsInSdkIntComparison(context, comparison, parent)
       ) {
         // Allow SDK_INT > R && getExtensionVersion(...) combination, since getExtensionVersion
         // requires R.
@@ -229,6 +229,26 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         }
         checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId)
       }
+    }
+
+    /**
+     * For a given binary operator node, checks whether it's on the right hand side of another
+     * binary operator, &&, with the left hand side being an SDK_INT check.
+     */
+    private fun isRhsInSdkIntComparison(
+      context: JavaContext,
+      comparison: UBinaryExpression,
+      parent: UElement,
+    ): Boolean {
+      val outer = parent as? UBinaryExpression ?: return false
+      if (outer.operator != UastBinaryOperator.LOGICAL_AND) return false
+      if (parent.rightOperand.skipParenthesizedExprDown() !== comparison) return false
+      val leftOperand = parent.leftOperand.skipParenthesizedExprDown()
+      val leftComparison = leftOperand as? UBinaryExpression ?: return false
+      val client = context.client
+      val evaluator = context.evaluator
+      val project = context.project
+      return getVersionCheckConditional(leftComparison, client, evaluator, project, null) != null
     }
 
     private fun checkMethod(

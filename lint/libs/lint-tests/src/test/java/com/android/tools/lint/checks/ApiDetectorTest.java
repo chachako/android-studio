@@ -7095,10 +7095,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}\n"),
                         kotlin(
                                 ""
-                                        + "package test.pkg\n"
+                                        + "package test.pkg.kt\n"
                                         + "\n"
                                         + "class TypeUseAnnotations {\n"
-                                        + "    @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.TYPE)\n"
+                                        + "    @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.TYPE) // OK\n"
                                         + "    internal annotation class MyTypeUseAnnotation\n"
                                         + "}\n"))
                 .run()

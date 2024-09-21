@@ -325,14 +325,27 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
     findViewByIdCall: UCallExpression,
     surroundingCall: UCallExpression,
   ) {
-    // This issue only applies in Java, not Kotlin etc - and for language level 1.8
+    // This issue only applies in Java, not Kotlin etc - and for language level 1.8 and above
     val languageLevel = getLanguageLevel(surroundingCall, JDK_1_7)
     if (languageLevel.isLessThan(JDK_1_8)) {
       return
     }
 
-    val parent = skipParenthesizedExprUp(surroundingCall.uastParent)
-    if (parent !is UQualifiedReferenceExpression) return
+    var selector: UElement = surroundingCall
+    var parent: UQualifiedReferenceExpression =
+      skipParenthesizedExprUp(surroundingCall.uastParent) as? UQualifiedReferenceExpression
+        ?: return
+    val parentParent: UElement = skipParenthesizedExprUp(parent.uastParent) ?: return
+    if (
+      parentParent is UQualifiedReferenceExpression &&
+        parentParent.receiver.skipParenthesizedExprDown() === parent
+    ) {
+      selector = parent
+      parent = parentParent
+    }
+    if (parent.receiver.skipParenthesizedExprDown() !== selector) {
+      return
+    }
 
     val valueArguments = surroundingCall.valueArguments
     var parameterIndex = -1

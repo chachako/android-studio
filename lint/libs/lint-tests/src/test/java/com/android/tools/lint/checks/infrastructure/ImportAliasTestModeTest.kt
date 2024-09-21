@@ -430,6 +430,189 @@ class ImportAliasTestModeTest {
   }
 
   @Test
+  fun testImportMethods() {
+    // b/368059214
+    @Language("kotlin")
+    val kotlin =
+      """
+      package test.pkg
+
+      import java.util.Arrays.asList
+      import java.io.File.separator
+      import java.io.File.separator as fileSeparator
+      import kotlin.math.E
+      import kotlin.math.sign
+
+      fun test() {
+          asList(1, 2, 3)
+          println(separator)
+          println(fileSeparator)
+          println(sign(E))
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      package test.pkg
+
+      import java.util.Arrays.asList
+      import java.io.File.separator
+      import java.io.File.separator as fileSeparator
+      import kotlin.math.E
+      import kotlin.math.sign
+      import java.util.Arrays.asList as IMPORT_ALIAS_1_ASLIST
+      import java.io.File.separator as IMPORT_ALIAS_2_SEPARATOR
+
+      fun test() {
+          IMPORT_ALIAS_1_ASLIST(1, 2, 3)
+          println(IMPORT_ALIAS_2_SEPARATOR)
+          println(IMPORT_ALIAS_2_SEPARATOR)
+          println(sign(E))
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
+
+  @Test
+  fun testImportFullyQualifiedNames() {
+    // b/368059214
+    @Language("kotlin")
+    val kotlin =
+      """
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION_CODES
+
+      fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION_CODES
+      import android.os.Build.VERSION as IMPORT_ALIAS_1_VERSION
+      import android.os.Build.VERSION_CODES as IMPORT_ALIAS_2_VERSION_CODES
+
+      fun isNougat(): Boolean = IMPORT_ALIAS_1_VERSION.SDK_INT >= IMPORT_ALIAS_2_VERSION_CODES.N
+      """
+        .trimIndent()
+        .trim()
+
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
+
+  @Test
+  fun testImportFullyQualifiedNames2() {
+    // b/368059214
+    @Language("kotlin")
+    val kotlin =
+      """
+      import android.os.Build
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION.SDK_INT
+      import android.os.Build.VERSION_CODES
+      import android.os.Build.getSerial
+      import android.os.Build.getRadioVersion
+
+      fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
+      fun versions() {
+          getSerial()
+          getRadioVersion()
+          val serial = Build.getSerial()
+          val radio = android.os.Build.getRadioVersion()
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      import android.os.Build
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION.SDK_INT
+      import android.os.Build.VERSION_CODES
+      import android.os.Build.getSerial
+      import android.os.Build.getRadioVersion
+      import android.os.Build.VERSION as IMPORT_ALIAS_1_VERSION
+      import android.os.Build.VERSION_CODES as IMPORT_ALIAS_2_VERSION_CODES
+      import android.os.Build.getSerial as IMPORT_ALIAS_3_GETSERIAL
+      import android.os.Build.getRadioVersion as IMPORT_ALIAS_4_GETRADIOVERSION
+      import android.os.Build as IMPORT_ALIAS_5_BUILD
+
+      fun isNougat(): Boolean = IMPORT_ALIAS_1_VERSION.SDK_INT >= IMPORT_ALIAS_2_VERSION_CODES.N
+      fun versions() {
+          IMPORT_ALIAS_3_GETSERIAL()
+          IMPORT_ALIAS_4_GETRADIOVERSION()
+          val serial = IMPORT_ALIAS_5_BUILD.getSerial()
+          val radio = android.os.Build.getRadioVersion()
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
+
+  @Suppress("ControlFlowWithEmptyBody")
+  @Test
+  fun testImportFullyQualifiedNames3() {
+    // b/368059214
+    @Language("kotlin")
+    val kotlin =
+      """
+      import android.os.Build
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION.SDK_INT
+      import android.os.Build.VERSION_CODES
+      import android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH
+
+      class ApiCallTest {
+          fun test(priority: Boolean) {
+              if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+              }
+          }
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+      import android.os.Build
+      import android.os.Build.VERSION
+      import android.os.Build.VERSION.SDK_INT
+      import android.os.Build.VERSION_CODES
+      import android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH
+      import android.os.Build as IMPORT_ALIAS_1_BUILD
+
+      class ApiCallTest {
+          fun test(priority: Boolean) {
+              if (android.os.Build.VERSION.SDK_INT >= IMPORT_ALIAS_1_BUILD.VERSION_CODES.ICE_CREAM_SANDWICH) {
+              }
+          }
+      }
+      """
+        .trimIndent()
+        .trim()
+
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
+
+  @Test
   fun testTransformMessage() {
     val mode = ImportAliasTestMode()
     assertTrue(
