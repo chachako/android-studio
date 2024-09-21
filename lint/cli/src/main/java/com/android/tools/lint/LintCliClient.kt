@@ -20,6 +20,7 @@ import com.android.SdkConstants.ATTR_ID
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
+import com.android.SdkConstants.FN_FRAMEWORK_LIBRARY
 import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.SdkConstants.currentPlatform
@@ -1389,10 +1390,19 @@ open class LintCliClient : LintClient {
       uastEnvironment = env
       return
     }
-    val jdkHome: File? = getJdkHomeUnlessJre()
     // knownProject only lists root projects, not dependencies
     val allProjects =
       knownProjects.asSequence().flatMap { sequenceOf(it) + it.allLibraries }.toIdentitySet()
+
+    val bootClassPaths = getBootClassPath(knownProjects)
+    // Don't initialize JDK classpath in UastEnvironmentUtils if
+    // we're using Android as the bootclasspath instead
+    val isAndroid =
+      getSdkHome() != null &&
+        bootClassPaths != null &&
+        bootClassPaths.size == 1 &&
+        bootClassPaths.first().path.endsWith(FN_FRAMEWORK_LIBRARY)
+    val jdkHome: File? = if (isAndroid) null else getJdkHomeUnlessJre()
     val allModules =
       allProjects.map {
         UastEnvironment.Module(
@@ -1421,7 +1431,7 @@ open class LintCliClient : LintClient {
         useFirUast = flags.useK2Uast() || useFirUast(),
       )
     config.javaLanguageLevel = maxLevel
-    config.addModules(allModules, getBootClassPath(knownProjects))
+    config.addModules(allModules, bootClassPaths)
     config.kotlinCompilerConfig.putIfNotNull(PERF_MANAGER, kotlinPerformanceManager)
     jdkHome?.let {
       config.kotlinCompilerConfig.put(JVMConfigurationKeys.JDK_HOME, it)
