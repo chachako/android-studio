@@ -344,7 +344,16 @@ public class Gradle implements Closeable {
 
     private static void createInitScript(File initScript, File repoDir) throws IOException {
         String content =
-                "allprojects {\n"
+                "settingsEvaluated { settings ->\n"
+                        + "settings.pluginManagement {\n"
+                        + "  repositories {\n"
+                        + "    maven { url '"
+                        + repoDir.toURI().toString()
+                        + "'}\n"
+                        + "    }\n"
+                        + "  }\n"
+                        + "}\n"
+                        + "allprojects {\n"
                         + "  buildscript {\n"
                         + "    repositories {\n"
                         + "       maven { url '"
