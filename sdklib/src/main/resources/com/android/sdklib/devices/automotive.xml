@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 <d:devices xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:d="http://schemas.android.com/sdk/devices/5">
+           xmlns:d="http://schemas.android.com/sdk/devices/8">
     <d:device>
         <d:name>Automotive (1024p landscape)</d:name>
         <d:id>automotive_1024p_landscape</d:id>
@@ -42,7 +42,6 @@
             <d:networking>
                 Bluetooth
                 Wifi
-                NFC
             </d:networking>
             <d:sensors>
                 LightSensor
@@ -80,7 +79,7 @@
         <d:tag-id>android-automotive-playstore</d:tag-id>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Automotive (1080p landscape)</d:name>
         <d:id>automotive_1080p_landscape</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -103,7 +102,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
@@ -119,7 +118,7 @@
             <d:skin>automotive_landscape</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>33-</d:api-level>
+            <d:api-level>28-</d:api-level>
             <d:live-wallpaper-support>false</d:live-wallpaper-support>
             <d:bluetooth-profiles/>
             <d:gl-version>3.0</d:gl-version>
@@ -174,7 +173,7 @@
             <d:power-type>plugged-in</d:power-type>
         </d:hardware>
         <d:software>
-            <d:api-level>33-</d:api-level>
+            <d:api-level>28-</d:api-level>
             <d:live-wallpaper-support>false</d:live-wallpaper-support>
             <d:bluetooth-profiles/>
             <d:gl-version>3.0</d:gl-version>
@@ -229,7 +228,7 @@
             <d:power-type>plugged-in</d:power-type>
         </d:hardware>
         <d:software>
-            <d:api-level>33-</d:api-level>
+            <d:api-level>28-</d:api-level>
             <d:live-wallpaper-support>false</d:live-wallpaper-support>
             <d:bluetooth-profiles/>
             <d:gl-version>3.0</d:gl-version>
@@ -268,7 +267,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
@@ -322,7 +321,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
@@ -376,7 +375,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
@@ -430,7 +429,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
@@ -485,7 +484,7 @@
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
             </d:screen>
-            <d:networking>Bluetooth Wifi NFC</d:networking>
+            <d:networking>Bluetooth Wifi</d:networking>
             <d:sensors>Accelerometer Gyroscope GPS</d:sensors>
             <d:mic>true</d:mic>
             <d:keyboard>nokeys</d:keyboard>
