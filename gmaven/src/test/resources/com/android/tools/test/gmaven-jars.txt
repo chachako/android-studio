@@ -3245,6 +3245,7 @@ com/android/tools/lint/lint-checks
   com/android/tools/
   com/android/tools/lint/
   com/android/tools/lint/checks/
+  com/android/tools/lint/checks/fx/
   com/android/tools/lint/checks/optional/
   com/android/tools/lint/checks/plurals/
   desugared_apis_30_1.txt
