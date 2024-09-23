@@ -2025,12 +2025,21 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <data android:pathPrefix="/gizmos" />
                             </intent-filter>
 
-                            <intent-filter android:autoVerify="true"> <!-- Missing http -->
+                            <intent-filter android:autoVerify="true"> <!-- Has custom scheme, but missing http -->
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
 
                                 <data android:scheme="other" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Has no scheme -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
 
                                 <data android:host="example.com" />
                                 <data android:pathPrefix="/gizmos" />
@@ -2043,11 +2052,15 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
 
                                 <data android:scheme="http" />
                                 <data android:scheme="https" />
+                            </intent-filter>
 
+                            <intent-filter android:autoVerify="true"> <!-- No data tags at all -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
                     </application>
-
                 </manifest>
                 """,
           )
@@ -2069,14 +2082,55 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                       <intent-filter android:autoVerify="true"> <!-- Missing BROWSABLE -->
                       ^
           AndroidManifest.xml:60: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
-                      <intent-filter android:autoVerify="true"> <!-- Missing http -->
+                      <intent-filter android:autoVerify="true"> <!-- Has custom scheme, but missing http -->
                       ^
-          AndroidManifest.xml:71: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+          AndroidManifest.xml:76: Error: At least one scheme must be specified [AppLinkUrlError]
+                          <data android:host="example.com" />
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          AndroidManifest.xml:80: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
                       <intent-filter android:autoVerify="true"> <!-- Missing host -->
                       ^
-          6 errors, 0 warnings
+          AndroidManifest.xml:89: Error: Missing data element [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- No data tags at all -->
+                      ^
+          8 errors, 0 warnings
         """
       )
+  }
+
+  fun test365376495() {
+    // Regression test for b365376495
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity android:name=".FullscreenActivity">
+
+                            <intent-filter>
+                                <action android:name="com.google.android.apps.gmm.GENERIC_WEBVIEW_NOTIFICATION" />
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
   }
 
   fun testPathMatcherOrdering() {

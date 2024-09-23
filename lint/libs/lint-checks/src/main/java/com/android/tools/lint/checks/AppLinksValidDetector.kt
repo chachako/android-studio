@@ -1202,7 +1202,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           // All schemes in the intent filter must be web schemes for domain verification to be
           // requested.
           // This is a bug in Android, but they have no intent to fix it.
-          (!data.schemes.all { isWebScheme(it) || isSubstituted(it) }) ||
+          (data.schemes.isNotEmpty() &&
+            !data.schemes.all { isWebScheme(it) || isSubstituted(it) }) ||
           data.hostPortPairs.isEmpty()))
     }
 
