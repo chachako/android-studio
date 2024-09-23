@@ -664,6 +664,7 @@ com/android/tools/build/gradle-api
   com/android/
   com/android/build/
   com/android/build/api/
+  com/android/build/api/annotations/
   com/android/build/api/artifact/
   com/android/build/api/attributes/
   com/android/build/api/component/

@@ -87,7 +87,8 @@ public final class ApiTester {
         ALL,
         STABLE_ONLY,
         INCUBATING_ONLY,
-        DEPRECATED_ONLY
+        DEPRECATED_ONLY,
+        REPLACED_BY_INCUBATING_ONLY,
     }
 
     public enum Flag {
@@ -103,11 +104,19 @@ public final class ApiTester {
     private final Function1<List<String>, Collection<String>> transformFinalFileContent;
     private final Set<Flag> flags;
 
-    private boolean classFilter(boolean incubatingClass, boolean deprecatedClass) {
-        return memberFilter(incubatingClass, deprecatedClass);
+    private boolean classFilter(
+            boolean incubatingClass,
+            boolean deprecatedClass,
+            boolean replacedByIncubatingClass
+    ) {
+        return memberFilter(incubatingClass, deprecatedClass, replacedByIncubatingClass);
     }
 
-    private boolean memberFilter(boolean incubating, boolean deprecated) {
+    private boolean memberFilter(
+            boolean incubating,
+            boolean deprecated,
+            boolean replacedByIncubating
+    ) {
         switch (filter) {
             case ALL:
                 return true;
@@ -117,6 +126,8 @@ public final class ApiTester {
                 return incubating;
             case DEPRECATED_ONLY:
                 return deprecated;
+            case REPLACED_BY_INCUBATING_ONLY:
+                return replacedByIncubating;
         }
         throw new IllegalStateException(filter.toString());
     }
@@ -124,6 +135,7 @@ public final class ApiTester {
     private static final String INCUBATING_ANNOTATION = "@org.gradle.api.Incubating()";
     private static final String JAVA_DEPRECATED_ANNOTATION = "@java.lang.Deprecated";
     private static final String KOTLIN_DEPRECATED_ANNOTATION = "@kotlin.Deprecated";
+    private static final String REPLACED_BY_INCUBATING_ANNOTATION = "@com.android.build.api.annotations.ReplacedByIncubating";
 
     public void checkApiElements() throws IOException {
         checkApiElements(clazz -> getApiElements(clazz).collect(Collectors.toList()));
@@ -202,13 +214,14 @@ public final class ApiTester {
         return lines.build();
     }
 
-    private Stream<String> getApiElements(@NonNull Class<?> klass) {
+    public Stream<String> getApiElements(@NonNull Class<?> klass) {
         if (!Modifier.isPublic(klass.getModifiers())) {
             return Stream.empty();
         }
 
         boolean incubatingClass = isIncubating(klass);
         boolean deprecatedClass = isDeprecated(klass);
+        boolean replacedByIncubatingClass = isReplacedByIncubating(klass);
 
         Set<String> deprecatedKotlinProperties = new HashSet<>();
 
@@ -269,7 +282,10 @@ public final class ApiTester {
                                         invokable ->
                                                 memberFilter(
                                                         incubatingClass || isIncubating(invokable),
-                                                        deprecatedClass || isDeprecated(invokable)))
+                                                        deprecatedClass || isDeprecated(invokable),
+                                                        replacedByIncubatingClass
+                                                                || isReplacedByIncubating(invokable)
+                                                ))
                                 .map(ApiTester::getApiElement)
                                 .filter(Objects::nonNull),
                         // Methods:
@@ -284,7 +300,9 @@ public final class ApiTester {
                                                                 || isDeprecated(invokable)
                                                                 || isDeprecatedKotlinProperty(
                                                                         deprecatedKotlinProperties,
-                                                                        invokable)))
+                                                                        invokable),
+                                                        replacedByIncubatingClass || isReplacedByIncubating(invokable)
+                                                ))
                                 .map(ApiTester::getApiElement)
                                 .filter(Objects::nonNull),
                         // Fields:
@@ -298,7 +316,7 @@ public final class ApiTester {
                         // Finally, all inner classes:
                         Stream.of(klass.getDeclaredClasses()).flatMap(this::getApiElements));
 
-        if (classFilter(incubatingClass, deprecatedClass)) {
+        if (classFilter(incubatingClass, deprecatedClass, replacedByIncubatingClass)) {
             streams = Stream.concat(streams, Stream.of(Stream.of(getApiElement(klass))));
         }
 
@@ -360,6 +378,17 @@ public final class ApiTester {
         for (Annotation annotation : annotations) {
             if (annotation.toString().startsWith(JAVA_DEPRECATED_ANNOTATION)
                     || annotation.toString().startsWith(KOTLIN_DEPRECATED_ANNOTATION)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isReplacedByIncubating(@NonNull AnnotatedElement element) {
+        Annotation[] annotations = element.getAnnotations();
+        for (Annotation annotation : annotations) {
+            if (annotation.toString().startsWith(REPLACED_BY_INCUBATING_ANNOTATION)) {
                 return true;
             }
         }

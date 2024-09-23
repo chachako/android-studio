@@ -18,6 +18,7 @@
 
 package com.android.build.api
 
+import com.android.build.api.annotations.ReplacedByIncubating
 import com.android.build.api.extension.DslExtensionTest
 import com.android.build.api.transform.SecondaryFileTest
 import com.google.common.base.Charsets
@@ -35,6 +36,7 @@ val nonApiClasses = listOf(
     IncubatingApiTest::class,
     IncubatingApiUpdater::class,
     OperationRequestTest::class,
+    ReplacedByIncubatingApiTest::class,
     SourcesTest::class
 ).map { it.qualifiedName }.toSet()
 

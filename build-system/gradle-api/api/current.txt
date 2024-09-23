@@ -31,6 +31,17 @@ package com.android.build.api {
 
 }
 
+package com.android.build.api.annotations {
+
+  @kotlin.annotation.Retention(kotlin.annotation.AnnotationRetention.RUNTIME) @kotlin.annotation.Target(allowedTargets={kotlin.annotation.AnnotationTarget.CLASS, kotlin.annotation.AnnotationTarget.FUNCTION, kotlin.annotation.AnnotationTarget.FIELD, kotlin.annotation.AnnotationTarget.CONSTRUCTOR, kotlin.annotation.AnnotationTarget.PROPERTY_GETTER, kotlin.annotation.AnnotationTarget.PROPERTY_SETTER}) public @interface ReplacedByIncubating {
+    method public abstract long bugId();
+    method public abstract String message();
+    property public abstract long bugId;
+    property public abstract String message;
+  }
+
+}
+
 package com.android.build.api.artifact {
 
   public abstract class Artifact<T extends org.gradle.api.file.FileSystemLocation> implements java.io.Serializable {
@@ -2945,7 +2956,7 @@ package com.android.build.api.variant {
     property public abstract com.android.build.api.variant.TestedComponentPackaging packaging;
   }
 
-  public interface HasAndroidTestBuilder {
+  @com.android.build.api.annotations.ReplacedByIncubating(message="Replaced by the new interface HasDeviceTestsBuilder", bugId=357083708L) public interface HasAndroidTestBuilder {
     method public com.android.build.api.variant.AndroidTestBuilder getAndroidTest();
     method public boolean getAndroidTestEnabled();
     method public boolean getEnableAndroidTest();
