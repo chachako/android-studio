@@ -415,7 +415,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 previousFailureType = null
             ), loggedEvents!![0].jdwpProcessPropertiesCollector
         )
-        assertEquals(device, loggedEvents[0].device)
+        assertEquals(device.serialNumber, loggedEvents[0].deviceInfo?.serialNumber)
         assertEquals(
             JdwpProcessPropertiesCollectorEvent(
                 isSuccess = true,
@@ -424,7 +424,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 previousFailureType = AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.NO_RESPONSE
             ), loggedEvents[1].jdwpProcessPropertiesCollector
         )
-        assertEquals(device, loggedEvents[1].device)
+        assertEquals(device.serialNumber, loggedEvents[1].deviceInfo?.serialNumber)
     }
 
     @Test

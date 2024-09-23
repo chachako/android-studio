@@ -18,15 +18,52 @@ package com.android.adblib
 interface AdbUsageTracker {
 
     /** Log data about the usage of an adblib feature */
-    suspend fun logUsage(event: Event)
+    fun logUsage(event: Event)
 
     data class Event(
         // Info about the connected device
-        val device: ConnectedDevice?,
+        val deviceInfo: DeviceInfo?,
 
         // Info about `JdwpProcessPropertiesCollector` success/failure
         val jdwpProcessPropertiesCollector: JdwpProcessPropertiesCollectorEvent?,
     )
+
+    data class DeviceInfo(
+        val serialNumber: String,
+        val buildTags:String,
+        val buildType:String,
+        val buildVersionRelease: String,
+        val buildApiLevelFull: String,
+        val cpuAbi: String,
+        val manufacturer: String,
+        val model: String,
+        val allCharacteristics: List<String>
+    ) {
+
+        companion object {
+
+            suspend fun createFrom(device: ConnectedDevice): DeviceInfo {
+                val properties = try {
+                    if (device.isOnline) device.deviceProperties().allReadonly() else emptyMap()
+                } catch (t: Throwable) {
+                    emptyMap()
+                }
+
+                return DeviceInfo(
+                    serialNumber = device.serialNumber,
+                    buildTags = properties[DevicePropertyNames.RO_BUILD_TAGS] ?: "",
+                    buildType = properties[DevicePropertyNames.RO_BUILD_TYPE] ?: "",
+                    buildVersionRelease = properties[DevicePropertyNames.RO_BUILD_VERSION_RELEASE] ?: "",
+                    buildApiLevelFull = properties[DevicePropertyNames.RO_BUILD_VERSION_SDK] ?: "",
+                    cpuAbi = properties[DevicePropertyNames.RO_PRODUCT_CPU_ABI] ?: "",
+                    manufacturer = properties[DevicePropertyNames.RO_PRODUCT_MANUFACTURER] ?: "",
+                    model = properties[DevicePropertyNames.RO_PRODUCT_MODEL] ?: "",
+                    allCharacteristics = (properties[DevicePropertyNames.RO_BUILD_CHARACTERISTICS]
+                        ?: "").split(",")
+                )
+            }
+        }
+    }
 
     enum class JdwpProcessPropertiesCollectorFailureType {
         NO_RESPONSE,
@@ -46,7 +83,7 @@ interface AdbUsageTracker {
 
 internal class NoopAdbUsageTracker : AdbUsageTracker {
 
-    override suspend fun logUsage(event: AdbUsageTracker.Event) {
+    override fun logUsage(event: AdbUsageTracker.Event) {
         // Do nothing
     }
 }

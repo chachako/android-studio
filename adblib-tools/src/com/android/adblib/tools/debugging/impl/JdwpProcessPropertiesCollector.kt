@@ -190,9 +190,10 @@ internal class JdwpProcessPropertiesCollector(
         previouslyFailedCount: Int,
         previouslyFailedThrowable: Throwable?
     ) {
+        val deviceInfo = AdbUsageTracker.DeviceInfo.createFrom(device)
         session.host.usageTracker.logUsage(
             AdbUsageTracker.Event(
-                device = device,
+                deviceInfo = deviceInfo,
                 jdwpProcessPropertiesCollector = AdbUsageTracker.JdwpProcessPropertiesCollectorEvent(
                     isSuccess = isSuccess,
                     failureType = throwable?.toAdbUsageTrackerFailureType(),
