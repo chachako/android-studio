@@ -2063,7 +2063,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/analysis-api-fe10.kotlin_module
   META-INF/analysis-api-fir-standalone-base.kotlin_module
   META-INF/analysis-api-fir.kotlin_module
-  META-INF/analysis-api-impl-barebone.kotlin_module
   META-INF/analysis-api-impl-base.kotlin_module
   META-INF/analysis-api-platform-interface.kotlin_module
   META-INF/analysis-api-standalone-base.kotlin_module
@@ -2174,13 +2173,13 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/maven/com.google.protobuf/protobuf-java/
   META-INF/maven/com.google.protobuf/protobuf-java/pom.properties
   META-INF/maven/com.google.protobuf/protobuf-java/pom.xml
-  META-INF/maven/io.javaslang/
-  META-INF/maven/io.javaslang/javaslang-match/
-  META-INF/maven/io.javaslang/javaslang-match/pom.properties
-  META-INF/maven/io.javaslang/javaslang-match/pom.xml
-  META-INF/maven/io.javaslang/javaslang/
-  META-INF/maven/io.javaslang/javaslang/pom.properties
-  META-INF/maven/io.javaslang/javaslang/pom.xml
+  META-INF/maven/io.vavr/
+  META-INF/maven/io.vavr/vavr-match/
+  META-INF/maven/io.vavr/vavr-match/pom.properties
+  META-INF/maven/io.vavr/vavr-match/pom.xml
+  META-INF/maven/io.vavr/vavr/
+  META-INF/maven/io.vavr/vavr/pom.properties
+  META-INF/maven/io.vavr/vavr/pom.xml
   META-INF/maven/org.jline/
   META-INF/maven/org.jline/jline-builtins/
   META-INF/maven/org.jline/jline-builtins/pom.properties
@@ -2246,7 +2245,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/semantics.kotlin_module
   META-INF/serialization.kotlin_module
   META-INF/services/
-  META-INF/services/javax.annotation.processing.Processor
   META-INF/services/org.jetbrains.kotlin.builtins.BuiltInsLoader
   META-INF/services/org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
   META-INF/services/org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
@@ -2282,14 +2280,14 @@ com/android/tools/external/com-intellij/kotlin-compiler
   com/intellij/openapi/vfs/
   com/intellij/util/
   com/intellij/util/io/
-  javaslang/
-  javaslang/collection/
-  javaslang/concurrent/
-  javaslang/control/
-  javaslang/match/
-  javaslang/match/annotation/
-  javaslang/match/generator/
-  javaslang/match/model/
+  custom-formatters.js
+  io/
+  io/vavr/
+  io/vavr/collection/
+  io/vavr/concurrent/
+  io/vavr/control/
+  io/vavr/match/
+  io/vavr/match/annotation/
   kotlin/
   kotlin/script/
   kotlin/script/dependencies/
@@ -2320,45 +2318,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   kotlinx/collections/immutable/implementations/persistentOrderedMap/
   kotlinx/collections/immutable/implementations/persistentOrderedSet/
   kotlinx/collections/immutable/internal/
-  net/
-  net/rubygrapefruit/
-  net/rubygrapefruit/platform/
-  net/rubygrapefruit/platform/freebsd-amd64-libcpp/
-  net/rubygrapefruit/platform/freebsd-amd64-libcpp/libnative-platform-curses.so
-  net/rubygrapefruit/platform/freebsd-amd64-libcpp/libnative-platform.so
-  net/rubygrapefruit/platform/freebsd-amd64-libstdcpp/
-  net/rubygrapefruit/platform/freebsd-amd64-libstdcpp/libnative-platform-curses.so
-  net/rubygrapefruit/platform/freebsd-amd64-libstdcpp/libnative-platform.so
-  net/rubygrapefruit/platform/freebsd-i386-libcpp/
-  net/rubygrapefruit/platform/freebsd-i386-libcpp/libnative-platform-curses.so
-  net/rubygrapefruit/platform/freebsd-i386-libcpp/libnative-platform.so
-  net/rubygrapefruit/platform/freebsd-i386-libstdcpp/
-  net/rubygrapefruit/platform/freebsd-i386-libstdcpp/libnative-platform-curses.so
-  net/rubygrapefruit/platform/freebsd-i386-libstdcpp/libnative-platform.so
-  net/rubygrapefruit/platform/internal/
-  net/rubygrapefruit/platform/internal/jni/
-  net/rubygrapefruit/platform/linux-amd64-ncurses5/
-  net/rubygrapefruit/platform/linux-amd64-ncurses5/libnative-platform-curses.so
-  net/rubygrapefruit/platform/linux-amd64-ncurses6/
-  net/rubygrapefruit/platform/linux-amd64-ncurses6/libnative-platform-curses.so
-  net/rubygrapefruit/platform/linux-amd64/
-  net/rubygrapefruit/platform/linux-amd64/libnative-platform.so
-  net/rubygrapefruit/platform/linux-i386-ncurses5/
-  net/rubygrapefruit/platform/linux-i386-ncurses5/libnative-platform-curses.so
-  net/rubygrapefruit/platform/linux-i386-ncurses6/
-  net/rubygrapefruit/platform/linux-i386-ncurses6/libnative-platform-curses.so
-  net/rubygrapefruit/platform/linux-i386/
-  net/rubygrapefruit/platform/linux-i386/libnative-platform.so
-  net/rubygrapefruit/platform/osx-amd64/
-  net/rubygrapefruit/platform/osx-amd64/libnative-platform-curses.dylib
-  net/rubygrapefruit/platform/osx-amd64/libnative-platform.dylib
-  net/rubygrapefruit/platform/osx-i386/
-  net/rubygrapefruit/platform/osx-i386/libnative-platform-curses.dylib
-  net/rubygrapefruit/platform/osx-i386/libnative-platform.dylib
-  net/rubygrapefruit/platform/windows-amd64/
-  net/rubygrapefruit/platform/windows-amd64/native-platform.dll
-  net/rubygrapefruit/platform/windows-i386/
-  net/rubygrapefruit/platform/windows-i386/native-platform.dll
   org/
   org/jetbrains/
   org/jetbrains/annotations/
@@ -2378,6 +2337,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/descriptors/components/
   org/jetbrains/kotlin/analysis/api/descriptors/components/base/
   org/jetbrains/kotlin/analysis/api/descriptors/contracts/
+  org/jetbrains/kotlin/analysis/api/descriptors/modification/
   org/jetbrains/kotlin/analysis/api/descriptors/references/
   org/jetbrains/kotlin/analysis/api/descriptors/scopes/
   org/jetbrains/kotlin/analysis/api/descriptors/signatures/
@@ -2398,6 +2358,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/fir/contracts/
   org/jetbrains/kotlin/analysis/api/fir/diagnostics/
   org/jetbrains/kotlin/analysis/api/fir/evaluate/
+  org/jetbrains/kotlin/analysis/api/fir/modification/
   org/jetbrains/kotlin/analysis/api/fir/references/
   org/jetbrains/kotlin/analysis/api/fir/scopes/
   org/jetbrains/kotlin/analysis/api/fir/signatures/
@@ -2407,8 +2368,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/fir/types/qualifiers/
   org/jetbrains/kotlin/analysis/api/fir/utils/
   org/jetbrains/kotlin/analysis/api/impl/
-  org/jetbrains/kotlin/analysis/api/impl/barebone/
-  org/jetbrains/kotlin/analysis/api/impl/barebone/annotations/
   org/jetbrains/kotlin/analysis/api/impl/base/
   org/jetbrains/kotlin/analysis/api/impl/base/annotations/
   org/jetbrains/kotlin/analysis/api/impl/base/components/
@@ -2605,13 +2564,13 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/cli/common/environment/
   org/jetbrains/kotlin/cli/common/extensions/
   org/jetbrains/kotlin/cli/common/fir/
+  org/jetbrains/kotlin/cli/common/localfs/
   org/jetbrains/kotlin/cli/common/messages/
   org/jetbrains/kotlin/cli/common/modules/
   org/jetbrains/kotlin/cli/common/output/
   org/jetbrains/kotlin/cli/common/profiling/
   org/jetbrains/kotlin/cli/common/repl/
   org/jetbrains/kotlin/cli/js/
-  org/jetbrains/kotlin/cli/js/dce/
   org/jetbrains/kotlin/cli/js/internal/
   org/jetbrains/kotlin/cli/js/klib/
   org/jetbrains/kotlin/cli/jvm/
@@ -3003,6 +2962,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/references/fe10/util/
   org/jetbrains/kotlin/renderer/
   org/jetbrains/kotlin/resolve/
+  org/jetbrains/kotlin/resolve/annotation/
   org/jetbrains/kotlin/resolve/annotations/
   org/jetbrains/kotlin/resolve/bindingContextUtil/
   org/jetbrains/kotlin/resolve/calls/
@@ -3057,6 +3017,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/resolve/scopes/synthetic/
   org/jetbrains/kotlin/resolve/scopes/utils/
   org/jetbrains/kotlin/resolve/source/
+  org/jetbrains/kotlin/resolve/typeApproximation/
   org/jetbrains/kotlin/resolve/typeBinding/
   org/jetbrains/kotlin/scripting/
   org/jetbrains/kotlin/scripting/compiler/
@@ -3100,8 +3061,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/util/
   org/jetbrains/kotlin/util/capitalizeDecapitalize/
   org/jetbrains/kotlin/util/collectionUtils/
-  org/jetbrains/kotlin/util/javaslang/
   org/jetbrains/kotlin/util/slicedMap/
+  org/jetbrains/kotlin/util/vavr/
   org/jetbrains/kotlin/utils/
   org/jetbrains/kotlin/utils/addToStdlib/
   org/jetbrains/kotlin/utils/concurrent/
