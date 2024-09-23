@@ -647,15 +647,10 @@ public class AvdManager {
                 }
             }
 
-            // Write the AVD ini file
-            iniFile =
-                    createAvdIniFile(
-                            avdName, avdFolder, removePrevious, systemImage.getAndroidVersion());
-
-            needCleanup = true;
-
-            createAvdUserdata(systemImage, avdFolder);
-            createAvdConfigFile(systemImage, configValues);
+            if (!setImagePathProperties(systemImage, configValues)) {
+                mLog.warning("Failed to set image path properties in the AVD folder.");
+                throw new AvdMgrException();
+            }
 
             // Tag and abi type
             IdDisplay tag = systemImage.getTag();
@@ -672,13 +667,6 @@ public class AvdManager {
             configValues.put(
                     ConfigKey.ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
 
-            if (sdcard != null) {
-                configValues.putAll(sdcard.configEntries());
-            }
-            if (sdcard instanceof InternalSdCard) {
-                createAvdSdCard((InternalSdCard) sdcard, editExisting, avdFolder);
-            }
-
             // Add the hardware config to the config file. We copy values from the following
             // sources, in order, with later sources overriding earlier ones:
             // 1. The hardware.ini file supplied by the system image, if present
@@ -693,6 +681,26 @@ public class AvdManager {
                 configValues.putAll(hardwareConfig);
             }
             addCpuArch(systemImage, configValues, mLog);
+
+            // We've done as much work as we can without writing to disk. Now start writing the
+            // .ini files, creating the SD card (if necessary), copying userdata.img, etc. After
+            // this point, we will delete the AVD if something goes wrong, since it will be in an
+            // unknown state.
+
+            iniFile =
+                    createAvdIniFile(
+                            avdName, avdFolder, removePrevious, systemImage.getAndroidVersion());
+
+            needCleanup = true;
+
+            createAvdUserdata(systemImage, avdFolder);
+
+            if (sdcard != null) {
+                configValues.putAll(sdcard.configEntries());
+            }
+            if (sdcard instanceof InternalSdCard) {
+                createAvdSdCard((InternalSdCard) sdcard, editExisting, avdFolder);
+            }
 
             // Finally write configValues to config.ini
             writeIniFile(avdFolder.resolve(CONFIG_INI), configValues, true);
@@ -1639,18 +1647,14 @@ public class AvdManager {
     }
 
     /**
-     * Create the user data file for an AVD
-     *
-     * @param systemImage the system image of the AVD
-     * @param avdFolder where the AVDs live
+     * For old system images, copies userdata.img from the system image to the AVD. Does nothing for
+     * new system images which contain a "data" folder.
      */
     private void createAvdUserdata(@NonNull ISystemImage systemImage, @NonNull Path avdFolder)
             throws IOException, AvdMgrException {
         // Copy userdata.img from system-images to the *.avd directory
         Path imageFolder = systemImage.getLocation();
         Path userdataSrc = imageFolder.resolve(USERDATA_IMG);
-
-        String abiType = systemImage.getPrimaryAbiType();
 
         if (CancellableFileIo.notExists(userdataSrc)) {
             if (CancellableFileIo.isDirectory(imageFolder.resolve(DATA_FOLDER))) {
@@ -1663,7 +1667,7 @@ public class AvdManager {
             }
             mLog.warning(
                     "Unable to find a '%1$s' file for ABI %2$s to copy into the AVD folder.",
-                    USERDATA_IMG, abiType);
+                    USERDATA_IMG, systemImage.getPrimaryAbiType());
             throw new AvdMgrException();
         }
 
@@ -1677,23 +1681,6 @@ public class AvdManager {
                 throw new AvdMgrException();
             }
         }
-    }
-
-    /**
-     * Create the configuration file for an AVD
-     *
-     * @param systemImage the system image of the AVD
-     * @param values settings for the AVD
-     */
-    private void createAvdConfigFile(
-            @NonNull ISystemImage systemImage, @Nullable HashMap<String, String> values)
-            throws AvdMgrException {
-
-        if (!setImagePathProperties(systemImage, values)) {
-            mLog.warning("Failed to set image path properties in the AVD folder.");
-           throw new AvdMgrException();
-        }
-        return;
     }
 
     /**
