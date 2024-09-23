@@ -27,12 +27,7 @@ class ComposeDesktopIssueRegistry : IssueRegistry() {
 
   override val issues: List<Issue> =
     buildList {
-        // TODO(b/346573590): re-enable for K2 when checks with safe cast are available
-        androidx.compose.runtime.lint
-          .RuntimeIssueRegistry()
-          .issues
-          .takeUnless { isK2 }
-          ?.let { addAll(it) }
+        addAll(androidx.compose.runtime.lint.RuntimeIssueRegistry().issues)
         addAll(androidx.compose.animation.core.lint.AnimationCoreIssueRegistry().issues)
         addAll(androidx.compose.animation.lint.AnimationIssueRegistry().issues)
         addAll(androidx.compose.foundation.lint.FoundationIssueRegistry().issues)

@@ -3,7 +3,7 @@ load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
 load("//tools/base/bazel:utils.bzl", "replace_manifest")
 load(":aar_lint.bzl", "aar_lint")
 
-ANDROIDX__VERSION = "1.6.5"
+ANDROIDX__VERSION = "1.7.0-beta03"
 
 # AndroidX lint check composed from
 # https://cs.android.com/search?q=lintPublish%20file:compose%2F%20file:build.gradle&ss=androidx%2Fplatform%2Fframeworks%2Fsupport&start=1
@@ -35,7 +35,8 @@ aar_lint(
 
 aar_lint(
     name = "compose_material_lint",
-    dep = "@maven//:androidx.compose.material.material-android_" + ANDROIDX__VERSION,
+    #TODO import newer version to match the rest
+    dep = "@maven//:androidx.compose.material.material-android_" + "1.6.6",
 )
 
 aar_lint(
