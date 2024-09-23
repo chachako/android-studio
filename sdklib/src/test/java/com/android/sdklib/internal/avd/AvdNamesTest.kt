@@ -56,8 +56,10 @@ class AvdNamesTest {
     assertThat(cleanAvdName("this.name is-also_(OK) 45"))
       .isEqualTo("this.name_is-also_OK_45")
     assertThat(cleanAvdName("  either/or _ _more ")).isEqualTo("either_or_more")
-    assertThat(cleanAvdName("9\" nails__  ")).isEqualTo("9_nails_")
+    assertThat(cleanAvdName("9\" nails__  ")).isEqualTo("9_nails")
     assertThat(cleanAvdName("'6' under'")).isEqualTo("6_under")
+    assertThat(cleanAvdName("Pixel (2)")).isEqualTo("Pixel_2")
+    assertThat(cleanAvdName("__Name_")).isEqualTo("Name")
   }
 
   @Test
