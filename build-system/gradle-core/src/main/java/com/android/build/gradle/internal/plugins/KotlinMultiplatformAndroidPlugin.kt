@@ -216,7 +216,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             versionedSdkLoaderService,
             libraryRequests = emptyList(),
             isJava8Compatible = { true },
-            returnDefaultValuesForMockableJar = { false },
+            returnDefaultValuesForMockableJar = { androidExtension.androidTestOnJvmOptions?.isReturnDefaultValues ?: false },
             forUnitTest = false
         )
 
