@@ -512,7 +512,7 @@ class LintJarApiMigrationTest {
       """
       @@ -11 +11
       -   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtImplicitReceiverValue.getSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KtSymbol;
-      +   INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue.getSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KaSymbol;
+      +   INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/resolution/KaImplicitReceiverValue.getSymbol ()Lorg/jetbrains/kotlin/analysis/api/symbols/KaSymbol; (itf)
       @@ -16 +16
       -   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KtReceiverParameterSymbol
       +   INSTANCEOF org/jetbrains/kotlin/analysis/api/symbols/KaReceiverParameterSymbol
@@ -1205,7 +1205,7 @@ class LintJarApiMigrationTest {
       +  LINENUMBER 217 L25
       @@ -127 +118
       -  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/calls/KtFunctionCall.getTypeArgumentsMapping ()Ljava/util/Map;
-      +  INVOKEVIRTUAL org/jetbrains/kotlin/analysis/api/resolution/KaFunctionCall.getTypeArgumentsMapping ()Ljava/util/Map;
+      +  INVOKEINTERFACE org/jetbrains/kotlin/analysis/api/resolution/KaFunctionCall.getTypeArgumentsMapping ()Ljava/util/Map; (itf)
       @@ -135 +126
       -  IFNULL L29
       +  IFNULL L28

@@ -1753,6 +1753,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
+      .apply {
+        // TODO(b/369688640): FIR no longer allows type replacement in the middle.
+        //  That test mode needs to provide the rewritten annotation jar upfront.
+        if (useFirUast()) {
+          skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
+        }
+      }
       .run()
       .expect(
         """

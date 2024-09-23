@@ -38,6 +38,7 @@ import com.intellij.pom.java.LanguageFeatureProvider
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.sequences.forEach
+import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
 import org.jetbrains.kotlin.analysis.decompiler.konan.KlibMetaFileType
@@ -132,6 +133,7 @@ internal fun configureProjectEnvironment(
   @Suppress("DEPRECATION") project.registerService(UastContext::class.java, UastContext(project))
 }
 
+@OptIn(KaImplementationDetail::class)
 internal fun configureAnalysisApiProjectStructure(
   config: UastEnvironment.Configuration
 ): KtModuleProviderBuilder.() -> Unit = {

@@ -25,7 +25,7 @@ import java.io.PrintStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import org.jetbrains.kotlin.cli.common.ExitCode
-import org.jetbrains.kotlin.cli.metadata.K2MetadataCompiler
+import org.jetbrains.kotlin.cli.metadata.KotlinMetadataCompiler
 import org.junit.Assert
 
 class MetadataKlibTestFile(
@@ -62,7 +62,7 @@ class MetadataKlibTestFile(
       }
 
     val outStream = ByteArrayOutputStream()
-    val compilerClass = K2MetadataCompiler::class.java
+    val compilerClass = KotlinMetadataCompiler::class.java
     val compiler = compilerClass.newInstance()
     val execMethod =
       compilerClass.getMethod("exec", PrintStream::class.java, Array<String>::class.java)

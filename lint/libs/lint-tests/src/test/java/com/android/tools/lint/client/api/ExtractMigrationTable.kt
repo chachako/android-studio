@@ -56,7 +56,8 @@ fun main() {
   val entries = map.entries.sortedBy { it.key }
   for ((key, value) in entries) {
     println(
-      "        \"${getInternalName(key).replace("$", "\\$")}\" -> \"${getInternalName(value).replace("$", "\\$")}\""
+      "      \"${getInternalName(key).replace("$", "\\$")}\" ->\n" +
+        "       \"${getInternalName(value).replace("$", "\\$")}\""
     )
   }
 }

@@ -26,6 +26,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
 import java.io.File
 import kotlin.concurrent.withLock
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KaResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
@@ -116,6 +117,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
   return config
 }
 
+@OptIn(KaExperimentalApi::class)
 private fun createAnalysisSession(
   parentDisposable: Disposable,
   config: FirUastEnvironment.Configuration,

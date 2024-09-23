@@ -33,13 +33,9 @@ import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.Kotlin
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.asJava.classes.lazyPub
 import org.jetbrains.kotlin.builtins.jvm.JavaToKotlinClassMap
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget.PROPERTY_GETTER
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget.PROPERTY_SETTER
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.library.KLIB_FILE_EXTENSION
 import org.jetbrains.kotlin.light.classes.symbol.annotations.getJvmNameFromAnnotation
-import org.jetbrains.kotlin.light.classes.symbol.annotations.toFilter
-import org.jetbrains.kotlin.light.classes.symbol.annotations.toOptionalFilter
 import org.jetbrains.kotlin.load.kotlin.PackagePartProvider
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -185,11 +181,11 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
 
     val propertySymbol = variableLikeSymbol as? KaPropertySymbol
     val getterJvmName =
-      propertySymbol?.getter?.getJvmNameFromAnnotation(PROPERTY_GETTER.toOptionalFilter())
-        ?: propertySymbol?.getJvmNameFromAnnotation(PROPERTY_GETTER.toFilter())
+      propertySymbol?.getter?.getJvmNameFromAnnotation()
+        ?: propertySymbol?.getJvmNameFromAnnotation()
     val setterJvmName =
-      propertySymbol?.setter?.getJvmNameFromAnnotation(PROPERTY_SETTER.toOptionalFilter())
-        ?: propertySymbol?.getJvmNameFromAnnotation(PROPERTY_SETTER.toFilter())
+      propertySymbol?.setter?.getJvmNameFromAnnotation()
+        ?: propertySymbol?.getJvmNameFromAnnotation()
     return classes
       .flatMap { psiClass ->
         psiClass.children.filterIsInstance<PsiMember>().filter { psiMember ->
@@ -235,10 +231,10 @@ private class KotlinStaticPsiDeclarationFromBinaryModuleProvider(
     val jvmName =
       when (functionLikeSymbol) {
         is KaPropertyGetterSymbol -> {
-          functionLikeSymbol.getJvmNameFromAnnotation(PROPERTY_GETTER.toOptionalFilter())
+          functionLikeSymbol.getJvmNameFromAnnotation()
         }
         is KaPropertySetterSymbol -> {
-          functionLikeSymbol.getJvmNameFromAnnotation(PROPERTY_SETTER.toOptionalFilter())
+          functionLikeSymbol.getJvmNameFromAnnotation()
         }
         else -> {
           functionLikeSymbol.getJvmNameFromAnnotation()

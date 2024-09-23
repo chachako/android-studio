@@ -36,15 +36,17 @@ import com.intellij.psi.impl.smartPointers.SmartPointerManagerImpl
 import com.intellij.psi.impl.smartPointers.SmartTypePointerManagerImpl
 import java.io.File
 import kotlin.concurrent.withLock
-import org.jetbrains.kotlin.analysis.api.KaAnalysisNonPublicApi
+import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
+import org.jetbrains.kotlin.analysis.api.KaNonPublicApi
+import org.jetbrains.kotlin.analysis.api.KaPlatformInterface
 import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.KaFe10AnalysisHandlerExtension
 import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinAnnotationsResolverFactory
 import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinDeclarationProviderFactory
 import org.jetbrains.kotlin.analysis.api.platform.declarations.KotlinDeclarationProviderMerger
-import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinAlwaysAccessibleLifetimeTokenProvider
-import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinAlwaysAccessibleLifetimeTokenFactory
+import org.jetbrains.kotlin.analysis.api.platform.lifetime.KotlinLifetimeTokenFactory
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinGlobalModificationService
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTrackerFactory
 import org.jetbrains.kotlin.analysis.api.platform.packages.KotlinPackageProviderFactory
@@ -308,8 +310,8 @@ private fun configureAnalysisApiServices(
   )
 
   project.registerService(
-    KotlinLifetimeTokenProvider::class.java,
-    KotlinAlwaysAccessibleLifetimeTokenProvider::class.java,
+    KotlinLifetimeTokenFactory::class.java,
+    KotlinAlwaysAccessibleLifetimeTokenFactory::class.java,
   )
 
   project.registerService(
@@ -400,7 +402,7 @@ private class CliBindingTraceForLint(project: Project) : CliBindingTrace(project
   }
 }
 
-@OptIn(KaAnalysisNonPublicApi::class)
+@OptIn(KaNonPublicApi::class, KaImplementationDetail::class, KaPlatformInterface::class)
 private object AnalysisApiFe10ServiceRegistrar : AnalysisApiSimpleServiceRegistrar() {
   private const val PLUGIN_RELATIVE_PATH = "/META-INF/analysis-api/analysis-api-fe10.xml"
 

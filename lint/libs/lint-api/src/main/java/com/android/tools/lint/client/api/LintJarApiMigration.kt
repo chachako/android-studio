@@ -241,7 +241,7 @@ class LintJarApiMigration(private val client: LintClient) {
       "org/jetbrains/kotlin/analysis/api/calls/KaCallableMemberCall" ->
         "org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall"
       "org/jetbrains/kotlin/analysis/api/calls/KaCompoundAccess" ->
-        "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundAccess"
+        "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundOperation"
       "org/jetbrains/kotlin/analysis/api/calls/KaCompoundAccessCall" ->
         "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundAccessCall"
       "org/jetbrains/kotlin/analysis/api/calls/KaCompoundArrayAccessCall" ->
@@ -293,7 +293,7 @@ class LintJarApiMigration(private val client: LintClient) {
       "org/jetbrains/kotlin/analysis/api/calls/KtCallableMemberCall" ->
         "org/jetbrains/kotlin/analysis/api/resolution/KaCallableMemberCall"
       "org/jetbrains/kotlin/analysis/api/calls/KtCompoundAccess" ->
-        "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundAccess"
+        "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundOperation"
       "org/jetbrains/kotlin/analysis/api/calls/KtCompoundAccessCall" ->
         "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundAccessCall"
       "org/jetbrains/kotlin/analysis/api/calls/KtCompoundArrayAccessCall" ->
@@ -426,8 +426,6 @@ class LintJarApiMigration(private val client: LintClient) {
         "org/jetbrains/kotlin/analysis/api/lifetime/KaLifetimeOwnerField"
       "org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeToken" ->
         "org/jetbrains/kotlin/analysis/api/lifetime/KaLifetimeToken"
-      "org/jetbrains/kotlin/analysis/api/lifetime/KtLifetimeTokenFactory" ->
-        "org/jetbrains/kotlin/analysis/api/lifetime/KaLifetimeTokenFactory"
       "org/jetbrains/kotlin/analysis/api/renderer/base/KtKeywordRenderer" ->
         "org/jetbrains/kotlin/analysis/api/renderer/base/KaKeywordRenderer"
       "org/jetbrains/kotlin/analysis/api/renderer/base/KtKeywordsRenderer" ->
@@ -604,6 +602,8 @@ class LintJarApiMigration(private val client: LintClient) {
         "org/jetbrains/kotlin/analysis/api/renderer/types/renderers/KaUnresolvedClassErrorTypeRenderer"
       "org/jetbrains/kotlin/analysis/api/renderer/types/renderers/KtUsualClassTypeRenderer" ->
         "org/jetbrains/kotlin/analysis/api/renderer/types/renderers/KaUsualClassTypeRenderer"
+      "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundAccess" ->
+        "org/jetbrains/kotlin/analysis/api/resolution/KaCompoundOperation"
       "org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedFunctionSymbol" ->
         "org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedSymbol"
       "org/jetbrains/kotlin/analysis/api/resolution/KaPartiallyAppliedVariableSymbol" ->
