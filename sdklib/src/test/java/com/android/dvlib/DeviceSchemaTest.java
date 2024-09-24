@@ -87,7 +87,7 @@ public class DeviceSchemaTest extends TestCase {
                 baos.toString().trim().isEmpty());
     }
 
-    public void testValidXml_v4() {
+    public void testValidXml_v4() throws Exception {
         InputStream xml = new BufferedInputStream(
                 DeviceSchemaTest.class.getResourceAsStream("devices_v4.xml"));
         xml.mark(500000);   // set mark to beginning of stream
