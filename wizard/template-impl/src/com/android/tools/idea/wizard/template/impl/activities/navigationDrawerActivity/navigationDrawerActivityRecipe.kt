@@ -135,7 +135,7 @@ fun RecipeExecutor.generateNavigationDrawer(
     useAndroidX = useAndroidX,
     isViewBindingSupported = isViewBindingSupported)
   if (language == Language.Kotlin) {
-    requireJavaVersion("1.8", true)
+    requireJavaVersion("11", true)
   }
   val generateKotlin = language == Language.Kotlin
   navigationDependencies(generateKotlin, useAndroidX, appCompatVersion)

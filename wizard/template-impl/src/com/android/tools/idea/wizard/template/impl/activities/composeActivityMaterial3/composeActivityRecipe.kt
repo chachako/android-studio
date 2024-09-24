@@ -70,7 +70,7 @@ fun RecipeExecutor.composeActivityRecipe(
   save(themeKt(packageName, themeName), srcOut.resolve("$uiThemeFolder/Theme.kt"))
   save(typeKt(packageName), srcOut.resolve("$uiThemeFolder/Type.kt"))
 
-  requireJavaVersion("1.8", true)
+  requireJavaVersion("11", true)
   setBuildFeature("compose", true)
 
   open(srcOut.resolve("${activityClass}.kt"))

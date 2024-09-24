@@ -207,7 +207,7 @@ fun RecipeExecutor.generateBasicActivity(
     addDependency("android.arch.navigation:navigation-ui:+")
   }
 
-  requireJavaVersion("1.8", projectData.language == Language.Kotlin)
+  requireJavaVersion("11", projectData.language == Language.Kotlin)
   open(simpleActivityPath)
 
   open(resOut.resolve("layout/$contentLayoutName"))

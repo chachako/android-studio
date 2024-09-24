@@ -85,7 +85,7 @@ fun RecipeExecutor.genAiActivityRecipe(
 
   append("apiKey=$apiKey", moduleData.projectTemplateData.rootDir.resolve("local.properties"))
 
-  requireJavaVersion("1.8", true)
+  requireJavaVersion("11", true)
   setBuildFeature("compose", true)
   // Required in Gradle 8+ for generating the BuildConfig class used by the secrets plugin
   setBuildFeature("buildConfig", true)
