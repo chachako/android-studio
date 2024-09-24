@@ -178,7 +178,7 @@ class ModelBuilderV2 internal constructor(
     fun fetchTaskList(): List<String> = fetchGradleProject().tasks.map { it.name }
 
     private fun fetchGradleProject(): GradleProject =
-        projectConnection.model(GradleProject::class.java).withArguments(arguments).get()
+        projectConnection.model(GradleProject::class.java).withArguments(getArguments()).get()
 
     /**
      * Returns a project model for each sub-project;
@@ -211,13 +211,10 @@ class ModelBuilderV2 internal constructor(
                     BufferedOutputStream(FileOutputStream(stdErrFile)).use { stderr ->
                         setStandardOut(executor, stdout)
                         setStandardError(executor, stderr)
-                        executor.withArguments(arguments)
-                        runBuild(
-                            executor,
-                            { executer: BuildActionExecuter<T>, resultHandler: ResultHandler<T>? ->
-                                executer.run(resultHandler)
-                            }
-                        )
+                        executor.withArguments(getArguments())
+                        runBuild(executor) { executor: BuildActionExecuter<T>, resultHandler: ResultHandler<T> ->
+                            executor.run(resultHandler)
+                        }
                     }
                 }
 

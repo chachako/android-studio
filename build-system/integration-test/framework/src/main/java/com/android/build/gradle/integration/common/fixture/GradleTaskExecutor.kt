@@ -13,140 +13,138 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.build.gradle.integration.common.fixture
 
-package com.android.build.gradle.integration.common.fixture;
-
-
-import com.android.annotations.NonNull;
-import com.android.testutils.TestUtils;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.gradle.tooling.BuildLauncher;
-import org.gradle.tooling.GradleConnectionException;
-import org.gradle.tooling.ProjectConnection;
-import org.gradle.tooling.events.OperationType;
+import com.android.testutils.TestUtils
+import com.google.common.base.Joiner
+import com.google.common.collect.ImmutableMap
+import com.google.common.collect.Iterables
+import org.gradle.tooling.BuildLauncher
+import org.gradle.tooling.GradleConnectionException
+import org.gradle.tooling.ProjectConnection
+import org.gradle.tooling.ResultHandler
+import org.gradle.tooling.events.OperationType
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.util.function.Consumer
 
 /** A Gradle tooling api build builder. */
-public final class GradleTaskExecutor extends BaseGradleExecutor<GradleTaskExecutor> {
+class GradleTaskExecutor(
+    gradleTestProject: GradleTestRule,
+    projectConnection: ProjectConnection
+) :
+    BaseGradleExecutor<GradleTaskExecutor>(
+        gradleTestProject,
+        gradleTestProject.location,
+        projectConnection,
+        Consumer { lastBuildResult: GradleBuildResult ->
+            gradleTestProject.setLastBuildResult(lastBuildResult)
+        },
+        gradleTestProject.getProfileDirectory(),
+        gradleTestProject.heapSize,
+        gradleTestProject.withConfigurationCaching
+    ) {
 
-    private boolean isExpectingFailure = false;
-    private ImmutableMap<String, String> env;
-
-    public GradleTaskExecutor(
-            @NonNull GradleTestRule gradleTestProject,
-            @NonNull ProjectConnection projectConnection) {
-        super(
-                gradleTestProject,
-                gradleTestProject.getLocation(),
-                projectConnection,
-                gradleTestProject::setLastBuildResult,
-                gradleTestProject.getProfileDirectory(),
-                gradleTestProject.getHeapSize(),
-                gradleTestProject.getWithConfigurationCaching());
-    }
+    private var isExpectingFailure = false
+    private var env: Map<String, String>? = null
 
     /**
      * Assert that the task called fails.
      *
-     * <p>The resulting exception is stored in the {@link GradleBuildResult}.
+     *  The resulting exception is stored in the [GradleBuildResult].
      */
-    public GradleTaskExecutor expectFailure() {
-        isExpectingFailure = true;
-        return this;
+    fun expectFailure(): GradleTaskExecutor {
+        isExpectingFailure = true
+        return this
     }
 
-    public GradleTaskExecutor withEnvironmentVariables(Map<String, String> env) {
-        HashMap<String, String> myEnv;
-        if (this.env == null) {
+    fun withEnvironmentVariables(env: Map<String, String>): GradleTaskExecutor {
+        val myEnv = if (this.env == null) {
             // If specifying some env vars, make sure to copy the existing one first.
-            myEnv = new HashMap<>(System.getenv());
+            HashMap(System.getenv())
         } else {
-            myEnv = new HashMap<>(this.env);
+            HashMap(this.env)
         }
-        myEnv.putAll(env);
+        myEnv.putAll(env)
 
-        this.env = ImmutableMap.copyOf(myEnv);
-        return this;
+        this.env = ImmutableMap.copyOf(myEnv)
+        return this
     }
 
-    /** Execute the specified tasks */
-    public GradleBuildResult run(@NonNull String... tasks)
-            throws IOException, InterruptedException {
-        return run(ImmutableList.copyOf(tasks));
+    /** Execute the specified tasks  */
+    fun run(vararg tasks: String): GradleBuildResult {
+        return run(tasks.toList())
     }
 
-    public GradleBuildResult run(@NonNull List<String> tasksList)
-            throws IOException, InterruptedException {
+    fun run(tasksList: List<String>): GradleBuildResult {
+        TestUtils.waitForFileSystemTick()
 
-        TestUtils.waitForFileSystemTick();
-
-        List<String> args = Lists.newArrayList();
-        args.addAll(getArguments());
+        val args: MutableList<String> = ArrayList()
+        args.addAll(getArguments())
 
         if (!isExpectingFailure) {
-            args.add("--stacktrace");
+            args.add("--stacktrace")
         }
 
-        File testOutputDir = TestUtils.getTestOutputDir().toFile();
-        File tmpStdOut = File.createTempFile("stdout", "log", testOutputDir);
-        File tmpStdErr = File.createTempFile("stderr", "log", testOutputDir);
+        val testOutputDir = TestUtils.getTestOutputDir().toFile()
+        val tmpStdOut = File.createTempFile("stdout", "log", testOutputDir)
+        val tmpStdErr = File.createTempFile("stderr", "log", testOutputDir)
 
-        BuildLauncher launcher =
-                projectConnection.newBuild().forTasks(Iterables.toArray(tasksList, String.class));
+        val launcher =
+            projectConnection.newBuild().forTasks(
+                *Iterables.toArray(
+                    tasksList,
+                    String::class.java
+                )
+            )
 
-        setJvmArguments(launcher);
+        setJvmArguments(launcher)
 
-        CollectingProgressListener progressListener = new CollectingProgressListener();
+        val progressListener = CollectingProgressListener()
 
-        launcher.addProgressListener(progressListener, OperationType.TASK);
+        launcher.addProgressListener(progressListener, OperationType.TASK)
 
-        launcher.withArguments(Iterables.toArray(args, String.class));
+        launcher.withArguments(*Iterables.toArray(args, String::class.java))
 
-        launcher.setEnvironmentVariables(env);
+        launcher.setEnvironmentVariables(env)
 
-        GradleConnectionException failure = null;
-        try (OutputStream stdout = new BufferedOutputStream(new FileOutputStream(tmpStdOut));
-                OutputStream stderr = new BufferedOutputStream(new FileOutputStream(tmpStdErr))) {
+        var failure: GradleConnectionException? = null
+        try {
+            BufferedOutputStream(FileOutputStream(tmpStdOut)).use { stdout ->
+                BufferedOutputStream(FileOutputStream(tmpStdErr)).use { stderr ->
+                    val message =
+                        ("""[GradleTestProject ${projectLocation.projectDir}] Executing tasks:
+gradle ${Joiner.on(' ').join(args)} ${Joiner.on(' ').join(tasksList)}
 
-            String message =
-                    "[GradleTestProject "
-                            + projectLocation.getProjectDir()
-                            + "] Executing tasks: \ngradle "
-                            + Joiner.on(' ').join(args)
-                            + " "
-                            + Joiner.on(' ').join(tasksList)
-                            + "\n\n";
-            stdout.write(message.getBytes());
+""")
+                    stdout.write(message.toByteArray())
 
-            setStandardOut(launcher, stdout);
-            setStandardError(launcher, stderr);
-
-            runBuild(launcher, BuildLauncher::run);
-        } catch (GradleConnectionException e) {
-            failure = e;
+                    setStandardOut(launcher, stdout)
+                    setStandardError(launcher, stderr)
+                    runBuild<BuildLauncher, Any?>(
+                        launcher
+                    ) { obj: BuildLauncher, resultHandler: ResultHandler<Any?> ->
+                        obj.run(
+                            resultHandler
+                        )
+                    }
+                }
+            }
+        } catch (e: GradleConnectionException) {
+            failure = e
         }
 
-        GradleBuildResult result =
-                new GradleBuildResult(tmpStdOut, tmpStdErr, progressListener.getEvents(), failure);
-        lastBuildResultConsumer.accept(result);
+        val result =
+            GradleBuildResult(tmpStdOut, tmpStdErr, progressListener.getEvents(), failure)
+        lastBuildResultConsumer.accept(result)
 
         if (isExpectingFailure && failure == null) {
-            throw new AssertionError("Expecting build to fail");
+            throw AssertionError("Expecting build to fail")
         } else if (!isExpectingFailure && failure != null) {
-            maybePrintJvmLogs(failure);
-            throw failure;
+            maybePrintJvmLogs(failure)
+            throw failure
         }
-        return result;
+        return result
     }
 }

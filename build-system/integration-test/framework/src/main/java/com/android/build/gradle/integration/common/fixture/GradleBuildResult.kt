@@ -20,7 +20,6 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TaskStateList
 import com.google.common.base.Preconditions
 import com.google.common.base.Throwables
-import com.google.common.collect.ImmutableList
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.internal.serialize.ContextualPlaceholderException
@@ -40,7 +39,7 @@ import java.util.Scanner
 class GradleBuildResult(
     private val stdoutFile: File,
     private val stderrFile: File,
-    private val taskEvents: ImmutableList<ProgressEvent>,
+    private val taskEvents: List<ProgressEvent>,
     val exception: GradleConnectionException?,
 ) {
     /**

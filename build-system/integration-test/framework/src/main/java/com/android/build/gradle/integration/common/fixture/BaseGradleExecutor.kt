@@ -13,550 +13,479 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("UNCHECKED_CAST")
 
-package com.android.build.gradle.integration.common.fixture;
+package com.android.build.gradle.integration.common.fixture
 
-import com.android.SdkConstants;
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation;
-import com.android.build.gradle.integration.common.utils.JacocoAgent;
-import com.android.build.gradle.options.BooleanOption;
-import com.android.build.gradle.options.IntegerOption;
-import com.android.build.gradle.options.Option;
-import com.android.build.gradle.options.OptionalBooleanOption;
-import com.android.build.gradle.options.StringOption;
-import com.android.prefs.AbstractAndroidLocations;
-import com.android.testutils.TestUtils;
-import com.android.utils.FileUtils;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.SettableFuture;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import kotlin.io.FilesKt;
-import org.apache.commons.io.output.TeeOutputStream;
-import org.gradle.tooling.CancellationTokenSource;
-import org.gradle.tooling.ConfigurableLauncher;
-import org.gradle.tooling.GradleConnectionException;
-import org.gradle.tooling.GradleConnector;
-import org.gradle.tooling.LongRunningOperation;
-import org.gradle.tooling.ProjectConnection;
-import org.gradle.tooling.ResultHandler;
-import org.gradle.tooling.events.ProgressEvent;
-import org.gradle.tooling.events.ProgressListener;
+import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder.MemoryRequirement
+import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
+import com.android.build.gradle.integration.common.utils.JacocoAgent
+import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
+import com.android.build.gradle.options.Option
+import com.android.build.gradle.options.OptionalBooleanOption
+import com.android.build.gradle.options.StringOption
+import com.android.prefs.AndroidLocation.ANDROID_PREFS_ROOT
+import com.android.testutils.TestUtils
+import com.android.utils.FileUtils
+import com.google.common.base.Charsets
+import com.google.common.base.Strings
+import com.google.common.base.Throwables
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.Iterables
+import com.google.common.io.ByteStreams
+import com.google.common.util.concurrent.SettableFuture
+import org.apache.commons.io.output.TeeOutputStream
+import org.gradle.tooling.CancellationTokenSource
+import org.gradle.tooling.ConfigurableLauncher
+import org.gradle.tooling.GradleConnectionException
+import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.LongRunningOperation
+import org.gradle.tooling.ProjectConnection
+import org.gradle.tooling.ResultHandler
+import org.gradle.tooling.events.ProgressEvent
+import org.gradle.tooling.events.ProgressListener
+import java.io.File
+import java.io.OutputStream
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.function.Consumer
+import java.util.regex.Pattern
+import kotlin.math.max
+import kotlin.streams.asSequence
 
 /**
- * Common flags shared by {@link ModelBuilderV2} and {@link GradleTaskExecutor}.
+ * Common flags shared by [ModelBuilderV2] and [GradleTaskExecutor].
  *
- * @param <T> The concrete implementing class.
+ * @param T The concrete implementing class.
  */
-@SuppressWarnings("unchecked") // Returning this as <T> in most methods.
-public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
+abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructor(
+    protected val project: GradleTestRule?,
+    @JvmField val projectLocation: ProjectLocation,
+    @JvmField val projectConnection: ProjectConnection,
+    @JvmField val lastBuildResultConsumer: Consumer<GradleBuildResult>,
+    profileDirectory: Path?,
+    private val memoryRequirement: MemoryRequirement,
+    private var configurationCaching: ConfigurationCaching
+) {
 
-    // An internal timeout for executing Gradle. This aims to be less than the overall test timeout
-    // to give more instructive error messages
-    private static final long TIMEOUT_SECONDS;
+    /** Location of the Android Preferences folder (normally in ~/.android)  */
+    lateinit var preferencesRootDir: File
 
-    private static Path jvmLogDir;
+    protected val optionPropertyNames: Set<String>
+        get() = options.options.asSequence().map { it.propertyName }.toSet()
 
-    private static final Path jvmErrorLog;
+    private val customArguments: MutableList<String> = ArrayList()
+    private val options: ProjectOptionsBuilder = ProjectOptionsBuilder()
+    private var loggingLevel: LoggingLevel = LoggingLevel.INFO
+    private var offline: Boolean = true
+    private var localPrefsRoot: Boolean = false
+    private var perTestPrefsRoot: Boolean = false
+    private var failOnWarning: Boolean = true
+    private var crashOnOutOfMemory: Boolean = false
 
-    static {
-        String timeoutOverride = System.getenv("TEST_TIMEOUT");
-        if (timeoutOverride != null) {
-            // Allow for longer build times within a test, while still trying to avoid having the
-            // overal test timeout be hit. If TEST_TIMEOUT is set, potentially increase the timeout
-            // to 1 minute less than the overall test timeout, if that's more than the default 10
-            // minute timeout.
-            TIMEOUT_SECONDS = Math.max(600, Integer.parseInt(timeoutOverride) - 60);
-        } else {
-            TIMEOUT_SECONDS = 600;
-        }
-        try {
-            jvmLogDir = Files.createTempDirectory("GRADLE_JVM_LOGS");
-            jvmErrorLog = jvmLogDir.resolve("java_error.log");
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static final boolean VERBOSE =
-            !Strings.isNullOrEmpty(System.getenv().get("CUSTOM_TEST_VERBOSE"));
-    static final boolean CAPTURE_JVM_LOGS = false;
-
-    @NonNull
-    final ProjectConnection projectConnection;
-    @Nullable protected final GradleTestRule project;
-    @NonNull public final ProjectLocation projectLocation;
-    @NonNull final Consumer<GradleBuildResult> lastBuildResultConsumer;
-    @NonNull private final List<String> arguments = Lists.newArrayList();
-    @NonNull private final ProjectOptionsBuilder options = new ProjectOptionsBuilder();
-    @NonNull private final GradleTestProjectBuilder.MemoryRequirement memoryRequirement;
-    @NonNull private LoggingLevel loggingLevel = LoggingLevel.INFO;
-    private boolean offline = true;
-    private boolean localPrefsRoot = false;
-    private boolean perTestPrefsRoot = false;
-    private boolean failOnWarning = true;
-
-    private boolean crashOnOutOfMemory = false;
-    private ConfigurationCaching configurationCaching;
-
-    BaseGradleExecutor(
-            @Nullable GradleTestRule project,
-            @NonNull ProjectLocation projectLocation,
-            @NonNull ProjectConnection projectConnection,
-            @NonNull Consumer<GradleBuildResult> lastBuildResultConsumer,
-            @Nullable Path profileDirectory,
-            @NonNull GradleTestProjectBuilder.MemoryRequirement memoryRequirement,
-            @NonNull ConfigurationCaching configurationCaching) {
-        this.project = project;
-        this.projectLocation = projectLocation;
-        this.lastBuildResultConsumer = lastBuildResultConsumer;
-        this.projectConnection = projectConnection;
-        this.memoryRequirement = memoryRequirement;
-        this.configurationCaching = configurationCaching;
-
+    init {
         if (profileDirectory != null) {
-            with(StringOption.PROFILE_OUTPUT_DIR, profileDirectory.toString());
+            with(StringOption.PROFILE_OUTPUT_DIR, profileDirectory.toString())
         }
     }
 
-    public final T with(@NonNull BooleanOption option, boolean value) {
-        options.booleans.put(option, value);
-        return (T) this;
+    fun with(option: BooleanOption, value: Boolean): T {
+        options.booleans[option] = value
+        return this as T
     }
 
-    public final T with(@NonNull OptionalBooleanOption option, boolean value) {
-        options.optionalBooleans.put(option, value);
-        return (T) this;
+    fun with(option: OptionalBooleanOption, value: Boolean): T {
+        options.optionalBooleans[option] = value
+        return this as T
     }
 
-    public final T with(@NonNull IntegerOption option, int value) {
-        options.integers.put(option, value);
-        return (T) this;
+    fun with(option: IntegerOption, value: Int): T {
+        options.integers[option] = value
+        return this as T
     }
 
-    public final T with(@NonNull StringOption option, @NonNull String value) {
-        options.strings.put(option, value);
-        return (T) this;
+    fun with(option: StringOption, value: String): T {
+        options.strings[option] = value
+        return this as T
     }
 
-    public final T suppressOptionWarning(@NonNull Option option) {
-        options.suppressWarnings.add(option);
-        return (T) this;
+    fun suppressOptionWarning(option: Option<*>): T {
+        options.suppressWarnings.add(option)
+        return this as T
     }
 
-    @Deprecated
-    @NonNull
-    public T withProperty(@NonNull String propertyName, @NonNull String value) {
-        withArgument("-P" + propertyName + "=" + value);
-        return (T) this;
+    @Deprecated("")
+    fun withProperty(propertyName: String, value: String): T {
+        withArgument("-P$propertyName=$value")
+        return this as T
     }
 
-    /** Add additional build arguments. */
-    public final T withArguments(@NonNull List<String> arguments) {
-        for (String argument : arguments) {
-            withArgument(argument);
+    /** Add additional build arguments.  */
+    fun withArguments(arguments: List<String>): T {
+        for (argument: String in arguments) {
+            withArgument(argument)
         }
-        return (T) this;
+        return this as T
     }
 
-    /** Add an additional build argument. */
-    public final T withArgument(String argument) {
-        if (argument.startsWith("-Pandroid")
-                && !argument.contains("testInstrumentationRunnerArguments")) {
-            throw new IllegalArgumentException("Use with(Option, Value) instead.");
-        }
-        arguments.add(argument);
-        return (T) this;
+    /** Add a build argument.  */
+    fun withArgument(argument: String): T {
+        require(
+            !(argument.startsWith("-Pandroid")
+                    && !argument.contains("testInstrumentationRunnerArguments"))
+        ) { "Use with(Option, Value) instead." }
+        customArguments.add(argument)
+        return this as T
     }
 
-    public T withEnableInfoLogging(boolean enableInfoLogging) {
-        return withLoggingLevel(enableInfoLogging ? LoggingLevel.INFO : LoggingLevel.LIFECYCLE);
+    fun withEnableInfoLogging(enableInfoLogging: Boolean): T {
+        return withLoggingLevel(if (enableInfoLogging) LoggingLevel.INFO else LoggingLevel.LIFECYCLE)
     }
 
-    public T withLoggingLevel(@NonNull LoggingLevel loggingLevel) {
-        this.loggingLevel = loggingLevel;
-        return (T) this;
+    fun withLoggingLevel(loggingLevel: LoggingLevel): T {
+        this.loggingLevel = loggingLevel
+        return this as T
     }
 
-    /** Sets to run Gradle with the normal preference root (~/.android) */
-    public final T withLocalPrefsRoot() {
-        localPrefsRoot = true;
-        return (T) this;
+    /** Sets to run Gradle with the normal preference root (~/.android)  */
+    fun withLocalPrefsRoot(): T {
+        localPrefsRoot = true
+        return this as T
     }
 
     /**
-     * Sets whether to run Gradle with a per-test preference root.
-     *
-     * <p>The preference root outside of test is normally ~/.android.
-     *
-     * <p>If set to false, the folder is located in the build output, common to all tests.
-     *
-     * <p>If set to true, the test will use its own isolated folder.
+     * Sets whether to run Gradle with a per-test preference root. (The preference root outside of
+     * test is normally ~/.android.)
+     *   - If set to false, the folder is located in the build output, common to all tests.
+     *   - If set to true, the test will use its own isolated folder.
      */
-    public final T withPerTestPrefsRoot(boolean perTestPrefsRoot) {
-        this.perTestPrefsRoot = perTestPrefsRoot;
-        return (T) this;
+    fun withPerTestPrefsRoot(perTestPrefsRoot: Boolean): T {
+        this.perTestPrefsRoot = perTestPrefsRoot
+        return this as T
     }
 
-    public final T withoutOfflineFlag() {
-        this.offline = false;
-        return (T) this;
+    fun withoutOfflineFlag(): T {
+        this.offline = false
+        return this as T
     }
 
-    public final T withSdkAutoDownload() {
-        return with(BooleanOption.ENABLE_SDK_DOWNLOAD, true);
+    fun withSdkAutoDownload(): T {
+        return with(BooleanOption.ENABLE_SDK_DOWNLOAD, true)
     }
 
-    public final T withFailOnWarning(boolean failOnWarning) {
-        this.failOnWarning = failOnWarning;
-        return (T) this;
+    fun withFailOnWarning(failOnWarning: Boolean): T {
+        this.failOnWarning = failOnWarning
+        return this as T
     }
 
-    public final T withConfigurationCaching(ConfigurationCaching configurationCaching) {
-        this.configurationCaching = configurationCaching;
-        return (T) this;
+    fun withConfigurationCaching(configurationCaching: ConfigurationCaching): T {
+        this.configurationCaching = configurationCaching
+        return this as T
     }
 
-    /** Forces JVM exit in the event of an OutOfMemoryError, without collecting a heap dump. */
-    public final T crashOnOutOfMemory() {
-        this.crashOnOutOfMemory = true;
-        return (T) this;
+    /** Forces JVM exit in the event of an OutOfMemoryError, without collecting a heap dump.  */
+    fun crashOnOutOfMemory(): T {
+        this.crashOnOutOfMemory = true
+        return this as T
     }
 
-    protected final List<String> getArguments() throws IOException {
-        List<String> arguments = new ArrayList<>();
-        arguments.addAll(this.arguments);
-        arguments.addAll(options.getArguments());
+    protected fun getArguments(): List<String> {
+        val arguments: MutableList<String> = ArrayList()
+        arguments.addAll(customArguments)
+        arguments.addAll(options.arguments)
 
-        if (loggingLevel.getArgument() != null) {
-            arguments.add(loggingLevel.getArgument());
+        if (loggingLevel.argument != null) {
+            arguments.add(loggingLevel.argument!!)
         }
 
-        arguments.add("-Dfile.encoding=" + System.getProperty("file.encoding"));
-        arguments.add("-Dsun.jnu.encoding=" + System.getProperty("sun.jnu.encoding"));
+        arguments.add("-Dfile.encoding=" + Charset.defaultCharset().displayName())
+        arguments.add("-Dsun.jnu.encoding=" + System.getProperty("sun.jnu.encoding"))
 
         if (offline) {
-            arguments.add("--offline");
+            arguments.add("--offline")
         }
         if (failOnWarning) {
-            arguments.add("--warning-mode=fail");
+            arguments.add("--warning-mode=fail")
         }
 
-        switch (configurationCaching) {
-            case ON:
-                arguments.add("--configuration-cache");
-                arguments.add("--configuration-cache-problems=fail");
-                break;
-            case PROJECT_ISOLATION:
-                arguments.add("--configuration-cache");
-                arguments.add("-Dorg.gradle.unsafe.isolated-projects=true");
-                arguments.add("--configuration-cache-problems=fail");
-                break;
-            case PROJECT_ISOLATION_WARN:
-                arguments.add("--configuration-cache");
-                arguments.add("-Dorg.gradle.unsafe.isolated-projects=true");
-                arguments.add("--configuration-cache-problems=warn");
-                break;
-            case OFF:
-                arguments.add("--no-configuration-cache");
-                break;
+        when (configurationCaching) {
+            ConfigurationCaching.ON -> {
+                arguments.add("--configuration-cache")
+                arguments.add("--configuration-cache-problems=fail")
+            }
+
+            ConfigurationCaching.PROJECT_ISOLATION -> {
+                arguments.add("--configuration-cache")
+                arguments.add("-Dorg.gradle.unsafe.isolated-projects=true")
+                arguments.add("--configuration-cache-problems=fail")
+            }
+
+            ConfigurationCaching.PROJECT_ISOLATION_WARN -> {
+                arguments.add("--configuration-cache")
+                arguments.add("-Dorg.gradle.unsafe.isolated-projects=true")
+                arguments.add("--configuration-cache-problems=warn")
+            }
+
+            ConfigurationCaching.OFF -> arguments.add("--no-configuration-cache")
         }
 
         if (!localPrefsRoot) {
-            File preferencesRootDir;
-            if (perTestPrefsRoot) {
-                preferencesRootDir =
-                        new File(
-                                projectLocation.getProjectDir().getParentFile(),
-                                "android_prefs_root");
+            val preferencesRootDir = if (perTestPrefsRoot) {
+                File(projectLocation.projectDir.parentFile, "android_prefs_root")
             } else {
-                preferencesRootDir =
-                        new File(
-                                projectLocation.getTestLocation().getBuildDir(),
-                                "android_prefs_root");
+                File(projectLocation.testLocation.buildDir, "android_prefs_root")
             }
 
-            FileUtils.mkdirs(preferencesRootDir);
+            FileUtils.mkdirs(preferencesRootDir)
 
-            this.preferencesRootDir = preferencesRootDir;
+            this.preferencesRootDir = preferencesRootDir
 
-            arguments.add(
-                    String.format(
-                            "-D%s=%s",
-                            AbstractAndroidLocations.ANDROID_PREFS_ROOT,
-                            preferencesRootDir.getAbsolutePath()));
+            arguments.add("-D${ANDROID_PREFS_ROOT}=${preferencesRootDir.absolutePath}")
         }
 
-        return arguments;
+        return arguments
     }
 
     /*
      * A good-enough heuristic to check if the Kotlin plugin is applied.
      * This is needed because of b/169842093.
      */
-    private boolean ifAppliesKotlinPlugin(GradleTestProject testProject) {
-        GradleTestProject rootProject = testProject.getRootProject();
+    private fun ifAppliesKotlinPlugin(testProject: GradleTestProject): Boolean {
+        val rootProject: GradleTestProject = testProject.rootProject
 
-        for (File buildFile :
-                FileUtils.find(rootProject.getProjectDir(), Pattern.compile("build\\.gradle"))) {
-            if (FilesKt.readLines(buildFile, Charsets.UTF_8).stream()
-                    .anyMatch(
-                            s ->
-                                    s.contains("apply plugin: 'kotlin'")
-                                            || s.contains("apply plugin: 'kotlin-android'"))) {
-                return true;
+        for (buildFile: File in FileUtils.find(rootProject.projectDir, Pattern.compile("build\\.gradle"))) {
+            if (buildFile.readLines(Charsets.UTF_8).stream()
+                    .anyMatch { s: String ->
+                        s.contains("apply plugin: 'kotlin'")
+                                || s.contains("apply plugin: 'kotlin-android'")
+                    }
+            ) {
+                return true
             }
         }
 
-        return false;
+        return false
     }
 
-    /** Location of the Android Preferences folder (normally in ~/.android) */
-    @Nullable private File preferencesRootDir = null;
-
-    @NonNull
-    public File getPreferencesRootDir() {
-        if (preferencesRootDir == null) {
-            throw new RuntimeException(
-                    "cannot call getPreferencesRootDir before it is initialized");
-        }
-
-        return preferencesRootDir;
-    }
-
-    protected final Set<String> getOptionPropertyNames() {
-        return options.getOptions()
-                .map(Option::getPropertyName)
-                .collect(ImmutableSet.toImmutableSet());
-    }
-
-    protected final void setJvmArguments(@NonNull LongRunningOperation launcher) {
-
-        List<String> jvmArguments = new ArrayList<>(this.memoryRequirement.getJvmArgs());
+    protected fun setJvmArguments(launcher: LongRunningOperation) {
+        val jvmArguments: MutableList<String> = ArrayList(
+            memoryRequirement.jvmArgs
+        )
 
         if (crashOnOutOfMemory) {
-            jvmArguments.add("-XX:+CrashOnOutOfMemoryError");
+            jvmArguments.add("-XX:+CrashOnOutOfMemoryError")
         } else {
-            jvmArguments.add("-XX:+HeapDumpOnOutOfMemoryError");
-            jvmArguments.add("-XX:HeapDumpPath=" + jvmLogDir.resolve("heapdump.hprof"));
+            jvmArguments.add("-XX:+HeapDumpOnOutOfMemoryError")
+            jvmArguments.add("-XX:HeapDumpPath=" + jvmLogDir.resolve("heapdump.hprof"))
         }
 
-        String debugIntegrationTest = System.getenv("DEBUG_INNER_TEST");
+        val debugIntegrationTest: String? = System.getenv("DEBUG_INNER_TEST")
         if (!Strings.isNullOrEmpty(debugIntegrationTest)) {
-            String serverArg = debugIntegrationTest.equalsIgnoreCase("socket-listen") ? "n" : "y";
-            jvmArguments.add(
-                    String.format(
-                            "-agentlib:jdwp=transport=dt_socket,server=%s,suspend=y,address=5006",
-                            serverArg));
+            val serverArg: String = if (debugIntegrationTest.equals("socket-listen", ignoreCase = true)) "n" else "y"
+            jvmArguments.add("-agentlib:jdwp=transport=dt_socket,server=$serverArg,suspend=y,address=5006")
         }
 
         if (JacocoAgent.isJacocoEnabled()) {
-            jvmArguments.add(
-                    JacocoAgent.getJvmArg(projectLocation.getTestLocation().getBuildDir()));
+            jvmArguments.add(JacocoAgent.getJvmArg(projectLocation.testLocation.buildDir))
         }
 
-        jvmArguments.add("-XX:ErrorFile=" + jvmErrorLog);
+        jvmArguments.add("-XX:ErrorFile=$jvmErrorLog")
         if (CAPTURE_JVM_LOGS) {
-            jvmArguments.add("-XX:+UnlockDiagnosticVMOptions");
-            jvmArguments.add("-XX:+LogVMOutput");
-            jvmArguments.add("-XX:LogFile=" + jvmLogDir.resolve("java_log.log").toString());
+            jvmArguments.add("-XX:+UnlockDiagnosticVMOptions")
+            jvmArguments.add("-XX:+LogVMOutput")
+            jvmArguments.add("-XX:LogFile=" + jvmLogDir.resolve("java_log.log").toString())
         }
 
-        launcher.setJvmArguments(Iterables.toArray(jvmArguments, String.class));
+        launcher.setJvmArguments(*Iterables.toArray(jvmArguments, String::class.java))
     }
 
-    protected static void setStandardOut(
-            @NonNull LongRunningOperation launcher, @NonNull OutputStream stdout) {
-        if (VERBOSE) {
-            launcher.setStandardOutput(new TeeOutputStream(stdout, System.out));
-        } else {
-            launcher.setStandardOutput(stdout);
-        }
-    }
-
-    protected static void setStandardError(
-            @NonNull LongRunningOperation launcher, @NonNull OutputStream stderr) {
-        if (VERBOSE) {
-            launcher.setStandardError(new TeeOutputStream(stderr, System.err));
-        } else {
-            launcher.setStandardError(stderr);
-        }
-    }
-
-    @NonNull
-    public File getJvmErrorLog() {
-        return jvmErrorLog.toFile();
-    }
-
-    private void printJvmLogs() throws IOException {
-
-        List<Path> files;
-        try (Stream<Path> walk = Files.walk(jvmLogDir)) {
-            files = walk.filter(Files::isRegularFile).collect(Collectors.toList());
-        }
+    private fun printJvmLogs() {
+        val files: List<Path> = jvmLogDir.toFile().walk().filter { it.isFile }.map { it.toPath() }.toList()
         if (files.isEmpty()) {
-            return;
+            return
         }
 
-        Path projectDirectory = projectLocation.getProjectDir().toPath();
-
-        Path outputs;
-        if (TestUtils.runningFromBazel()) {
-
+        val projectDirectory: Path = projectLocation.projectDir.toPath()
+        val outputs: Path = if (TestUtils.runningFromBazel()) {
             // Put in test undeclared output directory.
-            outputs =
-                    TestUtils.getTestOutputDir()
-                            .resolve(projectDirectory.getParent().getParent().getFileName())
-                            .resolve(projectDirectory.getParent().getFileName())
-                            .resolve(projectDirectory.getFileName());
+            TestUtils.getTestOutputDir()
+                .resolve(projectDirectory.parent.parent.fileName)
+                .resolve(projectDirectory.parent.fileName)
+                .resolve(projectDirectory.fileName)
         } else {
-            outputs = projectDirectory.resolve("jvm_logs_outputs");
+            projectDirectory.resolve("jvm_logs_outputs")
         }
-        Files.createDirectories(outputs);
+        Files.createDirectories(outputs)
 
-        System.err.println("----------- JVM Log start -----------");
-        System.err.println("----- JVM log files being put in " + outputs.toString() + " ----");
-        for (Path path : files) {
-            System.err.print("---- Copying Log file: ");
-            System.err.println(path.getFileName());
-            Files.move(path, outputs.resolve(path.getFileName()));
+        System.err.println("----------- JVM Log start -----------")
+        System.err.println("----- JVM log files being put in $outputs ----")
+        for (path: Path in files) {
+            System.err.print("---- Copying Log file: ")
+            System.err.println(path.fileName)
+            Files.move(path, outputs.resolve(path.fileName))
         }
-        System.err.println("------------ JVM Log end ------------");
+        System.err.println("------------ JVM Log end ------------")
     }
 
-    protected void maybePrintJvmLogs(@NonNull GradleConnectionException failure)
-            throws IOException {
-        String stacktrace = Throwables.getStackTraceAsString(failure);
+    protected fun maybePrintJvmLogs(failure: GradleConnectionException) {
+        val stacktrace: String = Throwables.getStackTraceAsString(failure)
         if (stacktrace.contains("org.gradle.launcher.daemon.client.DaemonDisappearedException")
-                || stacktrace.contains("java.lang.OutOfMemoryError")) {
-                    printJvmLogs();
+            || stacktrace.contains("java.lang.OutOfMemoryError")
+        ) {
+            printJvmLogs()
         }
     }
 
-    protected static class CollectingProgressListener implements ProgressListener {
-        final ConcurrentLinkedQueue<ProgressEvent> events;
+    protected class CollectingProgressListener : ProgressListener {
+        private val events: ConcurrentLinkedQueue<ProgressEvent> = ConcurrentLinkedQueue()
 
-        protected CollectingProgressListener() {
-            events = new ConcurrentLinkedQueue<>();
+        override fun statusChanged(progressEvent: ProgressEvent) {
+            events.add(progressEvent)
         }
 
-        @Override
-        public void statusChanged(ProgressEvent progressEvent) {
-            events.add(progressEvent);
-        }
-
-        ImmutableList<ProgressEvent> getEvents() {
-            return ImmutableList.copyOf(events);
+        fun getEvents(): List<ProgressEvent> {
+            return ImmutableList.copyOf(events)
         }
     }
 
-    protected interface RunAction<LauncherT, ResultT> {
-        void run(@NonNull LauncherT launcher, @NonNull ResultHandler<ResultT> resultHandler);
+    fun interface RunAction<LauncherT, ResultT> {
+        fun run(launcher: LauncherT, resultHandler: ResultHandler<ResultT>)
     }
 
-    public enum ConfigurationCaching {
+    enum class ConfigurationCaching {
         ON,
         PROJECT_ISOLATION_WARN,
         PROJECT_ISOLATION,
+
         /**
          * Disables configuration cache (i.e., pass `--no-configuration-cache` to the build's
          * arguments).
          *
-         * <p>Note: Using this option is not recommended. Only use it if absolutely required.
+         * Note: Using this option is not recommended. Only use it if absolutely required.
          */
-        @Deprecated
+        @Deprecated("")
         OFF
     }
 
-    @NonNull
-    protected static <LauncherT extends ConfigurableLauncher<LauncherT>, ResultT> ResultT runBuild(
-            @NonNull LauncherT launcher, @NonNull RunAction<LauncherT, ResultT> runAction) {
-        CancellationTokenSource cancellationTokenSource =
-                GradleConnector.newCancellationTokenSource();
-        launcher.withCancellationToken(cancellationTokenSource.token());
-        SettableFuture<ResultT> future = SettableFuture.create();
-        runAction.run(
-                launcher,
-                new ResultHandler<ResultT>() {
-                    @Override
-                    public void onComplete(ResultT result) {
-                        future.set(result);
-                    }
+    companion object {
 
-                    @Override
-                    public void onFailure(GradleConnectionException e) {
-                        future.setException(e);
-                    }
-                });
-        try {
-            return future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            throw (GradleConnectionException) e.getCause();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            try {
-                printThreadDumps();
-            } catch (Throwable t) {
-                e.addSuppressed(t);
+        // An internal timeout for executing Gradle. This aims to be less than the overall test timeout
+        // to give more instructive error messages
+        private val TIMEOUT_SECONDS: Long
+
+        private val jvmLogDir: Path = Files.createTempDirectory("GRADLE_JVM_LOGS")
+
+        private val jvmErrorLog: Path = jvmLogDir.resolve("java_error.log")
+
+        private val VERBOSE: Boolean = !Strings.isNullOrEmpty(System.getenv()["CUSTOM_TEST_VERBOSE"])
+
+        const val CAPTURE_JVM_LOGS: Boolean = false
+
+        init {
+            val timeoutOverride: String? = System.getenv("TEST_TIMEOUT")
+            TIMEOUT_SECONDS = if (timeoutOverride != null) {
+                // Allow for longer build times within a test, while still trying to avoid having the
+                // overal test timeout be hit. If TEST_TIMEOUT is set, potentially increase the timeout
+                // to 1 minute less than the overall test timeout, if that's more than the default 10
+                // minute timeout.
+                max(600.0, (timeoutOverride.toInt() - 60).toDouble()).toLong()
+            } else {
+                600
             }
-            cancellationTokenSource.cancel();
-            // TODO(b/78568459) Gather more debugging info from Gradle daemon.
-            throw new RuntimeException(e);
         }
-    }
 
-    private static void printThreadDumps() throws IOException, InterruptedException {
-        if (SdkConstants.currentPlatform() != SdkConstants.PLATFORM_LINUX
-                && SdkConstants.currentPlatform() != SdkConstants.PLATFORM_DARWIN) {
-            // handle only Linux&Darwin for now
-            return;
+        @JvmStatic
+        protected fun setStandardOut(launcher: LongRunningOperation, stdout: OutputStream) {
+            if (VERBOSE) {
+                launcher.setStandardOutput(TeeOutputStream(stdout, System.out))
+            } else {
+                launcher.setStandardOutput(stdout)
+            }
         }
-        String javaHome = System.getProperty("java.home");
-        String processes = runProcess(javaHome + "/bin/jps");
 
-        String[] lines = processes.split(System.lineSeparator());
-        for (String line : lines) {
-            String pid = line.split(" ")[0];
-            String threadDump = runProcess(javaHome + "/bin/jstack", "-l", pid);
-
-            System.out.println("Fetching thread dump for: " + line);
-            System.out.println("Thread dump is:");
-            System.out.println(threadDump);
+        @JvmStatic
+        protected fun setStandardError(launcher: LongRunningOperation, stderr: OutputStream) {
+            if (VERBOSE) {
+                launcher.setStandardError(TeeOutputStream(stderr, System.err))
+            } else {
+                launcher.setStandardError(stderr)
+            }
         }
-    }
 
-    private static String runProcess(String... commands) throws InterruptedException, IOException {
-        ProcessBuilder processBuilder = new ProcessBuilder().command(commands);
-        Process process = processBuilder.start();
-        process.waitFor(5, TimeUnit.SECONDS);
+        @JvmStatic
+        protected fun <LauncherT : ConfigurableLauncher<LauncherT>, ResultT> runBuild(
+            launcher: LauncherT, runAction: RunAction<LauncherT, ResultT>
+        ): ResultT {
+            val cancellationTokenSource: CancellationTokenSource =
+                GradleConnector.newCancellationTokenSource()
+            launcher.withCancellationToken(cancellationTokenSource.token())
+            val future: SettableFuture<ResultT> = SettableFuture.create()
+            runAction.run(
+                launcher,
+                object : ResultHandler<ResultT> {
+                    override fun onComplete(result: ResultT) {
+                        future.set(result)
+                    }
 
-        byte[] bytes = ByteStreams.toByteArray(process.getInputStream());
-        return new String(bytes, Charsets.UTF_8);
+                    override fun onFailure(e: GradleConnectionException) {
+                        future.setException(e)
+                    }
+                })
+            try {
+                return future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            } catch (e: ExecutionException) {
+                throw (e.cause as GradleConnectionException?)!!
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw RuntimeException(e)
+            } catch (e: TimeoutException) {
+                try {
+                    printThreadDumps()
+                } catch (t: Throwable) {
+                    e.addSuppressed(t)
+                }
+                cancellationTokenSource.cancel()
+                // TODO(b/78568459) Gather more debugging info from Gradle daemon.
+                throw RuntimeException(e)
+            }
+        }
+
+        private fun printThreadDumps() {
+            if (SdkConstants.currentPlatform() != SdkConstants.PLATFORM_LINUX
+                && SdkConstants.currentPlatform() != SdkConstants.PLATFORM_DARWIN
+            ) {
+                // handle only Linux&Darwin for now
+                return
+            }
+            val javaHome: String = System.getProperty("java.home")
+            val processes: String = runProcess("$javaHome/bin/jps")
+
+            val lines: Array<String> =
+                processes.split(System.lineSeparator().toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            for (line: String in lines) {
+                val pid: String = line.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+                val threadDump: String = runProcess("$javaHome/bin/jstack", "-l", pid)
+
+                println("Fetching thread dump for: $line")
+                println("Thread dump is:")
+                println(threadDump)
+            }
+        }
+
+        private fun runProcess(vararg commands: String): String {
+            val processBuilder: ProcessBuilder = ProcessBuilder().command(*commands)
+            val process: Process = processBuilder.start()
+            process.waitFor(5, TimeUnit.SECONDS)
+
+            val bytes: ByteArray = ByteStreams.toByteArray(process.inputStream)
+            return String(bytes, Charsets.UTF_8)
+        }
     }
 }
