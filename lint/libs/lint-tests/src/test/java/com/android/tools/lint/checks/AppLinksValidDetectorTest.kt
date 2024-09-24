@@ -221,7 +221,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -261,7 +261,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -306,7 +306,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     xmlns:tools="http://schemas.android.com/tools"    package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -354,7 +354,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -394,7 +394,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application
                         android:allowBackup="true"
                         android:icon="@mipmap/ic_launcher" >
-                        <activity android:name=".MainActivity" >
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -441,7 +441,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application
                         android:allowBackup="true"
                         android:icon="@mipmap/ic_launcher" >
-                        <activity android:name=".MainActivity" >
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -481,7 +481,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     xmlns:tools="http://schemas.android.com/tools"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"/>
@@ -519,7 +519,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -561,7 +561,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -623,7 +623,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"/>
@@ -666,7 +666,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme="http"/>
                                 <data android:host="example.com"
@@ -718,7 +718,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme=""
                                       android:host=""
@@ -760,7 +760,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme="http:"/>
                                 <data android:scheme="https:"/>
@@ -794,7 +794,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme="http"/>
                                 <data android:host="example.*.com"
@@ -835,7 +835,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="HTTP"
@@ -882,7 +882,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
@@ -928,7 +928,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     xmlns:tools="http://schemas.android.com/tools"
                     package="test.pkg" >
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme="http"
                                       android:host="example.com"
@@ -1320,11 +1320,11 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testNotExported() {
     val expected =
       """
-            AndroidManifest.xml:6: Error: Activity supporting ACTION_VIEW is not exported [AppLinkUrlError]
-                    <activity android:exported="false"
-                    ^
-            1 errors, 0 warnings
-            """
+      AndroidManifest.xml:6: Error: Activity supporting ACTION_VIEW is not exported [AppLinkUrlError]
+              <activity android:name=".MainActivity"
+              ^
+      1 errors, 0 warnings
+      """
     lint()
       .files(
         xml(
@@ -1335,7 +1335,8 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
 
                     <application
                         android:theme="@style/AppTheme" >
-                        <activity android:exported="false"
+                        <activity android:name=".MainActivity"
+                            android:exported="false"
                             android:theme="@style/FullscreenTheme" >
                             <intent-filter android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
@@ -1345,7 +1346,6 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
-                            <intent-filter android:label="@string/title_activity_fullscreen"/>
                             <intent-filter android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
@@ -1355,7 +1355,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
                         </activity>
-                        <activity android:exported="true">
+                        <activity android:name=".SecondActivity" android:exported="true">
                             <intent-filter android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
@@ -1729,7 +1729,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -1763,7 +1763,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                  <action android:name="android.intent.action.PROVIDER_CHANGED"/>
                                  <data android:scheme="content"/>
@@ -1795,7 +1795,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <!-- Following https://developer.android.com/guide/topics/providers/content-provider-basics#MIMETypeReference -->
                                 <data android:mimeType="vnd.android.cursor.item/vnd.＄{applicationId}.item" /> <!-- OK -->
@@ -1851,7 +1851,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter>
                                 <data android:scheme="myscheme" android:pathPrefix="/path/to/there"/> <!-- Missing host -->
                             </intent-filter>
@@ -1879,7 +1879,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
 
                     <application>
-                        <activity>
+                        <activity android:name=".MainActivity">
                             <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
@@ -1911,7 +1911,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 package="test.pkg" >
 
                 <application>
-                    <activity>
+                    <activity android:name=".MainActivity">
                         <intent-filter android:autoVerify="true">
                             <data android:scheme="http"
                                 android:host="example.com"
