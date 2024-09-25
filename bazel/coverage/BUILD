@@ -1177,8 +1177,9 @@ coverage_report(
         "//tools/base/common:tools.tests.test",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib_tests",
         "//tools/base/ddmlib:tools.tests.test",
-        "//tools/base/deploy/deployer:deployer.tests",
-        "//tools/base/deploy/deployer:studio.android.sdktools.deployer_tests",
+        #TODO(b/369638741) deployer tests are way too flaky for coverage
+        #"//tools/base/deploy/deployer:deployer.tests",
+        #"//tools/base/deploy/deployer:studio.android.sdktools.deployer_tests",
         "//tools/base/device-provisioner:studio.android.sdktools.device-provisioner_tests",
         "//tools/base/draw9patch:studio.android.sdktools.draw9patch_tests",
         "//tools/base/dynamic-layout-inspector/agent/appinspection:agent_tests.test",
