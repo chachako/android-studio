@@ -135,11 +135,18 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         return KotlinMultiplatformAndroidCompilationBuilderImpl(compilationType)
     }
 
-    override fun withAndroidTestOnJvm(action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit) {
-        withAndroidTestOnJvmBuilder {  }.configure(action)
+    override fun withHostTest(action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit) {
+        withHostTestBuilder {  }.configure(action)
     }
 
-    override fun withAndroidTestOnJvmBuilder(
+    @Deprecated("Use withHostTest. This api will be removed in AGP 9.0",
+        ReplaceWith("withHostTest(action)")
+    )
+    override fun withAndroidTestOnJvm(action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit) {
+        return withHostTest(action)
+    }
+
+    override fun withHostTestBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
     ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm> {
         androidTestOnJvmBuilder = withTestBuilder(
@@ -155,11 +162,27 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         return HasConfigurableValueImpl(androidTestOnJvmOptions!!)
     }
 
-    override fun withAndroidTestOnDevice(action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit) {
-        withAndroidTestOnDeviceBuilder {  }.configure(action)
+    @Deprecated("Use withHostTestBuilder. This api will be removed in AGP 9.0",
+        ReplaceWith("withHostTestBuilder(action)")
+    )
+    override fun withAndroidTestOnJvmBuilder(
+        action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
+    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm> {
+        return withHostTestBuilder(action)
     }
 
-    override fun withAndroidTestOnDeviceBuilder(
+    override fun withDeviceTest(action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit) {
+        withDeviceTestBuilder {  }.configure(action)
+    }
+
+    @Deprecated("Use withDeviceTest. This api will be removed in AGP 9.0",
+        ReplaceWith("withDeviceTest(action)")
+    )
+    override fun withAndroidTestOnDevice(action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit) {
+        return withDeviceTest(action)
+    }
+
+    override fun withDeviceTestBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
     ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice> {
         androidTestOnDeviceBuilder = withTestBuilder(
@@ -173,5 +196,12 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         androidTestOnDeviceBuilder!!.action()
         compilationEnabledCallback(androidTestOnDeviceBuilder!!)
         return HasConfigurableValueImpl(androidTestOnDeviceOptions!!)
+    }
+
+    @Deprecated("Use withDeviceTestBuilder. This api will be removed in AGP 9.0",
+        ReplaceWith("withDeviceTestBuilder(action)")
+    )
+    override fun withAndroidTestOnDeviceBuilder(action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice> {
+        return withDeviceTestBuilder(action)
     }
 }

@@ -49,7 +49,7 @@ class KotlinMultiplatformAndroidDexingTest {
                             }
                         }
 
-                        isCoreLibraryDesugaringEnabled = true
+                        enableCoreLibraryDesugaring = true
                     }
                 }
                 dependencies {

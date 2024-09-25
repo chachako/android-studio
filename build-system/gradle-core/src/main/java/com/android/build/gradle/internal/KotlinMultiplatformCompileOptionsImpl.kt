@@ -28,7 +28,7 @@ internal class KotlinMultiplatformCompileOptionsImpl(
 ): CompileOptions() {
 
     override var isCoreLibraryDesugaringEnabled
-        get() = extension.isCoreLibraryDesugaringEnabled
+        get() = extension.enableCoreLibraryDesugaring
         set(_) {
             throw IllegalAccessException("Compile options for kmp variants are read only.")
         }

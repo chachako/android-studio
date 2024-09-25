@@ -363,6 +363,8 @@ private class DslScriptGenerator(
         private val closuresToManuallyVisit = mapOf(
             "withAndroidTestOnJvm" to KotlinMultiplatformAndroidTestOnJvm::class.java,
             "withAndroidTestOnDevice" to KotlinMultiplatformAndroidTestOnDevice::class.java,
+            "withHostTest" to KotlinMultiplatformAndroidTestOnJvm::class.java,
+            "withDeviceTest" to KotlinMultiplatformAndroidTestOnDevice::class.java,
             "baselineProfile" to BaselineProfile::class.java
         )
 
@@ -402,6 +404,8 @@ private class DslScriptGenerator(
             // Intentionally ignored
             "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvmBuilder(kotlin.jvm.functions.Function1)",
             "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDeviceBuilder(kotlin.jvm.functions.Function1)",
+            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withHostTestBuilder(kotlin.jvm.functions.Function1)",
+            "public abstract com.android.build.api.dsl.HasConfigurableValue com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withDeviceTestBuilder(kotlin.jvm.functions.Function1)",
 
             "public abstract com.android.build.api.dsl.LibraryPublishing com.android.build.api.dsl.LibraryExtension.getPublishing()",
             "public abstract void com.android.build.api.dsl.LibraryExtension.publishing(kotlin.jvm.functions.Function1)",

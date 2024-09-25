@@ -177,7 +177,6 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      *
      * For more information about the properties you can configure in this block, see [Lint].
      */
-    @get:Incubating
     val lint: Lint
 
     /**
@@ -185,37 +184,32 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      *
      * For more information about the properties you can configure in this block, see [Lint].
      */
-    @Incubating
     fun lint(action: Lint.() -> Unit)
 
     /**
      * Options for configuring AAR metadata.
      */
-    @get:Incubating
     val aarMetadata: AarMetadata
 
     /**
      * Options for configuring AAR metadata.
      */
-    @Incubating
     fun aarMetadata(action: AarMetadata.() -> Unit)
 
     /**
      * Specifies options and rules that determine which files the Android plugin packages into your
-     * APK.
+     * AAR.
      *
      * For more information about the properties you can configure in this block, see [Packaging].
      */
-    @get:Incubating
     val packaging: Packaging
 
     /**
      * Specifies options and rules that determine which files the Android plugin packages into your
-     * APK.
+     * AAR.
      *
      * For more information about the properties you can configure in this block, see [Packaging].
      */
-    @Incubating
     fun packaging(action: Packaging.() -> Unit)
 
     /**
@@ -238,7 +232,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * Creates and configures a compilation for tests that run on the JVM (previously referred to as
      * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnJvmCompilation]
      * object with the following defaults (You can change these defaults by using
-     * [withAndroidTestOnJvmBuilder] instead):
+     * [withHostTestBuilder] instead):
      *
      * * compilation name is "testOnJvm"
      * * default sourceSet name is "androidTestOnJvm" (sources would be located at `$project/src/androidTestOnJvm`)
@@ -258,6 +252,12 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * ```
      */
     @Incubating
+    fun withHostTest(
+        action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit
+    )
+
+    @Deprecated("Use withHostTest. This api will be removed in AGP 9.0")
+    @Incubating
     fun withAndroidTestOnJvm(
         action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit
     )
@@ -271,9 +271,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * ```
      * kotlin {
      *   androidLibrary {
-     *     withAndroidTestOnJvmBuilder {
-     *       compilationName = "unitTest"
-     *       defaultSourceSetName = "androidUnitTest"
+     *     withHostTestBuilder {
      *     }.configure {
      *       isIncludeAndroidResources = true
      *     }
@@ -293,6 +291,12 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * }
      * ```
      */
+    @Incubating
+    fun withHostTestBuilder(
+        action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
+    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm>
+
+    @Deprecated("Use withHostTestBuilder. This api will be removed in AGP 9.0")
     @Incubating
     fun withAndroidTestOnJvmBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
@@ -321,6 +325,12 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * ```
      */
     @Incubating
+    fun withDeviceTest(
+        action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit
+    )
+
+    @Deprecated("Use withDeviceTest. This api will be removed in AGP 9.0")
+    @Incubating
     fun withAndroidTestOnDevice(
         action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit
     )
@@ -334,9 +344,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * ```
      * kotlin {
      *   androidLibrary {
-     *     withAndroidTestOnDeviceBuilder {
-     *       compilationName = "instrumentedTest"
-     *       defaultSourceSetName = "androidInstrumentedTest"
+     *     withDeviceTestBuilder {
      *     }.configure {
      *       instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
      *     }
@@ -357,6 +365,12 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * ```
      */
     @Incubating
+    fun withDeviceTestBuilder(
+        action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
+    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice>
+
+    @Deprecated("Use withDeviceTestBuilder. This api will be removed in AGP 9.0")
+    @Incubating
     fun withAndroidTestOnDeviceBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
     ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice>
@@ -364,14 +378,10 @@ interface KotlinMultiplatformAndroidLibraryExtension {
     /**
      * Whether core library desugaring is enabled.
      */
-    @get:Incubating
-    @set:Incubating
-    var isCoreLibraryDesugaringEnabled: Boolean
+    var enableCoreLibraryDesugaring: Boolean
 
     /**
      * Configure the gathering of code-coverage from tests.
-     *
      */
-    @get:Incubating
     val testCoverage: TestCoverage
 }
