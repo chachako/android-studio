@@ -68,6 +68,7 @@ import com.android.tools.lint.detector.api.resolvePlaceHolders
 import com.android.utils.CharSequences
 import com.android.utils.XmlUtils
 import com.android.utils.iterator
+import com.android.utils.text
 import com.android.xml.AndroidManifest
 import com.android.xml.AndroidManifest.ATTRIBUTE_NAME
 import com.android.xml.AndroidManifest.NODE_ACTION
@@ -266,6 +267,16 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     context.report(VALIDATION, node, location, message, quickfixData)
   }
 
+  private fun reportUrlWarning(
+    context: XmlContext,
+    node: Node,
+    location: Location,
+    message: String,
+    quickfixData: LintFix? = null,
+  ) {
+    context.report(APP_LINK_WARNING, node, location, message, quickfixData)
+  }
+
   private fun reportTestUrlFailure(
     context: XmlContext,
     node: Node,
@@ -432,6 +443,35 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
 
     val hasExplicitScheme = schemes.isNotEmpty() && !implicitSchemes
+
+    // --- Check whether this is "almost an app link" ---
+    // i.e. intent filter has everything we would expect from an app link but doesn't have
+    // autoVerify
+    if (
+      intentFilter.getAttributeNS(ANDROID_URI, ATTR_AUTO_VERIFY).isNullOrBlank() &&
+        schemes.isNotEmpty() &&
+        schemes.all(::isWebScheme) &&
+        hostPortPairs.isNotEmpty() &&
+        actionView &&
+        browsable &&
+        hasCategoryDefault(intentFilter)
+    ) {
+      // Just highlight the <intent-filter> tag, instead of the whole intent filter
+      reportUrlWarning(
+        context,
+        intentFilter,
+        context.getNameLocation(intentFilter),
+        """This intent filter has the format of an Android App Link but is \
+            |missing the `autoVerify` attribute; add `android:autoVerify="true"` \
+            |to ensure your domain will be validated and enable App Link-related \
+            |Lint warnings. If you do not want clicked URLs to bring the user to \
+            |your app, remove the `android.intent.category.BROWSABLE` category, or \
+            |set `android:autoVerify="false"` to make it clear this is not intended \
+            |to be an Android App Link."""
+          .trimMargin(),
+        fix().set(ANDROID_URI, ATTR_AUTO_VERIFY, VALUE_TRUE).build(),
+      )
+    }
 
     // Validation
     // autoVerify means this is an Android App Link:
@@ -1048,6 +1088,26 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           priority = 5,
           moreInfo = "https://developer.android.com/training/app-links",
           severity = Severity.ERROR,
+          implementation = IMPLEMENTATION,
+        )
+        .addMoreInfo("https://g.co/AppIndexing/AndroidStudio")
+
+    @JvmField
+    val APP_LINK_WARNING =
+      Issue.create(
+          id = "AppLinkWarning",
+          briefDescription = "App Link warning",
+          explanation =
+            """From Android 12, intent filters that use the HTTP and HTTPS schemes will no longer \
+              bring the user to your app when the user clicks a link, unless the intent filter is \
+              an Android App Link. Such intent filters must include certain elements, and at least \
+              one Android App Link for each domain must have `android:autoVerify="true"` to verify \
+              ownership of the domain. We recommend adding `android:autoVerify="true"` to any intent \
+              filter that is intended to be an App Link, in case the other App Links are modified.""",
+          category = Category.CORRECTNESS,
+          priority = 5,
+          moreInfo = "https://developer.android.com/training/app-links",
+          severity = Severity.WARNING,
           implementation = IMPLEMENTATION,
         )
         .addMoreInfo("https://g.co/AppIndexing/AndroidStudio")

@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.AppLinksValidDetector.Companion.APP_LINK_WARNING
 import com.android.tools.lint.checks.AppLinksValidDetector.Companion.VALIDATION
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.XmlContext
@@ -392,7 +393,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                         android:allowBackup="true"
                         android:icon="@mipmap/ic_launcher" >
                         <activity android:name=".MainActivity">
-                            <intent-filter>
+                            <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
@@ -439,7 +440,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                         android:allowBackup="true"
                         android:icon="@mipmap/ic_launcher" >
                         <activity android:name=".MainActivity">
-                            <intent-filter>
+                            <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
@@ -621,7 +622,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
                     <application>
                         <activity android:name=".MainActivity">
-                            <intent-filter>
+                            <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"/>
                                 <data android:host="example.com"
@@ -880,7 +881,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     package="test.pkg" >
                     <application>
                         <activity android:name=".MainActivity">
-                            <intent-filter>
+                            <intent-filter android:autoVerify="true">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                       android:host="example.com"
@@ -976,7 +977,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             android:configChanges="orientation|keyboardHidden|screenSize"
                             android:label="@string/title_activity_fullscreen"
                             android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example.com"
@@ -1023,7 +1024,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             android:configChanges="orientation|keyboardHidden|screenSize"
                             android:label="@string/title_activity_fullscreen"
                             android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example.com"
@@ -1188,7 +1189,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             android:configChanges="orientation|keyboardHidden|screenSize"
                             android:label="@string/title_activity_fullscreen"
                             android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http" />
                                 <data android:host="example.com" />
@@ -1232,7 +1233,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <action android:name="android.intent.action.MAIN" />
                                 <category android:name="android.intent.category.LAUNCHER" />
                             </intent-filter>
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example.com"
@@ -1335,7 +1336,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                         <activity android:name=".MainActivity"
                             android:exported="false"
                             android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example1.com"
@@ -1343,7 +1344,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 <category android:name="android.intent.category.DEFAULT" />
                                 <category android:name="android.intent.category.BROWSABLE" />
                             </intent-filter>
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example2.com"
@@ -1353,7 +1354,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             </intent-filter>
                         </activity>
                         <activity android:name=".SecondActivity" android:exported="true">
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                     android:host="example1.com"
@@ -1392,7 +1393,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 android:configChanges="orientation|keyboardHidden|screenSize"
                                 android:label="@string/title_activity_fullscreen"
                                 android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                       android:host="example.com"
@@ -1455,7 +1456,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                                 android:configChanges="orientation|keyboardHidden|screenSize"
                                 android:label="@string/title_activity_fullscreen"
                                 android:theme="@style/FullscreenTheme" >
-                            <intent-filter android:label="@string/title_activity_fullscreen">
+                            <intent-filter android:autoVerify="true" android:label="@string/title_activity_fullscreen">
                                 <action android:name="android.intent.action.VIEW" />
                                 <data android:scheme="http"
                                       android:host="example.com"
@@ -2095,6 +2096,129 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                       ^
           8 errors, 0 warnings
         """
+      )
+  }
+
+  fun testAddAutoVerifySuggestion() {
+    lint()
+      .issues(APP_LINK_WARNING)
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.example.helloworld" >
+
+              <application>
+                  <activity android:name=".FullscreenActivity">
+                      <intent-filter> <!-- We expect a warning here -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Missing VIEW -->
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Missing DEFAULT -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Missing BROWSABLE -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Has custom scheme, missing http -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="other" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Has no scheme -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+
+                      <intent-filter> <!-- Missing host -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+                      </intent-filter>
+
+                      <intent-filter android:autoVerify="false"> <!-- We would usually expect a warning here, but it has autoVerify="false" -->
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+
+                          <data android:scheme="http" />
+                          <data android:scheme="https" />
+
+                          <data android:host="example.com" />
+                          <data android:pathPrefix="/gizmos" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:6: Warning: This intent filter has the format of an Android App Link but is missing the autoVerify attribute; add android:autoVerify="true" to ensure your domain will be validated and enable App Link-related Lint warnings. If you do not want clicked URLs to bring the user to your app, remove the android.intent.category.BROWSABLE category, or set android:autoVerify="false" to make it clear this is not intended to be an Android App Link. [AppLinkWarning]
+                    <intent-filter> <!-- We expect a warning here -->
+                     ~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+      Fix for AndroidManifest.xml line 6: Set autoVerify="true":
+      @@ -7 +7
+      -             <intent-filter> <!-- We expect a warning here -->
+      +             <intent-filter android:autoVerify="true" > <!-- We expect a warning here -->
+      """
       )
   }
 
