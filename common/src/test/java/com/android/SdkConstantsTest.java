@@ -16,16 +16,20 @@
 package com.android;
 
 import static junit.framework.TestCase.assertTrue;
+
 import static org.junit.Assert.assertFalse;
 
 import com.android.testutils.TestUtils;
+
 import com.google.common.truth.Truth;
+
+import org.junit.Test;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.regex.Pattern;
-import org.junit.Test;
 
 public class SdkConstantsTest {
 
@@ -55,6 +59,7 @@ public class SdkConstantsTest {
         String gradleMinimum = property.getProperty("gradle_minimum");
         String buildToolsMinimum = property.getProperty("build_tools_minimum");
         String ndkDefault = property.getProperty("ndk_default");
+        String maxSupportedAndroidVersion = property.getProperty("max_supported_android_version");
 
         Path propertyFilePath = dir.resolve("supported-versions.properties");
 
@@ -73,13 +78,30 @@ public class SdkConstantsTest {
                 SdkConstants.NDK_DEFAULT_VERSION,
                 property.get("ndk_name"),
                 propertyFilePath);
+        if (SdkConstants.MAX_SUPPORTED_ANDROID_PLATFORM_VERSION.getCodename() != null) {
+            assertVersionConsistency(
+                    maxSupportedAndroidVersion,
+                    String.valueOf(SdkConstants.MAX_SUPPORTED_ANDROID_PLATFORM_VERSION),
+                    property.get("max_supported_android_version"),
+                    propertyFilePath);
+        } else {
+            assertVersionConsistency(
+                    maxSupportedAndroidVersion,
+                    String.valueOf(
+                            SdkConstants.MAX_SUPPORTED_ANDROID_PLATFORM_VERSION.getApiLevel()),
+                    property.get("max_supported_android_version"),
+                    propertyFilePath);
+        }
     }
 
     private void assertVersionConsistency(
             String actual, String expected, Object propertyName, Path propertiesFile) {
         String updatePropertiesMsg =
                 String.format(
-                        " The version of the %s property in '%s' (a version source for developers.android.com) is not consistent. The version in the property file is %s, has been changed to %s elsewhere. Consider updating the %s to %s, if this change is intended.",
+                        " The version of the %s property in '%s' (a version source for"
+                                + " developers.android.com) is not consistent. The version in the"
+                                + " property file is %s, has been changed to %s elsewhere. Consider"
+                                + " updating the %s to %s, if this change is intended.",
                         propertyName, propertiesFile, expected, actual, propertyName, actual);
         Truth.assertWithMessage(updatePropertiesMsg).that(actual).isEqualTo(expected);
     }
