@@ -38,12 +38,15 @@ import com.android.SdkConstants.TAG_ACTIVITY_ALIAS
 import com.android.SdkConstants.TAG_CATEGORY
 import com.android.SdkConstants.TAG_DATA
 import com.android.SdkConstants.TAG_INTENT_FILTER
+import com.android.SdkConstants.TAG_URI_RELATIVE_FILTER_GROUP
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.VALUE_0
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
+import com.android.sdklib.AndroidVersion
+import com.android.sdklib.AndroidVersion.VersionCodes
 import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_ADVANCED_GLOB
 import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_LITERAL
 import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_PREFIX
@@ -68,7 +71,6 @@ import com.android.tools.lint.detector.api.resolvePlaceHolders
 import com.android.utils.CharSequences
 import com.android.utils.XmlUtils
 import com.android.utils.iterator
-import com.android.utils.text
 import com.android.xml.AndroidManifest
 import com.android.xml.AndroidManifest.ATTRIBUTE_NAME
 import com.android.xml.AndroidManifest.NODE_ACTION
@@ -174,7 +176,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         } else null
 
       val location = context.getLocation(dataTag)
-      val indent = (0 until (location.start?.column ?: 4)).joinToString(separator = "") { " " }
+      val indent =
+        (0 until (location.start?.column ?: DEFAULT_INDENT_AMOUNT)).joinToString(separator = "") {
+          " "
+        }
       val newText =
         firstLine.orEmpty() +
           attributes
@@ -413,11 +418,51 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       if (host != null) {
         hostPortPairs.add(Pair(host, port))
       }
-      addMatcher(context, ATTR_PATH, PATTERN_LITERAL, paths, data)
-      addMatcher(context, ATTR_PATH_PREFIX, PATTERN_PREFIX, paths, data)
-      addMatcher(context, ATTR_PATH_PATTERN, PATTERN_SIMPLE_GLOB, paths, data)
-      addMatcher(context, ATTR_PATH_ADVANCED_PATTERN, PATTERN_ADVANCED_GLOB, paths, data)
-      addMatcher(context, ATTR_PATH_SUFFIX, PATTERN_SUFFIX, paths, data)
+      checkAndAddPathMatcher(
+        context,
+        ATTR_PATH,
+        PATTERN_LITERAL,
+        paths,
+        data,
+        intentFilter,
+        intentFilter,
+      )
+      checkAndAddPathMatcher(
+        context,
+        ATTR_PATH_PREFIX,
+        PATTERN_PREFIX,
+        paths,
+        data,
+        intentFilter,
+        intentFilter,
+      )
+      checkAndAddPathMatcher(
+        context,
+        ATTR_PATH_PATTERN,
+        PATTERN_SIMPLE_GLOB,
+        paths,
+        data,
+        intentFilter,
+        intentFilter,
+      )
+      checkAndAddPathMatcher(
+        context,
+        ATTR_PATH_ADVANCED_PATTERN,
+        PATTERN_ADVANCED_GLOB,
+        paths,
+        data,
+        intentFilter,
+        intentFilter,
+      )
+      checkAndAddPathMatcher(
+        context,
+        ATTR_PATH_SUFFIX,
+        PATTERN_SUFFIX,
+        paths,
+        data,
+        intentFilter,
+        intentFilter,
+      )
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
     var isHttp = false
@@ -753,12 +798,14 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
   }
 
-  private fun addMatcher(
-    context: XmlContext?,
+  private fun checkAndAddPathMatcher(
+    context: XmlContext,
     attributeName: String,
     type: Int,
     matcher: MutableSet<AndroidPatternMatcher>,
     data: Element,
+    intentFilter: Element,
+    parent: Element,
   ) {
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
     if (attribute != null) {
@@ -769,7 +816,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
       val currentMatcher = AndroidPatternMatcher(value, type)
       matcher.add(currentMatcher)
-      if (context != null && !isSubstituted(value) && !value.startsWith(PREFIX_RESOURCE_REF)) {
+      if (!isSubstituted(value) && !value.startsWith(PREFIX_RESOURCE_REF)) {
         if (!value.startsWith("/") && attributeName in setOf(ATTR_PATH, ATTR_PATH_PREFIX)) {
           val fix = LintFix.create().replace().text(attribute.value).with("/$value").build()
           reportUrlError(
@@ -788,6 +835,102 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             attribute,
             context.getValueLocation(attribute),
             "`${attribute.name}` attribute should start with `/` or `.*`, but it is `$value`",
+          )
+        }
+
+        // --- Check for query parameters (?) and URI fragments (#) ---
+
+        // Query parameters (?) and URI fragments (#) are not included in the intent when the user
+        // clicks on the URI from the browser.
+        // To be safe, we'll only perform this check if the intent filter has autoVerify.
+        if (isAutoVerify(intentFilter)) {
+          // Android matches query params separately.
+          // Also, the query string, as specified in the Android manifest, should not be
+          // URI-encoded.
+          // That is, query="param=value!" matches ?param=value! and ?param=value%21.
+          // query="param=value%21" matches neither ?param=value! nor ?param=value%21.
+          val queryParameters =
+            value
+              .split('?')
+              .let { if (it.size == 2) it[1] else "" }
+              .substringBefore('#')
+              .splitToSequence('&')
+              .filter { it.isNotBlank() }
+              .toSet()
+          // Android treats the fragment as a single section.
+          val fragmentInUri =
+            value.split('#').let { if (it.size == 2) it[1] else "" }.substringBefore('?')
+
+          if (queryParameters.isNotEmpty() || fragmentInUri.isNotBlank()) {
+            // The query/fragment string, as specified in the Android manifest, should not be
+            // URI-encoded.
+            // See getQueryAndFragmentParameters below.
+            val queries = queryParameters.sorted().map { """<data android:query="$it" />""" }
+            val pathBeforeQueryAndFragment = value.split('?', '#')[0]
+            val dataIndent = context.getLocation(data).start?.column ?: DEFAULT_INDENT_AMOUNT
+            val fixText =
+              when (parent.tagName) {
+                TAG_URI_RELATIVE_FILTER_GROUP -> {
+                  val newLineAndDataIndent =
+                    "\n" + (0 until dataIndent).joinToString(separator = "") { " " }
+                  val newLineAndIndentedFragment =
+                    when (fragmentInUri) {
+                      "" -> ""
+                      else -> """$newLineAndDataIndent<data android:fragment="$fragmentInUri" />"""
+                    }
+                  "<data android:$attributeName=$pathBeforeQueryAndFragment />" +
+                    concatenateWithIndent(queries, newLineAndDataIndent) +
+                    newLineAndIndentedFragment
+                }
+                TAG_INTENT_FILTER -> {
+                  val parentIndent = context.getLocation(parent).start?.column ?: 0
+                  val startingIndent = (0 until dataIndent).joinToString(separator = "") { " " }
+                  val innerIndentAmount = 2 * dataIndent - parentIndent
+                  val newLineAndInnerIndent =
+                    "\n" + (0 until innerIndentAmount).joinToString(separator = "") { " " }
+                  val newLineAndIndentedFragment =
+                    when (fragmentInUri) {
+                      "" -> ""
+                      else -> """$newLineAndInnerIndent<data android:fragment="$fragmentInUri" />"""
+                    }
+                  "<uri-relative-filter-group>" +
+                    """$newLineAndInnerIndent<data android:$attributeName="$pathBeforeQueryAndFragment" />""" +
+                    concatenateWithIndent(queries, newLineAndInnerIndent) +
+                    newLineAndIndentedFragment +
+                    "\n$startingIndent</uri-relative-filter-group>"
+                }
+                else -> null
+              }
+
+            reportUrlError(
+              context,
+              data,
+              context.getLocation(data),
+              "App link matching does not support query parameters or fragments, " +
+                "unless using `<uri-relative-filter-group>` (introduced in Android 15)",
+              if (
+                (context.project.targetSdkVersion ?: AndroidVersion.DEFAULT) <
+                  AndroidVersion(VersionCodes.VANILLA_ICE_CREAM) || fixText == null
+              ) {
+                null
+              } else {
+                fix().replace().with(fixText).build()
+              },
+            )
+          }
+        }
+        // --- Check for ? in pathPattern and pathAdvancedPattern ---
+        // Neither pathPattern nor pathAdvancedPattern supports ? as a regex character:
+        // https://developer.android.com/guide/topics/manifest/data-element
+        if (
+          value.contains("?") &&
+            attributeName in setOf(ATTR_PATH_PATTERN, ATTR_PATH_ADVANCED_PATTERN)
+        ) {
+          reportUrlError(
+            context,
+            attribute,
+            context.getValueLocation(attribute),
+            "$attributeName does not support `?` as a Regex character",
           )
         }
       }
@@ -905,6 +1048,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       )
     private const val HTTP = "http"
     private const val HTTPS = "https"
+    private const val DEFAULT_INDENT_AMOUNT = 4
 
     private fun replaceUrlWithValue(context: XmlContext?, str: String): String {
       if (context == null) {
@@ -1054,6 +1198,16 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           (data.schemes.isNotEmpty() &&
             !data.schemes.all { isWebScheme(it) || isSubstituted(it) }) ||
           data.hostPortPairs.isEmpty()))
+    }
+
+    private fun concatenateWithIndent(
+      inputs: List<String>,
+      newLineAndIndentString: String,
+    ): String {
+      return when {
+        inputs.isEmpty() -> ""
+        else -> inputs.joinToString(newLineAndIndentString, prefix = newLineAndIndentString)
+      }
     }
 
     private val IMPLEMENTATION =

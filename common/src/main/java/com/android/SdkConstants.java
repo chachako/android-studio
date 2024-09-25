@@ -1132,6 +1132,7 @@ public final class SdkConstants {
     public static final String TAG_QUERIES = "queries";
     public static final String TAG_INTENT = "intent";
     public static final String TAG_SDK_LIBRARY = "sdk-library";
+    public static final String TAG_URI_RELATIVE_FILTER_GROUP = "uri-relative-filter-group";
 
     // Tags: Resources
     public static final String TAG_RESOURCES = "resources";
@@ -1315,6 +1316,15 @@ public final class SdkConstants {
     public static final String ATTR_PATH_PATTERN = "pathPattern";
     public static final String ATTR_PATH_SUFFIX = "pathSuffix";
     public static final String ATTR_PATH_ADVANCED_PATTERN = "pathAdvancedPattern";
+    public static final String ATTR_FRAGMENT_ADVANCED_PATTERN = "fragmentAdvancedPattern";
+    public static final String ATTR_FRAGMENT_PATTERN = "fragmentPattern";
+    public static final String ATTR_FRAGMENT_PREFIX = "fragmentPrefix";
+    public static final String ATTR_FRAGMENT_SUFFIX = "fragmentSuffix";
+    public static final String ATTR_QUERY = "query";
+    public static final String ATTR_QUERY_ADVANCED_PATTERN = "queryAdvancedPattern";
+    public static final String ATTR_QUERY_PATTERN = "queryPattern";
+    public static final String ATTR_QUERY_PREFIX = "queryPrefix";
+    public static final String ATTR_QUERY_SUFFIX = "querySuffix";
     public static final String ATTR_ALLOW_BACKUP = "allowBackup";
     public static final String ATTR_DEBUGGABLE = "debuggable";
     public static final String ATTR_READ_PERMISSION = "readPermission";

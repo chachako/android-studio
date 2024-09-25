@@ -1948,7 +1948,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
         activity!!,
         mock<XmlContext>().apply {
           whenever(getLocation(any())).thenReturn(mock())
+          whenever(client).thenReturn(mock())
           whenever(driver).thenReturn(mock())
+          whenever(project).thenReturn(mock())
         },
       )
     assertThat(testElement(URL("http://example.com/literal/path"), infos)).isNull() // success
@@ -2599,5 +2601,382 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
           .sameMessage(VALIDATION, new = "VIEW actions require a URI", old = "Missing URL")
       )
       .isTrue()
+  }
+
+  fun test_queryParameter() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35" />
+
+                    <application>
+                        <activity android:name=".FullscreenActivity" android:exported="true">
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos?queryParam=1&amp;otherParam=2" />
+                                <data android:pathPrefix="/gizmos?queryParam" />
+                                <data android:pathSuffix="/gizmos?queryParam" />
+                                <data android:pathPattern="/gizmos?queryParam" />
+                                <data android:pathAdvancedPattern="/gizmos?queryParam" />
+                            </intent-filter>
+                            <intent-filter>
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="custom" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos?queryParam=1&amp;otherParam=2" />
+                                <data android:pathPrefix="/gizmos?queryParam" />
+                                <data android:pathSuffix="/gizmos?queryParam" />
+                                <data android:pathPattern="/gizmos?queryParam" />
+                                <data android:pathAdvancedPattern="/gizmos?queryParam" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:15: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos?queryParam=1&amp;otherParam=2" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:16: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathPrefix="/gizmos?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:17: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathSuffix="/gizmos?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:18: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathPattern="/gizmos?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:18: Error: pathPattern does not support ? as a Regex character [AppLinkUrlError]
+                        <data android:pathPattern="/gizmos?queryParam" />
+                                                   ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:19: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathAdvancedPattern="/gizmos?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:19: Error: pathAdvancedPattern does not support ? as a Regex character [AppLinkUrlError]
+                        <data android:pathAdvancedPattern="/gizmos?queryParam" />
+                                                           ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:31: Error: pathPattern does not support ? as a Regex character [AppLinkUrlError]
+                        <data android:pathPattern="/gizmos?queryParam" />
+                                                   ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:32: Error: pathAdvancedPattern does not support ? as a Regex character [AppLinkUrlError]
+                        <data android:pathAdvancedPattern="/gizmos?queryParam" />
+                                                           ~~~~~~~~~~~~~~~~~~
+        9 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs(
+        """
+        Fix for AndroidManifest.xml line 15: Replace with <uri-relative-filter-group>...:
+        @@ -15 +15
+        -                 <data android:path="/gizmos?queryParam=1&amp;otherParam=2" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:path="/gizmos" />
+        +                     <data android:query="otherParam=2" />
+        +                     <data android:query="queryParam=1" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 16: Replace with <uri-relative-filter-group>...:
+        @@ -16 +16
+        -                 <data android:pathPrefix="/gizmos?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathPrefix="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 17: Replace with <uri-relative-filter-group>...:
+        @@ -17 +17
+        -                 <data android:pathSuffix="/gizmos?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathSuffix="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 18: Replace with <uri-relative-filter-group>...:
+        @@ -18 +18
+        -                 <data android:pathPattern="/gizmos?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathPattern="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 19: Replace with <uri-relative-filter-group>...:
+        @@ -19 +19
+        -                 <data android:pathAdvancedPattern="/gizmos?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathAdvancedPattern="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                 </uri-relative-filter-group>
+      """
+      )
+  }
+
+  fun test_fragment() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35" />
+
+                    <application>
+                        <activity android:name=".FullscreenActivity" android:exported="true">
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos#fragment=1&amp;otherFragment=2" />
+                                <data android:pathPrefix="/gizmos#fragment!" /> <!-- Special character -->
+                                <data android:pathSuffix="/gizmos#fragment" />
+                                <data android:pathPattern="/gizmos#fragment" />
+                                <data android:pathAdvancedPattern="/gizmos#fragment" />
+                            </intent-filter>
+                            <intent-filter>
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="custom" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos#fragment=1&amp;otherFragment=2" />
+                                <data android:pathPrefix="/gizmos#fragment" />
+                                <data android:pathSuffix="/gizmos#fragment" />
+                                <data android:pathPattern="/gizmos#fragment" />
+                                <data android:pathAdvancedPattern="/gizmos#fragment" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:15: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos#fragment=1&amp;otherFragment=2" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:16: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathPrefix="/gizmos#fragment!" /> <!-- Special character -->
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:17: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathSuffix="/gizmos#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:18: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathPattern="/gizmos#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:19: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:pathAdvancedPattern="/gizmos#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        5 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs(
+        """
+        Fix for AndroidManifest.xml line 15: Replace with <uri-relative-filter-group>...:
+        @@ -15 +15
+        -                 <data android:path="/gizmos#fragment=1&amp;otherFragment=2" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:path="/gizmos" />
+        +                     <data android:fragment="fragment=1&otherFragment=2" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 16: Replace with <uri-relative-filter-group>...:
+        @@ -16 +16
+        -                 <data android:pathPrefix="/gizmos#fragment!" /> <!-- Special character -->
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathPrefix="/gizmos" />
+        +                     <data android:fragment="fragment!" />
+        +                 </uri-relative-filter-group> <!-- Special character -->
+        Fix for AndroidManifest.xml line 17: Replace with <uri-relative-filter-group>...:
+        @@ -17 +17
+        -                 <data android:pathSuffix="/gizmos#fragment" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathSuffix="/gizmos" />
+        +                     <data android:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 18: Replace with <uri-relative-filter-group>...:
+        @@ -18 +18
+        -                 <data android:pathPattern="/gizmos#fragment" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathPattern="/gizmos" />
+        +                     <data android:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 19: Replace with <uri-relative-filter-group>...:
+        @@ -19 +19
+        -                 <data android:pathAdvancedPattern="/gizmos#fragment" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:pathAdvancedPattern="/gizmos" />
+        +                     <data android:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+      """
+      )
+  }
+
+  fun test_queryParamAndFragment() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35" />
+
+                    <application>
+                        <activity android:name=".FullscreenActivity" android:exported="true">
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos?queryParam#fragment" />
+                                <data android:path="/gizmos#fragment?queryParam" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:15: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos?queryParam#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:16: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos#fragment?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs(
+        """
+        Fix for AndroidManifest.xml line 15: Replace with <uri-relative-filter-group>...:
+        @@ -15 +15
+        -                 <data android:path="/gizmos?queryParam#fragment" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:path="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                     <data android:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+        Fix for AndroidManifest.xml line 16: Replace with <uri-relative-filter-group>...:
+        @@ -16 +16
+        -                 <data android:path="/gizmos#fragment?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android:path="/gizmos" />
+        +                     <data android:query="queryParam" />
+        +                     <data android:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+      """
+      )
+  }
+
+  fun test_queryParameter_andFragment_belowAndroidV() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="34" />
+
+                    <application>
+                        <activity android:name=".FullscreenActivity" android:exported="true">
+
+                            <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:host="example.com" />
+                                <data android:path="/gizmos?queryParam" />
+                                <data android:path="/gizmos#fragment" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:15: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:16: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android:path="/gizmos#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs("")
+  }
+
+  fun test_queryParameter_andFragment_insideUriRelativeFilterGroup() {
+    // TODO(b/370997994): Allow <data> tags inside <uri-relative-filter-group> to be visited, then
+    // enable this test.
+    //    lint()
+    //      .files(
+    //        xml(
+    //          "AndroidManifest.xml",
+    //          """
+    //                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    //                    package="com.example.helloworld" >
+    //                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35" />
+    //
+    //                    <application>
+    //                        <activity android:name=".FullscreenActivity" android:exported="true">
+    //
+    //                            <intent-filter android:autoVerify="true">
+    //                                <action android:name="android.intent.action.VIEW" />
+    //                                <category android:name="android.intent.category.DEFAULT" />
+    //                                <category android:name="android.intent.category.BROWSABLE" />
+    //
+    //                                <data android:scheme="http" />
+    //                                <data android:host="example.com" />
+    //                                <uri-relative-filter-group>
+    //                                    <data android:path="/gizmos?queryParam" />
+    //                                    <data android:path="/gizmos#fragment" />
+    //                                </uri-relative-filter-group>
+    //                            </intent-filter>
+    //                        </activity>
+    //                    </application>
+    //                </manifest>
+    //                """,
+    //        )
+    //          .indented()
+    //      )
+    //      .run()
+    //      .expect("")
+    //      .expectFixDiffs("")
   }
 }
