@@ -16,12 +16,13 @@
 
 package com.android.tools.tracer.agent;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.GeneratorAdapter;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 class TraceApiMethodVisitor extends GeneratorAdapter implements Opcodes {
 
@@ -31,7 +32,7 @@ class TraceApiMethodVisitor extends GeneratorAdapter implements Opcodes {
             new HashSet<>(Arrays.asList("begin", "end", "flush", "start", "addVmArgs"));
 
     public TraceApiMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
-        super(Opcodes.ASM7, mv, access, name, desc);
+        super(Opcodes.ASM9, mv, access, name, desc);
         this.name = name;
         this.desc = desc;
     }

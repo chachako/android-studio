@@ -16,14 +16,15 @@
 
 package com.android.tools.tracer.agent;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class TraceMethodVisitor extends AdviceAdapter {
 
@@ -41,7 +42,7 @@ class TraceMethodVisitor extends AdviceAdapter {
             String name,
             String desc,
             TraceProfile profile) {
-        super(Opcodes.ASM7, mv, access, name, desc);
+        super(Opcodes.ASM9, mv, access, name, desc);
         this.className = className;
         this.name = name;
         this.tag = buildTag(className, name, desc);
