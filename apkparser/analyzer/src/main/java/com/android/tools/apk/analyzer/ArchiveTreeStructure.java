@@ -116,18 +116,18 @@ public class ArchiveTreeStructure {
         return childNode;
     }
 
-    public static void updateRawFileSizes(
+    public static void updateFileInfo(
             @NonNull ArchiveNode root, @NonNull ApkSizeCalculator calculator) {
-        Map<String, Long> rawFileSizes;
+        Map<String, ZipEntryInfo> infos;
         if (root.getData() instanceof InnerArchiveEntry) {
-            rawFileSizes =
-                    calculator.getRawSizePerFile(
+            infos =
+                    calculator.getInfoPerFile(
                             ((InnerArchiveEntry) root.getData())
                                     .asArchiveEntry()
                                     .getArchive()
                                     .getPath());
         } else {
-            rawFileSizes = calculator.getRawSizePerFile(root.getData().getArchive().getPath());
+            infos = calculator.getInfoPerFile(root.getData().getArchive().getPath());
         }
 
         // first set the file sizes for all child nodes
@@ -138,11 +138,13 @@ public class ArchiveTreeStructure {
                             if (node != root
                                     && data.getPath().getFileName() != null
                                     && node.getData() instanceof InnerArchiveEntry) {
-                                updateRawFileSizes(node, calculator);
+                                updateFileInfo(node, calculator);
                             }
-                            Long rawFileSize = rawFileSizes.get(data.getPath().toString());
-                            if (rawFileSize != null) {
-                                data.setRawFileSize(rawFileSize);
+                            ZipEntryInfo info = infos.get(data.getPath().toString());
+                            if (info != null) {
+                                data.setRawFileSize(info.size);
+                                data.setIsFileCompressed(info.isCompressed);
+                                data.setFileAlignment(info.alignment);
                             }
                         });
 

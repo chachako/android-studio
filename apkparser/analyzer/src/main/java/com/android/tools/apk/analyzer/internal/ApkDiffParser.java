@@ -35,9 +35,9 @@ public class ApkDiffParser {
             @NonNull ArchiveContext oldFile, @NonNull ArchiveContext newFile) throws IOException {
         ArchiveNode oldRoot = ArchiveTreeStructure.create(oldFile);
         GzipSizeCalculator calculator = new GzipSizeCalculator();
-        ArchiveTreeStructure.updateRawFileSizes(oldRoot, calculator);
+        ArchiveTreeStructure.updateFileInfo(oldRoot, calculator);
         ArchiveNode newRoot = ArchiveTreeStructure.create(newFile);
-        ArchiveTreeStructure.updateRawFileSizes(newRoot, calculator);
+        ArchiveTreeStructure.updateFileInfo(newRoot, calculator);
         return createTreeNode(oldRoot, newRoot);
     }
 

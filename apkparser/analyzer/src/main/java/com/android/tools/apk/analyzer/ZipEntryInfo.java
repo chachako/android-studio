@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.tools.apk.analyzer;
 
-import com.android.annotations.NonNull;
-import com.android.tools.apk.analyzer.internal.GzipSizeCalculator;
+public class ZipEntryInfo {
+    public enum Alignment {
+        ALIGNMENT_NONE(""),
+        ALIGNMENT_4K("4k"),
+        ALIGNMENT_16K("16k"),
+        ;
 
-import java.nio.file.Path;
-import java.util.Map;
+        public final String text;
 
-public interface ApkSizeCalculator {
-    long getFullApkDownloadSize(@NonNull Path apk);
+        Alignment(String text) {
+            this.text = text;
+        }
+    }
 
-    long getFullApkRawSize(@NonNull Path apk);
+    public long size;
+    public Alignment alignment;
+    public boolean isCompressed;
 
-    @NonNull
-    Map<String, Long> getDownloadSizePerFile(@NonNull Path apk);
-
-    @NonNull
-    Map<String, ZipEntryInfo> getInfoPerFile(@NonNull Path apk);
-
-    @NonNull
-    static ApkSizeCalculator getDefault() {
-        return new GzipSizeCalculator();
+    public ZipEntryInfo(long size, Alignment alignment, boolean isCompressed) {
+        this.size = size;
+        this.alignment = alignment;
+        this.isCompressed = isCompressed;
     }
 }

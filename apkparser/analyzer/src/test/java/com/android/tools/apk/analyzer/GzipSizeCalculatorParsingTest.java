@@ -19,11 +19,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.testutils.TestResources;
 import com.android.tools.apk.analyzer.internal.GzipSizeCalculator;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
-import org.junit.Before;
-import org.junit.Test;
 
 public class GzipSizeCalculatorParsingTest {
     private ApkSizeCalculator calculator;
@@ -56,6 +58,20 @@ public class GzipSizeCalculatorParsingTest {
         assertThat(veCalculator.getCount()).isEqualTo(3L);
 
         Map<String, Long> entries = calculator.getDownloadSizePerFile(apkWithVirtualEntries);
+        assertThat(entries.size()).isNotEqualTo(0);
+        assertThat(entries.get(GzipSizeCalculator.VIRTUAL_ENTRY_NAME)).isNull();
+    }
+
+    @Test
+    public void virtualEntriesParsingWithZipFlinger() throws IOException {
+        Path apkWithVirtualEntries =
+                TestResources.getFile("/app_with_virtual_entries.apk").toPath();
+
+        // Make sure the archive has more than one virtual entries.
+        VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntries);
+        assertThat(veCalculator.getCount()).isEqualTo(3L);
+
+        Map<String, ZipEntryInfo> entries = calculator.getInfoPerFile(apkWithVirtualEntries);
         assertThat(entries.size()).isNotEqualTo(0);
         assertThat(entries.get(GzipSizeCalculator.VIRTUAL_ENTRY_NAME)).isNull();
     }

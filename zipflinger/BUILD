@@ -13,6 +13,7 @@ maven_library(
     visibility = [
         "//tools/adt/idea/render-resources:__subpackages__",
         "//tools/base:__pkg__",
+        "//tools/base/apkparser/analyzer:__subpackages__",
         "//tools/base/bazel:__subpackages__",
         "//tools/base/build-system:__subpackages__",
         "//tools/base/deploy/deployer:__subpackages__",

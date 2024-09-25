@@ -16,7 +16,10 @@
 
 package com.android.tools.apk.analyzer;
 
+import static com.android.tools.apk.analyzer.ZipEntryInfo.Alignment.ALIGNMENT_NONE;
+
 import com.android.annotations.NonNull;
+
 import java.nio.file.Path;
 
 public abstract class ArchiveEntry {
@@ -48,6 +51,18 @@ public abstract class ArchiveEntry {
 
     public long getRawFileSize() {
         return 0;
+    }
+
+    public void setFileAlignment(ZipEntryInfo.Alignment alignment) {}
+
+    public ZipEntryInfo.Alignment getFileAlignment() {
+        return ALIGNMENT_NONE;
+    }
+
+    public void setIsFileCompressed(boolean isCompressed) {}
+
+    public boolean isFileCompressed() {
+        return false;
     }
 
     public void setDownloadFileSize(long downloadFileSize) {}

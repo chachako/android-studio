@@ -28,6 +28,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/base/apkparser:studio.android.sdktools.binary-resources[module]",
         "//tools/base/sdk-common:studio.android.sdktools.sdk-common[module]",
+        "//tools/base/zipflinger:studio.android.sdktools.zipflinger[module]",
     ],
 )
 
@@ -44,6 +45,7 @@ coverage_java_library(
         "//tools/base/common:tools.common",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
+        "//tools/base/zipflinger",
         "@maven//:com.android.tools.smali.smali-baksmali",
         "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.guava.guava",

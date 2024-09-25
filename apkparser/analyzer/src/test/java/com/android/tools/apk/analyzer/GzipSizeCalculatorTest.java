@@ -20,10 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.testutils.TestResources;
 import com.android.tools.apk.analyzer.internal.GzipSizeCalculator;
-import java.nio.file.Path;
-import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.file.Path;
+import java.util.Map;
 
 public class GzipSizeCalculatorTest {
     private ApkSizeCalculator calculator;
@@ -59,11 +61,11 @@ public class GzipSizeCalculatorTest {
     }
 
     @Test
-    public void getRawSizePerFile() {
-        Map<String, Long> rawSizePerFile = calculator.getRawSizePerFile(apk);
+    public void getInfoPerFile() {
+        Map<String, ZipEntryInfo> infoPerFile = calculator.getInfoPerFile(apk);
 
         // The expected values can be seen via unzip -lv resources/test.apk
-        assertThat(rawSizePerFile.get("/AndroidManifest.xml")).isEqualTo(11);
-        assertThat(rawSizePerFile.get("/res/")).isNull(); // directories should not have any size
+        assertThat(infoPerFile.get("/AndroidManifest.xml").size).isEqualTo(11);
+        assertThat(infoPerFile.get("/res/")).isNull(); // directories should not have any info
     }
 }

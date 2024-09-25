@@ -15,12 +15,18 @@
  */
 package com.android.tools.apk.analyzer;
 
+import static com.android.tools.apk.analyzer.ZipEntryInfo.Alignment.ALIGNMENT_NONE;
+
 import com.android.annotations.NonNull;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ArchivePathEntry extends ArchiveEntry {
     private long rawFileSize = -1;
     private long downloadFileSize = -1;
+    private ZipEntryInfo.Alignment alignment = ALIGNMENT_NONE;
+    private boolean isCompressed = false;
 
     public ArchivePathEntry(
             @NonNull Archive archive, @NonNull Path path, @NonNull String pathPrefix) {
@@ -30,6 +36,26 @@ public class ArchivePathEntry extends ArchiveEntry {
     @Override
     public void setRawFileSize(long rawFileSize) {
         this.rawFileSize = rawFileSize;
+    }
+
+    @Override
+    public void setFileAlignment(ZipEntryInfo.Alignment alignment) {
+        this.alignment = alignment;
+    }
+
+    @Override
+    public ZipEntryInfo.Alignment getFileAlignment() {
+        return alignment;
+    }
+
+    @Override
+    public void setIsFileCompressed(boolean isCompressed) {
+        this.isCompressed = isCompressed;
+    }
+
+    @Override
+    public boolean isFileCompressed() {
+        return !Files.isDirectory(getPath()) && isCompressed;
     }
 
     @Override

@@ -46,6 +46,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.Reference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference;
+
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -58,6 +59,9 @@ import com.google.devrel.gmscore.tools.apk.arsc.ResourceTableChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.StringPoolChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.TypeChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.TypeSpecChunk;
+
+import org.xml.sax.SAXException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -78,10 +82,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
 
 /**
  * Tool for getting all kinds of information about an APK, including: - basic package info, sizes
@@ -541,7 +545,8 @@ public class ApkAnalyzerImpl {
 
         if (!errors.isEmpty() && loaded.isEmpty()) {
             System.err.println(
-                    "No Proguard mapping files found. The filenames must match one of: mapping.txt, seeds.txt, usage.txt");
+                    "No Proguard mapping files found. The filenames must match one of: mapping.txt,"
+                            + " seeds.txt, usage.txt");
         } else if (errors.isEmpty() && !loaded.isEmpty()) {
             System.err.println(
                     "Successfully loaded maps from: "
@@ -987,7 +992,7 @@ public class ApkAnalyzerImpl {
         try (ArchiveContext archiveContext = Archives.open(apk)) {
             ArchiveNode node = ArchiveTreeStructure.create(archiveContext);
             if (showRawSize) {
-                ArchiveTreeStructure.updateRawFileSizes(node, ApkSizeCalculator.getDefault());
+                ArchiveTreeStructure.updateFileInfo(node, ApkSizeCalculator.getDefault());
             }
             if (showDownloadSize) {
                 ArchiveTreeStructure.updateDownloadFileSizes(node, ApkSizeCalculator.getDefault());

@@ -47,5 +47,6 @@
     <orderEntry type="library" scope="TEST" name="jimfs" level="project" />
     <orderEntry type="module" module-name="android.sdktools.binary-resources" />
     <orderEntry type="module" module-name="android.sdktools.sdk-common" />
+    <orderEntry type="module" module-name="android.sdktools.zipflinger" />
   </component>
 </module>
