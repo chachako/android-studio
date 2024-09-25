@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.ide.kmp
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
@@ -58,7 +58,7 @@ internal object KotlinIdeImportConfigurator {
      */
     fun configure(
         project: Project,
-        androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
+        androidTarget: Lazy<KotlinMultiplatformAndroidLibraryTarget>,
         androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
@@ -80,7 +80,7 @@ internal object KotlinIdeImportConfigurator {
 
     private fun registerDependencyResolvers(
         project: Project,
-        androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
+        androidTarget: Lazy<KotlinMultiplatformAndroidLibraryTarget>,
         androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,

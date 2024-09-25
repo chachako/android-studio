@@ -18,6 +18,7 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 import org.gradle.api.NamedDomainObjectContainer
@@ -26,11 +27,12 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinTarget
 
 @OptIn(ExternalKotlinTargetApi::class)
-internal class KotlinMultiplatformAndroidTargetImpl(
+internal class KotlinMultiplatformAndroidLibraryTargetImpl(
     delegate: Delegate,
     kotlinExtension: KotlinMultiplatformExtension,
     androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
 ) : DecoratedExternalKotlinTarget(delegate),
+    KotlinMultiplatformAndroidLibraryTarget,
     KotlinMultiplatformAndroidTarget,
     KotlinMultiplatformAndroidLibraryExtension by androidExtension {
 

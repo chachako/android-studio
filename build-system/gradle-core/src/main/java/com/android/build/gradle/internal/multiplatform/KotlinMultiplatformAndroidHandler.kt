@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.multiplatform
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryExtensionImpl
 
@@ -27,7 +27,7 @@ import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidLibraryEx
 internal interface KotlinMultiplatformAndroidHandler {
     fun createAndroidExtension(): KotlinMultiplatformAndroidLibraryExtensionImpl
 
-    fun getAndroidTarget(): KotlinMultiplatformAndroidTarget
+    fun getAndroidTarget(): KotlinMultiplatformAndroidLibraryTarget
 
     fun finalize(
         variant: KmpVariantImpl

@@ -520,12 +520,7 @@ https://issuetracker.google.com/328749317
   * com.android.build.api.dsl.KmpOptimization.getMinify: boolean ()
   * com.android.build.api.dsl.KmpOptimization.getTestKeepRules: com.android.build.api.dsl.ConfigurableFiles ()
   * com.android.build.api.dsl.KmpOptimization.setMinify: void (boolean)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation implements org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getCompilerOptions: org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> ()
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getComponentName: java.lang.String ()
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getCompilationName: java.lang.String ()
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getDefaultSourceSetName: java.lang.String ()
@@ -547,10 +542,7 @@ https://issuetracker.google.com/328749317
   * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvmBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withDeviceTestBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withHostTestBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget implements org.jetbrains.kotlin.gradle.plugin.KotlinTarget, com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget.getCompilations: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation> ()
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget.withJava: void ()
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidTargetKt.androidLibrary: void (org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTarget, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTargetKt.androidLibrary: void (org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget, kotlin.Unit>)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
   * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getSources: com.android.build.api.variant.Sources ()

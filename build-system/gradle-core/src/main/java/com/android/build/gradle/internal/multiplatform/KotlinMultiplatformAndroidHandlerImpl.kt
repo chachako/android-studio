@@ -18,10 +18,10 @@ package com.android.build.gradle.internal.multiplatform
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.api.variant.impl.KmpAndroidCompilationType
 import com.android.build.api.variant.impl.KmpVariantImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
+import com.android.build.api.variant.impl.KotlinMultiplatformAndroidLibraryTargetImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
@@ -57,7 +57,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
 
     private lateinit var kotlinExtension: KotlinMultiplatformExtension
     private lateinit var androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
-    private lateinit var androidTarget: KotlinMultiplatformAndroidTargetImpl
+    private lateinit var androidTarget: KotlinMultiplatformAndroidLibraryTargetImpl
 
     private lateinit var mainVariant: KmpVariantImpl
 
@@ -107,7 +107,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
                 targetName = KotlinMultiplatformAndroidPlugin.ANDROID_TARGET_NAME
                 platformType = KotlinPlatformType.jvm
                 targetFactory = ExternalKotlinTargetDescriptor.TargetFactory { delegate ->
-                    KotlinMultiplatformAndroidTargetImpl(
+                    KotlinMultiplatformAndroidLibraryTargetImpl(
                         delegate, kotlinExtension, androidExtension
                     )
                 }
@@ -130,7 +130,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
             }
 
             (kotlinExtension as ExtensionAware).extensions.add(
-                KotlinMultiplatformAndroidTarget::class.java,
+                KotlinMultiplatformAndroidLibraryTarget::class.java,
                 KotlinMultiplatformAndroidPlugin.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME,
                 androidTarget
             )

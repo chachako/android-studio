@@ -1,6 +1,6 @@
 package com.buildsrc.plugin
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.kotlin.multiplatform.models.AndroidCompilation
 import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
@@ -38,7 +38,7 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
             IdeMultiplatformImport.instance(project).resolveDependencies(sourceSet)
         }
 
-        kotlinExtension.targets.withType(KotlinMultiplatformAndroidTarget::class.java) { target ->
+        kotlinExtension.targets.withType(KotlinMultiplatformAndroidLibraryTarget::class.java) { target ->
             val json = gson.toJson(
                 TargetData(
                     targetName = target.targetName,

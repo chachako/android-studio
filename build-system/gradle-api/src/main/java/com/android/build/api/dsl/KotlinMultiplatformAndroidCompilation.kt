@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 
-@Incubating
 interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions> {
     override val compilerOptions: HasCompilerOptions<KotlinJvmCompilerOptions>
 

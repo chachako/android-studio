@@ -22,25 +22,32 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.plugins.ExtensionAware
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
-@Incubating
+interface KotlinMultiplatformAndroidLibraryTarget: KotlinMultiplatformAndroidTarget, KotlinTarget, KotlinMultiplatformAndroidLibraryExtension {
+    override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
+
+    /**
+     * Enables compilation of java sources.
+     */
+    override fun withJava()
+}
+
+
+@Deprecated("Use KotlinMultiplatformAndroidLibraryTarget. This interface will be removed in AGP 9.0")
 interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidLibraryExtension {
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
 
     /**
      * Enables compilation of java sources.
-     *
-     * @note This API is experimental and is likely to change.
      */
-    @Incubating
     fun withJava()
 }
 
 @Incubating
 fun KotlinMultiplatformExtension.androidLibrary(
-    action: KotlinMultiplatformAndroidTarget.() -> Unit
+    action: KotlinMultiplatformAndroidLibraryTarget.() -> Unit
 ) {
     (this as ExtensionAware).extensions.findByType(
-        KotlinMultiplatformAndroidTarget::class.java
+        KotlinMultiplatformAndroidLibraryTarget::class.java
     )?.action() ?: throw IllegalStateException(
         "You need to apply the " +
             "`com.android.kotlin.multiplatform.library` plugin before accessing the android target."

@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
 @OptIn(ExternalKotlinTargetApi::class)
 internal class KotlinMultiplatformAndroidCompilationFactory(
     private val project: Project,
-    private val target: KotlinMultiplatformAndroidTargetImpl,
+    private val target: KotlinMultiplatformAndroidLibraryTargetImpl,
     private val kotlinExtension: KotlinMultiplatformExtension,
     private val androidExtension: KotlinMultiplatformAndroidLibraryExtensionImpl
 ): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilation> {
