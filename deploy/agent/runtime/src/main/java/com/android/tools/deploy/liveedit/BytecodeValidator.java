@@ -21,6 +21,7 @@ import com.android.deploy.asm.tree.AbstractInsnNode;
 import com.android.deploy.asm.tree.FieldNode;
 import com.android.deploy.asm.tree.LineNumberNode;
 import com.android.deploy.asm.tree.MethodNode;
+
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -42,12 +43,13 @@ import java.util.stream.Collectors;
  * removed - the inheritance hierarchy has not been changed.
  */
 public class BytecodeValidator {
-    static List<UnsupportedChange> validateBytecode(Interpretable bytecode, ClassLoader loader) {
+    static List<UnsupportedChange> validateBytecode(
+            Interpretable bytecode, ClassLoader loader, boolean structuralRedefinition) {
         String className = bytecode.getInternalName().replace('/', '.');
         ArrayList<UnsupportedChange> errors = new ArrayList<>();
         try {
             Class<?> original = Class.forName(className, true, loader);
-            errors.addAll(validateBytecode(bytecode, original));
+            errors.addAll(validateBytecode(bytecode, original, structuralRedefinition));
         } catch (ClassNotFoundException e) {
             UnsupportedChange change = new UnsupportedChange();
             change.type = UnsupportedChange.Type.ADDED_CLASS.name();
@@ -60,9 +62,12 @@ public class BytecodeValidator {
     }
 
     @VisibleForTesting
-    static List<UnsupportedChange> validateBytecode(Interpretable bytecode, Class<?> original) {
+    static List<UnsupportedChange> validateBytecode(
+            Interpretable bytecode, Class<?> original, boolean structuralRedefinition) {
         ArrayList<UnsupportedChange> errors = new ArrayList<>();
-        validateMethods(bytecode, original, errors);
+        if (!structuralRedefinition) {
+            validateMethods(bytecode, original, errors);
+        }
         validateFields(bytecode, original, errors);
         validateInheritance(bytecode, original, errors);
         return errors;

@@ -795,6 +795,8 @@ message LiveEditRequest {
   // The recompose group ID used for partial recomposition
   // API calls.
   repeated int32 group_ids = 8;
+
+  bool structural_redefinition = 9;
 }
 
 message LiveEditClass {

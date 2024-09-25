@@ -54,12 +54,15 @@ public final class LiveEditStubs {
         }
     }
 
-    public static UnsupportedChange[] addClasses(byte[][] primaryClasses, byte[][] proxyClasses) {
+    public static UnsupportedChange[] addClasses(
+            byte[][] primaryClasses, byte[][] proxyClasses, boolean structuralRedefinition) {
         // Process all main classes
         List<UnsupportedChange> errors = new ArrayList<>();
         for (byte[] primaryClass : primaryClasses) {
             Interpretable primary = new Interpretable(primaryClass);
-            List err = BytecodeValidator.validateBytecode(primary, context.getClassLoader());
+            List err =
+                    BytecodeValidator.validateBytecode(
+                            primary, context.getClassLoader(), structuralRedefinition);
             errors.addAll(err);
             if (err.isEmpty()) {
                 addClass(primary.getInternalName(), primary, false);

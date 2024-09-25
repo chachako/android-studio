@@ -83,12 +83,13 @@ jobjectArray UpdateClassBytecode(JNIEnv* jni, JniClass* live_edit_stubs,
     jni->SetObjectArrayElement(arraySupportClasses, i, class_bytes);
   }
 
+  jboolean structual_redefinition = req.structural_redefinition();
   // Send everything for validation.
   return (jobjectArray)live_edit_stubs->CallStaticObjectMethod(
       "addClasses",
-      "([[B[[B)[Lcom/"
+      "([[B[[BZ)[Lcom/"
       "android/tools/deploy/liveedit/BytecodeValidator$UnsupportedChange;",
-      arrayClasses, arraySupportClasses);
+      arrayClasses, arraySupportClasses, structual_redefinition);
 }
 
 void SetDebugMode(JNIEnv* jni, bool debugMode) {

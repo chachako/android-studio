@@ -76,6 +76,7 @@ public class LiveUpdateDeployer {
         public final Map<String, byte[]> classes;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
+        final boolean useStructuralRedefinition;
 
         /**
          * @param classes Map from classname to binary
@@ -86,12 +87,14 @@ public class LiveUpdateDeployer {
                 Map<String, byte[]> supportClasses,
                 Set<Integer> groupIds,
                 Deploy.LiveEditRequest.InvalidateMode invalidateMode,
-                boolean debugModeEnabled) {
+                boolean debugModeEnabled,
+                boolean useStructuralRedefinition) {
             this.classes = classes;
             this.supportClasses = supportClasses;
             this.groupIds = groupIds;
             this.invalidateMode = invalidateMode;
             this.debugModeEnabled = debugModeEnabled;
+            this.useStructuralRedefinition = useStructuralRedefinition;
         }
     }
 
@@ -345,6 +348,8 @@ public class LiveUpdateDeployer {
                     Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
         }
         requestBuilder.setDebugModeEnabled(param.debugModeEnabled);
+        requestBuilder.setStructuralRedefinition(param.useStructuralRedefinition);
+
         Deploy.LiveEditRequest request = requestBuilder.build();
 
         UpdateLiveEditResult result = null;

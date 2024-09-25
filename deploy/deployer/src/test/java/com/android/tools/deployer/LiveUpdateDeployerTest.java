@@ -64,7 +64,8 @@ public class LiveUpdateDeployerTest {
                         supportClasses,
                         Set.of(),
                         Deploy.LiveEditRequest.InvalidateMode.SAVE_AND_LOAD,
-                        true);
+                        true,
+                        false);
         AndroidDebugBridge.init(AdbInitOptions.DEFAULT);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
         while (!bridge.hasInitialDeviceList()) {

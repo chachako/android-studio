@@ -17,11 +17,12 @@ package com.android.tools.deploy.liveedit;
 
 import static com.android.tools.deploy.liveedit.Utils.buildClass;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BytecodeValidatorTest {
     static {
@@ -33,7 +34,8 @@ public class BytecodeValidatorTest {
         // Note: we're using B's bytecode to compare to A.class, so all error messages are expected
         // to refer to "B" as the class name.
         List<BytecodeValidator.UnsupportedChange> errors =
-                BytecodeValidator.validateBytecode(new Interpretable(buildClass(B.class)), A.class);
+                BytecodeValidator.validateBytecode(
+                        new Interpretable(buildClass(B.class)), A.class, false);
         Assert.assertEquals(2, errors.size());
 
         Optional<BytecodeValidator.UnsupportedChange> addedMethod =
@@ -74,7 +76,8 @@ public class BytecodeValidatorTest {
         // Note: we're using D's bytecode to compare to C.class, so all error messages are expected
         // to refer to "D" as the class name.
         List<BytecodeValidator.UnsupportedChange> errors =
-                BytecodeValidator.validateBytecode(new Interpretable(buildClass(D.class)), C.class);
+                BytecodeValidator.validateBytecode(
+                        new Interpretable(buildClass(D.class)), C.class, false);
         Assert.assertEquals(5, errors.size());
 
         BytecodeValidator.UnsupportedChange field1 = getChangeByName(errors, "field1");
@@ -113,7 +116,8 @@ public class BytecodeValidatorTest {
         // Note: we're using F's bytecode to compare to E.class, so all error messages are expected
         // to refer to "F" as the class name.
         List<BytecodeValidator.UnsupportedChange> errors =
-                BytecodeValidator.validateBytecode(new Interpretable(buildClass(F.class)), E.class);
+                BytecodeValidator.validateBytecode(
+                        new Interpretable(buildClass(F.class)), E.class, false);
 
         Assert.assertEquals(2, errors.size());
         Assert.assertTrue(
@@ -142,7 +146,7 @@ public class BytecodeValidatorTest {
     public void testInterface() throws Exception {
         List<BytecodeValidator.UnsupportedChange> errors =
                 BytecodeValidator.validateBytecode(
-                        new Interpretable(buildClass(I1.class)), I1.class);
+                        new Interpretable(buildClass(I1.class)), I1.class, false);
         Assert.assertEquals(0, errors.size());
     }
 
