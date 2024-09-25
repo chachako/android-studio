@@ -183,7 +183,10 @@ filegroup(
 
 coverage_java_test(
     name = "deployer.tests",
-    size = "medium",
+    # Deployer Runner tests needs to spin up fake devices and communicate with it
+    # The large number of tests there makes it not possible to finish within
+    # in medium test size timeout.
+    size = "large",
     srcs = glob(["src/test/java/**/*.java"]) + [
         "//tools/base/deploy/sites:Sites.java",
     ],
