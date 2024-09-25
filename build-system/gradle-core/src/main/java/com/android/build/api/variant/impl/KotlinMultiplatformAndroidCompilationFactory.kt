@@ -75,12 +75,12 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                         KotlinMultiplatformAndroidCompilationImpl(delegate)
 
                     KmpAndroidCompilationType.TEST_ON_JVM ->
-                        KotlinMultiplatformAndroidTestOnJvmCompilationImpl(
+                        KotlinMultiplatformAndroidHostTestCompilationImpl(
                             androidExtension.androidTestOnJvmOptions!!, delegate
                         )
 
                     KmpAndroidCompilationType.TEST_ON_DEVICE ->
-                        KotlinMultiplatformAndroidTestOnDeviceCompilationImpl(
+                        KotlinMultiplatformAndroidDeviceTestCompilationImpl(
                             androidExtension.androidTestOnDeviceOptions!!, delegate
                         )
                 }

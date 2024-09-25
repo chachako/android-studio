@@ -22,8 +22,8 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BaselineProfile
 import com.android.build.api.dsl.DefaultConfig
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm
+import com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest
 import com.android.build.api.dsl.LibraryBuildType
 import com.android.build.api.dsl.LibraryDefaultConfig
 import com.android.build.api.dsl.LibraryExtension
@@ -361,10 +361,10 @@ private class DslScriptGenerator(
         private fun nextFile() = File(FileUtils.join(nextString(), nextString(), nextString()))
 
         private val closuresToManuallyVisit = mapOf(
-            "withAndroidTestOnJvm" to KotlinMultiplatformAndroidTestOnJvm::class.java,
-            "withAndroidTestOnDevice" to KotlinMultiplatformAndroidTestOnDevice::class.java,
-            "withHostTest" to KotlinMultiplatformAndroidTestOnJvm::class.java,
-            "withDeviceTest" to KotlinMultiplatformAndroidTestOnDevice::class.java,
+            "withAndroidTestOnJvm" to KotlinMultiplatformAndroidHostTest::class.java,
+            "withAndroidTestOnDevice" to KotlinMultiplatformAndroidDeviceTest::class.java,
+            "withHostTest" to KotlinMultiplatformAndroidHostTest::class.java,
+            "withDeviceTest" to KotlinMultiplatformAndroidDeviceTest::class.java,
             "baselineProfile" to BaselineProfile::class.java
         )
 
@@ -410,8 +410,8 @@ private class DslScriptGenerator(
             "public abstract com.android.build.api.dsl.LibraryPublishing com.android.build.api.dsl.LibraryExtension.getPublishing()",
             "public abstract void com.android.build.api.dsl.LibraryExtension.publishing(kotlin.jvm.functions.Function1)",
 
-            "public abstract com.android.build.api.dsl.ManagedDevices com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getManagedDevices()",
-            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.managedDevices(kotlin.jvm.functions.Function1)",
+            "public abstract com.android.build.api.dsl.ManagedDevices com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest.getManagedDevices()",
+            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest.managedDevices(kotlin.jvm.functions.Function1)",
 
             "public abstract void com.android.build.api.dsl.Optimization.keepRules(kotlin.jvm.functions.Function1)",
 
@@ -423,7 +423,7 @@ private class DslScriptGenerator(
 
             // Ignored for configuration time checks
 
-            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setExecution(java.lang.String)",
+            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest.setExecution(java.lang.String)",
             "public abstract void com.android.build.api.dsl.TestOptions.setExecution(java.lang.String)",
             "public abstract void com.android.build.api.dsl.Ndk.setDebugSymbolLevel(java.lang.String)",
 
@@ -444,7 +444,7 @@ private class DslScriptGenerator(
 
             // Unnatural DSL
 
-            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.all(kotlin.jvm.functions.Function1)",
+            "public abstract void com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest.all(kotlin.jvm.functions.Function1)",
             "public abstract void com.android.build.api.dsl.UnitTestOptions.all(kotlin.jvm.functions.Function1)",
 
             "public abstract java.util.Collection com.android.build.api.dsl.Splits.getDensityFilters()",

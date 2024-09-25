@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.build.api.dsl
+package com.android.build.gradle.internal.dsl
 
-import org.gradle.api.Incubating
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest
+import com.android.build.gradle.internal.services.DslServices
+import javax.inject.Inject
 
-@Incubating
-interface KotlinMultiplatformAndroidTestOnDeviceCompilation:
-    KotlinMultiplatformAndroidTestOnDevice,
-    KotlinMultiplatformAndroidCompilation
+abstract class KotlinMultiplatformAndroidHostTestImpl @Inject constructor(
+    val dslServices: DslServices,
+): KotlinMultiplatformAndroidHostTest {
+    override var isReturnDefaultValues: Boolean = false
+    override var isIncludeAndroidResources: Boolean = false
+    override var enableCoverage: Boolean = false
+}

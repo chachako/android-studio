@@ -95,7 +95,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin.androidLibrary.compilations.withType(
-                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation::class.java
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation::class.java
                 ) {
                     enableCoverage = true
                 }

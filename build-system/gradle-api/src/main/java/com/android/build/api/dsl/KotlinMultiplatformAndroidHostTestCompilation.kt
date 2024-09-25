@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.build.api.variant.impl
+package com.android.build.api.dsl
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation
-import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
+import org.gradle.api.Incubating
 
-@OptIn(ExternalKotlinTargetApi::class)
-class KotlinMultiplatformAndroidTestOnDeviceCompilationImpl(
-    private val testOnDevice: KotlinMultiplatformAndroidTestOnDevice,
-    delegate: Delegate,
-) : KotlinMultiplatformAndroidCompilationImpl(delegate),
-    KotlinMultiplatformAndroidTestOnDeviceCompilation,
-    KotlinMultiplatformAndroidTestOnDevice by testOnDevice
+@Incubating
+@Deprecated("Use KotlinMultiplatformAndroidHostTestCompilation. This interface will be removed in AGP 9.0")
+interface KotlinMultiplatformAndroidTestOnJvmCompilation:
+    KotlinMultiplatformAndroidHostTest,
+    KotlinMultiplatformAndroidCompilation
+
+interface KotlinMultiplatformAndroidHostTestCompilation:
+    KotlinMultiplatformAndroidHostTest,
+    KotlinMultiplatformAndroidCompilation

@@ -12,7 +12,7 @@ kotlin {
 
     withDeviceTest {}
 
-    compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java) {
+    compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTestCompilation::class.java) {
         instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -1281,6 +1281,68 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract String? sourceSetTreeName;
   }
 
+  public interface KotlinMultiplatformAndroidDeviceTest {
+    method @org.gradle.api.Incubating public void emulatorControl(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void emulatorSnapshots(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots,kotlin.Unit> action);
+    method public boolean getAnimationsDisabled();
+    method public String? getApplicationId();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorControl getEmulatorControl();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorSnapshots getEmulatorSnapshots();
+    method public boolean getEnableCoverage();
+    method public String getExecution();
+    method public Boolean? getFunctionalTest();
+    method public Boolean? getHandleProfiling();
+    method public com.android.build.api.dsl.Installation getInstallation();
+    method public String? getInstrumentationRunner();
+    method public java.util.Map<java.lang.String,java.lang.String> getInstrumentationRunnerArguments();
+    method public com.android.build.api.dsl.ManagedDevices getManagedDevices();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.MultiDexConfig getMultidex();
+    method public com.android.build.api.dsl.ApkSigningConfig getSigning();
+    method public void installation(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation,kotlin.Unit> action);
+    method public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void multidex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.MultiDexConfig,kotlin.Unit> action);
+    method public void setAnimationsDisabled(boolean);
+    method public void setApplicationId(String?);
+    method public void setEnableCoverage(boolean);
+    method public void setExecution(String);
+    method public void setFunctionalTest(Boolean?);
+    method public void setHandleProfiling(Boolean?);
+    method public void setInstrumentationRunner(String?);
+    method public void signing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApkSigningConfig,kotlin.Unit> action);
+    property public abstract boolean animationsDisabled;
+    property public abstract String? applicationId;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorControl emulatorControl;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorSnapshots emulatorSnapshots;
+    property public abstract boolean enableCoverage;
+    property public abstract String execution;
+    property public abstract Boolean? functionalTest;
+    property public abstract Boolean? handleProfiling;
+    property public abstract com.android.build.api.dsl.Installation installation;
+    property public abstract String? instrumentationRunner;
+    property public abstract java.util.Map<java.lang.String,java.lang.String> instrumentationRunnerArguments;
+    property public abstract com.android.build.api.dsl.ManagedDevices managedDevices;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.MultiDexConfig multidex;
+    property public abstract com.android.build.api.dsl.ApkSigningConfig signing;
+  }
+
+  public interface KotlinMultiplatformAndroidDeviceTestCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
+  }
+
+  public interface KotlinMultiplatformAndroidHostTest {
+    method public boolean getEnableCoverage();
+    method public boolean isIncludeAndroidResources();
+    method public boolean isReturnDefaultValues();
+    method public void setEnableCoverage(boolean);
+    method public void setIncludeAndroidResources(boolean);
+    method public void setReturnDefaultValues(boolean);
+    property public abstract boolean enableCoverage;
+    property public abstract boolean isIncludeAndroidResources;
+    property public abstract boolean isReturnDefaultValues;
+  }
+
+  public interface KotlinMultiplatformAndroidHostTestCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
+  }
+
   public interface KotlinMultiplatformAndroidLibraryExtension {
     method public void aarMetadata(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void dependencyVariantSelection(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DependencyVariantSelection,kotlin.Unit> action);
@@ -1314,14 +1376,14 @@ package com.android.build.api.dsl {
     method public void setTestNamespace(String?);
     method public void useLibrary(String name);
     method public void useLibrary(String name, boolean required);
-    method @Deprecated @org.gradle.api.Incubating public void withAndroidTestOnDevice(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice,kotlin.Unit> action);
-    method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice> withAndroidTestOnDeviceBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
-    method @Deprecated @org.gradle.api.Incubating public void withAndroidTestOnJvm(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm,kotlin.Unit> action);
-    method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm> withAndroidTestOnJvmBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void withDeviceTest(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice> withDeviceTestBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void withHostTest(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm> withHostTestBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
+    method @Deprecated public void withAndroidTestOnDevice(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest,kotlin.Unit> action);
+    method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest> withAndroidTestOnDeviceBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
+    method @Deprecated public void withAndroidTestOnJvm(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest,kotlin.Unit> action);
+    method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest> withAndroidTestOnJvmBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
+    method public void withDeviceTest(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest> withDeviceTestBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
+    method public void withHostTest(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest> withHostTestBuilder(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.AarMetadata aarMetadata;
     property public abstract String buildToolsVersion;
     property public abstract Integer? compileSdk;
@@ -1350,66 +1412,10 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public static void androidLibrary(org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTarget,kotlin.Unit> action);
   }
 
-  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnDevice {
-    method @org.gradle.api.Incubating public void emulatorControl(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void emulatorSnapshots(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public boolean getAnimationsDisabled();
-    method @org.gradle.api.Incubating public String? getApplicationId();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorControl getEmulatorControl();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorSnapshots getEmulatorSnapshots();
-    method @org.gradle.api.Incubating public boolean getEnableCoverage();
-    method @org.gradle.api.Incubating public String getExecution();
-    method @org.gradle.api.Incubating public Boolean? getFunctionalTest();
-    method @org.gradle.api.Incubating public Boolean? getHandleProfiling();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.Installation getInstallation();
-    method @org.gradle.api.Incubating public String? getInstrumentationRunner();
-    method @org.gradle.api.Incubating public java.util.Map<java.lang.String,java.lang.String> getInstrumentationRunnerArguments();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ManagedDevices getManagedDevices();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.MultiDexConfig getMultidex();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ApkSigningConfig getSigning();
-    method @org.gradle.api.Incubating public void installation(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void multidex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.MultiDexConfig,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void setAnimationsDisabled(boolean);
-    method @org.gradle.api.Incubating public void setApplicationId(String?);
-    method @org.gradle.api.Incubating public void setEnableCoverage(boolean);
-    method @org.gradle.api.Incubating public void setExecution(String);
-    method @org.gradle.api.Incubating public void setFunctionalTest(Boolean?);
-    method @org.gradle.api.Incubating public void setHandleProfiling(Boolean?);
-    method @org.gradle.api.Incubating public void setInstrumentationRunner(String?);
-    method @org.gradle.api.Incubating public void signing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApkSigningConfig,kotlin.Unit> action);
-    property @org.gradle.api.Incubating public abstract boolean animationsDisabled;
-    property @org.gradle.api.Incubating public abstract String? applicationId;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorControl emulatorControl;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorSnapshots emulatorSnapshots;
-    property @org.gradle.api.Incubating public abstract boolean enableCoverage;
-    property @org.gradle.api.Incubating public abstract String execution;
-    property @org.gradle.api.Incubating public abstract Boolean? functionalTest;
-    property @org.gradle.api.Incubating public abstract Boolean? handleProfiling;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Installation installation;
-    property @org.gradle.api.Incubating public abstract String? instrumentationRunner;
-    property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,java.lang.String> instrumentationRunnerArguments;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ManagedDevices managedDevices;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.MultiDexConfig multidex;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ApkSigningConfig signing;
+  @Deprecated @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnDeviceCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
   }
 
-  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnDeviceCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
-  }
-
-  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnJvm {
-    method @org.gradle.api.Incubating public boolean getEnableCoverage();
-    method @org.gradle.api.Incubating public boolean isIncludeAndroidResources();
-    method @org.gradle.api.Incubating public boolean isReturnDefaultValues();
-    method @org.gradle.api.Incubating public void setEnableCoverage(boolean);
-    method @org.gradle.api.Incubating public void setIncludeAndroidResources(boolean);
-    method @org.gradle.api.Incubating public void setReturnDefaultValues(boolean);
-    property @org.gradle.api.Incubating public abstract boolean enableCoverage;
-    property @org.gradle.api.Incubating public abstract boolean isIncludeAndroidResources;
-    property @org.gradle.api.Incubating public abstract boolean isReturnDefaultValues;
-  }
-
-  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnJvmCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
+  @Deprecated @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnJvmCompilation extends com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation {
   }
 
   public interface LibraryAndroidResources extends com.android.build.api.dsl.AndroidResources {

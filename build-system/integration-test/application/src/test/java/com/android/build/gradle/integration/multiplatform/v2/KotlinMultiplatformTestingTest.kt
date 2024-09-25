@@ -40,7 +40,7 @@ class KotlinMultiplatformTestingTest {
             kmpFirstLib.ktsBuildFile,
             """
                 kotlin.androidLibrary.compilations.withType(
-                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation::class.java
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation::class.java
                 ) {
                     isReturnDefaultValues = true
                 }

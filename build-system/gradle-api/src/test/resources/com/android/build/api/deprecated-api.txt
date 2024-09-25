@@ -9,10 +9,12 @@ Deprecated from AGP 8.8.0
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getDefaultSourceSetName: java.lang.String ()
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.setCompilationName: void (java.lang.String)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.setDefaultSourceSetName: void (java.lang.String)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDevice: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice, kotlin.Unit>)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDeviceBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvm: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm, kotlin.Unit>)
-  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvmBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDevice: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnDeviceBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvm: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension.withAndroidTestOnJvmBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 Deprecated from AGP 8.7.0
   * com.android.build.api.dsl.ComposeOptions.getUseLiveLiterals: boolean ()
   * com.android.build.api.dsl.ComposeOptions.setUseLiveLiterals: void (boolean)

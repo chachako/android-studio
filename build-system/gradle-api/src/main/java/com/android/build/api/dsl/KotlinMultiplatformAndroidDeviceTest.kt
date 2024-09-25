@@ -18,13 +18,10 @@ package com.android.build.api.dsl
 
 import org.gradle.api.Incubating
 
-@Incubating
-interface KotlinMultiplatformAndroidTestOnDevice {
+interface KotlinMultiplatformAndroidDeviceTest {
     /**
      * The test application id.
      */
-    @get:Incubating
-    @set:Incubating
     var applicationId: String?
 
     /**
@@ -32,8 +29,6 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * This is a fully qualified class name of the runner
      * See [instrumentation](http://developer.android.com/guide/topics/manifest/instrumentation-element.html).
      */
-    @get:Incubating
-    @set:Incubating
     var instrumentationRunner: String?
 
     /**
@@ -50,21 +45,16 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.foo=bar
      * ```
      */
-    @get:Incubating
     val instrumentationRunnerArguments: MutableMap<String, String>
 
     /**
      * See [instrumentation](http://developer.android.com/guide/topics/manifest/instrumentation-element.html).
      */
-    @get:Incubating
-    @set:Incubating
     var handleProfiling: Boolean?
 
     /**
      * See [instrumentation](http://developer.android.com/guide/topics/manifest/instrumentation-element.html).
      */
-    @get:Incubating
-    @set:Incubating
     var functionalTest: Boolean?
 
     /**
@@ -78,8 +68,6 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * running tests from the command line, see
      * [Test from the Command Line](https://d.android.com/studio/test/command-line.html).
      */
-    @get:Incubating
-    @set:Incubating
     var animationsDisabled: Boolean
 
     /**
@@ -89,20 +77,16 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * dependent library classes and module classes. This allows for code coverage reports to be
      * generated.
      */
-    @get:Incubating
-    @set:Incubating
     var enableCoverage: Boolean
 
     /**
      * Configures Gradle Managed Devices for use in testing with the Unified test platform.
      */
-    @get:Incubating
     val managedDevices: ManagedDevices
 
     /**
      * Configures Gradle Managed Devices for use in testing with the Unified test platform.
      */
-    @Incubating
     fun managedDevices(action: ManagedDevices.() -> Unit)
 
     /**
@@ -112,8 +96,6 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * you need to specify `"ANDROID_TEST_ORCHESTRATOR"`, as shown below.
      * By default, this property is set to `"HOST"`, which disables on-device orchestration.
      */
-    @get:Incubating
-    @set:Incubating
     var execution: String
 
     /**
@@ -164,7 +146,6 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      *
      * For more information about the properties you can configure in this block, see [Installation].
      */
-    @get:Incubating
     val installation: Installation
 
     /**
@@ -174,7 +155,6 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      *
      * For more information about the properties you can configure in this block, see [Installation].
      */
-    @Incubating
     fun installation(action: Installation.() -> Unit)
 
     /**
@@ -183,10 +163,8 @@ interface KotlinMultiplatformAndroidTestOnDevice {
      * For more information about the properties you can configure in this block,
      * see [ApkSigningConfig].
      */
-    @get:Incubating
     val signing: ApkSigningConfig
 
-    @Incubating
     fun signing(action: ApkSigningConfig.() -> Unit)
 
     @get:Incubating

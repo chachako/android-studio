@@ -230,7 +230,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
 
     /**
      * Creates and configures a compilation for tests that run on the JVM (previously referred to as
-     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnJvmCompilation]
+     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidHostTestCompilation]
      * object with the following defaults (You can change these defaults by using
      * [withHostTestBuilder] instead):
      *
@@ -239,7 +239,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * * sourceSet tree is `test`, which means that the `commonTest` sourceSet would be included in
      *   the compilation.
      *
-     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnJvm]
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidHostTest]
      * options, you can modify it on the kotlin compilation as follows:
      * ```
      * kotlin {
@@ -251,23 +251,21 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * }
      * ```
      */
-    @Incubating
     fun withHostTest(
-        action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit
+        action: KotlinMultiplatformAndroidHostTest.() -> Unit
     )
 
     @Deprecated("Use withHostTest. This api will be removed in AGP 9.0")
-    @Incubating
     fun withAndroidTestOnJvm(
-        action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit
+        action: KotlinMultiplatformAndroidHostTest.() -> Unit
     )
 
     /**
      * Creates and configures a compilation for tests that run on the JVM (previously referred to as
-     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnJvmCompilation]
+     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidHostTestCompilation]
      * object using the values set in the [KotlinMultiplatformAndroidCompilationBuilder].
      *
-     * The returned object can be used to configure [KotlinMultiplatformAndroidTestOnJvm] as follows:
+     * The returned object can be used to configure [KotlinMultiplatformAndroidHostTest] as follows:
      * ```
      * kotlin {
      *   androidLibrary {
@@ -279,7 +277,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * }
      * ```
      *
-     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnJvm]
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidHostTest]
      * options, you can modify it on the kotlin compilation as follows:
      * ```
      * kotlin {
@@ -294,17 +292,17 @@ interface KotlinMultiplatformAndroidLibraryExtension {
     @Incubating
     fun withHostTestBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
-    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm>
+    ): HasConfigurableValue<KotlinMultiplatformAndroidHostTest>
 
     @Deprecated("Use withHostTestBuilder. This api will be removed in AGP 9.0")
     @Incubating
     fun withAndroidTestOnJvmBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
-    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm>
+    ): HasConfigurableValue<KotlinMultiplatformAndroidHostTest>
 
     /**
      * Creates and configures a compilation for tests that run on the device (previously referred to as
-     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnDeviceCompilation]
+     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidDeviceTestCompilation]
      * object with the following defaults:
      *
      * * compilation name is "testOnDevice"
@@ -312,35 +310,33 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * * sourceSet tree is `null`, which means that the `commonTest` sourceSet will **not** be included in
      *   the compilation.
      *
-     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnDevice]
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidDeviceTest]
      * options, you can modify it on the kotlin compilation as follows:
      * ```
      * kotlin {
      *   androidLibrary {
-     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice::class.java) {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest::class.java) {
      *       // configure options
      *     }
      *   }
      * }
      * ```
      */
-    @Incubating
     fun withDeviceTest(
-        action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit
+        action: KotlinMultiplatformAndroidDeviceTest.() -> Unit
     )
 
     @Deprecated("Use withDeviceTest. This api will be removed in AGP 9.0")
-    @Incubating
     fun withAndroidTestOnDevice(
-        action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit
+        action: KotlinMultiplatformAndroidDeviceTest.() -> Unit
     )
 
     /**
      * Creates and configures a compilation for tests that run on the device (previously referred to as
-     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnDeviceCompilation]
+     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidDeviceTestCompilation]
      * object using the values set in the [KotlinMultiplatformAndroidCompilationBuilder].
      *
-     * The returned object can be used to configure [KotlinMultiplatformAndroidTestOnDevice] as follows:
+     * The returned object can be used to configure [KotlinMultiplatformAndroidDeviceTest] as follows:
      * ```
      * kotlin {
      *   androidLibrary {
@@ -352,12 +348,12 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * }
      * ```
      *
-     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnDevice]
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidDeviceTest]
      * options, you can modify it on the kotlin compilation as follows:
      * ```
      * kotlin {
      *   androidLibrary {
-     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice::class.java) {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest::class.java) {
      *       // configure options
      *     }
      *   }
@@ -367,13 +363,13 @@ interface KotlinMultiplatformAndroidLibraryExtension {
     @Incubating
     fun withDeviceTestBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
-    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice>
+    ): HasConfigurableValue<KotlinMultiplatformAndroidDeviceTest>
 
     @Deprecated("Use withDeviceTestBuilder. This api will be removed in AGP 9.0")
     @Incubating
     fun withAndroidTestOnDeviceBuilder(
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
-    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice>
+    ): HasConfigurableValue<KotlinMultiplatformAndroidDeviceTest>
 
     /**
      * Whether core library desugaring is enabled.

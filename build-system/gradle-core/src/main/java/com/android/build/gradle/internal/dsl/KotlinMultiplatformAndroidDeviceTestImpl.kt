@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
+import com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest
 import com.android.build.api.dsl.MultiDexConfig
 import com.android.build.gradle.internal.services.DslServices
 import com.android.builder.core.BuilderConstants
@@ -29,9 +29,9 @@ import com.google.common.base.Verify
 import org.gradle.api.Action
 import javax.inject.Inject
 
-abstract class KotlinMultiplatformAndroidTestOnDeviceImpl @Inject constructor(
+abstract class KotlinMultiplatformAndroidDeviceTestImpl @Inject constructor(
     val dslServices: DslServices,
-): KotlinMultiplatformAndroidTestOnDevice {
+): KotlinMultiplatformAndroidDeviceTest {
 
     private val executionConverter = HelpfulEnumConverter(TestOptions.Execution::class.java)
     private var _execution = TestOptions.Execution.HOST

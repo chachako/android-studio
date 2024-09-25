@@ -16,18 +16,13 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
-
-@Incubating
-interface KotlinMultiplatformAndroidTestOnJvm {
+interface KotlinMultiplatformAndroidHostTest {
     /**
      * Whether unmocked methods from android.jar should throw exceptions or return default
      * values (i.e. zero or null).
      *
      * See [Test Your App](https://developer.android.com/studio/test/index.html) for details.
      */
-    @get:Incubating
-    @set:Incubating
     var isReturnDefaultValues: Boolean
 
     /**
@@ -66,8 +61,6 @@ interface KotlinMultiplatformAndroidTestOnJvm {
      * (relative to the current project directory, not the root project directory); otherwise,
      * they will be absolute paths. Prior to version 3.5.0, the paths are all absolute paths.
      */
-    @get:Incubating
-    @set:Incubating
     var isIncludeAndroidResources: Boolean
 
     /**
@@ -77,7 +70,5 @@ interface KotlinMultiplatformAndroidTestOnJvm {
      * by the Jacoco plugin. This can avoid unwanted build time instrumentation required to collect
      * coverage data from other test types such as connected tests.
      */
-    @get:Incubating
-    @set:Incubating
     var enableCoverage: Boolean
 }

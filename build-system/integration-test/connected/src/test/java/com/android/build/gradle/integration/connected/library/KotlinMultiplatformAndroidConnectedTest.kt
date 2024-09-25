@@ -47,7 +47,7 @@ class KotlinMultiplatformAndroidConnectedTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                kotlin.androidLibrary.compilations.withType(
-                 com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java
+                 com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTestCompilation::class.java
                ) {
                   enableCoverage = true
                }
