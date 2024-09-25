@@ -62,7 +62,6 @@ class KotlinMultiplatformGeneratedSourcesTest {
         )
 
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":library:assembleAndroidMain")
 
         Aar(project.getSubproject("library").getOutputFile("aar", "library.aar")).use {

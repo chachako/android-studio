@@ -48,7 +48,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            executor()
+            project.executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         result.assertErrorContains(
@@ -70,7 +70,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            executor()
+            project.executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -92,7 +92,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         )
 
         val result =
-            executor()
+            project.executor()
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -122,7 +122,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":kmpFirstLib:androidPrebuild")
     }
 
@@ -142,7 +142,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":kmpSecondLib:androidPrebuild")
     }
 
@@ -157,15 +157,10 @@ class KotlinMultiplatformAndroidPluginBasicTest {
 
         val deleted = Files.deleteIfExists(manifest)
         Truth.assertThat(deleted).isTrue()
-        val result = executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
+        val result = project.executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
 
         ScannerSubject.assertThat(result.stderr).doesNotContain(
             "Manifest file does not exist"
         )
-    }
-
-    private fun executor(): GradleTaskExecutor {
-        return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

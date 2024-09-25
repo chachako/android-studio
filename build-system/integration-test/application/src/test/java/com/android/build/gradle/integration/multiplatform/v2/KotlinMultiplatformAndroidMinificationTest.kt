@@ -75,7 +75,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testKmpLibClassesAreMinified() {
-        executor()
+        project.executor()
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -96,7 +96,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testAppClassesAreMinified() {
-        executor()
+        project.executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -124,7 +124,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -156,7 +156,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -188,7 +188,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -220,7 +220,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        executor()
+        project.executor()
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -228,10 +228,5 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpAndroidActivity;"
             )
         }
-    }
-
-    private fun executor(): GradleTaskExecutor {
-        return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

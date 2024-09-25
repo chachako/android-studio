@@ -99,7 +99,7 @@ class KotlinMultiplatformTestingTest {
         )
 
         // Check that the test runs successfully
-        executor().run(":kmpFirstLib:testAndroidUnitTest")
+        project.executor().run(":kmpFirstLib:testAndroidUnitTest")
 
         // Check that the test fails as expected after toggling isReturnDefaultValues to false
         TestFileUtils.searchAndReplace(
@@ -107,11 +107,6 @@ class KotlinMultiplatformTestingTest {
             "isReturnDefaultValues = true",
             "isReturnDefaultValues = false"
         )
-        executor().expectFailure().run(":kmpFirstLib:testAndroidUnitTest")
-    }
-
-    private fun executor(): GradleTaskExecutor {
-        return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+        project.executor().expectFailure().run(":kmpFirstLib:testAndroidUnitTest")
     }
 }

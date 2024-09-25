@@ -41,8 +41,6 @@ internal fun GradleTestProject.publishLibs(
     publishKmpFirstLib: Boolean = true,
     publishKmpSecondLib: Boolean = true,
     publishKmpLibraryPlugin: Boolean = true,
-    configCacheMode: BaseGradleExecutor.ConfigurationCaching =
-        BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION
 ) {
     TestFileUtils.appendToFile(
         settingsFile,
@@ -165,6 +163,6 @@ internal fun GradleTestProject.publishLibs(
     }
 
     projectsToPublish.forEach {
-        executor().withConfigurationCaching(configCacheMode).run(":$it:publish")
+        executor().run(":$it:publish")
     }
 }

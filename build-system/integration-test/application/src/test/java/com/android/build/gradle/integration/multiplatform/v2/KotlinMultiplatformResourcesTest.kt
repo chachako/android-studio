@@ -73,7 +73,7 @@ class KotlinMultiplatformResourcesTest {
 
     @Test
     fun testKmpLibraryResourceTasksExecuted() {
-        val result = executor().run(":kmpFirstLib:assemble")
+        val result = project.executor().run(":kmpFirstLib:assemble")
         Truth.assertThat(result.didWorkTasks).containsAtLeastElementsIn(
             listOf(
                 ":kmpFirstLib:packageAndroidMainResources",
@@ -85,7 +85,7 @@ class KotlinMultiplatformResourcesTest {
 
     @Test
     fun testLibraryAarContents() {
-        executor().run(":kmpFirstLib:assemble")
+        project.executor().run(":kmpFirstLib:assemble")
 
         Aar(
             project.getSubproject("kmpFirstLib")
@@ -108,7 +108,7 @@ class KotlinMultiplatformResourcesTest {
 
     @Test
     fun checkResourcesArtifacts() {
-        executor().run(":kmpFirstLib:assemble")
+        project.executor().run(":kmpFirstLib:assemble")
 
         val lib = project.getSubproject(":kmpFirstLib")
 
@@ -125,7 +125,7 @@ class KotlinMultiplatformResourcesTest {
 
     @Test
     fun testRclassPackagedInCompileClassesJar() {
-        executor().run(":kmpFirstLib:bundleAndroidMainClassesToCompileJar")
+        project.executor().run(":kmpFirstLib:bundleAndroidMainClassesToCompileJar")
 
         val classesJar = project.getSubproject(":kmpFirstLib")
             .getIntermediateFile(
@@ -157,11 +157,6 @@ class KotlinMultiplatformResourcesTest {
             """.trimIndent()
         )
 
-        executor().run(":app:assembleDebug")
-    }
-
-    private fun executor(): GradleTaskExecutor {
-        return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+        project.executor().run(":app:assembleDebug")
     }
 }

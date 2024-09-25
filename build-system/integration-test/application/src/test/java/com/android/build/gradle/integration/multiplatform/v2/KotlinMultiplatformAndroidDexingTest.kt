@@ -99,7 +99,6 @@ class KotlinMultiplatformAndroidDexingTest {
     @Test
     fun testDesugaringForInstrumentedTestApk() {
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":kmpFirstLib:assembleInstrumentedTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
@@ -156,7 +155,6 @@ class KotlinMultiplatformAndroidDexingTest {
         )
 
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":kmpFirstLib:assembleInstrumentedTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"

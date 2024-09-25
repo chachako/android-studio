@@ -43,7 +43,6 @@ class KotlinMultiplatformAndroidVitalsTest {
     @Test
     fun kotlinMultiplatformPluginIsAppliedFirst() {
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":shared:androidPrebuild")
     }
 }

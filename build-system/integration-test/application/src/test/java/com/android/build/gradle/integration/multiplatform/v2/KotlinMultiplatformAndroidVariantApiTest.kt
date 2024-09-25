@@ -44,9 +44,7 @@ class KotlinMultiplatformAndroidVariantApiTest {
             """.trimIndent()
         )
 
-        val result = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run(":kmpFirstLib:assemble")
+        val result = project.executor().run(":kmpFirstLib:assemble")
 
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidUnitTest")
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidInstrumentedTest")

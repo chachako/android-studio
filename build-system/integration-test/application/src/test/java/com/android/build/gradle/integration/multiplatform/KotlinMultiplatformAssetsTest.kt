@@ -70,7 +70,7 @@ class KotlinMultiplatformAssetsTest {
             """.trimIndent()
         )
 
-        val result = executor().run(":kmpFirstLib:assemble")
+        val result = project.executor().run(":kmpFirstLib:assemble")
         Truth.assertThat(result.didWorkTasks).doesNotContain(
             listOf(
                 ":kmpFirstLib:packageAndroidMainAssets"
@@ -80,7 +80,7 @@ class KotlinMultiplatformAssetsTest {
 
     @Test
     fun testKmpLibraryAssetPackageTasksExecuted() {
-        val result = executor().run(":kmpFirstLib:assemble")
+        val result = project.executor().run(":kmpFirstLib:assemble")
         Truth.assertThat(result.didWorkTasks).containsAtLeastElementsIn(
             listOf(
                 ":kmpFirstLib:packageAndroidMainAssets"
@@ -108,7 +108,7 @@ class KotlinMultiplatformAssetsTest {
 
     @Test
     fun testAppConsumingKmpLibrary() {
-        executor().run(":app:assembleDebug")
+        project.executor().run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             Truth.assertThat(apk.getEntry("assets/something.json").readText()).isEqualTo(
@@ -121,10 +121,5 @@ class KotlinMultiplatformAssetsTest {
                 """.trimIndent()
             )
         }
-    }
-
-    private fun executor(): GradleTaskExecutor {
-        return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }

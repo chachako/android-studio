@@ -33,9 +33,7 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
 
     @Test
     fun testModelsWhenLibsArePublished() {
-        project.publishLibs(
-            configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON
-        )
+        project.publishLibs()
 
         val moduleFilesComparator = KmpModelComparator(
             project = project,
@@ -55,7 +53,6 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
                     )
                 )
             },
-            configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON
         )
 
         moduleFilesComparator.fetchAndCompareModels(
@@ -74,7 +71,6 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
                     "json"
                 ).listFiles()!!.toList()
             },
-            configCacheMode = BaseGradleExecutor.ConfigurationCaching.ON
         )
 
         sourceSetsComparator.fetchAndCompareModels(
