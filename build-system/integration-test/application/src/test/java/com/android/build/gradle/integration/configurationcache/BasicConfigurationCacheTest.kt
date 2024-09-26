@@ -113,14 +113,15 @@ class BasicConfigurationCacheTest {
     fun testStableConfigurationCacheFeatureFlag() {
         project.settingsFile.appendText("\nenableFeaturePreview(\"STABLE_CONFIGURATION_CACHE\")")
 
-        val result = executor().expectFailure().run("assemble")
+        val result = executor().withFailOnWarning(false).withArgument("--warning-mode=all").run("assemble")
 
         val violations = result.stdout.findAll(usesServiceWarningRegex).asSequence()
             .map {
-                val buildService = it.group(1)
+                val buildService = it.group(1).substringBeforeLast("_")
                 val task = it.group(2)
                 "$buildService is used by $task"
             }.sorted().toList()
+
         Truth.assertThat(violations).isEmpty()
     }
 
@@ -130,7 +131,8 @@ class BasicConfigurationCacheTest {
      *    > Build service 'com.android.build.gradle.internal.services.SymbolTableBuildService_a3ab9d9e-ea4f-497b-a09a-35aa9e17dcdb'
      *    > is being used by task ':app:processDebugResources' without the corresponding declaration via 'Task#usesService'.
      */
-    private val usesServiceWarningRegex = Pattern.compile("Build service '([a-zA-Z0-9.]+)_[a-zA-Z0-9\\-]+' is being used by task '([a-zA-Z0-9:]+)'")
+    private val usesServiceWarningRegex
+        get() = Pattern.compile("Build service '([^']+)' is being used by task '([^']+)'")
 
     @Test
     fun testWithProjectIsolation() {

@@ -42,6 +42,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildServiceParameters
+import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -105,7 +106,8 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
     @get:Input
     abstract val useConstantIds: Property<Boolean>
 
-    @get:Internal
+    @Suppress("UnstableApiUsage")
+    @get:ServiceReference
     abstract val symbolTableBuildService: Property<SymbolTableBuildService>
 
     @get:Internal
@@ -264,10 +266,8 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
             // we want to use the constant IDs; rather than sequential IDs.
             // The IDs are fake, and therefore are non-final.
             task.useConstantIds.setDisallowChanges(true)
-            getBuildService<SymbolTableBuildService, BuildServiceParameters.None>(creationConfig.services.buildServiceRegistry).let {
-                task.symbolTableBuildService.setDisallowChanges(it)
-                task.usesService(it)
-            }
+            task.symbolTableBuildService.setDisallowChanges(
+                getBuildService(creationConfig.services.buildServiceRegistry))
 
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.LOCAL_ONLY_SYMBOL_LIST,

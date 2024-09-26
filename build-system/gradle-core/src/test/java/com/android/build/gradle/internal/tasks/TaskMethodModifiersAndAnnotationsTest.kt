@@ -31,6 +31,9 @@ import com.google.common.truth.Truth.assertWithMessage
 import org.gradle.api.Task
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Console
@@ -56,6 +59,7 @@ import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.lang.reflect.ParameterizedType
 import java.util.function.Supplier
 
 class TaskMethodModifiersAndAnnotationsTest {
@@ -392,6 +396,77 @@ class TaskMethodModifiersAndAnnotationsTest {
         )
     }
 
+    /** Regression test for b/300617088. */
+    @Test
+    fun `check BuildService properties are annotated with @ServiceReference`() {
+        val tasks = classPath.allClasses.asSequence()
+            .filter { it.name.startsWith("com.android.build") }
+            .map { it.load() as Class<*> }
+            .filter { Task::class.java.isAssignableFrom(it) }
+
+        fun Method.isBuildServiceProperty(): Boolean {
+            val genericReturnType = genericReturnType as? ParameterizedType ?: return false
+            val rawType = genericReturnType.rawType as? Class<*> ?: return false
+            val actualTypeArgument = (genericReturnType.actualTypeArguments.singleOrNull() ?: return false) as? Class<*> ?: return false
+            return Property::class.java.isAssignableFrom(rawType) && BuildService::class.java.isAssignableFrom(actualTypeArgument)
+        }
+
+        fun Method.isAnnotatedWithServiceReference(): Boolean {
+            @Suppress("UnstableApiUsage")
+            return annotations.any { it.annotationClass == ServiceReference::class }
+        }
+
+        fun Method.isNestedProperty(): Boolean {
+            return annotations.any { Nested::class.java.isAssignableFrom(it.javaClass) }
+        }
+
+        val nestedProperties = tasks.flatMap { task ->
+            task.methods.filter { it.isNestedProperty() }.map { it.returnType }
+        }.toSet()
+
+        val violations = (tasks + nestedProperties).flatMap { it.methods.asSequence() }.toSet()
+            .filter { it.isBuildServiceProperty() && !it.isAnnotatedWithServiceReference() }
+            .map { "${it.declaringClass.name}.${it.name}" }.sorted()
+
+        // TODO(b/300617088): Fix these violations
+        assertThat(violations).containsExactly(
+            "com.android.build.gradle.internal.UsesSdkComponentsBuildService.getSdkComponentsBuildService",
+            "com.android.build.gradle.internal.ide.dependencies.UsesLibraryDependencyCacheBuildService.getLibraryDependencyCacheBuildService",
+            "com.android.build.gradle.internal.lint.AndroidLintTask.getLintFixBuildService",
+            "com.android.build.gradle.internal.lint.LintTool.getLintClassLoaderBuildService",
+            "com.android.build.gradle.internal.lint.VariantInputs.getMavenCoordinatesCache",
+            "com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask.getSymbolTableBuildService",
+            "com.android.build.gradle.internal.services.UsesAapt2DaemonBuildService.getAapt2DaemonBuildService",
+            "com.android.build.gradle.internal.services.UsesAapt2ThreadPoolBuildService.getAapt2ThreadPoolBuildService",
+            "com.android.build.gradle.internal.tasks.CheckJetifierTask.getCheckJetifierBuildService",
+            "com.android.build.gradle.internal.tasks.DependencyReportTask.getMavenCoordinateCache",
+            "com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask\$TestRunnerFactory.getSdkBuildService",
+            "com.android.build.gradle.internal.tasks.ExtractNativeDebugMetadataTask.getSdkBuildService",
+            "com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask.getAvdService",
+            "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask.getAvdService",
+            "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask.getSdkService",
+            "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestTask\$TestRunnerFactory.getAvdComponents",
+            "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestTask\$TestRunnerFactory.getSdkBuildService",
+            "com.android.build.gradle.internal.tasks.RecalculateStackFramesTask.getClassesHierarchyBuildService",
+            "com.android.build.gradle.internal.tasks.StripDebugSymbolsTask.getSdkBuildService",
+            "com.android.build.gradle.internal.tasks.UsesAnalytics.getAnalyticsService",
+            "com.android.build.gradle.internal.tasks.VerifyLibraryClassesTask.getSymbolTableBuildService",
+            "com.android.build.gradle.internal.tasks.databinding.DataBindingGenBaseClassesTask.getSymbolTableBuildService",
+            "com.android.build.gradle.tasks.ExternalNativeBuildJsonTask.getNativeLocationsBuildService",
+            "com.android.build.gradle.tasks.ExternalNativeBuildJsonTask.getSdkComponents",
+            "com.android.build.gradle.tasks.ExternalNativeCleanTask.getSdkComponents",
+            "com.android.build.gradle.tasks.FusedLibraryClassesRewriteTask.getSymbolTableBuildService",
+            "com.android.build.gradle.tasks.FusedLibraryMergeResourceCompileSymbolsTask.getSymbolTableBuildService",
+            "com.android.build.gradle.tasks.FusedLibraryMergeResourcesTask.getAnalytics",
+            "com.android.build.gradle.tasks.MergeResources.getAapt2ThreadPoolBuildService",
+            "com.android.build.gradle.tasks.PrefabPackageTask.getSdkComponents",
+            "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRClassTask.getSymbolTableBuildService",
+            "com.android.build.gradle.tasks.PrivacySandboxSdkMergeResourcesTask.getAnalytics",
+            "com.android.build.gradle.tasks.RenderscriptCompile.getSdkBuildService",
+            "com.android.build.gradle.tasks.ShaderCompile.getSdkBuildService",
+            "com.android.build.gradle.tasks.TransformClassesWithAsmTask.getClassesHierarchyBuildService"
+        )
+    }
 
     private fun getMatchingGetter(setter: Method) : Method? {
         val name = setter.name.removePrefix("set")
