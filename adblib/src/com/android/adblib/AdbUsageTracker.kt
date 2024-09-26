@@ -25,19 +25,22 @@ interface AdbUsageTracker {
         val deviceInfo: DeviceInfo?,
 
         // Info about `JdwpProcessPropertiesCollector` success/failure
-        val jdwpProcessPropertiesCollector: JdwpProcessPropertiesCollectorEvent?,
+        val jdwpProcessPropertiesCollector: JdwpProcessPropertiesCollectorEvent? = null,
+
+        // Info about device state change
+        val adbDeviceStateChange: AdbDeviceStateChangeEvent? = null,
     )
 
     data class DeviceInfo(
         val serialNumber: String,
-        val buildTags:String,
-        val buildType:String,
-        val buildVersionRelease: String,
-        val buildApiLevelFull: String,
-        val cpuAbi: String,
-        val manufacturer: String,
-        val model: String,
-        val allCharacteristics: List<String>
+        val buildTags:String = "",
+        val buildType:String = "",
+        val buildVersionRelease: String = "",
+        val buildApiLevelFull: String = "",
+        val cpuAbi: String = "",
+        val manufacturer: String = "",
+        val model: String = "",
+        val allCharacteristics: List<String> = emptyList()
     ) {
 
         companion object {
@@ -78,6 +81,24 @@ interface AdbUsageTracker {
         val failureType: JdwpProcessPropertiesCollectorFailureType? = null,
         val previouslyFailedCount: Int,
         val previousFailureType: JdwpProcessPropertiesCollectorFailureType? = null
+    )
+
+    enum class DeviceState {
+        BOOTLOADER,
+        AUTHORIZING,
+        CONNECTING,
+        OFFLINE,
+        ONLINE,
+        DISCONNECTED,
+
+        // Other states (we are not interested in tracking these)
+        OTHER,
+    }
+
+    data class AdbDeviceStateChangeEvent(
+        val deviceState: DeviceState,
+        val previousDeviceState: DeviceState?,
+        val lastOnlineMs: Long?
     )
 }
 
