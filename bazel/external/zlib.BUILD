@@ -43,7 +43,7 @@ cc_library(
         "-Wno-implicit-function-declaration",
     ],
     includes = [
-        "src",
+        ".",
     ],
     visibility = ["//visibility:public"],
 )
