@@ -187,7 +187,15 @@ coverage_java_test(
     # The large number of tests there makes it not possible to finish within
     # in medium test size timeout.
     size = "large",
-    srcs = glob(["src/test/java/**/*.java"]) + [
+    srcs = glob([
+        "src/test/java/com/android/tools/deployer/*.java",
+        "src/test/java/com/android/tools/deployer/devices/*.java",
+        "src/test/java/com/android/tools/deployer/devices/shell/*.java",
+        "src/test/java/com/android/tools/deployer/devices/shell/interpreter/*.java",
+        "src/test/java/com/android/tools/deployer/model/component/*.java",
+        "src/test/java/com/android/tools/deployer/rules/*.java",
+        "src/test/java/com/android/tools/deployer/tasks/*.java",
+    ]) + [
         "//tools/base/deploy/sites:Sites.java",
     ],
     data = glob(["src/test/resource/**"]) + select({
