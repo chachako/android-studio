@@ -122,6 +122,7 @@ def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
   args = [
       '//tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector',
       '--config=ci',
+      '--config=remote-exec',
       '--',
       '-bes',
       str(bes_path),
