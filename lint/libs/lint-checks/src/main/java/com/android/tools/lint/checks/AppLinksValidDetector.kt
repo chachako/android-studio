@@ -366,9 +366,9 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
 
     // Gather data about scheme, host, port, path, mimeType tags so that we can check them
-    var schemes: MutableList<String>? = null
-    val hostPortPairs: MutableList<Pair<String?, String?>> = mutableListOf()
-    var paths: MutableList<AndroidPatternMatcher>? = null
+    val schemes = mutableSetOf<String>()
+    val hostPortPairs = mutableSetOf<Pair<String?, String?>>()
+    val paths = mutableSetOf<AndroidPatternMatcher>()
     var hasMimeType = false
     var data = firstData
     while (data != null) {
@@ -394,7 +394,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
 
       // Multiple checks for "valid attributes" (Schemes, hosts, ports, paths all pass validation
       // (see validateAttribute, and requireNonEmpty below))
-      schemes = addAttribute(context, ATTR_SCHEME, schemes, data)
+      addAttribute(context, ATTR_SCHEME, schemes, data)
       val host = checkAndGetAttributeValue(context, ATTR_HOST, data)
       val port = checkAndGetAttributeValue(context, ATTR_PORT, data)
       // Don't add ports on their own to hostPortPairs to make it simpler to check whether there are
@@ -402,23 +402,22 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       if (host != null) {
         hostPortPairs.add(Pair(host, port))
       }
-      paths = addMatcher(context, ATTR_PATH, PATTERN_LITERAL, paths, data)
-      paths = addMatcher(context, ATTR_PATH_PREFIX, PATTERN_PREFIX, paths, data)
-      paths = addMatcher(context, ATTR_PATH_PATTERN, PATTERN_SIMPLE_GLOB, paths, data)
-      paths = addMatcher(context, ATTR_PATH_ADVANCED_PATTERN, PATTERN_ADVANCED_GLOB, paths, data)
-      paths = addMatcher(context, ATTR_PATH_SUFFIX, PATTERN_SUFFIX, paths, data)
+      addMatcher(context, ATTR_PATH, PATTERN_LITERAL, paths, data)
+      addMatcher(context, ATTR_PATH_PREFIX, PATTERN_PREFIX, paths, data)
+      addMatcher(context, ATTR_PATH_PATTERN, PATTERN_SIMPLE_GLOB, paths, data)
+      addMatcher(context, ATTR_PATH_ADVANCED_PATTERN, PATTERN_ADVANCED_GLOB, paths, data)
+      addMatcher(context, ATTR_PATH_SUFFIX, PATTERN_SUFFIX, paths, data)
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
     var isHttp = false
     var implicitSchemes = false
     var hasSubstitutedScheme = false
-    if (schemes == null) {
+    if (schemes.isEmpty()) {
       if (hasMimeType) {
         // Per documentation
         //   https://developer.android.com/guide/topics/manifest/data-element.html
         // "If the filter has a data type set (the mimeType attribute) but no scheme, the
         //  content: and file: schemes are assumed."
-        schemes = Lists.newArrayList()
         schemes.add("content")
         schemes.add("file")
         implicitSchemes = true
@@ -432,7 +431,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
     }
 
-    val hasExplicitScheme = schemes != null && !implicitSchemes
+    val hasExplicitScheme = schemes.isNotEmpty() && !implicitSchemes
 
     // Validation
     // autoVerify means this is an Android App Link:
@@ -458,7 +457,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       )
     }
 
-    val showMissingSchemeCheck = !hasExplicitScheme && (paths != null || hostPortPairs.isNotEmpty())
+    val showMissingSchemeCheck =
+      !hasExplicitScheme && (paths.isNotEmpty() || hostPortPairs.isNotEmpty())
 
     // --- Check "missing scheme" ---
     // If there are hosts, paths, or ports, then there should be a scheme.
@@ -486,7 +486,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     // --- Check "missing URI" (This intent filter has a view action but no URI) ---
     // We only show this check if the "missing scheme check" isn't already showing, because they're
     // very similar.
-    val showMissingUriCheck = schemes == null && actionView
+    val showMissingUriCheck = schemes.isEmpty() && actionView
     if (!showMissingSchemeCheck && showMissingUriCheck) {
       reportUrlError(
         context,
@@ -504,7 +504,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     // --- Check "missing host" (Hosts are required when a path is used. ) ---
     // We insist on this because paths will be ignored if there is no host, which makes the intent
     // filter very misleading.
-    if ((paths != null) && hostPortPairs.all { (host, _) -> host.isNullOrBlank() }) {
+    if (paths.isNotEmpty() && hostPortPairs.all { (host, _) -> host.isNullOrBlank() }) {
       val fix = LintFix.create().set().todo(ANDROID_URI, ATTR_HOST).build()
       reportUrlError(
         context,
@@ -634,13 +634,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   private fun addAttribute(
     context: XmlContext?,
     attributeName: String,
-    existing: MutableList<String>?,
+    existing: MutableSet<String>,
     data: Element,
-  ): MutableList<String>? {
-    val attributeValue = checkAndGetAttributeValue(context, attributeName, data) ?: return existing
-    val result = existing ?: mutableListOf()
-    result.add(attributeValue)
-    return result
+  ) {
+    checkAndGetAttributeValue(context, attributeName, data)?.let { existing.add(it) }
   }
 
   private fun validateAttribute(
@@ -720,24 +717,18 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     context: XmlContext?,
     attributeName: String,
     type: Int,
-    matcher: MutableList<AndroidPatternMatcher>?,
+    matcher: MutableSet<AndroidPatternMatcher>,
     data: Element,
-  ): MutableList<AndroidPatternMatcher>? {
-    var current = matcher
+  ) {
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
     if (attribute != null) {
       var value = attribute.value
-      if (requireNonEmpty(context, attribute, value)) {
-        return current
-      }
-      if (current == null) {
-        current = Lists.newArrayListWithCapacity(4)
-      }
+      if (requireNonEmpty(context, attribute, value)) return
       if (value.startsWith(PREFIX_RESOURCE_REF) || value.startsWith(PREFIX_THEME_REF)) {
         value = replaceUrlWithValue(context, value)
       }
       val currentMatcher = AndroidPatternMatcher(value, type)
-      current?.add(currentMatcher)
+      matcher.add(currentMatcher)
       if (context != null && !isSubstituted(value) && !value.startsWith(PREFIX_RESOURCE_REF)) {
         if (!value.startsWith("/") && attributeName in setOf(ATTR_PATH, ATTR_PATH_PREFIX)) {
           val fix = LintFix.create().replace().text(attribute.value).with("/$value").build()
@@ -761,7 +752,6 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         }
       }
     }
-    return current
   }
 
   private fun requireNonEmpty(context: XmlContext?, attribute: Attr, value: String?): Boolean {
@@ -779,9 +769,9 @@ class AppLinksValidDetector : Detector(), XmlScanner {
 
   /** URL information from an intent filter */
   class UriInfo(
-    private val schemes: List<String>?,
-    private val hostPortPairs: List<Pair<String?, String?>>,
-    private val paths: List<AndroidPatternMatcher>?,
+    private val schemes: Set<String>,
+    private val hostPortPairs: Set<Pair<String?, String?>>,
+    private val paths: Set<AndroidPatternMatcher>,
   ) {
     /**
      * Matches a URL against this info, and returns null if successful or the failure reason if not
@@ -791,12 +781,10 @@ class AppLinksValidDetector : Detector(), XmlScanner {
      * @return null for a successful match or the failure reason
      */
     fun match(testUrl: URL): String? {
-      if (schemes != null) {
-        val schemeOk =
-          schemes.any { scheme: String -> scheme == testUrl.protocol || isSubstituted(scheme) }
-        if (!schemeOk) {
-          return "did not match scheme ${Joiner.on(", ").join(schemes)}"
-        }
+      val schemeOk =
+        schemes.any { scheme: String -> scheme == testUrl.protocol || isSubstituted(scheme) }
+      if (!schemeOk) {
+        return "did not match scheme ${Joiner.on(", ").join(schemes)}"
       }
       if (hostPortPairs.isNotEmpty()) {
         val hostOk =
@@ -810,7 +798,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           }"
         }
       }
-      if (paths != null) {
+      if (paths.isNotEmpty()) {
         val testPath = testUrl.path
         val pathOk = paths.any { isSubstituted(it.path) || it.match(testPath) }
         if (!pathOk) {
@@ -833,8 +821,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       return null // OK
     }
 
-    private fun containsUpperCase(matchers: List<AndroidPatternMatcher>?): Boolean {
-      return matchers != null && matchers.any { CharSequences.containsUpperCase(it.path) }
+    private fun containsUpperCase(matchers: Set<AndroidPatternMatcher>): Boolean {
+      return matchers.any { CharSequences.containsUpperCase(it.path) }
     }
 
     /**
