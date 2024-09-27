@@ -36,7 +36,9 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfileableProcessState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -52,7 +54,9 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Assert
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -604,6 +608,100 @@ class AdbDeviceServicesTest {
     }
 
     @Test
+    fun testShellCollectorServiceOutputIsNotBlockedOnEmit(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val device = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(device.deviceId)
+
+        // Act
+        for (dispatcher in listOf(Dispatchers.IO, Dispatchers.Default)) {
+            println("Running ShellCollector test for dispatcher: $dispatcher")
+            var shellCollectorHasCollected = false
+            val collector = object : ShellCollector<ByteBuffer> {
+                override suspend fun start(collector: FlowCollector<ByteBuffer>) {
+                    collector.emit(ByteBuffer.allocate(10))
+                }
+
+                override suspend fun collect(
+                    collector: FlowCollector<ByteBuffer>,
+                    stdout: ByteBuffer
+                ) {
+                    shellCollectorHasCollected = true
+                }
+
+                override suspend fun end(collector: FlowCollector<ByteBuffer>) {}
+            }
+
+            val job = launch(dispatcher) {
+                deviceServices.shell(deviceSelector, "getprop", collector)
+                    .collect {
+                        // Collecting the emit called from `collector.start()`
+                        // This infinite delay shouldn't prevent
+                        delay(Long.MAX_VALUE)
+                    }
+            }
+
+            // Assert
+            // Test failure is indicated by this yield timing out
+            yieldUntil { shellCollectorHasCollected }
+
+            // Cleanup
+            job.cancelAndJoin()
+        }
+    }
+
+    @Test
+    fun testShellV2CollectorServiceOutputIsNotBlockedOnEmit(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val device = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(device.deviceId)
+
+        // Act
+        for (dispatcher in listOf(Dispatchers.IO, Dispatchers.Default)) {
+            println("Running ShellCollector test for dispatcher: $dispatcher")
+            var shellCollectorHasCollected = false
+            val collector = object : ShellV2Collector<ByteBuffer> {
+                override suspend fun start(collector: FlowCollector<ByteBuffer>) {
+                    collector.emit(ByteBuffer.allocate(10))
+                }
+
+                override suspend fun collectStdout(
+                    collector: FlowCollector<ByteBuffer>,
+                    stdout: ByteBuffer
+                ) {
+                    shellCollectorHasCollected = true
+                }
+
+                override suspend fun collectStderr(
+                    collector: FlowCollector<ByteBuffer>,
+                    stderr: ByteBuffer
+                ) {
+                    shellCollectorHasCollected = true
+                }
+
+                override suspend fun end(collector: FlowCollector<ByteBuffer>, exitCode: Int) { }
+
+            }
+
+            val job = launch(dispatcher) {
+                deviceServices.shellV2(deviceSelector, "getprop", collector)
+                    .collect {
+                        // Collecting the emit called from `collector.start()`
+                        // This infinite delay shouldn't prevent
+                        delay(Long.MAX_VALUE)
+                    }
+            }
+
+            // Assert
+            // Test failure is indicated by this yield timing out
+            yieldUntil { shellCollectorHasCollected }
+
+            // Cleanup
+            job.cancelAndJoin()
+        }
+    }
+
+    @Test
     fun testExec(): Unit = runBlockingWithTimeout {
         // Prepare
         val device = addFakeDevice(fakeAdb)
@@ -973,6 +1071,34 @@ class AdbDeviceServicesTest {
         Assert.assertEquals(expectedStdout, collectedStdout.joinToString(separator = "\n"))
         Assert.assertEquals(expectedStderr, collectedStderr.joinToString(separator = "\n"))
         Assert.assertEquals(10, collectedExitCode)
+    }
+
+    @Test
+    fun testShellInputChannelCollectorWorksOnAnyDispatcher(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val fakeDevice = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+        val input = "stdout: This is some text"
+
+        // Act
+        for (dispatcher in listOf(Dispatchers.IO, Dispatchers.Default)) {
+            withContext(dispatcher) {
+                println("Running test for dispatcher: $dispatcher")
+                var collectedStdout: String
+                deviceServices.shellCommand(deviceSelector, "shell-protocol-echo")
+                    .withStdin(input.asAdbInputChannel(deviceServices.session))
+                    .withInputChannelCollector()
+                    .executeAsSingleOutput { inputChannelOutput ->
+                        AdbInputChannelReader(inputChannelOutput.stdout).use { reader ->
+                            collectedStdout = reader.readLine() ?: ""
+                        }
+
+                        // Assert
+                        val expectedStdout = "This is some text"
+                        Assert.assertEquals(expectedStdout, collectedStdout)
+                    }
+            }
+        }
     }
 
     @Test

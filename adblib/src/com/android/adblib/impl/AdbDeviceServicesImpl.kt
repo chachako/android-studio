@@ -48,7 +48,7 @@ import com.android.adblib.utils.launchCancellable
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import java.nio.ByteBuffer
 import java.time.Duration
@@ -166,35 +166,46 @@ internal class AdbDeviceServicesImpl(
         stdinChannel: AdbInputChannel?,
         commandTimeout: Duration,
         bufferSize: Int,
-    ): Flow<T> = flow {
-        val service = getExecServiceString(execService, commandProvider())
-        logger.debug { "Device '${device}' - Start execution of service '$service' (bufferSize=$bufferSize bytes)" }
+    ): Flow<T> {
+        // By using a `channelFlow` here (as opposed to a simple `flow`), which always
+        // has a buffer of at least one element, we ensure a `shellCollector` emitting
+        // elements to the `channelFlow` does not prevent this coroutine from
+        // running and collecting the output of the shell command.
+        return channelFlow {
+            val service = getExecServiceString(execService, commandProvider())
+            logger.debug { "Device '${device}' - Start execution of service '$service' (bufferSize=$bufferSize bytes)" }
 
-        // Note: We only track the time to launch the command, since the command execution
-        // itself can take an arbitrary amount of time.
-        val tracker = TimeoutTracker(host.timeProvider, timeout, unit)
-        serviceRunner.runDaemonService(device, service, tracker) { channel, workBuffer ->
-            host.timeProvider.withErrorTimeout(commandTimeout) {
-                // Forward `stdin` from channel to adb (in a new coroutine so that we
-                // can also collect `stdout` concurrently)
-                stdinChannel?.let {
-                    launchCancellable {
-                        forwardStdInputV2Format(channel, stdinChannel, bufferSize)
+            // Note: We only track the time to launch the command, since the command execution
+            // itself can take an arbitrary amount of time.
+            val tracker = TimeoutTracker(host.timeProvider, timeout, unit)
+            serviceRunner.runDaemonService(device, service, tracker) { channel, workBuffer ->
+                host.timeProvider.withErrorTimeout(commandTimeout) {
+                    // Forward `stdin` from channel to adb (in a new coroutine so that we
+                    // can also collect `stdout` concurrently)
+                    stdinChannel?.let {
+                        launchCancellable {
+                            forwardStdInputV2Format(channel, stdinChannel, bufferSize)
+                        }
                     }
-                }
 
-                // Forward `stdout` and `stderr` from adb to flow
-                collectShellCommandOutputV2Format(
-                    channel,
-                    workBuffer,
-                    service,
-                    shellCollector,
-                    bufferSize,
-                    this@flow
-                )
+                    // Wraps our `ProducerScope` as `FlowCollector` so that the `shellCollector`
+                    // is not aware of this implementation detail.
+                    val producerScope = this@channelFlow
+                    val flowCollector = FlowCollector<T> { value -> producerScope.send(value) }
+
+                    // Forward `stdout` and `stderr` from adb to flow
+                    collectShellCommandOutputV2Format(
+                        channel,
+                        workBuffer,
+                        service,
+                        shellCollector,
+                        bufferSize,
+                        flowCollector
+                    )
+                }
             }
-        }
-    }.flowOn(host.ioDispatcher)
+        }.flowOn(host.ioDispatcher)
+    }
 
     override suspend fun sync(device: DeviceSelector): AdbDeviceSyncServices {
         return AdbDeviceSyncServicesImpl.open(serviceRunner, device, timeout, unit)
@@ -521,35 +532,45 @@ internal class AdbDeviceServicesImpl(
         bufferSize: Int,
         shutdownOutput: Boolean,
         stripCrLf: Boolean
-    ): Flow<T> = flow {
-        val service = getExecServiceString(execService, commandProvider())
-        logger.debug { "Device \"${device}\" - Start execution of service \"$service\" (bufferSize=$bufferSize bytes)" }
+    ): Flow<T> {
+        // By using a `channelFlow` here (as opposed to a simple `flow`), which always
+        // has a buffer of at least one element, we ensure a `shellCollector` emitting
+        // elements to the `channelFlow` does not prevent this coroutine from
+        // running and collecting the output of the shell command.
+        return channelFlow {
+            val service = getExecServiceString(execService, commandProvider())
+            logger.debug { "Device \"${device}\" - Start execution of service \"$service\" (bufferSize=$bufferSize bytes)" }
 
-        // Note: We only track the time to launch the command, since the command execution
-        // itself can take an arbitrary amount of time.
-        val tracker = TimeoutTracker(host.timeProvider, timeout, unit)
-        serviceRunner.runDaemonService(device, service, tracker) { channel, workBuffer ->
-            host.timeProvider.withErrorTimeout(commandTimeout) {
-                // Forward `stdin` from channel to adb (in a new coroutine so that we
-                // can also collect `stdout` concurrently)
-                stdinChannel?.let {
-                    launchCancellable {
-                        forwardStdInput(channel, stdinChannel, bufferSize, shutdownOutput)
+            // Note: We only track the time to launch the command, since the command execution
+            // itself can take an arbitrary amount of time.
+            val tracker = TimeoutTracker(host.timeProvider, timeout, unit)
+            serviceRunner.runDaemonService(device, service, tracker) { channel, workBuffer ->
+                host.timeProvider.withErrorTimeout(commandTimeout) {
+                    // Forward `stdin` from channel to adb (in a new coroutine so that we
+                    // can also collect `stdout` concurrently)
+                    stdinChannel?.let {
+                        launchCancellable {
+                            forwardStdInput(channel, stdinChannel, bufferSize, shutdownOutput)
+                        }
                     }
-                }
 
-                collectShellCommandOutput(
-                    channel,
-                    workBuffer,
-                    service,
-                    bufferSize,
-                    stripCrLf,
-                    shellCollector,
-                    this@flow,
-                )
+                    // Wraps our `ProducerScope` as `FlowCollector` so that the `shellCollector`
+                    // is not aware of this implementation detail.
+                    val producerScope = this@channelFlow
+                    val flowCollector = FlowCollector<T> { value -> producerScope.send(value) }
+                    collectShellCommandOutput(
+                        channel,
+                        workBuffer,
+                        service,
+                        bufferSize,
+                        stripCrLf,
+                        shellCollector,
+                        flowCollector,
+                    )
+                }
             }
-        }
-    }.flowOn(host.ioDispatcher)
+        }.flowOn(host.ioDispatcher)
+    }
 
     private fun getExecServiceString(service: ExecService, command: String): String {
         // Shell service string can look like: shell[,arg1,arg2,...]:[command].

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+<issues format="6" by="lint 8.8.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.8.0-dev">
 
     <issue
         id="StopShip"
@@ -19,7 +19,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="99"
+            line="105"
             column="21"/>
     </issue>
 
@@ -30,7 +30,7 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="126"
+            line="132"
             column="20"/>
     </issue>
 
@@ -41,7 +41,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="141"
+            line="147"
             column="21"/>
     </issue>
 
@@ -52,7 +52,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="168"
+            line="174"
             column="21"/>
     </issue>
 
@@ -63,7 +63,7 @@
         errorLine2="            ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="251"
+            line="257"
             column="13"/>
     </issue>
 
@@ -74,7 +74,7 @@
         errorLine2="            ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="272"
+            line="278"
             column="13"/>
     </issue>
 
@@ -85,7 +85,7 @@
         errorLine2="                ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="326"
+            line="332"
             column="17"/>
     </issue>
 
@@ -96,7 +96,7 @@
         errorLine2="                          ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="399"
+            line="405"
             column="27"/>
     </issue>
 
@@ -107,7 +107,7 @@
         errorLine2="            ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="436"
+            line="442"
             column="13"/>
     </issue>
 
@@ -118,8 +118,30 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="493"
+            line="499"
             column="20"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="                deviceServices.shell(deviceSelector, &quot;getprop&quot;, collector)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
+            line="636"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shellV2` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="                deviceServices.shellV2(deviceSelector, &quot;getprop&quot;, collector)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
+            line="687"
+            column="17"/>
     </issue>
 
     <issue
@@ -129,7 +151,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="612"
+            line="712"
             column="21"/>
     </issue>
 
@@ -140,7 +162,7 @@
         errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="671"
+            line="771"
             column="29"/>
     </issue>
 
@@ -151,7 +173,7 @@
         errorLine2="                            ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="712"
+            line="812"
             column="29"/>
     </issue>
 
@@ -162,7 +184,7 @@
         errorLine2="                          ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="770"
+            line="870"
             column="27"/>
     </issue>
 
@@ -173,7 +195,7 @@
         errorLine2="                          ^">
         <location
             file="test/src/com/android/adblib/AdbDeviceServicesTest.kt"
-            line="806"
+            line="906"
             column="27"/>
     </issue>
 
