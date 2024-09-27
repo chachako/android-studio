@@ -4,6 +4,56 @@ load("//tools/base/bazel:repositories.bzl", "setup_external_repositories", "vend
 
 setup_external_repositories()
 
+# BEGIN Cc toolchain dependencies
+new_local_repository(
+    name = "clang_linux_x64",
+    build_file = "//build/bazel/toolchains/cc/linux_clang:clang.BUILD",
+    path = "prebuilts/clang/host/linux-x86/clang-r536225",
+)
+
+new_local_repository(
+    name = "clang_mac_all",
+    build_file = "//build/bazel/toolchains/cc/mac_clang:clang.BUILD",
+    path = "prebuilts/clang/host/darwin-x86/clang-r536225",
+)
+
+new_local_repository(
+    name = "clang_win_x64",
+    build_file = "//build/bazel/toolchains/cc/windows_clang:clang.BUILD",
+    path = "prebuilts/clang/host/windows-x86/clang-r536225",
+)
+
+new_local_repository(
+    name = "gcc_lib",
+    build_file = "//build/bazel/toolchains/cc/linux_clang:gcc_lib.BUILD",
+    path = "prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+)
+
+load(
+    "//build/bazel/toolchains/cc:repository_rules.bzl",
+    "macos_sdk_repository",
+    "msvc_tools_repository",
+    "windows_sdk_repository",
+)
+
+macos_sdk_repository(
+    name = "macos_sdk",
+    build_file = "//build/bazel/toolchains/cc/mac_clang:sdk.BUILD",
+)
+
+msvc_tools_repository(
+    name = "vctools",
+    build_file = "//build/bazel/toolchains/cc/windows_clang:vctools.BUILD",
+)
+
+windows_sdk_repository(
+    name = "windows_sdk",
+    build_file_template = "//build/bazel/toolchains/cc/windows_clang:sdk.BUILD.tpl",
+    sdk_path = "C:\\Program Files (x86)\\Windows Kits\\10",
+)
+
+# END Cc toolchain dependencies
+
 register_toolchains(
     "@native_toolchain//:cc-toolchain-x64_linux",
     "@native_toolchain//:cc-toolchain-darwin",
@@ -253,8 +303,15 @@ aswb_test_deps_dependencies()
 
 http_jar(
     name = "bazel_diff",
-    urls = [
-        "https://github.com/Tinder/bazel-diff/releases/download/7.1.1/bazel-diff_deploy.jar"
-    ],
     sha256 = "ed5410288bd7ec5b49b556103f561fb15e4c82f13f12cb41be128d447ecc2d46",
+    urls = [
+        "https://github.com/Tinder/bazel-diff/releases/download/7.1.1/bazel-diff_deploy.jar",
+    ],
+)
+
+http_archive(
+    name = "with_cfg.bzl",
+    sha256 = "06a2b1b56a58c471ab40d8af166c4d51f0982e1c6bc46375b805915b3fc0658e",
+    strip_prefix = "with_cfg.bzl-0.2.4",
+    url = "https://github.com/fmeum/with_cfg.bzl/releases/download/v0.2.4/with_cfg.bzl-v0.2.4.tar.gz",
 )
