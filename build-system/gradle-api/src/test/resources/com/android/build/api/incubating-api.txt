@@ -590,6 +590,7 @@ https://issuetracker.google.com/328749317
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setIncludeAndroidResources: void (boolean)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setReturnDefaultValues: void (boolean)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getSources: com.android.build.api.variant.Sources ()
 https://issuetracker.google.com/328749318
   * com.android.build.api.variant.DeviceTestBuilder.getEnable: boolean ()
   * com.android.build.api.variant.DeviceTestBuilder.setEnable: void (boolean)

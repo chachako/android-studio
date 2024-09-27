@@ -77,7 +77,6 @@ class KotlinMultiplatformAndroidDslTest {
 
             // Managed by the kotlin plugin DSL
             "public abstract com.android.build.api.variant.JavaCompilation getJavaCompilation()",
-            "public abstract com.android.build.api.variant.Sources getSources()",
             "public abstract org.gradle.api.artifacts.Configuration getAnnotationProcessorConfiguration()", // kapt-ksp
             "public abstract org.gradle.api.artifacts.Configuration getCompileConfiguration()",
             "public abstract org.gradle.api.artifacts.Configuration getRuntimeConfiguration()",
