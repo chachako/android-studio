@@ -914,7 +914,7 @@ DATA = [
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:1.9.24",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.1.0-Beta1",
-    "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.1.0-dev-8121",
+    "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:pom:2.1.20-polaris-189",
     "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.1.0-Beta1",
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:1.6.10",
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:1.6.21",
@@ -926,13 +926,13 @@ DATA = [
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:1.9.22",
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:1.9.23",
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:2.1.0-Beta1",
-    "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:2.1.0-dev-8121",
+    "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:2.1.20-polaris-189",
     "org.jetbrains.kotlin:jvm-abi-gen:1.9.21",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:1.8.10",  # Dependency of architecture-samples
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:1.9.22",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:1.9.23",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:2.1.0-Beta1",
-    "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:2.1.0-dev-8121",
+    "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:pom:2.1.20-polaris-189",
     "org.jetbrains.kotlin:kotlin-android-extensions:2.1.0-Beta1",
     "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.3.41",
     "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.3.72",
@@ -988,7 +988,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0-Beta1",
-    "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0-dev-8121",
+    "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20-polaris-189",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:jar:gradle70:1.7.0",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:jar:gradle70:1.7.10",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:jar:gradle70:1.7.20",
@@ -1058,7 +1058,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.24",
     "org.jetbrains.kotlin:kotlin-stdlib-common:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin:kotlin-stdlib-common:2.1.0-Beta1",
-    "org.jetbrains.kotlin:kotlin-stdlib-common:2.1.0-dev-8121",
+    "org.jetbrains.kotlin:kotlin-stdlib-common:2.1.20-polaris-189",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.32",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.31",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21",
@@ -1076,7 +1076,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0-Beta1",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0-dev-8121",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20-polaris-189",
     "org.jetbrains.kotlin:kotlin-stdlib-js:1.7.0",
     "org.jetbrains.kotlin:kotlin-test:1.9.24",
     "org.jetbrains.kotlin:kotlin-test-junit:1.7.10",
@@ -1085,7 +1085,7 @@ DATA = [
     "org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin:pom:1.8.21",
     "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:pom:2.0.0",  # Compose/Kotlin 2.0.0 templates
     "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:pom:2.1.0-Beta1",
-    "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:pom:2.1.0-dev-8121",
+    "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:pom:2.1.20-polaris-189",
     "org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin:pom:2.1.0-Beta1",  # Used by com.android.tools.idea.benchmarks.tests.JetNewsBenchmarkTest
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.6",
