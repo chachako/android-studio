@@ -1176,6 +1176,10 @@ class LintIssueDocGenerator(
       [versions]
       $catalogId = "$version"
       [libraries]
+      # For clarity and text wrapping purposes the following declaration is
+      # shown split up across lines, but in TOML it needs to be on a single
+      # line (see https://github.com/toml-lang/toml/issues/516) so adjust
+      # when pasting into libs.versions.toml:
       $catalogId = {
           module = "$groupId:$artifactId",
           version.ref = "$catalogId"
@@ -3588,13 +3592,10 @@ class LintIssueDocGenerator(
         val file = File.createTempFile(key.replace(':', '_'), DOT_JAR)
         file.deleteOnExit()
         file.writeBytes(bytes)
-        val registry = getRegistry(client, file)
-        if (registry == null) {
-          println(
-            "Error: Unexpectedly got null issue registry for $key with $file and version $latest"
-          )
-          continue
-        }
+        val registry =
+          getRegistry(client, file)
+            // Some non-lint jar file
+            ?: continue
         val wrapped = DocIssueRegistry(registry, library)
         result[wrapped] = "$key:$latest"
       }
@@ -3684,12 +3685,14 @@ class LintIssueDocGenerator(
       var m =
         id.removePrefix("androidx.").replace(':', '/').replace('.', '/').removeSuffix("-android") +
           "-lint"
-      // workaround: androidx generally places lint checks in a predictable place except for one
-      // weird exception. Work around this for now (and get androidx updated.)
+      // workaround: androidx generally places lint checks in a predictable place except for one or
+      // two
+      // weird exceptions. Work around this for now (and get androidx updated.)
       when (m) {
         "work/work-runtime-lint" -> m = "work/work-lint"
         "lifecycle/lifecycle-livedata-core-ktx-lint" -> m = "lifecycle/lifecycle-livedata-core-lint"
         "lifecycle/lifecycle-runtime-ktx-lint" -> m = "lifecycle/lifecycle-runtime-lint"
+        "lint/lint-gradle-lint" -> m = "lint/lint-gradle"
       }
       url.append(m)
       url.append("/src/")
@@ -3904,7 +3907,7 @@ class LintIssueDocGenerator(
         val response =
           try {
             println("Reading $query")
-            readUrlDataAsString(client, query.toString(), 20000) ?: return emptyList()
+            readUrlDataAsString(client, query.toString(), 40000) ?: return emptyList()
           } catch (e: SocketTimeoutException) {
             println("Couldn't download $query; read timed out")
             return emptyList()
