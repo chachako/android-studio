@@ -1004,6 +1004,7 @@ coverage_report(
         "//tools/adt/idea/android/diagnostics:intellij.android.core.diagnostics_tests",
         "//tools/adt/idea/android/editing:intellij.android.core.editing.tests_tests",
         "//tools/adt/idea/android/editing/documentation:intellij.android.core.editing.documentation_tests",
+        "//tools/adt/idea/android/editing/metrics:intellij.android.core.editing.metrics_tests",
         "//tools/adt/idea/android/editors.fast:intellij.android.core.editors.fast_tests",
         "//tools/adt/idea/android/editors:intellij.android.core.editors_tests",
         "//tools/adt/idea/android/editors.manifest:intellij.android.core.editors.manifest_tests",
