@@ -72,6 +72,21 @@ data class StringParameterBuilder(
   var suggest: WizardParameterData.() -> String? = { null },
   var loggable: Boolean = false,
 ) : ParameterBuilder<String> {
+  /**
+   * This exists for (hopefully temporary) binary compatibility with JetBrains' Kotlin Multiplatform
+   * plugin
+   */
+  @Deprecated("Specify loggable parameter")
+  constructor(
+    name: String? = null,
+    help: String? = null,
+    visible: WizardParameterData.() -> Boolean = { true },
+    enabled: WizardParameterData.() -> Boolean = { true },
+    default: String? = null,
+    constraints: List<Constraint> = listOf(),
+    suggest: WizardParameterData.() -> String? = { null },
+  ) : this(name, help, visible, enabled, default, constraints, suggest, false)
+
   override fun build(): StringParameter {
     validate()
     return StringParameter(
