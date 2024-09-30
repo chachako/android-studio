@@ -794,6 +794,97 @@ public final class AvdManagerTest {
     }
 
     @Test
+    public void duplicateAvdViaBuilder() throws Exception {
+        MockLog log = new MockLog();
+        DeviceManager deviceManager = DeviceManager.createInstance(mAndroidSdkHandler, log);
+        Device device = deviceManager.getDevice("medium_phone", "Generic");
+
+        AvdBuilder builder = mAvdManager.createAvdBuilder(device);
+        builder.setAvdName(name.getMethodName());
+        builder.setAvdFolder(mAvdFolder);
+        builder.setSystemImage(systemImages.getApi33ext4().getImage());
+        builder.setSdCard(new ExternalSdCard(mAvdFolder.resolve("custom_sdcard.img").toString()));
+        builder.setFrontCamera(AvdCamera.NONE);
+        builder.setBackCamera(AvdCamera.NONE);
+        AvdInfo initialAvdInfo = mAvdManager.createAvd(builder);
+
+        assertNotNull("Could not create AVD", initialAvdInfo);
+        // Put some extra files in the AVD directory
+        Files.createFile(mAvdFolder.resolve("foo.bar"));
+        InMemoryFileSystems.recordExistingFile(
+                mAvdFolder.resolve("hardware-qemu.ini"),
+                "avd.name="
+                        + name.getMethodName()
+                        + "\nhw.sdCard.path="
+                        + mAvdFolder.resolve("sdcard.img"));
+
+        // Copy this AVD to an AVD with a different name and a slightly different configuration
+        AvdBuilder newBuilder = AvdBuilder.createForExistingDevice(device, initialAvdInfo);
+        newBuilder.setBackCamera(AvdCamera.WEBCAM);
+        newBuilder.setDisplayName("Copy of " + initialAvdInfo.getDisplayName());
+        newBuilder.setAvdName("Copy_of_" + name.getMethodName());
+        newBuilder.setAvdFolder(initialAvdInfo.getDataFolderPath().resolveSibling("Copy_of_" + name.getMethodName() + ".avd"));
+
+        AvdInfo duplicatedAvd = mAvdManager.duplicateAvd(initialAvdInfo, newBuilder);
+
+        // Verify that the duplicated AVD is correct
+        assertNotNull("Could not duplicate AVD", duplicatedAvd);
+        Path parentFolder = mAvdFolder.getParent();
+        Path newFolder = newBuilder.getAvdFolder();
+        String newName = newBuilder.getAvdName();
+        String newNameIni = newName + ".ini";
+        Path newIniFile = parentFolder.resolve(newNameIni);
+        assertTrue("Expected " + newNameIni + " in " + parentFolder, Files.exists(newIniFile));
+        Map<String, String> iniProperties =
+                AvdManager.parseIniFile(new PathFileWrapper(newIniFile), null);
+        assertEquals(newFolder.toString(), iniProperties.get("path"));
+
+        assertTrue(Files.exists(newFolder.resolve("foo.bar")));
+        assertFalse(Files.exists(newFolder.resolve("boot.prop")));
+        // Check the config.ini file
+        Map<String, String> configProperties =
+                AvdManager.parseIniFile(new PathFileWrapper(newFolder.resolve("config.ini")), null);
+        assertEquals(
+                "system-images/android-33-ext4/google_apis_playstore/x86_64/"
+                        .replace('/', File.separatorChar),
+                configProperties.get("image.sysdir.1"));
+        assertEquals(newName, configProperties.get("AvdId"));
+        assertEquals(newBuilder.getDisplayName(), configProperties.get("avd.ini.displayname"));
+        assertThat(configProperties.get(ConfigKey.SDCARD_PATH)).isEqualTo(newFolder.resolve("custom_sdcard.img").toString());
+        assertEquals(AvdCamera.NONE.getAsParameter(), configProperties.get(ConfigKey.CAMERA_FRONT));
+        assertEquals(AvdCamera.WEBCAM.getAsParameter(), configProperties.get(ConfigKey.CAMERA_BACK));
+        assertFalse(
+                "Expected NO " + AvdManager.USERDATA_IMG + " in " + newFolder,
+                Files.exists(newFolder.resolve(AvdManager.USERDATA_IMG)));
+        assertFalse(
+                "Expected NO " + AvdManager.USERDATA_QEMU_IMG + " in " + mAvdFolder,
+                Files.exists(mAvdFolder.resolve(AvdManager.USERDATA_QEMU_IMG)));
+
+        // Check the hardware-qemu.ini file
+        Map<String, String> hardwareProperties =
+                AvdManager.parseIniFile(
+                        new PathFileWrapper(newFolder.resolve("hardware-qemu.ini")), null);
+        assertThat(hardwareProperties.get("avd.name")).isEqualTo(newName);
+        assertThat(hardwareProperties.get("hw.sdCard.path"))
+            .isEqualTo(
+                mAvdFolder
+                    .getParent()
+                    .toAbsolutePath()
+                    .resolve(newName + ".avd")
+                    .resolve("sdcard.img")
+                    .toString());
+
+        // Quick check that the original AVD directory still exists
+        assertTrue(Files.exists(mAvdFolder.resolve("foo.bar")));
+        assertTrue(Files.exists(mAvdFolder.resolve("config.ini")));
+        assertTrue(Files.exists(mAvdFolder.resolve("hardware-qemu.ini")));
+        Map<String, String> baseConfigProperties =
+                AvdManager.parseIniFile(
+                        new PathFileWrapper(mAvdFolder.resolve("config.ini")), null);
+        assertThat(baseConfigProperties.get("AvdId")).isNotEqualTo(newName); // Different or null
+    }
+
+    @Test
     public void reloadAvds() throws Exception {
         // Create an AVD.
         AvdInfo avd =
