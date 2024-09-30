@@ -39,7 +39,6 @@ def main():
     ] + bazel
 
   args = sys.argv[1:]
-  command = bazel_command(args)
 
   env['TERM'] = os.environ.get('TERM', '')
   env['MAVEN_FETCH'] = os.environ.get('MAVEN_FETCH', '')
@@ -69,6 +68,7 @@ def main():
     # This is needed for bazel to set itself up, even though we aren't using gcc.
     env['CC'] = os.environ.get('GCC', '/usr/bin/gcc')
   elif sys.platform == 'win32':
+    command = bazel_command(args)
     # We don't need the tools to be installed locally if you're building remotely.
     # This isn't really the correct check, since --config=remote is just an alias for a bunch of other
     # settings. But in practice that's how you get into remote mode, so it should be good enough for now
@@ -80,14 +80,13 @@ def main():
     ):
       if not os.path.exists(
           'C:\\Program Files (x86)\\Microsoft Visual'
-          ' Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.26.28801'
+          ' Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.40.33807'
       ) or not os.path.exists(
-          'C:\\Program Files (x86)\\Windows Kits\\10\\lib\\10.0.18362.0'
+          'C:\\Program Files (x86)\\Windows Kits\\10\\lib\\10.0.19041.0'
       ):
         print(
-            'You must have MSVC Buildtools version 14.26.28801 and Windows SDK'
-            ' 10.0.18362.0 installed.\nAn installer for these is available at'
-            ' go/studio-msvc-tools.'
+            'You must have MSVC Buildtools version 14.40.33807 and Windows SDK'
+            ' 10.0.19041.0 installed.\nSee go/adtsetup-msvc.'
         )
         sys.exit(1)
 

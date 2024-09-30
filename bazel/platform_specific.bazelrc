@@ -20,6 +20,7 @@ common:windows --repo_env=ANDROID_HOME=prebuilts/studio/sdk/windows
 build:windows --bes_keywords=windows
 build:windows --host_platform=//tools/base/bazel/platforms:windows
 build:windows --platforms=//tools/base/bazel/platforms:windows
+build:windows --shell_executable=C:\\tools\\msys64\\usr\\bin\\bash.exe
 # Runfiles is off by default for Windows, enable it.
 build:windows --enable_runfiles
 # Static link native artifacts
