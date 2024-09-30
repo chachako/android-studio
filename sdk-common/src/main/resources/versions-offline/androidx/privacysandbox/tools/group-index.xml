@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.privacysandbox.tools>
-  <tools versions="1.0.0-alpha09"/>
-  <tools-apicompiler versions="1.0.0-alpha09"/>
-  <tools-apigenerator versions="1.0.0-alpha09"/>
-  <tools-apipackager versions="1.0.0-alpha09"/>
-  <tools-core versions="1.0.0-alpha09"/>
+  <tools versions="1.0.0-alpha10"/>
+  <tools-apicompiler versions="1.0.0-alpha10"/>
+  <tools-apigenerator versions="1.0.0-alpha10"/>
+  <tools-apipackager versions="1.0.0-alpha10"/>
+  <tools-core versions="1.0.0-alpha10"/>
 </androidx.privacysandbox.tools>
 

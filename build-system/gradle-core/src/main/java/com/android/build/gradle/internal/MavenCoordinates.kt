@@ -38,17 +38,17 @@ enum class MavenCoordinates (val group: String, val artifact: String,  val defau
     ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_APIGENERATOR(
         "androidx.privacysandbox.tools",
         "tools-apigenerator",
-        "1.0.0-alpha09"
+        "1.0.0-alpha10"
     ),
     ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_APIPACKAGER(
         "androidx.privacysandbox.tools",
         "tools-apipackager",
-        "1.0.0-alpha09"
+        "1.0.0-alpha10"
     ),
     ANDROIDX_PRIVACYSANDBOX_UI_UI_CORE(
         "androidx.privacysandbox.ui",
         "ui-core",
-        "1.0.0-alpha09"
+        "1.0.0-alpha10"
     ),
     ANDROIDX_CORE_CORE_KTX(
         "androidx.core",
@@ -58,7 +58,7 @@ enum class MavenCoordinates (val group: String, val artifact: String,  val defau
     ANDROIDX_PRIVACYSANDBOX_UI_UI_CLIENT(
         "androidx.privacysandbox.ui",
         "ui-client",
-        "1.0.0-alpha09"
+        "1.0.0-alpha10"
     ),
     ORG_JETBRAINS_KOTLIN_KOTLIN_COMPILER_EMBEDDABLE(
         "org.jetbrains.kotlin",
