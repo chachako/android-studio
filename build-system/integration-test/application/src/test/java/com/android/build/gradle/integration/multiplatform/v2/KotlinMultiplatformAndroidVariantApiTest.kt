@@ -16,10 +16,11 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.testutils.apk.Aar
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,5 +49,54 @@ class KotlinMultiplatformAndroidVariantApiTest {
 
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidUnitTest")
         ScannerSubject.assertThat(result.stdout).contains("androidMain:androidInstrumentedTest")
+    }
+
+    @Test
+    fun testAddGeneratedAssets() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            // language=kotlin
+            """
+                kotlin.androidLibrary {
+                    experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+                }
+
+                abstract class CreateAssets: DefaultTask() {
+
+                    @get:OutputDirectory
+                    abstract val outputFolder: DirectoryProperty
+
+                    @TaskAction
+                    fun taskAction() {
+                        val outputFile = File(outputFolder.asFile.get(), "asset.txt")
+                        outputFile.parentFile.mkdirs()
+                        outputFile.writeText("foo")
+                    }
+                }
+
+                androidComponents {
+                    onVariant { variant ->
+                        val createAssetsTaskProvider =
+                            project.tasks.register<CreateAssets>("${'$'}{variant.name}AddAssets") {
+                            outputFolder.set(
+                                File(project.layout.buildDirectory.asFile.get(), "assets/gen")
+                            )
+                        }
+                        variant.sources
+                            .assets
+                            ?.addGeneratedSourceDirectory(
+                                createAssetsTaskProvider,
+                                CreateAssets::outputFolder
+                            )
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run(":kmpFirstLib:assemble")
+
+        val aarFile = project.getSubproject("kmpFirstLib").getOutputFile("aar", "kmpFirstLib.aar")
+        @Suppress("PathAsIterable")
+        Aar(aarFile).use { aar -> assertThat(aar.getEntry("assets/asset.txt")).isNotNull() }
     }
 }

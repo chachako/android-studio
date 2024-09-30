@@ -37,7 +37,6 @@ import com.android.build.api.variant.impl.DirectoryEntries
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformFlatSourceDirectoriesImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformLayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.ManifestFilesImpl
 import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
@@ -303,20 +302,18 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         )
 
         override val res = if (buildFeatures.androidResources) {
-            KotlinMultiplatformLayeredSourceDirectoriesImpl(
-                name = SourceType.RES.folder,
+            LayeredSourceDirectoriesImpl(
+                _name = SourceType.RES.folder,
                 variantServices = variantServices,
                 variantDslFilters = PatternSet(),
-                compilation = compilation
             )
         } else null
 
         override val assets = if (buildFeatures.androidResources) {
-            KotlinMultiplatformLayeredSourceDirectoriesImpl(
-                name = SourceType.ASSETS.folder,
+            LayeredSourceDirectoriesImpl(
+                _name = SourceType.ASSETS.folder,
                 variantServices = variantServices,
                 variantDslFilters = PatternSet(),
-                compilation = compilation
             )
         } else null
 
