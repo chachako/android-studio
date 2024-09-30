@@ -70,11 +70,11 @@ platform(
     ],
     exec_properties = dicts.add(
         create_rbe_exec_properties_dict(
-            container_image = "docker://gcr.io/google.com/android-studio-alphasource/rbe-windows2019-as@sha256:1ad1aa4e016b0b9ee41e5c0d587c3fc51033485b0242fb7ee9fdd242c7598879",
+            container_image = "docker://us-central1-docker.pkg.dev/google.com/android-studio-alphasource/rbe/windows-2022-test@sha256:eaa19f67a1b92739a3d87e64bfa005bbedcbd217869efdd8c08d4070ac0ab52a",
             docker_network = "off",
             labels = {
                 "machine-size": "default",
-                "image-family": "2019",
+                "image-family": "2022",
             },
             os_family = "Windows",
         ),

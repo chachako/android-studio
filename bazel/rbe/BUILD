@@ -19,6 +19,17 @@ java_test(
     ],
 )
 
+py_test(
+    name = "windows_path_test",
+    srcs = ["windows_path_test.py"],
+    tags = [
+        "noci:studio-linux"
+    ],
+    deps = [
+        "@absl-py//absl/testing:absltest",
+    ],
+)
+
 # CPU, disk and memory benchmark baseline tests to measure performace of RBE
 # machines. See go/adt-perfgate.
 java_test(
