@@ -684,17 +684,17 @@ public class ApkAnalyzerImplTest {
     public void filesListTest() throws IOException {
         impl.filesList(apk, true, true, false);
         assertEquals(
-                "4157\t3476\t/\n"
-                        + "1568\t1568\t/META-INF/\n"
-                        + "1054\t1054\t/META-INF/CERT.RSA\n"
-                        + "264\t264\t/META-INF/CERT.SF\n"
-                        + "250\t250\t/META-INF/MANIFEST.MF\n"
-                        + "703\t703\t/classes.dex\n"
-                        + "936\t255\t/resources.arsc\n"
-                        + "312\t312\t/res/\n"
-                        + "312\t312\t/res/layout/\n"
-                        + "312\t312\t/res/layout/main.xml\n"
-                        + "638\t638\t/AndroidManifest.xml\n",
+                "4157\t3602\t/\n"
+                        + "1568\t1622\t/META-INF/\n"
+                        + "1054\t1072\t/META-INF/CERT.RSA\n"
+                        + "264\t282\t/META-INF/CERT.SF\n"
+                        + "250\t268\t/META-INF/MANIFEST.MF\n"
+                        + "703\t721\t/classes.dex\n"
+                        + "936\t273\t/resources.arsc\n"
+                        + "312\t330\t/res/\n"
+                        + "312\t330\t/res/layout/\n"
+                        + "312\t330\t/res/layout/main.xml\n"
+                        + "638\t656\t/AndroidManifest.xml\n",
                 baos.toString());
     }
 

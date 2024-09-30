@@ -121,20 +121,20 @@ public class ArchiveTreeStructureTest {
                                     entry.getSummaryDisplayString());
                         });
         String expected =
-                "259        /\n"
-                    + "8          /res/\n"
-                    + "8          /res/anim/\n"
-                    + "8          /res/anim/fade.xml\n"
-                    + "153        /instant-run.zip\n"
-                    + "4          /instant-run.zip/instant-run/\n"
-                    + "4          /instant-run.zip/instant-run/classes1.dex\n"
-                    + "76         /instant-run-truncated.zip\n"
+                "349        /\n"
+                    + "26         /res/\n"
+                    + "26         /res/anim/\n"
+                    + "26         /res/anim/fade.xml\n"
+                    + "171        /instant-run.zip\n"
+                    + "22         /instant-run.zip/instant-run/\n"
+                    + "22         /instant-run.zip/instant-run/classes1.dex\n"
+                    + "94         /instant-run-truncated.zip\n"
                     + "0          /instant-run-truncated.zip/ - Error processing entry:"
                     + " java.io.EOFException\n"
-                    + "11         /bar.jar\n"
+                    + "29         /bar.jar\n"
                     + "0          /bar.jar/ - Error processing entry: java.util.zip.ZipError: No"
                     + " valid contents inside\n"
-                    + "11         /AndroidManifest.xml";
+                    + "29         /AndroidManifest.xml";
         assertThat(actual).isEqualTo(expected);
     }
 

@@ -24,10 +24,14 @@ import com.android.tools.apk.analyzer.internal.GzipSizeCalculator;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
 public class GzipSizeCalculatorTest {
+
+    private static final String VIRTUAL_ENTRY_NAME = "";
+
     private ApkSizeCalculator calculator;
     private Path apk;
 
@@ -53,9 +57,11 @@ public class GzipSizeCalculatorTest {
     public void getDownloadSizePerFile() {
         Map<String, Long> downloadSizePerFile = calculator.getDownloadSizePerFile(apk);
 
-        // The expected values can be seen via unzip -lv resources/test.apk
-        // Note: for this test apk, the re-compressing at "zip -9" actually has no impact.
-        assertThat(downloadSizePerFile.get("/AndroidManifest.xml")).isEqualTo(11);
+        // The expected values can be seen via:
+        //     unzip -cq test.apk AndroidManifest.xml | gzip --best | wc -c
+        // Note: for this test apk, the re-compressing AndroidManifest.xml results in a larger file
+        // due to Gzip overhead (header etc.).
+        assertThat(downloadSizePerFile.get("/AndroidManifest.xml")).isEqualTo(29);
         assertThat(downloadSizePerFile.get("/res/"))
                 .isNull(); // directories should not have any size
     }
@@ -67,5 +73,63 @@ public class GzipSizeCalculatorTest {
         // The expected values can be seen via unzip -lv resources/test.apk
         assertThat(infoPerFile.get("/AndroidManifest.xml").size).isEqualTo(11);
         assertThat(infoPerFile.get("/res/")).isNull(); // directories should not have any info
+    }
+
+    @Test
+    public void getDownloadSizePerFile_filtersVirtualEntry() throws IOException {
+        Path apkWithVirtualEntry = TestResources.getFile("/app_with_virtual_entry.apk").toPath();
+
+        // Make sure the archive has one virtual entry.
+        VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntry);
+        assertThat(veCalculator.getCount()).isEqualTo(1L);
+
+        Map<String, Long> entries = calculator.getDownloadSizePerFile(apkWithVirtualEntry);
+        assertThat(entries.size()).isNotEqualTo(0);
+        assertThat(entries.get(VIRTUAL_ENTRY_NAME)).isNull();
+    }
+
+    @Test
+    public void getDownloadSizePerFile_filtersVirtualEntries() throws IOException {
+        Path apkWithVirtualEntries =
+                TestResources.getFile("/app_with_virtual_entries.apk").toPath();
+
+        // Make sure the archive has more than one virtual entries.
+        VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntries);
+        assertThat(veCalculator.getCount()).isEqualTo(3L);
+
+        Map<String, Long> entries = calculator.getDownloadSizePerFile(apkWithVirtualEntries);
+        assertThat(entries.size()).isNotEqualTo(0);
+        assertThat(entries.get(VIRTUAL_ENTRY_NAME)).isNull();
+    }
+
+    @Test
+    public void getInfoPerFile_filtersVirtualEntry() throws IOException {
+        Path apkWithVirtualEntries = TestResources.getFile("/app_with_virtual_entry.apk").toPath();
+
+        // Make sure the archive has more than one virtual entries.
+        VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntries);
+        assertThat(veCalculator.getCount()).isEqualTo(1L);
+
+        Map<String, ZipEntryInfo> entries = calculator.getInfoPerFile(apkWithVirtualEntries);
+        assertThat(entries.size()).isNotEqualTo(0);
+        assertThat(entries.get(VIRTUAL_ENTRY_NAME)).isNull();
+    }
+
+    @Test
+    public void getInfoPerFile_filtersVirtualEntries() throws IOException {
+        Path apkWithVirtualEntries =
+                TestResources.getFile("/app_with_virtual_entries.apk").toPath();
+
+        // Make sure the archive has more than one virtual entries.
+        VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntries);
+        assertThat(veCalculator.getCount()).isEqualTo(3L);
+
+        Map<String, ZipEntryInfo> entries = calculator.getInfoPerFile(apkWithVirtualEntries);
+        assertThat(entries.size()).isNotEqualTo(0);
+        assertThat(entries.get(VIRTUAL_ENTRY_NAME)).isNull();
+    }
+
+    public static boolean isVirtualEntry(String name) {
+        return VIRTUAL_ENTRY_NAME.equals(name);
     }
 }
