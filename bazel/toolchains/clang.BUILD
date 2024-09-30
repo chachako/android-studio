@@ -31,7 +31,7 @@ filegroup(
         "//" + clang_latest_linux + ":includes",
         "//" + clang_latest_linux + ":binaries",
     ],
- )
+)
 
 filegroup(
     name = "windows-files",
@@ -284,6 +284,7 @@ cc_toolchain_config(
     compiler = "clang-cl",
     cpu = "x64_windows",
     cxx_builtin_include_directories = [
+        clang_latest_windows + "/lib/clang/19/include",
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.40.33807\\include",
         "C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.19041.0\\ucrt",
         "C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.19041.0\\um",
@@ -315,6 +316,9 @@ cc_toolchain_config(
         "ml": clang_latest_windows + "/bin/llvm-ml.exe",
     },
     toolchain_identifier = "local_windows",
+    unfiltered_compile_flags = [
+        "-no-canonical-prefixes",
+    ],
 )
 
 toolchain(
