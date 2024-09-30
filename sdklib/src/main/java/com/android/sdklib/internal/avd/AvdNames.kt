@@ -19,6 +19,8 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.devices.Device
 import com.google.common.base.CharMatcher.anyOf
 import com.google.common.base.CharMatcher.inRange
+import java.nio.file.Files
+import java.nio.file.Path
 
 object AvdNames {
 
@@ -83,3 +85,12 @@ fun AvdManager.uniquifyAvdName(avdName: String): String =
  */
 fun AvdManager.uniquifyDisplayName(displayName: String): String =
   AvdNames.uniquify(displayName, " ") { findAvdWithDisplayName(it) != null }
+
+/**
+ * Finds an available AVD folder with the given basename, appending a suffix _n to the given name as
+ * required to make it unique.
+ */
+fun AvdManager.uniquifyAvdFolder(name: String): Path =
+  baseAvdFolder.resolve(
+    AvdNames.uniquify(name, "_") { Files.exists(baseAvdFolder.resolve("$it.avd")) } + ".avd"
+  )

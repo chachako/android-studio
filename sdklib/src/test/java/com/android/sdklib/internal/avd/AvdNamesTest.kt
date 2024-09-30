@@ -15,10 +15,15 @@
  */
 package com.android.sdklib.internal.avd
 
+import com.android.sdklib.devices.DeviceManager
+import com.android.sdklib.internal.avd.AvdNames.cleanAvdName
 import com.android.sdklib.internal.avd.AvdNames.isValid
 import com.android.sdklib.internal.avd.AvdNames.stripBadCharacters
-import com.android.sdklib.internal.avd.AvdNames.cleanAvdName
+import com.android.sdklib.repository.AndroidSdkHandler
+import com.android.testutils.file.createInMemoryFileSystemAndFolder
+import com.android.utils.NullLogger
 import com.google.common.truth.Truth.assertThat
+import kotlin.io.path.createDirectories
 import org.junit.Test
 
 /** Tests for [AvdNames] */
@@ -49,12 +54,10 @@ class AvdNamesTest {
   fun testCleanAvdName() {
     assertThat(cleanAvdName("")).isEqualTo("myavd")
     assertThat(cleanAvdName("Simple")).isEqualTo("Simple")
-    assertThat(cleanAvdName("no_change.f0r_this-string"))
-      .isEqualTo("no_change.f0r_this-string")
+    assertThat(cleanAvdName("no_change.f0r_this-string")).isEqualTo("no_change.f0r_this-string")
 
     assertThat(cleanAvdName(" ")).isEqualTo("myavd")
-    assertThat(cleanAvdName("this.name is-also_(OK) 45"))
-      .isEqualTo("this.name_is-also_OK_45")
+    assertThat(cleanAvdName("this.name is-also_(OK) 45")).isEqualTo("this.name_is-also_OK_45")
     assertThat(cleanAvdName("  either/or _ _more ")).isEqualTo("either_or_more")
     assertThat(cleanAvdName("9\" nails__  ")).isEqualTo("9_nails")
     assertThat(cleanAvdName("'6' under'")).isEqualTo("6_under")
@@ -66,5 +69,29 @@ class AvdNamesTest {
   fun testUniquify() {
     val names = setOf("Test", "Test 2", "Test 3")
     assertThat(AvdNames.uniquify("Test", " ") { it in names }).isEqualTo("Test 4")
+  }
+
+  @Test
+  fun testUniquifyAvdFolder() {
+    val root = createInMemoryFileSystemAndFolder("root")
+    val sdk = root.resolve("sdk").createDirectories()
+    val avds = root.resolve("avds").createDirectories()
+    val sdkHandler = AndroidSdkHandler(sdk, avds)
+    val avdManager =
+      AvdManager.createInstance(
+        sdkHandler,
+        avds,
+        DeviceManager.createInstance(sdkHandler, NullLogger()),
+        NullLogger(),
+      )
+
+    avds.resolve("Pixel.avd").createDirectories()
+    avds.resolve("Pixel_2.avd").createDirectories()
+
+    assertThat(avdManager.uniquifyAvdFolder("Pixel").toString())
+      .isEqualTo(avds.resolve("Pixel_3.avd").toString())
+    // We could perhaps be smarter about this
+    assertThat(avdManager.uniquifyAvdFolder("Pixel_2").toString())
+      .isEqualTo(avds.resolve("Pixel_2_2.avd").toString())
   }
 }
