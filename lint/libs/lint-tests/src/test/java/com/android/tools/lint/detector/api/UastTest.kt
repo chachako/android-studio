@@ -1212,12 +1212,32 @@ class UastTest : TestCase() {
                             UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>
                             UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]"""
         else ""
-      val inlineClassDelegateField =
+      val inlineClassDiff =
         if (useFirUast())
           """
                         UField (name = s) [@org.jetbrains.annotations.NotNull private final var s: java.lang.String] : PsiType:String
-                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]"""
+                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
+                        UMethod (name = toString) [public fun toString() : java.lang.String = UastEmptyExpression] : PsiType:String
+                        UMethod (name = hashCode) [public fun hashCode() : int = UastEmptyExpression] : PsiType:int
+                        UMethod (name = equals) [public fun equals(@org.jetbrains.annotations.Nullable other: java.lang.Object) : boolean = UastEmptyExpression] : PsiType:boolean
+                            UParameter (name = other) [@org.jetbrains.annotations.Nullable var other: java.lang.Object] : PsiType:Object
+                                UAnnotation (fqName = org.jetbrains.annotations.Nullable) [@org.jetbrains.annotations.Nullable]"""
         else ""
+      val valueClassDiff =
+        if (useFirUast())
+          """
+                        UMethod (name = toString) [public fun toString() : java.lang.String = UastEmptyExpression] : PsiType:String
+                        UMethod (name = hashCode) [public fun hashCode() : int = UastEmptyExpression] : PsiType:int
+                        UMethod (name = equals) [public fun equals(@org.jetbrains.annotations.Nullable other: java.lang.Object) : boolean = UastEmptyExpression] : PsiType:boolean
+                            UParameter (name = other) [@org.jetbrains.annotations.Nullable var other: java.lang.Object] : PsiType:Object
+                                UAnnotation (fqName = org.jetbrains.annotations.Nullable) [@org.jetbrains.annotations.Nullable]"""
+        else ""
+      val valueClassConstructor =
+        if (useFirUast()) "" else
+          """
+                        UMethod (name = Name2) [public fun Name2(@org.jetbrains.annotations.NotNull n: java.lang.String) = UastEmptyExpression]
+                            UParameter (name = n) [@org.jetbrains.annotations.NotNull var n: java.lang.String] : PsiType:String
+                                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]"""
       assertEquals(
         """
                 UFile (package = test.pkg) [package test.pkg...]
@@ -1313,16 +1333,13 @@ class UastTest : TestCase() {
                                         ULiteralExpression (value = 42) [42] : PsiType:int
                             UMethod (name = getBar) [public final fun getBar() : int = UastEmptyExpression] : PsiType:int
                             UMethod (name = Companion) [private fun Companion() = UastEmptyExpression]
-                    UClass (name = Name) [public final class Name {...}]$inlineClassDelegateField
+                    UClass (name = Name) [public final class Name {...}]$inlineClassDiff
                         UMethod (name = getS) [public final fun getS() : java.lang.String = UastEmptyExpression] : PsiType:String
                     UClass (name = Name2) [public final class Name2 {...}]
                         UAnnotation (fqName = kotlin.jvm.JvmInline) [@kotlin.jvm.JvmInline]
                         UField (name = n) [@org.jetbrains.annotations.NotNull private final var n: java.lang.String] : PsiType:String
-                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
-                        UMethod (name = getN) [public final fun getN() : java.lang.String = UastEmptyExpression] : PsiType:String
-                        UMethod (name = Name2) [public fun Name2(@org.jetbrains.annotations.NotNull n: java.lang.String) = UastEmptyExpression]
-                            UParameter (name = n) [@org.jetbrains.annotations.NotNull var n: java.lang.String] : PsiType:String
-                                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
+                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]$valueClassDiff
+                        UMethod (name = getN) [public final fun getN() : java.lang.String = UastEmptyExpression] : PsiType:String$valueClassConstructor
                     UClass (name = FooInterface2) [public abstract interface FooInterface2 {...}]
                         UMethod (name = foo) [@kotlin.jvm.JvmDefault...}] : PsiType:int
                             UAnnotation (fqName = kotlin.jvm.JvmDefault) [@kotlin.jvm.JvmDefault]
@@ -1759,17 +1776,20 @@ class UastTest : TestCase() {
         )
         .indented()
 
-    val inlineClassDelegateField =
+    val inlineClassDiff =
       if (useFirUast())
         """
-                    @org.jetbrains.annotations.NotNull private final var set: java.util.Set<test.pkg.GraphVariable<?>>"""
+                    @org.jetbrains.annotations.NotNull private final var set: java.util.Set<test.pkg.GraphVariable<?>>
+                    public fun toString() : java.lang.String = UastEmptyExpression
+                    public fun hashCode() : int = UastEmptyExpression
+                    public fun equals(@org.jetbrains.annotations.Nullable other: java.lang.Object) : boolean = UastEmptyExpression"""
       else ""
     check(source) { file ->
       assertEquals(
         """
                 package test.pkg
 
-                public final class GraphVariables {$inlineClassDelegateField
+                public final class GraphVariables {$inlineClassDiff
                     public final fun getSet() : java.util.Set<test.pkg.GraphVariable<?>> = UastEmptyExpression
                     public final fun variable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, value: T) : void {
                         this.set.add(GraphVariable(name, graphType, value))
