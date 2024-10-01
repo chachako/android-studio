@@ -81,6 +81,7 @@ gradle_integration_test(
     maven_repos = MAVEN_REPOS + [
         "//tools/base/build-system/integration-test:ksp_gradle_plugin",
     ],
+    shard_count = 2,
     tags = ["noci:studio-win"],
     deps = DEPS,
 )
