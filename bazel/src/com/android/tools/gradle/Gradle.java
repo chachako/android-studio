@@ -120,7 +120,7 @@ public class Gradle implements Closeable {
                 "initscript {\n"
                         + "  dependencies {\n"
                         + "    classpath files(\""
-                        + libraryPath.getAbsolutePath()
+                        + libraryPath.getAbsolutePath().replace("\\", "/")
                         + "\")\n"
                         + "  }\n"
                         + "}\n"
