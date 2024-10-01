@@ -107,4 +107,20 @@ class LibWithLocalDepsTest {
         return project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
+
+    /**
+     * Regression test for b/322437895
+     */
+    @Test
+    fun testSuccessWhenRunningLintOnLibraryWithDirectLocalAarDep() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("baseLibrary").buildFile,
+            """
+                dependencies {
+                    implementation files("libs/local.aar")
+                }
+                """
+        )
+        executor().run("clean", ":library:lintDebug")
+    }
 }
