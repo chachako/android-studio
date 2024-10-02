@@ -2,6 +2,23 @@ load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 
 #keep sorted
+AGP_8_7_0_ARTIFACTS = [
+    "@maven//:com.android.application.com.android.application.gradle.plugin_8.7.0",
+    "@maven//:com.android.databinding.adapters_8.7.0",
+    "@maven//:com.android.databinding.viewbinding_8.7.0",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_8.7.0",
+    "@maven//:com.android.tools.build.aapt2_8.7.0-12006047",
+    "@maven//:com.android.tools.build.gradle_8.7.0",
+    "@maven//:com.android.tools.lint.lint-gradle_31.7.0",
+]
+
+maven_repository(
+    name = "8.7.0",
+    artifacts = AGP_8_7_0_ARTIFACTS,
+    visibility = ["//visibility:public"],
+)
+
+#keep sorted
 AGP_8_6_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.6.0",
     "@maven//:com.android.databinding.adapters_8.6.0",
