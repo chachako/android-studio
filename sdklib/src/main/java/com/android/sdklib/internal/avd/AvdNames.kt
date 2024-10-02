@@ -19,6 +19,7 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.devices.Device
 import com.google.common.base.CharMatcher.anyOf
 import com.google.common.base.CharMatcher.inRange
+import com.google.common.base.CharMatcher.`is`
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -35,8 +36,8 @@ object AvdNames {
   }
 
   @JvmStatic
-  internal fun stripBadCharacters(candidateName: String): String {
-    return ALLOWED_DISPLAY_NAME_CHARS.negate().trimAndCollapseFrom(candidateName, ' ')
+  fun cleanDisplayName(candidateName: String): String {
+    return ALLOWED_DISPLAY_NAME_CHARS.negate().or(`is`(' ')).trimAndCollapseFrom(candidateName, ' ')
   }
 
   @JvmStatic fun humanReadableAllowedCharacters(): String = ALLOWED_CHARS_READABLE
@@ -59,7 +60,7 @@ object AvdNames {
   fun getDefaultDeviceDisplayName(device: Device, version: AndroidVersion): String {
     // A device name might include the device's screen size as, e.g., 7". The " is not allowed in
     // a display name. Ensure that the display name does not include any forbidden characters.
-    return stripBadCharacters(device.displayName) + " API " + version.apiStringWithExtension
+    return cleanDisplayName(device.displayName) + " API " + version.apiStringWithExtension
   }
 
   fun uniquify(name: String, separator: String, isPresent: (String) -> Boolean): String {

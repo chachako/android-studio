@@ -18,7 +18,7 @@ package com.android.sdklib.internal.avd
 import com.android.sdklib.devices.DeviceManager
 import com.android.sdklib.internal.avd.AvdNames.cleanAvdName
 import com.android.sdklib.internal.avd.AvdNames.isValid
-import com.android.sdklib.internal.avd.AvdNames.stripBadCharacters
+import com.android.sdklib.internal.avd.AvdNames.cleanDisplayName
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.testutils.file.createInMemoryFileSystemAndFolder
 import com.android.utils.NullLogger
@@ -40,14 +40,14 @@ class AvdNamesTest {
   }
 
   @Test
-  fun testStripBadCharacters() {
-    assertThat(stripBadCharacters("Simple")).isEqualTo("Simple")
-    assertThat(stripBadCharacters("this.name is-also_(OK) 45"))
+  fun testCleanDisplayName() {
+    assertThat(cleanDisplayName("Simple")).isEqualTo("Simple")
+    assertThat(cleanDisplayName("this.name is-also_(OK) 45"))
       .isEqualTo("this.name is-also_(OK) 45")
 
-    assertThat(stripBadCharacters("either/or")).isEqualTo("either or")
-    assertThat(stripBadCharacters("9\" nails")).isEqualTo("9  nails")
-    assertThat(stripBadCharacters("6' under")).isEqualTo("6  under")
+    assertThat(cleanDisplayName("either/or")).isEqualTo("either or")
+    assertThat(cleanDisplayName("9\" nails")).isEqualTo("9 nails")
+    assertThat(cleanDisplayName("6' under")).isEqualTo("6 under")
   }
 
   @Test
