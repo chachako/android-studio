@@ -220,7 +220,7 @@ interface UastEnvironment {
   }
 
   class Module(
-    private val project: Project,
+    internal val project: Project,
     internal val jdkHome: File?,
     includeTests: Boolean,
     includeTestFixtureSources: Boolean,
@@ -327,11 +327,8 @@ interface UastEnvironment {
     val gradleBuildScripts: Collection<File>
       get() = project.gradleBuildScripts
 
-    val directDependencies: Sequence<Pair<String, Project.DependencyKind>>
-      get() =
-        project.directLibraries.asSequence().map {
-          it.name /* key must match `this.name` */ to project.getDependencyKind(it)
-        }
+    val directDependencies: Sequence<Pair<Project, DependencyKind>>
+      get() = project.directLibraries.asSequence().map { it to project.getDependencyKind(it) }
 
     val allRoots: Sequence<File>
       get() = sourceRoots.asSequence() + classpathRoots.asSequence()

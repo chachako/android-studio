@@ -141,16 +141,16 @@ internal fun configureAnalysisApiProjectStructure(
   // The platform of the module provider, not individual modules
   platform = if (isKMP) CommonPlatforms.defaultCommonPlatform else JvmPlatforms.defaultJvmPlatform
 
-  val uastEnvModuleByName = config.modules.associateBy(UastEnvironment.Module::name)
+  val uastEnvModuleByProject = config.modules.associateBy(UastEnvironment.Module::project)
   val uastEnvModuleOrder = // We need to start from the leaves of the dependency
-    GraphUtils.reverseTopologicalSort(config.modules.map { it.name }) {
-      uastEnvModuleByName[it]!!.directDependencies.map { (depName, _) -> depName }
+    GraphUtils.reverseTopologicalSort(uastEnvModuleByProject.keys) {
+      uastEnvModuleByProject[it]!!.directDependencies.map { (depProject, _) -> depProject }
     }
-  val builtKtModuleByName = hashMapOf<String, KaModule>() // incrementally added below
+  val builtKtModuleByName = hashMapOf<Project, KaModule>() // incrementally added below
   val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
 
-  for (name in uastEnvModuleOrder) {
-    val m = uastEnvModuleByName[name]!!
+  for (proj in uastEnvModuleOrder) {
+    val m = uastEnvModuleByProject[proj]!!
     val mPlatform = m.variant.toTargetPlatform()
 
     val classPaths =
@@ -249,15 +249,15 @@ internal fun configureAnalysisApiProjectStructure(
             platform = mPlatform
             moduleName = m.name
 
-            m.directDependencies.forEach { (depName, depKind) ->
-              builtKtModuleByName[depName]?.let { depKtModule ->
+            m.directDependencies.forEach { (depProj, depKind) ->
+              builtKtModuleByName[depProj]?.let { depKtModule ->
                 when (depKind) {
                   Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
                   Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
                 }
               }
                 ?: System.err.println(
-                  "Dependency named `$depName` ignored because module not found"
+                  "Dependency named `${depProj.name}` (pkg: `${depProj.`package`}`) ignored because module not found"
                 )
             }
 
@@ -277,7 +277,7 @@ internal fun configureAnalysisApiProjectStructure(
       }
 
     addModule(ktModule)
-    builtKtModuleByName[name] = ktModule
+    builtKtModuleByName[proj] = ktModule
   }
 }
 
