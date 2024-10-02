@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.sdklib.internal.avd
+package com.android.sdklib.testing
 
 import com.android.repository.testframework.FakeProgressIndicator
+import com.android.sdklib.internal.avd.AvdManager
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.sdklib.repository.targets.SystemImage
 import com.android.testutils.file.recordExistingFile
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createDirectories
 
 class PathContext(val basePath: Path) {
@@ -36,25 +38,40 @@ class PathContext(val basePath: Path) {
 }
 
 class TestSystemImages(val sdkHandler: AndroidSdkHandler) {
+  val sdkLocation = sdkHandler.location!!
+  val progress = FakeProgressIndicator()
 
-  /** Defines a system image at the given path, relative to $SDK/system-images. */
-  inner class TestSystemImage(relativePath: String, val definition: PathContext.() -> Unit) {
-    val path = sdkHandler.location!!.resolve("system-images").resolve(relativePath)
+  open inner class TestSdkPackage(val path: Path, val definition: PathContext.() -> Unit) {
+    constructor(
+      relativePath: String,
+      definition: PathContext.() -> Unit,
+    ) : this(sdkLocation.resolve(relativePath), definition)
 
-    fun write() {
-      with(PathContext(path)) { definition() }
+    private val isWritten = AtomicBoolean()
+
+    private fun write(): Boolean {
+      val needsWrite = isWritten.compareAndSet(false, true)
+      if (needsWrite) {
+        with(PathContext(path)) { definition() }
+        // Force a rescan of the packages
+        sdkHandler.getSdkManager(progress).markInvalid()
+      }
+      return needsWrite
     }
 
     val image: SystemImage by lazy {
       write()
-      with(sdkHandler.getSdkManager(FakeProgressIndicator())) {
-        // Force a rescan of the packages
-        markInvalid()
-        reloadLocalIfNeeded(FakeProgressIndicator())
-      }
-      sdkHandler.getSystemImageManager(FakeProgressIndicator()).getImageAt(path) as SystemImage
+      sdkHandler.getSdkManager(progress).reloadLocalIfNeeded(progress)
+      // Images that are in add-ons or platform are in subdirectories of the package
+      sdkHandler.getSystemImageManager(progress).getImageAt(path) as? SystemImage
+        ?: sdkHandler.getSystemImageManager(progress).images.find { it.location.startsWith(path) }
+        ?: throw RuntimeException("Could not find image")
     }
   }
+
+  /** Defines a system image at the given path, relative to $SDK/system-images. */
+  inner class TestSystemImage(relativePath: String, definition: PathContext.() -> Unit) :
+    TestSdkPackage(sdkLocation.resolve("system-images").resolve(relativePath), definition)
 
   val api21 =
     TestSystemImage("android-21/default/x86") {

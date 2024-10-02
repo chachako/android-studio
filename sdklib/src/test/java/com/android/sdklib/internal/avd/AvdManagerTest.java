@@ -36,6 +36,7 @@ import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
+import com.android.sdklib.testing.TestSystemImages;
 import com.android.testutils.MockLog;
 import com.android.testutils.file.InMemoryFileSystems;
 import com.android.testutils.truth.PathSubject;
