@@ -15,10 +15,13 @@
  */
 package com.android.sdklib.repository.targets
 
+import com.android.SdkConstants
+import com.android.sdklib.SystemImageTags
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.sdklib.testing.TestSystemImages
 import com.android.testutils.file.createInMemoryFileSystemAndFolder
 import com.google.common.collect.ImmutableList
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -49,6 +52,7 @@ class SystemImageManagerTest {
   @Test
   fun verifyTvAddon13() {
     val img = googleTvAddon13.image
+
     assertEquals("x86", img.primaryAbiType)
     assertEquals("google", img.addonVendor!!.id)
     assertEquals(
@@ -62,7 +66,11 @@ class SystemImageManagerTest {
   fun verifyGoogleApisSysImg23() {
     val img = googleApisSysImg23.image
 
+    // ABIs should be read from build.prop
     assertEquals("x86_64", img.primaryAbiType)
+    assertThat(img.abiTypes).containsExactly("x86_64", "x86")
+    assertThat(img.translatedAbiTypes).containsExactly(SdkConstants.ABI_ARM64_V8A)
+
     assertEquals("google", img.addonVendor!!.id)
     assertEquals(sdkRoot.resolve("system-images/android-23/google_apis/x86_64/"), img.location)
     assertEquals("google_apis", img.tag.id)
@@ -83,6 +91,15 @@ class SystemImageManagerTest {
       img.skins,
     )
     assertEquals("default", img.tag.id)
+  }
+
+  @Test
+  fun verifySysImg35() {
+    val img = googlePlayTabletSysImg35.image
+
+    assertThat(img.abiTypes).containsExactly("x86_64", "x86")
+    assertThat(img.translatedAbiTypes).containsExactly(SdkConstants.ABI_ARM64_V8A)
+    assertThat(img.tags).containsExactly(SystemImageTags.PLAY_STORE_TAG, SystemImageTags.TABLET_TAG)
   }
 
   val platform13 =
@@ -219,6 +236,7 @@ class SystemImageManagerTest {
     with(testImages) {
       TestSystemImage("android-23/google_apis/x86_64") {
         write("system.img")
+        write("build.prop", "ro.product.cpu.abilist=x86_64,x86,arm64-v8a")
         write(
           "package.xml",
           """
@@ -246,6 +264,50 @@ class SystemImageManagerTest {
                   <display-name>Google APIs Intel x86 Atom_64 System Image</display-name>
                 </localPackage>
               </ns3:sdk-sys-img>
+          """
+            .trimIndent(),
+        )
+      }
+    }
+
+  val googlePlayTabletSysImg35 =
+    with(testImages) {
+      TestSystemImage("android-35/google_apis_playstore_tablet/x86_64") {
+        write("system.img")
+        write(
+          "package.xml",
+          """
+              <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+              <ns2:repository xmlns:ns2="http://schemas.android.com/repository/android/common/02"
+                              xmlns:ns12="http://schemas.android.com/sdk/android/repo/sys-img2/04">
+                <localPackage path="system-images;android-35;google_apis_playstore_tablet;x86_64" obsolete="false">
+                  <type-details xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns12:sysImgDetailsType">
+                    <api-level>35</api-level>
+                    <extension-level>13</extension-level>
+                    <base-extension>true</base-extension>
+                    <tag>
+                      <id>google_apis_playstore</id>
+                      <display>Google Play</display>
+                    </tag>
+                    <tag>
+                      <id>tablet</id>
+                      <display>Tablet</display>
+                    </tag>
+                    <vendor>
+                      <id>google</id>
+                      <display>Google Inc.</display>
+                    </vendor>
+                    <abi>x86_64</abi>
+                    <abis>x86_64</abis>
+                    <abis>x86</abis>
+                    <translatedAbis>arm64-v8a</translatedAbis>
+                  </type-details>
+                  <revision>
+                    <major>7</major>
+                  </revision>
+                  <display-name>Google Play ARM 64 v8a System Image</display-name>
+                </localPackage>
+              </ns2:repository>
           """
             .trimIndent(),
         )
