@@ -776,6 +776,7 @@ DATA = [
     "com.google.apis:google-api-services-oauth2:v2-rev150-1.22.0",
     "com.google.apis:google-api-services-oauth2:v2-rev157-1.25.0",
     "com.google.apis:google-api-services-storage:v1-rev82-1.22.0",
+    "com.google.apis:google-api-services-testing:v1-rev20240917-2.0.0",
     "com.google.apis:google-api-services-testing:v1-rev82-1.22.0",
     "com.google.apis:google-api-services-toolresults:v1beta3-rev82-1.22.0",
     "com.google.auth:google-auth-library-credentials:1.24.0",
