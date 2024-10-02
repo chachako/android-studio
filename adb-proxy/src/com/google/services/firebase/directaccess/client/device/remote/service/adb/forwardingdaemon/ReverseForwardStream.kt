@@ -93,7 +93,7 @@ internal class ReverseForwardStream(
         RemoteFileMode.DEFAULT,
       )
     }
-    scope.launch(Dispatchers.IO) {
+    scope.launch(Dispatchers.Default) {
       val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
 
       try {
