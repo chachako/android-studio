@@ -32,7 +32,8 @@ import com.android.adblib.ShellV2Collector
 import com.android.adblib.SocketSpec
 import com.android.adblib.utils.AdbProtocolUtils.ADB_CHARSET
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import java.nio.ByteBuffer
 import java.time.Duration
@@ -167,10 +168,15 @@ class FakeAdbDeviceServices(override val session: AdbSession) : AdbDeviceService
             shellRequests.add(ShellRequest(device.toString(), command, commandTimeout, bufferSize))
             val output = shellCommands[device.transportPrefix]?.get(command)
                 ?: throw IllegalStateException("""Command not setup for $device: "$command"""")
-            return flow {
-                shellCollector.start(this)
-                output.split(bufferSize) { shellCollector.collect(this, it) }
-                shellCollector.end(this)
+            return channelFlow {
+                // Wraps our `ProducerScope` as `FlowCollector` so that the `shellCollector`
+                // is not aware of this implementation detail.
+                val producerScope = this@channelFlow
+                val flowCollector = FlowCollector<T> { value -> producerScope.send(value) }
+
+                shellCollector.start(flowCollector)
+                output.split(bufferSize) { shellCollector.collect(flowCollector, it) }
+                shellCollector.end(flowCollector)
             }
         } else {
             shellNumTimeouts--
@@ -206,11 +212,16 @@ class FakeAdbDeviceServices(override val session: AdbSession) : AdbDeviceService
             shellV2Requests.add(ShellRequest(device.toString(), command, commandTimeout, bufferSize))
             val output = shellV2Commands[device.transportPrefix]?.get(command)
                 ?: throw IllegalStateException("""Command not setup for $device: "$command"""")
-            return flow {
-                shellCollector.start(this)
-                output.stdout.split(bufferSize) { shellCollector.collectStdout(this, it) }
-                output.stderr.split(bufferSize) { shellCollector.collectStderr(this, it) }
-                shellCollector.end(this, output.exitCode)
+            return channelFlow {
+                // Wraps our `ProducerScope` as `FlowCollector` so that the `shellCollector`
+                // is not aware of this implementation detail.
+                val producerScope = this@channelFlow
+                val flowCollector = FlowCollector<T> { value -> producerScope.send(value) }
+
+                shellCollector.start(flowCollector)
+                output.stdout.split(bufferSize) { shellCollector.collectStdout(flowCollector, it) }
+                output.stderr.split(bufferSize) { shellCollector.collectStderr(flowCollector, it) }
+                shellCollector.end(flowCollector, output.exitCode)
             }.flowOn(session.host.ioDispatcher)
         } else {
             shellNumTimeouts--
