@@ -5,6 +5,7 @@ filegroup(
     visibility = [
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/journeys:__pkg__",
         "//tools/base/preview/screenshot/screenshot-test-gradle-plugin:__pkg__",
         "//tools/base/utp:__pkg__",
     ],
@@ -20,6 +21,7 @@ filegroup(
     visibility = [
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/journeys:__pkg__",
         "//tools/base/preview/screenshot/screenshot-test-gradle-plugin:__pkg__",
         "//tools/base/utp:__pkg__",
     ],

@@ -80,6 +80,7 @@ maven_repository(
         "//tools/base/build-system:__pkg__",
         "//tools/base/build-system/integration-test:__subpackages__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/journeys:__pkg__",
         "//tools/base/preview/screenshot/screenshot-test-gradle-plugin:__pkg__",
     ],
 )
@@ -131,6 +132,7 @@ maven_repository(
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
         "//tools/base/gmaven:__pkg__",
+        "//tools/base/journeys:__pkg__",
         "//tools/base/preview/screenshot/screenshot-test-gradle-plugin:__pkg__",
     ],
 )
