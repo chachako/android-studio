@@ -149,20 +149,20 @@ internal fun configureAnalysisApiProjectStructure(
   val builtKtModuleByName = hashMapOf<String, KaModule>() // incrementally added below
   val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
 
-  uastEnvModuleOrder.forEach { name ->
+  for (name in uastEnvModuleOrder) {
     val m = uastEnvModuleByName[name]!!
     val mPlatform = m.variant.toTargetPlatform()
 
-    fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
-      val classPaths =
-        if (mPlatform.has<JvmPlatform>()) {
-            // Include boot classpath in [config.classPaths], except for non-JVM modules
-            m.classpathRoots + config.classPaths
-          } else {
-            m.classpathRoots
-          }
-          .toPathCollection()
+    val classPaths =
+      if (mPlatform.has<JvmPlatform>()) {
+          // Include boot classpath in [config.classPaths], except for non-JVM modules
+          m.classpathRoots + config.classPaths
+        } else {
+          m.classpathRoots
+        }
+        .toPathCollection()
 
+    fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
       if (classPaths.isNotEmpty()) {
         addRegularDependency(
           buildKtLibraryModule {
@@ -239,26 +239,42 @@ internal fun configureAnalysisApiProjectStructure(
     }
     */
 
-    val ktModule = buildKtSourceModule {
-      languageVersionSettings =
-        if (isKMP) m.kotlinLanguageLevel.withKMPEnabled() else m.kotlinLanguageLevel
-      addModuleDependencies(m.name)
-      platform = mPlatform
-      moduleName = m.name
+    val ktModule =
+      when {
+        m.sourceRoots.isNotEmpty() -> {
+          buildKtSourceModule {
+            languageVersionSettings =
+              if (isKMP) m.kotlinLanguageLevel.withKMPEnabled() else m.kotlinLanguageLevel
+            addModuleDependencies(m.name)
+            platform = mPlatform
+            moduleName = m.name
 
-      m.directDependencies.forEach { (depName, depKind) ->
-        builtKtModuleByName[depName]?.let { depKtModule ->
-          when (depKind) {
-            Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
-            Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
+            m.directDependencies.forEach { (depName, depKind) ->
+              builtKtModuleByName[depName]?.let { depKtModule ->
+                when (depKind) {
+                  Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
+                  Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
+                }
+              }
+                ?: System.err.println(
+                  "Dependency named `$depName` ignored because module not found"
+                )
+            }
+
+            // NB: This should include both .kt and .java sources if any,
+            //  and thus we don't need to specify the reified type for the return file type.
+            addSourcePaths(getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
           }
-        } ?: System.err.println("Dependency named `$depName` ignored because module not found")
+        }
+        classPaths.isNotEmpty() -> {
+          buildKtLibraryModule {
+            platform = mPlatform
+            addBinaryPaths(classPaths)
+            libraryName = m.name
+          }
+        }
+        else -> continue
       }
-
-      // NB: This should include both .kt and .java sources if any,
-      //  and thus we don't need to specify the reified type for the return file type.
-      addSourcePaths(getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
-    }
 
     addModule(ktModule)
     builtKtModuleByName[name] = ktModule
