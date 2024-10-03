@@ -48,7 +48,6 @@ merge_deps(
         "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
-        "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-commons",

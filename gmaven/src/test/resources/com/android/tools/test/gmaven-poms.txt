@@ -265,7 +265,6 @@ com.android.tools:sdk-common
     org.bouncycastle:bcpkix-jdk18on (runtime)
     org.bouncycastle:bcprov-jdk18on (runtime)
     org.glassfish.jaxb:jaxb-runtime (runtime)
-    org.jetbrains.intellij.deps:trove4j (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
 
@@ -652,8 +651,6 @@ com.android.tools.emulator:proto
 com.android.tools.external.com-intellij:intellij-core
   pomName=com.android.tools.external.com-intellij.intellij-core
   description=IntelliJ IDEA Core
-  dependencies:
-    org.jetbrains.intellij.deps:trove4j (runtime)
 
 com.android.tools.external.com-intellij:kotlin-compiler
   pomName=com.android.tools.external.com-intellij.kotlin-compiler

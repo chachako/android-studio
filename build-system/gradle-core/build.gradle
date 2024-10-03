@@ -33,10 +33,6 @@ task writeVersionProperties(type: com.android.tools.internal.VersionPropertiesWr
     outputDirectory = project.layout.buildDirectory.dir("generated/resources")
 }
 
-licenseReport {
-    ignored = libs.trove4j
-}
-
 // Incremental update test support
 File classesDir = new File(project.buildDir, "classes/incremental-test")
 File baseClasses = new File(classesDir, "base")
