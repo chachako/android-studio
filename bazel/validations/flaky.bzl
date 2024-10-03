@@ -29,9 +29,9 @@ def _limit_flaky_tests_impl(target, ctx):
     if ctx.rule.kind.endswith("_test"):
         label = str(ctx.label)
 
-        # Starting in Bazel 6, targets in the default workspace start with '@'.
-        if label.startswith("@//"):
-            label = label[1:]
+        # Canonical name for targets start with '@@'.
+        if label.startswith("@@//"):
+            label = label[2:]
         if ctx.rule.attr.flaky and str(label) not in APPROVED_FLAKY_TESTS:
             if not _has_intersect(IGNORE_TAG, ctx.rule.attr.tags):
                 fail(FAILURE_MESSAGE.format(str(ctx.label)))

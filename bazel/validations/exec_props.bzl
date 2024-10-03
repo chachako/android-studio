@@ -3,10 +3,10 @@
 LARGE_MACHINE_ALLOWLIST = [
     # Issue b/228456598
     # These targets requires a large (min 16 GB) amount of memory to run.
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Memory",
+    "@@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Memory",
     # This one runs mutually exclusively with the above in the perfgate-linux target
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000MemoryReleaseBranch",
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Cpu",
+    "@@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000MemoryReleaseBranch",
+    "@@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Cpu",
 ]
 
 LARGE_MACHINE_FAILURE_MESSAGE = """'{}' is trying to use large machines.
