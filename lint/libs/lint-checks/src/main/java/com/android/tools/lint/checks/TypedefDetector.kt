@@ -485,7 +485,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
               (argument as? UQualifiedReferenceExpression)?.receiver?.skipParenthesizedExprDown()
             if (receiver != null) {
               // e.g., RECEIVER.toLong(), we should check if RECEIVER is allowed instead.
-              checkTypeDefConstant(context, annotation, receiver, errorNode, flag, usageInfo)
+              checkTypeDefConstant(context, annotation, receiver, receiver, flag, usageInfo)
               val parameterCount = resolvedArgument.parameterList.parametersCount
               // e.g., RECEIVER.xor(ARGUMENT)
               if (parameterCount == 1) {
@@ -493,7 +493,14 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                   argument.selector.skipParenthesizedExprDown() as? UCallExpression
                 val callArgument =
                   callExpression?.valueArguments?.firstOrNull()?.skipParenthesizedExprDown()
-                checkTypeDefConstant(context, annotation, callArgument, errorNode, flag, usageInfo)
+                checkTypeDefConstant(
+                  context,
+                  annotation,
+                  callArgument,
+                  callArgument,
+                  flag,
+                  usageInfo,
+                )
               }
             }
             // TODO: how to handle implicit receiver in general?

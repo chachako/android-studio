@@ -2550,7 +2550,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
         """
 src/DetailInfoTab.kt:17: Error: Must be one of: DetailInfoTabKt.CONST_1, DetailInfoTabKt.CONST_2 [WrongConstant]
                 test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
-                     ~~~~~~~~~~~~~~~~~~
+                     ~~~~~~~~~
 1 errors, 0 warnings
         """
       )
@@ -2641,7 +2641,7 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
         """
 src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong() [WrongConstant]
                 test(UNRELATED.toLong()) // ERROR - not part of the @DetailsInfoTab list
-                     ~~~~~~~~~~~~~~~~~~
+                     ~~~~~~~~~
 1 errors, 0 warnings
         """
       )
@@ -2693,6 +2693,8 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
               i.flags = i.flags.and(MyIntent.FLAG_2) // OK
               i.flags = i.flags xor MyIntent.UNRELATED // ERROR 4
               i.flags = i.flags.xor(MyIntent.UNRELATED) // ERROR 5
+              i.flags = MyIntent.UNRELATED or MyIntent.UNRELATED // ERROR 6
+              i.flags = MyIntent.UNRELATED.or(MyIntent.UNRELATED) // ERROR 7
             }
           """
         ),
@@ -2704,20 +2706,32 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
         """
         src/test.kt:5: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       flags = flags and MyIntent.UNRELATED.inv() // ERROR 1
-                                        ~~~~~~~~~~~~~~~~~~~~~~~~
+                                        ~~~~~~~~~~~~~~~~~~
         src/test.kt:6: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       flags = flags.and(MyIntent.UNRELATED.inv()) // ERROR 2
-                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        ~~~~~~~~~~~~~~~~~~
         src/test.kt:11: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       i.flags = MyIntent.UNRELATED.or(i.flags) // ERROR 3
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                ~~~~~~~~~~~~~~~~~~
         src/test.kt:13: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       i.flags = i.flags xor MyIntent.UNRELATED // ERROR 4
                                             ~~~~~~~~~~~~~~~~~~
         src/test.kt:14: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       i.flags = i.flags.xor(MyIntent.UNRELATED) // ERROR 5
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        5 errors, 0 warnings
+                                            ~~~~~~~~~~~~~~~~~~
+        src/test.kt:15: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = MyIntent.UNRELATED or MyIntent.UNRELATED // ERROR 6
+                                ~~~~~~~~~~~~~~~~~~
+        src/test.kt:15: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = MyIntent.UNRELATED or MyIntent.UNRELATED // ERROR 6
+                                                      ~~~~~~~~~~~~~~~~~~
+        src/test.kt:16: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = MyIntent.UNRELATED.or(MyIntent.UNRELATED) // ERROR 7
+                                ~~~~~~~~~~~~~~~~~~
+        src/test.kt:16: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      i.flags = MyIntent.UNRELATED.or(MyIntent.UNRELATED) // ERROR 7
+                                                      ~~~~~~~~~~~~~~~~~~
+        9 errors, 0 warnings
         """
       )
   }
