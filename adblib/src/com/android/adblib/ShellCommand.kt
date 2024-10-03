@@ -17,10 +17,12 @@ package com.android.adblib
 
 import com.android.adblib.impl.InputChannelShellOutputImpl
 import com.android.adblib.impl.LineCollector
+import com.android.adblib.impl.channels.AdbOutputStreamChannel
 import com.android.adblib.utils.AdbBufferDecoder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.time.Duration
@@ -654,6 +656,42 @@ class InputChannelShellCollector(
     override suspend fun end(collector: FlowCollector<InputChannelShellOutput>, exitCode: Int) {
         logger.verbose { "end(exitCode=$exitCode)" }
         shellOutput.end(exitCode)
+    }
+}
+
+/**
+ * A [ShellV2Collector] that forwards the output of a [shellCommand] to [OutputStream]s.
+ *
+ * The streams provided are not closed by the collector.
+ *
+ * The collector flow emits a single [Int] value representing the exit code of the command.
+ *
+ * @param adbSession An [AdbSession]
+ * @param stdoutStream An [OutputStream] where stdout is written to
+ * @param stderrStream An [OutputStream] where stderr is written to
+ */
+class OutputStreamCollector(
+    adbSession: AdbSession,
+    stdoutStream: OutputStream,
+    stderrStream: OutputStream,
+) : ShellV2Collector<Int> {
+
+    private val stdoutChannel = AdbOutputStreamChannel(adbSession, stdoutStream)
+    private val stderrChannel = AdbOutputStreamChannel(adbSession, stderrStream)
+
+    override suspend fun start(collector: FlowCollector<Int>) {
+    }
+
+    override suspend fun collectStdout(collector: FlowCollector<Int>, stdout: ByteBuffer) {
+        stdoutChannel.writeExactly(stdout)
+    }
+
+    override suspend fun collectStderr(collector: FlowCollector<Int>, stderr: ByteBuffer) {
+        stderrChannel.writeExactly(stderr)
+    }
+
+    override suspend fun end(collector: FlowCollector<Int>, exitCode: Int) {
+        collector.emit(exitCode)
     }
 }
 

@@ -2965,6 +2965,33 @@ class AdbDeviceServicesTest {
         Assert.assertEquals("package:one\npackage:two\npackage:three\n", text)
     }
 
+    @Test
+    fun testShellToOutputStreams(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val device = addFakeDevice(fakeAdb)
+        val deviceSelector = DeviceSelector.fromSerialNumber(device.deviceId)
+        val stdout = ByteArrayOutputStream()
+        val stderr = ByteArrayOutputStream()
+        val input = """
+            stdout: output
+            stderr: error
+            exit: 5
+        """.trimIndent()
+
+        // Act
+        val exitCode = deviceServices.shellCommand(deviceSelector, "shell-protocol-echo")
+            .withStdin(input.asAdbInputChannel(deviceServices.session))
+            .withCollector(OutputStreamCollector(fakeAdbRule.adbSession, stdout, stderr))
+            .execute()
+            .first()
+
+        // Assert
+        Assert.assertEquals("output\n", stdout.toString())
+        Assert.assertEquals("error\n", stderr.toString())
+        Assert.assertEquals(5, exitCode)
+    }
+
+
     /**
      * Similar to [Flow.take], but allows for a [block] to process each collected element.
      */
