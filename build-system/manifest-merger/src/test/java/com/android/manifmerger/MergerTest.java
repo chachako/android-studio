@@ -16,12 +16,19 @@
 
 package com.android.manifmerger;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.android.annotations.NonNull;
 import com.android.testutils.MockLog;
 import com.android.utils.ILogger;
 import com.android.utils.StdLogger;
+
 import com.google.common.collect.ImmutableList;
+
 import junit.framework.TestCase;
+
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -31,10 +38,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for {@link Merger} class
@@ -74,7 +81,7 @@ public class MergerTest extends TestCase {
         }
     }
 
-    public void testMainParameter() throws FileNotFoundException {
+    public void testMainParameter() throws IOException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml" };
         new MergerWithMock() {
             @Override
@@ -85,7 +92,7 @@ public class MergerTest extends TestCase {
         }.process(args);
     }
 
-    public void testDefaultLoggerParameter() throws FileNotFoundException {
+    public void testDefaultLoggerParameter() throws IOException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml" };
         new MergerWithMock() {
             @Override
@@ -96,7 +103,7 @@ public class MergerTest extends TestCase {
         }.process(args);
     }
 
-    public void testLoggerParameter() throws FileNotFoundException {
+    public void testLoggerParameter() throws IOException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                                 "--log", "VERBOSE" };
         new MergerWithMock() {
@@ -109,7 +116,7 @@ public class MergerTest extends TestCase {
     }
 
     public void testRemoveToolsDeclarationsParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+            throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = {
             "--main", "src/main/AndroidManifest.xml", "--remove-tools-declarations"
         };
@@ -119,8 +126,7 @@ public class MergerTest extends TestCase {
         verifyNoMoreInteractions(mInvoker);
     }
 
-    public void testLibParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+    public void testLibParameter() throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--libs", "src/lib/AndroidManifest.xml" };
         new MergerWithMock().process(args);
@@ -129,8 +135,7 @@ public class MergerTest extends TestCase {
         verifyNoMoreInteractions(mInvoker);
     }
 
-    public void testLibsParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+    public void testLibsParameter() throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--libs", "src/lib1/AndroidManifest.xml" + File.pathSeparator
                 + "src/lib2/AndroidManifest.xml" + File.pathSeparator
@@ -143,8 +148,7 @@ public class MergerTest extends TestCase {
         verifyNoMoreInteractions(mInvoker);
     }
 
-    public void testOverlayParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+    public void testOverlayParameter() throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--overlays", "src/flavor1/AndroidManifest.xml" };
         new MergerWithMock().process(args);
@@ -153,8 +157,7 @@ public class MergerTest extends TestCase {
         verifyNoMoreInteractions(mInvoker);
     }
 
-    public void testOverlaysParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+    public void testOverlaysParameter() throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--overlays", "src/flavor1/AndroidManifest.xml" + File.pathSeparator
                 + "src/flavor2/AndroidManifest.xml" + File.pathSeparator
@@ -167,8 +170,7 @@ public class MergerTest extends TestCase {
         verifyNoMoreInteractions(mInvoker);
     }
 
-    public void testPropertyParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+    public void testPropertyParameter() throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--property", "min_sdk_version=19" };
         new MergerWithMock().process(args);
@@ -178,7 +180,7 @@ public class MergerTest extends TestCase {
     }
 
     public void testInvalidPropertyParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+            throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--property", "Foo=19" };
         final MockLog iLogger = new MockLog();
@@ -196,7 +198,7 @@ public class MergerTest extends TestCase {
     }
 
     public void testInvalidFormatPropertyParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+            throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--property", "Foo:19" };
         final MockLog iLogger = new MockLog();
@@ -214,7 +216,7 @@ public class MergerTest extends TestCase {
     }
 
     public void testPlaceholderParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+            throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--placeholder", "foo=bar" };
         new MergerWithMock().process(args);
@@ -224,7 +226,7 @@ public class MergerTest extends TestCase {
     }
 
     public void testInvalidFormatPlaceholderParameter()
-            throws FileNotFoundException, ManifestMerger2.MergeFailureException {
+            throws IOException, ManifestMerger2.MergeFailureException {
         final String[] args = { "--main", "src/main/AndroidManifest.xml",
                 "--placeholder", "Foo:19" };
         final MockLog iLogger = new MockLog();
@@ -290,6 +292,93 @@ public class MergerTest extends TestCase {
                     }
                 };
         merger.process(args);
+        verify(mInvoker).withFeatures(ManifestMerger2.Invoker.Feature.REMOVE_TOOLS_DECLARATIONS);
+        verify(mInvoker).withFeatures(ManifestMerger2.Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK);
+        verify(mInvoker).addLibraryManifest(new File("src/lib1/AndroidManifest.xml"));
+        verify(mInvoker).addLibraryManifest(new File("src/lib2/AndroidManifest.xml"));
+        verify(mInvoker).addLibraryManifest(new File("src/lib3/AndroidManifest.xml"));
+        verify(mInvoker).addFlavorAndBuildTypeManifest(new File("src/flavor1/AndroidManifest.xml"));
+        verify(mInvoker).addFlavorAndBuildTypeManifest(new File("src/flavor2/AndroidManifest.xml"));
+        verify(mInvoker).addFlavorAndBuildTypeManifest(new File("src/flavor3/AndroidManifest.xml"));
+        verify(mInvoker).setOverride(ManifestSystemProperty.UsesSdk.MAX_SDK_VERSION, "21");
+        verify(mInvoker).setPlaceHolderValue("Foo", "bar");
+        verify(mInvoker).merge();
+        verifyNoMoreInteractions(mInvoker);
+
+        // check the resulting file content.
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(outFile);
+            CharBuffer buffer = CharBuffer.allocate(256);
+            fileReader.read(buffer);
+            int endOfRead = buffer.position();
+            assertEquals("Pretty combined", buffer.rewind().toString().substring(0, endOfRead));
+        } finally {
+            if (fileReader != null) {
+                fileReader.close();
+            }
+        }
+        assertTrue(outFile.delete());
+    }
+
+    public void testCombinedParametersFileArgs()
+            throws IOException, ManifestMerger2.MergeFailureException {
+
+        File outFile = File.createTempFile("test", "merger");
+        File argsFile = File.createTempFile("test", "args.txt");
+        List<String> args = new ArrayList<>();
+        args.add("--main");
+        args.add("src/main/AndroidManifest.xml");
+        args.add("--libs");
+        args.add(
+                "src/lib1/AndroidManifest.xml"
+                        + File.pathSeparator
+                        + "src/lib2/AndroidManifest.xml"
+                        + File.pathSeparator
+                        + "src/lib3/AndroidManifest.xml");
+        args.add("--overlays");
+
+        // Add the second part of args in a file using file "@[file_path]"
+        final List<String> argsInFile =
+                Arrays.asList(
+                        "src/flavor1/AndroidManifest.xml"
+                                + File.pathSeparator
+                                + "src/flavor2/AndroidManifest.xml"
+                                + File.pathSeparator
+                                + "src/flavor3/AndroidManifest.xml",
+                        "--placeholder",
+                        "Foo=bar",
+                        "--property",
+                        "max_sdk_version=21");
+        Files.write(argsFile.toPath(), argsInFile);
+        args.add("@" + argsFile.getPath());
+
+        // Add remaining args individually
+        args.add("--out");
+        args.add(outFile.getAbsolutePath());
+        args.add("--remove-tools-declarations");
+        args.add("--disable-minSdkLibrary-check");
+
+        Merger merger =
+                new MergerWithMock() {
+                    @Override
+                    protected ManifestMerger2.Invoker createInvoker(
+                            @NonNull File mainManifestFile, @NonNull ILogger logger) {
+                        try {
+                            XmlDocument xmlDocument = Mockito.mock(XmlDocument.class);
+                            when(mMergingReport.getResult())
+                                    .thenReturn(MergingReport.Result.SUCCESS);
+                            when(mMergingReport.getMergedDocument(
+                                            MergingReport.MergedManifestKind.MERGED))
+                                    .thenReturn("Pretty combined");
+                            when(mInvoker.merge()).thenReturn(mMergingReport);
+                        } catch (ManifestMerger2.MergeFailureException e) {
+                            fail(e.getMessage());
+                        }
+                        return mInvoker;
+                    }
+                };
+        merger.process(args.toArray(new String[0]));
         verify(mInvoker).withFeatures(ManifestMerger2.Invoker.Feature.REMOVE_TOOLS_DECLARATIONS);
         verify(mInvoker).withFeatures(ManifestMerger2.Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK);
         verify(mInvoker).addLibraryManifest(new File("src/lib1/AndroidManifest.xml"));
