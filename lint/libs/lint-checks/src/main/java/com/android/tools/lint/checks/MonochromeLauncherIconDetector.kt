@@ -30,6 +30,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.utils.XmlUtils
+import com.android.utils.subtag
 import org.w3c.dom.Element
 
 class MonochromeLauncherIconDetector : Detector(), XmlScanner {
@@ -37,7 +38,7 @@ class MonochromeLauncherIconDetector : Detector(), XmlScanner {
   companion object {
 
     private val IMPLEMENTATION =
-      Implementation(MonochromeLauncherIconDetector::class.java, Scope.MANIFEST_AND_RESOURCE_SCOPE)
+      Implementation(MonochromeLauncherIconDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
 
     @JvmField
     val ISSUE =
@@ -61,33 +62,31 @@ class MonochromeLauncherIconDetector : Detector(), XmlScanner {
       )
   }
 
-  private var foundIconName: String? = null
-  private var foundRoundIconName: String? = null
-
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
     return folderType == ResourceFolderType.DRAWABLE || folderType == ResourceFolderType.MIPMAP
   }
 
   override fun getApplicableElements(): Collection<String> {
-    return listOf(TAG_APPLICATION, TAG_ADAPTIVE_ICON)
+    return listOf(TAG_ADAPTIVE_ICON)
   }
 
   override fun visitElement(context: XmlContext, element: Element) {
     when (element.tagName) {
-      TAG_APPLICATION -> {
-        // there is only one application tag
-        foundIconName =
-          element
-            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ICON)
-            .substringAfterLast('/')
-        foundRoundIconName =
-          element
-            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ROUND_ICON)
-            .substringAfterLast('/')
-      }
       TAG_ADAPTIVE_ICON -> {
         if (XmlUtils.getFirstSubTagByName(element, "monochrome") != null) return
         val currentIconName = context.file.name.removeSuffix(DOT_XML)
+
+        val applicationTag =
+          context.project.manifestDom?.documentElement?.subtag(TAG_APPLICATION) ?: return
+        val foundIconName =
+          applicationTag
+            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ICON)
+            .substringAfterLast('/')
+        val foundRoundIconName =
+          applicationTag
+            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ROUND_ICON)
+            .substringAfterLast('/')
+
         if (currentIconName == foundIconName || currentIconName == foundRoundIconName) {
           val iconDescription = if (currentIconName == foundIconName) "icon" else "roundIcon"
           context.report(
