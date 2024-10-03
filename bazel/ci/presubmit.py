@@ -17,7 +17,8 @@ _HASH_FILE_BUCKET = 'adt-byob'
 _HASH_FILE_NAME = 'bazel-diff-hashes/{bid}-{target}.json'
 _MAX_RUNS_PER_TEST = 200
 _LOCAL_REPOSITORIES = [
-    'intellij'
+    'intellij',
+    'native_toolchain',
 ]
 
 

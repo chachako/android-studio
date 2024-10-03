@@ -67,6 +67,7 @@ platform(
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
+        "@bazel_tools//tools/cpp:clang-cl",
     ],
     exec_properties = dicts.add(
         create_rbe_exec_properties_dict(
@@ -88,6 +89,7 @@ platform(
     name = "macos",
     constraint_values = [
         "@platforms//os:macos",
+        "@bazel_tools//tools/cpp:clang",
     ],
     # N.B. we pick the CPU based on the host (x86_64 or arm64).
     parents = ["@local_config_platform//:host"],

@@ -3,6 +3,7 @@
 #
 common:linux --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/linux/ndk/27.0.12077973
 common:linux --repo_env=ANDROID_HOME=prebuilts/studio/sdk/linux
+common:linux --@native_toolchain//:enable_legacy
 
 build:linux --bes_keywords=linux
 build:linux --host_platform=//tools/base/bazel/platforms:linux
@@ -16,6 +17,7 @@ build:linux --dynamic_local_strategy=worker,sandboxed,local
 #
 common:windows --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/windows/ndk/27.0.12077973
 common:windows --repo_env=ANDROID_HOME=prebuilts/studio/sdk/windows
+common:windows --@native_toolchain//:enable_legacy
 
 build:windows --bes_keywords=windows
 build:windows --host_platform=//tools/base/bazel/platforms:windows
@@ -35,13 +37,10 @@ build:windows --nobuild_python_zip
 #
 common:macos --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/darwin/ndk/27.0.12077973
 common:macos --repo_env=ANDROID_HOME=prebuilts/studio/sdk/darwin
+common:macos --@native_toolchain//:enable_legacy
 
 build:macos --bes_keywords=macos
 build:macos --host_platform=//tools/base/bazel/platforms:macos
 build:macos --platforms=//tools/base/bazel/platforms:macos
 build:macos --action_env=BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
-build:macos --host_linkopt="-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
-build:macos --host_linkopt="-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-build:macos --linkopt="-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
-build:macos --linkopt="-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
 build:macos --watchfs

@@ -1,4 +1,5 @@
 load("@//tools/base/bazel/toolchains:cc_toolchain_config.bzl", "CLANG_LATEST", "cc_toolchain_config")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -222,6 +223,8 @@ cc_toolchain_config(
         # Force using the old arguments when calling linker (/usr/bin/ld)
         # Needed as BYOB uses old system (10.13) with old commandline tools (9.2)
         "-mlinker-version=405",
+        "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib",
+        "-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
     ] + select({
         "@platforms//cpu:arm64": ["--target=arm64-apple-macos11"],
         "@platforms//cpu:x86_64": ["--target=x86_64-apple-macos11"],
@@ -333,6 +336,9 @@ toolchain(
         # "@platforms//cpu:x86_64",
         "@platforms//os:osx",
     ],
+    target_settings = [
+        ":enable_legacy_toolchains",
+    ],
     toolchain = ":cc-compiler-darwin",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
@@ -346,6 +352,9 @@ toolchain(
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
+    ],
+    target_settings = [
+        ":enable_legacy_toolchains",
     ],
     toolchain = ":cc-compiler-k8",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -361,6 +370,19 @@ toolchain(
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
     ],
+    target_settings = [
+        ":enable_legacy_toolchains",
+    ],
     toolchain = ":cc-compiler-x64_windows-clang-cl",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
+bool_flag(
+    name = "enable_legacy",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "enable_legacy_toolchains",
+    flag_values = {":enable_legacy": "True"},
 )
