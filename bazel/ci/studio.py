@@ -100,6 +100,14 @@ def run_bazel_test(
 
       '--experimental_enable_execution_graph_log',
       '--experimental_execution_graph_log_dep_type=all',
+      # Experiment with setting kelloggs ATP Discriminator labels.
+      f'--bes_keywords=b/{build_env.branch}',
+      f'--bes_keywords=test_result.build_id/{build_env.build_number}',
+      f'--bes_keywords=test_result.build_target/{build_env.build_target_name}',
+      '--bes_keywords=atp_test_name=android_studio/bazel',
+      '--bes_keywords=trigger/BUILD'
+      f'--build_metadata=cluster=bazel',
+      f'--build_metadata=run_target=bazel',
   ])
 
   target_file = dist_path / 'targets.txt'

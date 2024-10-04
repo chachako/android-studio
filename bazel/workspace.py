@@ -4,18 +4,26 @@
 #
 # This is written in Python to be platform independent.
 import getpass
-import socket
 import os
+import socket
+
 
 def getuser():
   """Gets the logged in user.
 
   Fallback to os.getlogin() since getpass on Windows may raise an exception.
+
+  Replace android-build with atp-dev. This is to get the kelloggs service to
+  filter correctly because it only accepts atp-dev.
   """
   try:
-    return getpass.getuser()
+    user = getpass.getuser()
   except:
-    return os.getlogin()
+    user = os.getlogin()
+  if user == 'android-build':
+    return 'atp-dev'
+  return user
 
-print("BUILD_USERNAME %s" % getuser())
-print("BUILD_HOSTNAME %s" % socket.gethostname())
+print('BUILD_USER %s' % getuser())
+print('BUILD_USERNAME %s' % getuser())
+print('BUILD_HOSTNAME %s' % socket.gethostname())

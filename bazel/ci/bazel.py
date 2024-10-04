@@ -23,6 +23,7 @@ class BuildEnv:
   bazel_path: str
   bazel_version: str
   user: str
+  branch: str
 
   # Startup options for Bazel commands.
   _startup_options: List[str]
@@ -41,6 +42,9 @@ class BuildEnv:
       with open(os.path.join(self.workspace_dir, ".bazelversion")) as f:
         self.bazel_version = f.read()
     self.user = user
+    # Assuming the workspace root is the name of the branch.
+    # Ideally, buildbot provides a concerete environment variable.
+    self.branch = self.workspace_dir.split("/")[-1]
 
     self._startup_options = ["--max_idle_secs=60"]
     if self.is_ab_environment():
