@@ -3,7 +3,7 @@ load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
 load("//tools/base/bazel:utils.bzl", "replace_manifest")
 load(":aar_lint.bzl", "aar_lint")
 
-ANDROIDX__VERSION = "1.7.0-beta03"
+ANDROIDX__VERSION = "1.8.0-alpha03"
 
 # AndroidX lint check composed from
 # https://cs.android.com/search?q=lintPublish%20file:compose%2F%20file:build.gradle&ss=androidx%2Fplatform%2Fframeworks%2Fsupport&start=1
@@ -24,6 +24,11 @@ aar_lint(
 )
 
 aar_lint(
+    name = "compose_ui_text_lint",
+    dep = "@maven//:androidx.compose.ui.ui-text-android_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
     name = "compose_ui_test_manifest_lint",
     dep = "@maven//:androidx.compose.ui.ui-test-manifest_" + ANDROIDX__VERSION,
 )
@@ -35,8 +40,7 @@ aar_lint(
 
 aar_lint(
     name = "compose_material_lint",
-    #TODO import newer version to match the rest
-    dep = "@maven//:androidx.compose.material.material-android_" + "1.6.6",
+    dep = "@maven//:androidx.compose.material.material-android_" + ANDROIDX__VERSION,
 )
 
 aar_lint(
@@ -56,7 +60,7 @@ aar_lint(
 
 aar_lint(
     name = "compose_material3_lint",
-    dep = "@maven//:androidx.compose.material3.material3-android_1.2.1",
+    dep = "@maven//:androidx.compose.material3.material3-android_1.3.0",
 )
 
 kotlin_library(
@@ -74,6 +78,7 @@ kotlin_library(
         ":compose_ui_graphics_lint",
         ":compose_ui_lint",
         ":compose_ui_test_manifest_lint",
+        ":compose_ui_text_lint",
         "//tools/base/lint:tools.lint-api",
     ],
 )
@@ -93,6 +98,7 @@ merge_jars(
         ":compose_ui_graphics_lint",
         ":compose_ui_lint",
         ":compose_ui_test_manifest_lint",
+        ":compose_ui_text_lint",
         ":compose-desktop-registry",
     ],
 )
