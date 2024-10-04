@@ -4316,7 +4316,234 @@ class UastTest : TestCase() {
     }
   }
 
+  fun testAmbiguousNavOptionBuilderPopUpTo() {
+    // Regression test from b/370694831
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import my.navigation.NavOptionsBuilder
+
+            fun navigate(builder: NavOptionsBuilder.() -> Unit) {
+            }
+
+            fun <T : Any> test(route: T) {
+              navigate {
+                popUpTo(route) {
+                  inclusive = true
+                }
+              }
+            }
+          """
+        ),
+        bytecode(
+          "libs/nav.jar",
+          kotlin(
+            """
+              package my.navigation
+              import kotlin.reflect.KClass
+
+              class NavOptionsBuilder {
+                fun popUpTo(id: Int, popUpToBuilder: PopUpToBuilder.() -> Unit = {}) {
+                }
+                fun popUpTo(route: String, popUpToBuilder: PopUpToBuilder.() -> Unit = {}) {
+                }
+                inline fun <reified T : Any> popUpTo(
+                  noinline popUpToBuilder: PopUpToBuilder.() -> Unit = {}
+                ) {
+                }
+                // @RestrictTo
+                fun <T : Any> popUpTo(klass: KClass<T>, popUpToBuilder: PopUpToBuilder.() -> Unit) {
+                }
+                fun <T : Any> popUpTo(route: T, popUpToBuilder: PopUpToBuilder.() -> Unit = {}) {
+                }
+              }
+
+              class PopUpToBuilder {
+                var inclusive: Boolean = false
+              }
+            """
+          ),
+          0xc0988f76,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+                JAAAAA==
+                """,
+          """
+                my/navigation/NavOptionsBuilder＄popUpTo＄1.class:
+                H4sIAAAAAAAA/41Ua28TRxQ9s3b82CxNSHkkgfJ0wU5a1qEU2to8QkhgkWtQ
+                EyJQPo3XgzPxetbahwXf8lv4BYVKBYGEon7kR1XcWRsTEwjI8szdO/eec++c
+                u/vu/9dvAVzCXYZS56mteE+2eCR9Zdd5715XW+HNWHpNERS6fvdBd80vLGTB
+                GGSt7UeeVPZWr2NLFYlAcc+u8U6jySu7zx7Hyk1w7JWBtVCtjXLd7yMPiIbZ
+                D5SMKtcqDLNfpsoizXBif7osMgyZqiS4awypYmmdIV10SusWcjBNjGGcHNGm
+                DBnma998DVRYRqqe3xYMp4v7t6Qpz9b8oGVviagRcEn1caX8iPdrrftRPfY8
+                gjQLupCCoqccpkZ7G/buqCggCOmGWRxiOOxuCrc9wLjPA94RFMhwvljb4j1u
+                e1y17HuNLeFGlV2eVQ3Squh7OIKjJg5jmvj2b4Th3GdAS3tdDMf3A8riuIUJ
+                TJowcIJhfJfkWZxiyDn11bXF+tIyw4GRebBwBmfzOI0Cg9FdYJj6HHeu6nqJ
+                3lrivCYp6cTv8mTNMxz8APmniHiTR5xSjE4vRe8C00teL2BgbW2k6PCJ1FaZ
+                rCZxFna2LXNn2zQmDdOYNsic3NmeNcpszigbd8z/nmWMnM5qXqTWqlz56mnH
+                j0OaPgI9+ZUJy4KqmfgwZk3xmMdexPDw0xHbk1hxvvLeUcBe6Uj9q6DKDu3B
+                u9Am2vSS3xT6ln2Xe+s8kLzhiTW9UJE1qUQ97jREMPAU/opVJDvCUT0ZSnIN
+                p3Hx47QzWI5SIljyeBgKepxYVq7nhzSMpMem32TIr8qW4lEcEKa56seBK1ak
+                JpgZEKz34XehokzajtH90ucJM1psEixNfxoA8iySVaAIkgCZufRLWM8TiW/S
+                avW9OJDkHNRzSZE6o0K7QXt2fur7V5jRKQaWkmB6++mn04/0Qwbp2prCLJ3f
+                0jYNESFicpFQjw3quDFAtebmd/DDvzj5Aj/+PQKNEWhrCG3hHM7TeQ7FYVdH
+                kxhg/A2MRy8x9w9+ep44xrBMq0lh/YBprCRXUsV13E7oUriT7Dfg0H6FIn+m
+                rAsbSDmwHZQdLOCig19wycGvuLwBFlLUbxtIh/g9xB8hZkNMvAcryKxcRgYA
+                AA==
+                """,
+          """
+                my/navigation/NavOptionsBuilder＄popUpTo＄2.class:
+                H4sIAAAAAAAA/41U23ITRxA9s5J1WS/YOFxscw8CJDthZYckBAmCMXbYlBBU
+                bFyV8tNoNchjrWZVe1GFN39LviBAVaCginLxyEdR9KyEYmFj8rAzvT19zume
+                7t33H16/BXAdvzOUOk9txXuyxSPpK7vOew+72grvxtJriqDQ9buPu+t+YTEL
+                xiBrbT/ypLK3ex1bqkgEint2jXcaTV7Ze/YkVm7CY68OrIVqbVTrUZ95IDRE
+                P1YyqtyuMMx+WSqLNMO5w+WyyDBkqpLobjOkiqUNhnTRKW1YyME0MYZxckRb
+                MmSYr/3va6DEMlL1/LZguFg8vCQteanmBy17W0SNgEvKjyvlR7yfa92P6rHn
+                EaVZ0IkUFL3lMDVa27B2R0UBUUg3zOI4wwl3S7jtAccjHvCOoECGq8XaNu9x
+                2+OqZT9sbAs3quzxrGmSVkXfw0mcMnEC06R3eCEMVw4gLe13MZw5jCiLMxYm
+                MGnCwDmG8T0tz+ICQ86pr60v1ZdXGI6MzIOFb3Epj4soMBjdBYapg7RzVddL
+                +q1bnNciJQ08midrnuHYJ8oHIuJNHnGCGJ1eir4Fppe8XsDA2tpI0eFfUltl
+                spqkWdjdsczdHdOYNExj2iBzcndn1iizOaNs3Dff/Z0xchrVXKTSqlz56mnH
+                j0OaPiI9/5UJy4Kymfg0Zk3xhMdeRB/c5yO2D3hAb7/yIVacA3pJ43ALlOrx
+                fQLX2pRHetlvCn3tvsu9DR5I3vDEul4o65pUoh53GiIYeAp/xCqSHeGongwl
+                uYbjufTf+DNYjlIiWPZ4GAp6nVhRrueHVAE1aMtvMuTXZEvxKA6I01zz48AV
+                q1ILzAwENvr0e1hRpmaP0YXT/wozuvvUwTQ9NBHkWSKrQBHUE2Tm0i9hPUt6
+                fpdWq+/FkQRzTA8qRWpEhXaD9uz81DevMKMhBpaTYPodELWGn+yHDODamsIs
+                nd/TNk0VMWJyiVhPD/K4M2C15uZ3cfZfnH+Oy/+MUGOE2hpSW7iCq3SeQ3FY
+                1akkBhh/A+PPl5h7ge+eJY4xrNBqUlg/YBqryZVU8St+S+RSuJ/sd+DQ/jNF
+                fk+oa5tIObAdlB0sYNHBD7ju4Ef8tAkWUtSNTaRD/BLiZojZEBMfAVtBfIhX
+                BgAA
+                """,
+          """
+                my/navigation/NavOptionsBuilder＄popUpTo＄3.class:
+                H4sIAAAAAAAA/8VU23ITRxA9s5J1WQtsFAO2IWCwAroQZBnnAhJOhJFhgyy7
+                IuNUyk8jaZHHWs2q9qKCN39LvgCSqpBKqlKuPOajUulZyY6FFcMbD9vTO9t9
+                Tk/P6f37n9//BLCCLYZM91Ve8r5oc0/YMl/j/c2e8txHvrBappPq2b3nvW07
+                dS8KxiCqHduzhMzv97t5IT3TkdzKV3m30eLFk99e+LIZ4OTXh16hVB3l2hog
+                D4mOs59L4RVXiwzz/08VRZjh2tl0UUQYIiVBcKsMoXRmhyGcNjI7CcSg65jA
+                JG14e8JlyFU/uA1UWETIvt0xGW6kzz6Solys2k47v296DYcLqo9LaXt8UGvN
+                9mq+ZRGknlKFpCS9xZAcPdvx2Q3pOQQhmm4UMwwXm3tmszPE2OIO75oUyHA7
+                Xd3nfZ63uGznNxv7ZtMrntipK5B2UfXhEi7ruIhZ4jv7IAy3xoBmTm8xXD0L
+                KIqrCUxhWoeGawyTJ648igWGmFGrb5draxWGcyN6SOAmFuO4gRSD1iswJMdx
+                x0pNK7hvdcVxRZJRiefj5OUYLhxBbpgeb3GPU4rW7YdoFpgycWXAwDrKCdHH
+                l0J5r8lrEef9w4Okfniga9PaYFFmVvnkzWtL7KYeI1+bZVltKURP+Kn+108R
+                LTahAJbpvCUubfmqa/suSVIxbTNcf4/0oigxTB3pr2W+4L7lMfzwrvZOJb5v
+                HovGmCslVaziG4aZU3B3O8SaHTv/ddt3muZjs+G3Ky89kyRqS+rtRJ9bPo3J
+                QX2jvKWPA9SfBWh6tr5w5K3ruYXCwtjgD55RPVvVC4uFO8srDwp6tqLTnK/Z
+                LVOpxm5ya4c7gjcsc1sZ6m1VSLPmdxumM9xJfe9LT3RNQ/aFK2jreLrK/00v
+                Q8KQ0nTWLO66Jr1OVWTTsl0aLtLXnt1iiNdFW3LPdwhTHzRpXSiCmXEdY5gb
+                8u4MWEfIrrxb04mvKJDAJ0hP9I/GnFI8qTZMPk0B2Qq9pSiCJIdINvwWiTeB
+                ztfJJga7OBfkXFDDSZEqo0irRms0l/zkN8ypFA1PgmD6BWIySL80CBmmKy+J
+                efr+VPmkb0LEdJlQrwzr+HaImsjmDvHpr7j+Mz57PQKNEejEMXQCt3A7OFP6
+                +FSXgxjK+APaj2+R/QV33gzrMMjqFDYImMN3QUseUgHPAroQqsFaxgatH12i
+                qFEVD6nez+ki7+4iZCBvYMmgq102cA8rBr7Al7tgLr7C17uIuLjv4oGLYmDn
+                XerxJkGcJ4hH9KwFoY//BYS5ZXzrBwAA
+                """,
+          """
+                my/navigation/NavOptionsBuilder＄popUpTo＄4.class:
+                H4sIAAAAAAAA/41U23IbRRA9s5J1WW+wo9xsE3IViWRDVg6GAKsYHGOTBaGk
+                YsdVlJ9Gq4k81mpWtRcVecu38AUEqggFVZSLRz6KomelKBY2goft6e3tPqdn
+                +sz++devvwNYw9cM1d5zW/GB7PBYBspu8sGjvvaiB4n02yIs94P+0/5uUF7L
+                gzHIRjeIfansw0HPlioWoeK+3eC9Vps7x789S5SX4tjbI2+13pjkejxEHhGN
+                q58qGTvrDsPSv1PlkWW4Mp0ujxxDri4Jbp0hU6nuMWQrbnXPQgGmiRnMUiA+
+                kBHDSuN/HwM1lpNqEHQFw/XK9C1pypuNIOzYhyJuhVxSf1ypIObDXptB3Ex8
+                nyDNsm6krOitgNLk3sZ7d1UcEoT0ojzOM1zwDoTXHWE85iHvCUpkuF1pHPIB
+                t32uOvaj1qHwYudYZEeDdBx9DhdxycQFLBDf9I0w3DoFtHoyxHB5GlAely3M
+                Yd6EgSsMs8dGnsc1hoLb3NndaG5uMZyZ0IOFG7hZxHWUGYz+KkPpNO5C3fPT
+                eesRFzVJVRe+VSRvheHsa8hvRMzbPOZUYvQGGboLTJuiNmBgXe1k6ON3Uns1
+                8trEee/oRck8emEa88Zw0WZB++QtGTV2o1Ag31g2ahl6sg/NP77PGYUZXX6X
+                dlvnKlDPe0ESkSA1zy7D1f8QXh51hrnX6muLZzzxY7qH/1TeiULnFBFMvzCO
+                e8qISSXr+Izh/AmCO13qI7sZtIWeRuBxf4+Hkrd8sasNdd2QSjSTXkuEo0j5
+                SaJi2ROuGshIUmis2o03t4LBcpUS4abPo0jQ69yW8vwgItHS3A6CNkNxR3YU
+                j5OQMM2dIAk9sS01weKIYG8IfwwVNdLADB06/cawqEVBg83SQ0KhyAPyypRB
+                c0FuOfsK1stUCptkrWEUZ9Kas1q/lKkrHFoNWvMrpXO/YFGXGPgiTaa/BKXq
+                8ovDlFG59kpYou9b2icRUBrmNwj17VEfn49QreWVI7zzM67+iHd/mIDGBLQ1
+                hrZwC7fpewGV8a4upTnA7G8wvn2F5Z/w3ss0MINtsialDRMW8GV6JPepgYcp
+                XQZuum7gK1rvU+b7VHVnHxkXtouai1XcdfEB1lx8iI/2wSLcw8f7yEX4JMKn
+                EZzULkWY+xuUJTQ8dAYAAA==
+                """,
+          """
+                my/navigation/NavOptionsBuilder.class:
+                H4sIAAAAAAAA/7VWXXPTRhQ9K39IVuzEMeSTb3DBSQA7TigUh9AkDcTgGEpM
+                oA2lVWzFKHFkjyRn4KWTaWf6H/raf9A+tEwfOpn0rT+q07trOdg4xjGUGWt3
+                tXvPvWfvuSvvP//++ReAaRQZzmy/ipvajlHUHKNsxrPazoMKH9nzVaNU0C0Z
+                jCG8qe1o8ZJmFuMP1jf1vCPDw+CfMUzDmWXwxMZWg/DBr8ILmcHrvDBshnOZ
+                Dr5TDHKlXHlcyZUZorF0ZqvslAwzvrmzHd+omnlhG7/jjiZTY6sMjzqazVx5
+                K+7DWoh60Dr8MZFPzQqnFzJlqxjf1J11SzPIl2aaZUer+c2WnWy1VCKuvZUm
+                Rwr6GE43cDFMR7dMrRRPm45Fboy8LaOfYSD/Qs9vuX4eapa2rZMhw6VY5u28
+                phpmVriTYoqn9hiOq4hggEEyCgwszXC2U7IY+ly+0YK+oVVLDsPTWEdJOoqQ
+                biXNUzjWwXG0TmZSxkkGJZ1dyc1lFxYZJjpxegNNBXEaZwI4hbPNqT+EqIzz
+                QfQgqEJClOFarDW1R6m3fPe49yhAn1WuOrqCGEOkNR6D0Vm47rf3oUomZVzu
+                Rr6kkO9qAFcQ59Jc5NJM0umLHUWI4kzuZivh2U7Y9xAjGDWiG9GDD9OTI+T+
+                I2d6Ssb1bjI9JTL9WQA3cJOKK1r7Ht88yJWlb5SIRPz+Qkmz7SOdgx87pL/Z
+                5UwuR8n8COdki3tXcJthqM1m3jrq9e/qEba42WaLtJf/fyeR1kjdHvMjbu1D
+                i29axp1uim9aFN9SAHeR5sd8nh/z+wz9daLLuqMVNEejDUvbOx66iTDeBHgD
+                +nfbovmXBn9L0Kgwydizvd2kKg1LqhTe21UlhQ/oUTy1yfoj5hV6elVuNiwN
+                E05KsHnf/i9+Qty7EfaMSgnveUXZ2w37xmkp6Q/7R6UlX3JEkcLy6LGINyIl
+                AqL1JhQOU1QB7rk3VgMTIkh96F2IBlvynuh9p+31VlLBcN+ows2WfIlwcqgt
+                dMqFqgI6zAR4RFHbAZb2f1L+fs32dvd/kGTVp+z/nEwwnuMkE5nP8bp0VWq8
+                SZx+d3lzAxe1+NLR6eZTNuvw3KuKTgbHW+rl6hZdSLwL5YJON5WMYerZ6va6
+                buW09ZLOaZTzWmlVswz+7k4GVoyiqTlVi8bRR1XTMbb1tLlj2AYtH1ys5t5c
+                3hhCK46W31rWKq6LYNo0dUt8KXRaVlfKVSuv3zH42ojrcrXmsMEPJqmEvbw8
+                oVKe6KZL7XN6i/OsUe8b/wPKrzSQ8C21/tokvqM26I4DBAX6+ZUEHgFeJGte
+                5fLlSPg1BpvhfsgCfrZm4sL5aAjDwqWMPowQQhO4ENb5GZLEEeoFwgGM4oRL
+                8xo58VF//JTv+5+h/oZze7iwPH7i8u/4pBY2T60HLNRA3y/IXnTJ3nfJhiYi
+                Y0T2MMpBIvmGcuiAcggxjAuXoSbKlwTlkFQj3EB7oh3thKA9QbSTbWkrYU57
+                iha5i7su7cCEIOy51UxZIUp1ygq9X6Pc8hQGDsgHBGXmUp4W/D51+RluVQye
+                9Nb4pYhfpjGSp5lhRJirFLqHAqsYaAg/0BB+EDNu+EE3PN/TrVYpPm8rRbiN
+                FLcxd4gUs4dIIWLOdyN/pK38XxwSc6Gd/Ivt5L93IH+mrfz9NFGg/jyl+pSI
+                P0z3zVp/Q/QjVBS1d104+QYb1D8n9DKFy67Bk8aDNB6m8SUe0RAraeTweA3M
+                xiqerKHfhmrjqQ2/jR4x+MpGzEafja9trNl4ZmPexpBYot9tG3P/ASKKcDdz
+                DwAA
+                """,
+          """
+                my/navigation/PopUpToBuilder.class:
+                H4sIAAAAAAAA/31SQW8SURD+3ttlgYXSBVuktFZt1bRNdGnjSRuNNSEhwdbU
+                Sho4PWCDryy7hLcQvXHyh3j2YqIx8WBIj/4o47yFxLQxXma++fabmfcN/Pr9
+                4yeAx3jAsDH44AZiInsikmHgvg6Hb4dn4dFY+l1vlARjcC7ERLi+CHruSfvC
+                60RJGAzWoQxk9IzB2NltZJGAZcNEksGM3knFsFn/3+CnDNmeF9WCjj9WcuLF
+                Y5oMafmXYc0slpBLg2OZ5OqK3Nxp7jYYkodEP3xOz8jX+2Hky8B95UWiKyJB
+                K/hgYpBPpkNaB9DUPvHvpa4qhLr7DNXZdMXmJW5zZza1eUqDDGWzNJse8Ao7
+                Slx+srjDT8uOUeYV8/zyY46YnD2bls1UwrG2zFTSSelpB0zvWDkWk5Ohtq0W
+                fh/1I3rzy7BLT1+uy8A7Hg/a3uhMtH1iCvWwI/yGGEldL0j7TTgedbyq1MXa
+                6TiI5MBrSCXp64sgCKP4rgr7dB8ztsb1uQgZhOn3oHiXKlebppzY+47UFwIc
+                WxStmFzFNsXsXIA0bMp5ZGLmavNXOJ+vNRf/2ZxHYdH8hNRcq/fWv8G5vnre
+                XZwrFt0a3SAP2su9WH8H9ylX9VFpx2oLRg3FGm7WUMIaQZRrWMdGC0zhFjZb
+                SCvYCrcVLIWlGGQU/XmQVyj8AXuVoBr4AgAA
+                """,
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            if (node.sourcePsi?.text?.startsWith("popUpTo") != true) {
+              return super.visitCallExpression(node)
+            }
+
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("popUpTo", resolved!!.name)
+            val parameters = resolved.parameterList.parameters
+            assertEquals(2, parameters.size)
+            val route = parameters[0]
+            assertEquals("T", route.type.canonicalText)
+            val builder = parameters[1]
+            assertEquals(
+              "kotlin.jvm.functions.Function1<? super my.navigation.PopUpToBuilder,kotlin.Unit>",
+              builder.type.canonicalText,
+            )
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
   fun testResolutionToExtensionInCompanion() {
+    // Regression test from b/360354551
     val testFiles =
       arrayOf(
         kotlin(

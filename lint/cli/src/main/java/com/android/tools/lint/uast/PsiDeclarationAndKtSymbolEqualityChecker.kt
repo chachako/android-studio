@@ -20,6 +20,7 @@ import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypes
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.*
@@ -60,10 +61,7 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     return true
   }
 
-  private fun KaSession.valueParametersMatch(
-    psi: PsiMethod,
-    symbol: KaFunctionSymbol,
-  ): Boolean {
+  private fun KaSession.valueParametersMatch(psi: PsiMethod, symbol: KaFunctionSymbol): Boolean {
     val isExtension =
       when (symbol) {
         is KaPropertyAccessorSymbol -> symbol.receiverParameter != null
@@ -116,8 +114,10 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     // Shortcut: primitive void == Unit as a function return type
     if (psi == PsiTypes.voidType() && kaType.isUnitType) return true
     // Without type substitution (from resolved call info), we can't
-    // tell their equality: assume they are matched conservatively.
-    if (kaType is KaTypeParameterType) {
+    // tell their equality: assume they are matched conservatively,
+    // when the counterpart [PsiType] is Object, as if it's converted
+    // from a type parameter.
+    if (kaType is KaTypeParameterType && psi.isObject) {
       return true
     }
     val ktTypeRendered = kaType.asPsiType(context, allowErrorTypes = true, mode) ?: return false
@@ -133,4 +133,11 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
       ktTypeRendered == psi
     }
   }
+
+  private const val OBJECT_TYPE = "java.lang.Object"
+
+  private val PsiType.isObject: Boolean
+    get() {
+      return this is PsiClassReferenceType && canonicalText == OBJECT_TYPE
+    }
 }
