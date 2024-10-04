@@ -17,12 +17,15 @@
 package com.android.tools.lint.helpers
 
 import com.android.tools.lint.client.api.JavaEvaluator
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.computeKotlinArgumentMapping
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.model.LintModelDependencies
 import com.google.common.collect.Sets
 import com.intellij.codeInsight.AnnotationUtil
+import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.JavaDirectoryService
 import com.intellij.psi.JavaPsiFacade
@@ -93,8 +96,22 @@ open class DefaultJavaEvaluator(
   }
 
   override fun findClass(qualifiedName: String): PsiClass? {
-    return JavaPsiFacade.getInstance(myProject ?: return null)
-      .findClass(qualifiedName, GlobalSearchScope.allScope(myProject))
+    myProject ?: return null
+    try {
+      return JavaPsiFacade.getInstance(myProject)
+        .findClass(qualifiedName, GlobalSearchScope.allScope(myProject))
+    } catch (ex: Exception) {
+      // For example, ProcessCanceledException.
+      if (ex is ControlFlowException) throw ex
+
+      if (LintClient.isUnitTest) {
+        myLintProject
+          ?.client
+          ?.log(Severity.ERROR, ex, "Exception thrown for qualified class name: $qualifiedName")
+      }
+
+      return null
+    }
   }
 
   override fun getClassType(psiClass: PsiClass?): PsiClassType? {
