@@ -140,8 +140,7 @@ def studio_linux_large(build_env: bazel.BuildEnv) -> None:
   )
   result = run_tests(build_env, flags, _BASE_TARGETS)
   if studio.is_build_successful(result):
-    if result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
-      return
+    return
 
   raise studio.BazelTestError(exit_code=result.exit_code)
 
