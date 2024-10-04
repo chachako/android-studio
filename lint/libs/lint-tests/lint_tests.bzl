@@ -66,7 +66,6 @@ def lint_test(name, useK2):
             "@maven//:net.sf.kxml.kxml2",
             "@maven//:org.codehaus.groovy.groovy",
             "@maven//:org.jetbrains.annotations",
-            "@maven//:org.jetbrains.intellij.deps.trove4j",
             "@maven//:org.jetbrains.kotlin.kotlin-reflect",
             "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
             "@maven//:org.mockito.mockito-core",

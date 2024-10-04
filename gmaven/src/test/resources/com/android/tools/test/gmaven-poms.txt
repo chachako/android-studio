@@ -743,7 +743,6 @@ com.android.tools.lint:lint-checks
     com.google.code.gson:gson (runtime)
     com.google.guava:guava (runtime)
     net.sf.kxml:kxml2 (runtime)
-    org.jetbrains.intellij.deps:trove4j (runtime)
     org.ow2.asm:asm-analysis (runtime)
 
 com.android.tools.lint:lint-gradle

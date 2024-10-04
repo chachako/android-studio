@@ -212,7 +212,6 @@ maven_library(
         "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.guava.guava",
         "@maven//:net.sf.kxml.kxml2",
-        "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.ow2.asm.asm-analysis",
     ],
 )
@@ -284,7 +283,6 @@ kotlin_test(
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.codehaus.groovy.groovy",
         "@maven//:org.jetbrains.annotations",
-        "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
         "@maven//:org.mockito.mockito-core",
