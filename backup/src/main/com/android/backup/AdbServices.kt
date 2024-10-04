@@ -17,9 +17,11 @@ package com.android.backup
 
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.coroutines.CoroutineContext
 
 /** Provides backup services for a specific device */
 interface AdbServices {
+  val ioContext: CoroutineContext
 
   /** Report progress of backup/restore */
   suspend fun reportProgress(text: String)
@@ -30,9 +32,6 @@ interface AdbServices {
    * @param transport The backup transport to use for the operation
    */
   suspend fun withSetup(transport: String, block: suspend () -> Unit)
-
-  /** Delete the [BACKUP_DIR] directory on the device */
-  suspend fun deleteBackupDir()
 
   /**
    * Initialize a backup transport
@@ -54,27 +53,20 @@ interface AdbServices {
   ): AdbOutput
 
   /**
-   * Pulls a file from a device
+   * Reads a file from a Content Provider
    *
-   * @param outputStream An [outputStream] to write files to
-   * @param remoteFilePath Path of the file on the device
+   * @param outputStream An [outputStream] to write the file to
+   * @param uri The content URI
    */
-  suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String)
+  suspend fun readContent(outputStream: OutputStream, uri: String)
 
   /**
    * Pushes a file to a device
    *
    * @param inputStream An [InputStream] to read the file contents from
-   * @param remoteFilePath Path of the file on the device
+   * @param uri The content URI
    */
-  suspend fun syncSend(inputStream: InputStream, remoteFilePath: String)
-
-  companion object {
-
-    const val BACKUP_DIR =
-      "/sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data"
-    val BACKUP_METADATA_FILES = setOf("@pm@", "restore_token_file")
-  }
+  suspend fun writeContent(inputStream: InputStream, uri: String)
 
   suspend fun backupNow(applicationId: String)
 

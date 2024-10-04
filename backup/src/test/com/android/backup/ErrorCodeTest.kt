@@ -44,6 +44,7 @@ class ErrorCodeTest {
     assertThat(ErrorCode.PLAY_STORE_NOT_INSTALLED.ordinal).isEqualTo(9)
     assertThat(ErrorCode.BACKUP_NOT_ALLOWED.ordinal).isEqualTo(10)
     assertThat(ErrorCode.UNEXPECTED_ERROR.ordinal).isEqualTo(11)
-    assertThat(ErrorCode.entries).hasSize(12)
+    assertThat(ErrorCode.READ_CONTENT_FAILED.ordinal).isEqualTo(12)
+    assertThat(ErrorCode.entries).hasSize(13)
   }
 }

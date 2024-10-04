@@ -17,7 +17,6 @@ package com.android.backup
 
 import ai.grazie.utils.dropPrefix
 import com.android.adblib.DeviceSelector
-import com.android.backup.AdbServices.Companion.BACKUP_DIR
 import com.android.backup.BackupProgressListener.Step
 import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.BACKUP_NOT_ALLOWED
@@ -61,11 +60,6 @@ abstract class AbstractAdbServices(
     withBmgr { withTestMode { withTransport(transport) { block() } } }
   }
 
-  override suspend fun deleteBackupDir() {
-    reportProgress("Deleting backup directory")
-    executeCommand("rm -rf $BACKUP_DIR")
-  }
-
   override suspend fun initializeTransport(transport: String) {
     val out = executeCommand("bmgr init $transport", TRANSPORT_INIT_FAILED)
     if (out.stdout.lines().last() != "Initialization result: 0") {
@@ -74,7 +68,8 @@ abstract class AbstractAdbServices(
   }
 
   override suspend fun backupNow(applicationId: String) {
-    val out = executeCommand("bmgr backupnow $applicationId", BACKUP_FAILED).stdout
+    val out =
+      executeCommand("bmgr backupnow @pm@ $applicationId --non-incremental", BACKUP_FAILED).stdout
     when {
       out.isBackupSuccess(applicationId) -> return
       out.isBackupNotAllowd() ->

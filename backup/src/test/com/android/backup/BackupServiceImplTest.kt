@@ -75,8 +75,7 @@ class BackupServiceImplTest {
         "bmgr transport com.google.android.gms/.backup.migrate.service.D2dTransport",
         "bmgr list transports",
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
-        "bmgr backupnow com.app",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
+        "bmgr backupnow @pm@ com.app --non-incremental",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
@@ -86,9 +85,10 @@ class BackupServiceImplTest {
     assertThat(backupFile.exists()).isTrue()
     assertThat(backupFile.unzip())
       .containsExactly(
-        "@pm@" to "${AdbServices.BACKUP_DIR}/@pm@",
-        "restore_token_file" to "${AdbServices.BACKUP_DIR}/restore_token_file",
-        "com.app" to "${AdbServices.BACKUP_DIR}/com.app",
+        "pm_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
+        "restore_token_file" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
+        "app_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
+        "app_id" to "com.app",
       )
   }
 
@@ -108,11 +108,11 @@ class BackupServiceImplTest {
         "bmgr enabled",
         "bmgr enable true",
         "settings put secure backup_enable_android_studio_mode 1",
-        "bmgr transport com.google.android.gms/.backup.BackupTransportService",
+        "bmgr transport com.google.android.gms/.backup.migrate.service.D2dTransport",
         "bmgr list transports",
-        "bmgr init com.google.android.gms/.backup.BackupTransportService",
-        "bmgr backupnow com.app",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
+        "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
+        "bmgr backupnow @pm@ com.app --non-incremental",
+        "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
       )
@@ -121,9 +121,10 @@ class BackupServiceImplTest {
     assertThat(backupFile.exists()).isTrue()
     assertThat(backupFile.unzip())
       .containsExactly(
-        "@pm@" to "${AdbServices.BACKUP_DIR}/@pm@",
-        "restore_token_file" to "${AdbServices.BACKUP_DIR}/restore_token_file",
-        "com.app" to "${AdbServices.BACKUP_DIR}/com.app",
+        "pm_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
+        "restore_token_file" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
+        "app_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
+        "app_id" to "com.app",
       )
   }
 
@@ -145,8 +146,7 @@ class BackupServiceImplTest {
         "bmgr transport com.google.android.gms/.backup.migrate.service.D2dTransport",
         "bmgr list transports",
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
-        "bmgr backupnow com.app",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
+        "bmgr backupnow @pm@ com.app --non-incremental",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
       )
@@ -174,8 +174,7 @@ class BackupServiceImplTest {
         "bmgr transport com.google.android.gms/.backup.migrate.service.D2dTransport",
         "bmgr list transports",
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
-        "bmgr backupnow com.app",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
+        "bmgr backupnow @pm@ com.app --non-incremental",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
       )
@@ -193,20 +192,19 @@ class BackupServiceImplTest {
     val adbServices = adbServicesFactory.adbServices
     assertThat(adbServices.getProgress())
       .containsExactly(
-        "1/11: Verifying Google services",
-        "2/11: Checking if BMGR is enabled",
-        "3/13: Enabling BMGR",
-        "4/13: Enabling test mode",
-        "5/13: Setting backup transport",
-        "6/14: Initializing backup transport",
-        "7/14: Running backup",
-        "8/14: Fetching backup",
-        "9/14: Cleaning up",
-        "10/14: Deleting backup directory",
-        "11/14: Restoring backup transport",
-        "12/14: Disabling test mode",
-        "13/14: Disabling BMGR",
-        "14/14: Done",
+        "1/10: Verifying Google services",
+        "2/10: Checking if BMGR is enabled",
+        "3/12: Enabling BMGR",
+        "4/12: Enabling test mode",
+        "5/12: Setting backup transport",
+        "6/13: Initializing backup transport",
+        "7/13: Running backup",
+        "8/13: Fetching backup",
+        "9/13: Cleaning up",
+        "10/13: Restoring backup transport",
+        "11/13: Disabling test mode",
+        "12/13: Disabling BMGR",
+        "13/13: Done",
       )
       .inOrder()
   }
@@ -225,7 +223,7 @@ class BackupServiceImplTest {
   @Test
   fun backup_pullFails_deletesFile(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
-    val backupService = BackupServiceImpl(FakeAdbServicesFactory { it.failSync = true })
+    val backupService = BackupServiceImpl(FakeAdbServicesFactory { it.failReadWriteContent = true })
 
     backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
@@ -275,7 +273,7 @@ class BackupServiceImplTest {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
     val backupService =
       BackupServiceImpl(
-        FakeAdbServicesFactory { it.addCommandOverride(Output("bmgr backupnow com.app", "Error")) }
+        FakeAdbServicesFactory { it.addCommandOverride(Output("bmgr backupnow @pm@ com.app --non-incremental", "Error")) }
       )
 
     val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
@@ -290,7 +288,7 @@ class BackupServiceImplTest {
       BackupServiceImpl(
         FakeAdbServicesFactory {
           it.addCommandOverride(
-            Output("bmgr backupnow com.app", "Package com.app with result: Backup is not allowed")
+            Output("bmgr backupnow @pm@ com.app --non-incremental", "Package com.app with result: Backup is not allowed")
           )
         }
       )
@@ -319,10 +317,10 @@ class BackupServiceImplTest {
         "settings put secure backup_enable_android_studio_mode 1",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "bmgr list transports",
+        "bmgr init com.google.android.gms/.backup.BackupTransportService",
         "bmgr restore 9bc1546914997f6c com.app",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
       )
       .inOrder()
     assertThat(adbServices.testMode).isEqualTo(0)
@@ -334,9 +332,11 @@ class BackupServiceImplTest {
     val adbServicesFactory = FakeAdbServicesFactory { it.bmgrEnabled = true }
     val backupService = BackupServiceImpl(adbServicesFactory)
 
-    backupService.restore("serial", backupFile, null)
+    val result = backupService.restore("serial", backupFile, null)
 
     val adbServices = adbServicesFactory.adbServices
+    (result as? Error)?.throwable?.printStackTrace()
+    assertThat(result).isEqualTo(Success)
     assertThat(adbServices.getCommands())
       .containsExactly(
         "dumpsys package com.google.android.gms",
@@ -344,9 +344,9 @@ class BackupServiceImplTest {
         "settings put secure backup_enable_android_studio_mode 1",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "bmgr list transports",
+        "bmgr init com.google.android.gms/.backup.BackupTransportService",
         "bmgr restore 9bc1546914997f6c com.app",
         "settings put secure backup_enable_android_studio_mode 0",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
       )
       .inOrder()
   }
@@ -370,11 +370,11 @@ class BackupServiceImplTest {
         "settings put secure backup_enable_android_studio_mode 1",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "bmgr list transports",
+        "bmgr init com.google.android.gms/.backup.BackupTransportService",
         "bmgr restore 9bc1546914997f6c com.app",
         "bmgr transport com.android.localtransport/.LocalTransport",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
-        "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
       )
       .inOrder()
   }
@@ -390,16 +390,16 @@ class BackupServiceImplTest {
     val adbServices = adbServicesFactory.adbServices
     assertThat(adbServices.getProgress())
       .containsExactly(
-        "1/9: Pushing backup file",
-        "2/9: Verifying Google services",
-        "3/9: Checking if BMGR is enabled",
-        "4/11: Enabling BMGR",
-        "5/11: Enabling test mode",
-        "6/11: Setting backup transport",
-        "7/11: Restoring com.app",
-        "8/11: Disabling test mode",
-        "9/11: Disabling BMGR",
-        "10/11: Deleting backup directory",
+        "1/9: Verifying Google services",
+        "2/9: Checking if BMGR is enabled",
+        "3/11: Enabling BMGR",
+        "4/11: Enabling test mode",
+        "5/11: Setting backup transport",
+        "6/11: Initializing backup transport",
+        "7/11: Pushing backup file",
+        "8/11: Restoring com.app",
+        "9/11: Disabling test mode",
+        "10/11: Disabling BMGR",
         "11/11: Done",
       )
       .inOrder()
@@ -516,9 +516,10 @@ class BackupServiceImplTest {
   @Suppress("SameParameterValue")
   private fun createBackupFile(applicationId: String, token: String) =
     createZipFile(
-      FileInfo("@pm@", ""),
-      FileInfo(applicationId, ""),
+      FileInfo("pm_backup_data", ""),
+      FileInfo("app_backup_data", ""),
       FileInfo("restore_token_file", token),
+      FileInfo("app_id", applicationId),
     )
 
   @Suppress("SameParameterValue")

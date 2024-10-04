@@ -16,17 +16,17 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
-import com.android.adblib.RemoteFileMode.Companion.DEFAULT
+import com.android.adblib.OutputStreamCollector
 import com.android.adblib.ShellCommandOutput
 import com.android.adblib.TextShellV2Collector
 import com.android.adblib.shellCommand
-import com.android.adblib.syncRecv
-import com.android.adblib.syncSend
+import com.android.adblib.withTextCollector
 import com.android.backup.AdbServices.AdbOutput
 import com.android.tools.environment.Logger
+import kotlinx.coroutines.flow.first
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import kotlinx.coroutines.flow.first
 
 /** Provides backup services for a specific device */
 internal class AdbServicesImpl(
@@ -37,6 +37,8 @@ internal class AdbServicesImpl(
   totalSteps: Int,
   minGmsVersion: Int,
 ) : AbstractAdbServices(serialNumber, logger, progressListener, totalSteps, minGmsVersion) {
+
+  override val ioContext = adbSession.ioDispatcher
 
   override suspend fun executeCommand(command: String, errorCode: ErrorCode): AdbOutput {
     val output =
@@ -60,15 +62,29 @@ internal class AdbServicesImpl(
     return AdbOutput(output.stdout.trimEnd('\n'), output.stderr.trimEnd('\n'))
   }
 
-  override suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String) {
-    adbSession.channelFactory.wrapOutputStream(outputStream).use { channel ->
-      adbSession.deviceServices.syncRecv(deviceSelector, remoteFilePath, channel)
+  override suspend fun readContent(outputStream: OutputStream, uri: String) {
+    val stderrStream = ByteArrayOutputStream()
+    stderrStream.use {
+      adbSession.deviceServices
+        .shellCommand(deviceSelector, "content read --uri $uri")
+        .withCollector(OutputStreamCollector(adbSession, outputStream, stderrStream))
+        .execute()
+        .first()
+    }
+    val stderr = stderrStream.toString()
+    if (stderr.isNotEmpty()) {
+      throw BackupException(ErrorCode.READ_CONTENT_FAILED, "Error reading content $uri: $stderr")
     }
   }
 
-  override suspend fun syncSend(inputStream: InputStream, remoteFilePath: String) {
-    adbSession.channelFactory.wrapInputStream(inputStream).use { channel ->
-      adbSession.deviceServices.syncSend(deviceSelector, channel, remoteFilePath, DEFAULT)
+  override suspend fun writeContent(inputStream: InputStream, uri: String) {
+    val output = adbSession.deviceServices.shellCommand(deviceSelector, "content write --uri $uri")
+      .withStdin(adbSession.channelFactory.wrapInputStream(inputStream))
+      .withTextCollector()
+      .execute().first()
+    val stderr = output.stderr
+    if (stderr.isNotEmpty()) {
+      throw BackupException(ErrorCode.READ_CONTENT_FAILED, "Error writing content $uri: $stderr")
     }
   }
 }

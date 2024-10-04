@@ -17,7 +17,6 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
-import com.android.backup.AdbServices.Companion.BACKUP_METADATA_FILES
 import com.android.backup.ErrorCode.INVALID_BACKUP_FILE
 import com.android.tools.environment.Logger
 import java.math.BigInteger
@@ -48,6 +47,11 @@ interface BackupService {
   suspend fun isInstalled(serialNumber: String, applicationId: String): Boolean
 
   companion object {
+    const val TOKEN_FILE = "restore_token_file"
+    const val PM_DATA_FILE = "pm_backup_data"
+    const val APP_DATA_FILE = "app_backup_data"
+    const val APP_ID = "app_id"
+    val BACKUP_FILES = setOf(PM_DATA_FILE, TOKEN_FILE, APP_DATA_FILE)
 
     fun getInstance(adbSession: AdbSession, logger: Logger, minGmsVersion: Int): BackupService =
       BackupServiceImpl(AdbServicesFactoryImpl(adbSession, logger, minGmsVersion))
@@ -64,7 +68,7 @@ interface BackupService {
         val applicationId = zip.getApplicationId()
         zip.getRestoreToken()
         val filenames = zip.entries().asSequence().mapTo(mutableSetOf()) { it.name }
-        if (filenames != BACKUP_METADATA_FILES + applicationId) {
+        if (!filenames.containsAll(BACKUP_FILES)) {
           throw BackupException(
             INVALID_BACKUP_FILE,
             "File is not a valid backup file: ${backupFile.pathString} ($filenames)",
@@ -76,7 +80,7 @@ interface BackupService {
 
     internal fun ZipFile.getRestoreToken(): String {
       return try {
-        BigInteger(getInputStream(getEntry("restore_token_file")).reader().readText()).toString(16)
+        BigInteger(getInputStream(getEntry(TOKEN_FILE)).reader().readText()).toString(16)
       } catch (e: Exception) {
         throw BackupException(
           INVALID_BACKUP_FILE,
@@ -88,11 +92,11 @@ interface BackupService {
 
     internal fun ZipFile.getApplicationId(): String {
       return try {
-        entries().asSequence().map { it.name }.first { it !in BACKUP_METADATA_FILES }
+        getInputStream(getEntry(APP_ID)).reader().readText()
       } catch (e: Exception) {
         throw BackupException(
           INVALID_BACKUP_FILE,
-          "Backup file does not contain an application file: $name",
+          "Backup file does not contain a valid application id: $name",
           e,
         )
       }
