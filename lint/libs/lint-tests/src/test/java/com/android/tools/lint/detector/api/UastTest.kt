@@ -1233,7 +1233,8 @@ class UastTest : TestCase() {
                                 UAnnotation (fqName = org.jetbrains.annotations.Nullable) [@org.jetbrains.annotations.Nullable]"""
         else ""
       val valueClassConstructor =
-        if (useFirUast()) "" else
+        if (useFirUast()) ""
+        else
           """
                         UMethod (name = Name2) [public fun Name2(@org.jetbrains.annotations.NotNull n: java.lang.String) = UastEmptyExpression]
                             UParameter (name = n) [@org.jetbrains.annotations.NotNull var n: java.lang.String] : PsiType:String
@@ -4816,8 +4817,8 @@ class UastTest : TestCase() {
     }
   }
 
-  fun disabledTestStringConcatInAnnotationValue() {
-    // TODO: https://youtrack.jetbrains.com/issue/KT-69452
+  fun testStringConcatInAnnotationValue() {
+    // https://youtrack.jetbrains.com/issue/KT-69452
     // Regression test from b/347629388
     val testFiles =
       arrayOf(
