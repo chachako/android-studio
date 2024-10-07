@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.dsl.PrivacySandboxSdkExtensionImpl
 import com.android.build.gradle.internal.fusedlibrary.configureElements
 import com.android.build.gradle.internal.fusedlibrary.createTasks
 import com.android.build.gradle.internal.fusedlibrary.getDslServices
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
 import com.android.build.gradle.internal.lint.AndroidLintCopyReportTask
 import com.android.build.gradle.internal.lint.AndroidLintTask
 import com.android.build.gradle.internal.lint.AndroidLintTextOutputTask
@@ -369,6 +370,9 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                 it.finalizedBy(copyLintReportTask)
             }
         }
+        taskFactory.register(AndroidLintAnalysisTask.PrivacySandboxCreationAction(variantScope, projectServices.projectOptions))
+        taskFactory.register(AndroidLintAnalysisTask.PrivacySandboxLintVitalCreationAction(variantScope, projectServices.projectOptions))
+
         val lintVitalTask =
             taskFactory.register(AndroidLintTask.PrivacySandboxLintVitalCreationAction(variantScope))
                 .also { it.configure { task -> task.mustRunAfter(updateLintBaselineTask) } }

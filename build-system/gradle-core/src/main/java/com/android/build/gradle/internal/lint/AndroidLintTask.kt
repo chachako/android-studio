@@ -669,6 +669,13 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 task.projectInputs.lintOptions.baseline.orNull?.asFile?.exists() ?: true
                         || task.missingBaselineIsEmptyBaseline.get()
             }
+            task.partialResults.from(
+                if (fatalOnly) {
+                    variantScope.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)
+                } else {
+                    variantScope.artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS)
+                }
+            )
             task.partialResults.disallowChanges()
             task.lintModels.fromDisallowChanges(
                 if (fatalOnly) {

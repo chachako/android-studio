@@ -295,7 +295,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     valueCookie: Any,
     statementCookie: Any,
   ) {
-    if (parent == "defaultConfig") {
+    if (
+      parent == "defaultConfig" || (isPrivacySandboxSdk(context.project) && parent == "android")
+    ) {
       if (property == "targetSdkVersion" || property == "targetSdk") {
         val version = getSdkVersion(value, valueCookie)
         if (version > 0 && version < context.client.highestKnownApiLevel) {
@@ -2468,6 +2470,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     return null
   }
 
+  private fun isPrivacySandboxSdk(project: Project): Boolean =
+    project.buildModule?.type == LintModelModuleType.PRIVACY_SANDBOX_SDK
+
   /** True if the given project uses the legacy http library. */
   private fun usesLegacyHttpLibrary(project: Project): Boolean {
     val model = project.buildModule ?: return false
@@ -3161,9 +3166,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           briefDescription = "TargetSdkVersion Soon Expiring",
           explanation =
             """
-                Configuring your app to target a recent API level ensures that users benefit \
+                Configuring your app or sdk to target a recent API level ensures that users benefit \
                 from significant security and performance improvements, while still allowing \
-                your app to run on older Android versions (down to the `minSdkVersion`).
+                your app or sdk to run on older Android versions (down to the `minSdkVersion`).
 
                 To update your `targetSdkVersion`, follow the steps from \
                 "Meeting Google Play requirements for target API level", \
@@ -3192,7 +3197,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             "https://support.google.com/googleplay/android-developer/answer/113469#targetsdk",
           explanation =
             """
-                Configuring your app to target a recent API level ensures that users benefit \
+                Configuring your app or sdk to target a recent API level ensures that users benefit \
                 from significant security and performance improvements, while still allowing \
                 your app to run on older Android versions (down to the `minSdkVersion`).
 
@@ -3218,7 +3223,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           briefDescription = "Target SDK attribute is not targeting latest version",
           explanation =
             """
-                When your application runs on a version of Android that is more recent than your \
+                When your application or sdk runs on a version of Android that is more recent than your \
                 `targetSdkVersion` specifies that it has been tested with, various compatibility modes \
                 kick in. This ensures that your application continues to work, but it may look out of \
                 place. For example, if the `targetSdkVersion` is less than 14, your app may get an \

@@ -254,6 +254,13 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 true,
                 LintMode.MODEL_WRITING,
                 fatalOnly)
+            val type = if (fatalOnly) {
+                LINT_VITAL_PARTIAL_RESULTS
+            } else {
+                LINT_PARTIAL_RESULTS
+            }
+            val partialResultsDir = variantScope.artifacts.get(type)
+            task.partialResultsDir.set(partialResultsDir)
             task.partialResultsDir.disallowChanges()
         }
     }

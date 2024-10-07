@@ -40,6 +40,20 @@ class PrivacySandboxSdkLintTest {
         .withPerTestPrefsRoot(true)
         .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
 
+    @Test
+    fun testTargetSdkVersionLintReporting() {
+        val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        sdkProject.buildFile.appendText("\nandroid.targetSdk 32")
+
+        val buildResult = executor().expectFailure().run(":privacy-sandbox-sdk:lint")
+        GradleTaskSubject.assertThat(buildResult.getTask(":privacy-sandbox-sdk:lintAnalyze")).didWork()
+        val lintTextReport = sdkProject.getReportsFile("lint-results-main.txt")
+        assertThat(lintTextReport).exists()
+        assertThat(lintTextReport).contains("""privacy-sandbox-sdk/build.gradle:26: Error: Google Play requires that apps target API level 33 or higher. [ExpiredTargetSdkVersion]
+android.targetSdk 32
+~~~~~~~~~~~~~~~~~~~~""".trimIndent())
+    }
+
 
     @Test
     fun testSdkLintReporting() {
