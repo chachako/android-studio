@@ -77,7 +77,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult {
 
 private fun render(screenshot: ComposeScreenshot, outputFolderPath: String, renderer: Renderer):
         Sequence<ComposeScreenshotResult> {
-    val previewElement = screenshot.toPreviewElement()
+    val previewElement = screenshot.toPreviewElement(renderer.module)
     val renderRequest = RenderRequest(
         configurationModifier = previewElement::applyTo,
         xmlLayoutsProvider = {

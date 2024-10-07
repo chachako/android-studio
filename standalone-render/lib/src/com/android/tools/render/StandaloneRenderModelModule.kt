@@ -19,11 +19,12 @@ package com.android.tools.render
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies
 import com.android.tools.module.ModuleKey
-import com.android.tools.rendering.ModuleRenderContext
+import com.android.tools.render.environment.StandaloneEnvironmentContext
 import com.android.tools.rendering.RenderTask
-import com.android.tools.rendering.api.EnvironmentContext
 import com.android.tools.rendering.api.RenderModelManifest
 import com.android.tools.rendering.api.RenderModelModule
+import com.android.tools.rendering.classloading.ClassTransform
+import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.res.AssetFileOpener
 import com.android.tools.res.AssetRepositoryBase
 import com.android.tools.res.ResourceRepositoryManager
@@ -36,7 +37,7 @@ import java.io.InputStream
 import java.lang.ref.WeakReference
 
 /** [RenderModelModule] for standalone rendering. */
-internal class StandaloneRenderModelModule(
+class StandaloneRenderModelModule(
     override val resourceRepositoryManager: ResourceRepositoryManager,
     override val info: AndroidModuleInfo?,
     override val androidPlatform: AndroidPlatform,
@@ -44,7 +45,7 @@ internal class StandaloneRenderModelModule(
     override val dependencies: ModuleDependencies,
     override val project: Project,
     override val resourcePackage: String,
-    override val environment: EnvironmentContext,
+    override val environment: StandaloneEnvironmentContext,
     override val resourceIdManager: ResourceIdManager,
 ) : RenderModelModule {
     override val assetRepository = AssetRepositoryBase(object : AssetFileOpener {
@@ -57,12 +58,28 @@ internal class StandaloneRenderModelModule(
         override fun openNonAssetFile(path: String): InputStream = getInputStream(path)
     })
     override val manifest: RenderModelManifest? = null
+
+    override fun getClassLoaderProvider(
+        weakRenderTask: WeakReference<RenderTask>,
+        privateClassLoader: Boolean,
+    ): RenderModelModule.ClassLoaderProvider {
+        return RenderModelModule.ClassLoaderProvider {
+                parent: ClassLoader?,
+                additionalProjectTransform: ClassTransform,
+                additionalNonProjectTransform: ClassTransform,
+                onNewModuleClassLoader: Runnable,
+            ->
+            if (privateClassLoader) {
+                environment.moduleClassLoaderManager.getPrivate(parent)
+                    .also { onNewModuleClassLoader.run() }
+            } else {
+                environment.moduleClassLoaderManager.getShared(parent)
+            }
+        }
+    }
+
     override val isDisposed: Boolean = false
     override val name: String = "Fake Module"
-    private val renderContext = StandaloneRenderContext()
-    override fun createModuleRenderContext(weakRenderTask: WeakReference<RenderTask>): ModuleRenderContext {
-        return renderContext
-    }
 
     override fun dispose() { }
 

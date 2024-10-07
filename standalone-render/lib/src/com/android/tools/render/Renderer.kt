@@ -62,7 +62,7 @@ class Renderer(
 
     private val project: Project = IJFramework.createProject()
     private val baseConfiguration: Configuration
-    private val module: RenderModelModule
+    val module: StandaloneRenderModelModule
     private val renderService: RenderService
 
     init {

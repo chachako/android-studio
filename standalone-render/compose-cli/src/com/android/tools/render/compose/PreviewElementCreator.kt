@@ -23,17 +23,26 @@ import com.android.tools.preview.ParametrizedComposePreviewElementTemplate
 import com.android.tools.preview.PreviewParameter
 import com.android.tools.preview.SingleComposePreviewElementInstance
 import com.android.tools.preview.previewAnnotationToPreviewElement
-import com.android.tools.render.StandaloneRenderContext
+import com.android.tools.render.StandaloneRenderModelModule
+import com.android.tools.rendering.api.RenderModelModule
+import com.android.tools.rendering.classloading.ClassTransform
+import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 
 /** Creates [ComposePreviewElement] from [ComposeScreenshot] data. */
-internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement<Unit> {
+internal fun ComposeScreenshot.toPreviewElement(module: StandaloneRenderModelModule): ComposePreviewElement<Unit> {
     val attrProvider = DeserializedAnnotationAttributesProvider(this.previewParams)
     val annotatedMethod = DeserializedAnnotatedMethod(this.methodFQN, this.methodParams)
     return previewAnnotationToPreviewElement(
         attrProvider,
         annotatedMethod,
         null,
-        ::parameterizedElementConstructor,
+        { basePreviewElement, parameters ->
+            parameterizedElementConstructor(
+                module,
+                basePreviewElement,
+                parameters
+            )
+        },
         buildPreviewName = { nameParameter ->
             if (nameParameter != null) "${annotatedMethod.name} - $nameParameter"
             else annotatedMethod.name
@@ -42,14 +51,22 @@ internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement<Unit> {
 }
 
 private fun parameterizedElementConstructor(
+    module: StandaloneRenderModelModule,
     basePreviewElement: SingleComposePreviewElementInstance<Unit>,
-    parameters: Collection<PreviewParameter>
+    parameters: Collection<PreviewParameter>,
 ): ComposePreviewElement<Unit> {
-    return ParametrizedComposePreviewElementTemplate(basePreviewElement, parameters) {
-        StandaloneRenderContext()
+    return ParametrizedComposePreviewElementTemplate(basePreviewElement, parameters) { element ->
+        RenderModelModule.ClassLoaderProvider {
+                parent: ClassLoader?,
+                additionalProjectTransform: ClassTransform,
+                additionalNonProjectTransform: ClassTransform,
+                onNewModuleClassLoader: Runnable,
+            ->
+            module.environment.moduleClassLoaderManager.getPrivate(parent)
+                .also { onNewModuleClassLoader.run() }
+        }
     }
 }
-
 /**
  * [AnnotatedMethod] for the method represented by its FQN and parameters each of which is
  * represented by the mapping between its @ParameterProvider annotation parameters names and values.

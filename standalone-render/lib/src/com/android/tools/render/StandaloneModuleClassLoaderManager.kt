@@ -18,7 +18,6 @@ package com.android.tools.render
 
 import com.android.annotations.concurrency.GuardedBy
 import com.android.layoutlib.LayoutlibClassLoader
-import com.android.tools.rendering.ModuleRenderContext
 import com.android.tools.rendering.classloading.ClassTransform
 import com.android.tools.rendering.classloading.ClassesTracker
 import com.android.tools.rendering.classloading.CodeExecutionTrackerTransform
@@ -47,7 +46,7 @@ import kotlin.io.path.Path
  * Currently, it is a thin wrapper around [UrlClassLoader].
  * TODO(): Apply the bytecode processing similar to the one used in Studio.
  */
-internal class StandaloneModuleClassLoaderManager(
+class StandaloneModuleClassLoaderManager(
     private val classPath: List<String>,
     private val projectClassPath: List<String>,
 ) : ModuleClassLoaderManager<ModuleClassLoader> {
@@ -171,29 +170,20 @@ internal class StandaloneModuleClassLoaderManager(
             .maximumSize(10)
             .build<ClassLoader?, DefaultModuleClassLoader>()
 
-    override fun getShared(
-        parent: ClassLoader?,
-        moduleRenderContext: ModuleRenderContext,
-        additionalProjectTransformation: ClassTransform,
-        additionalNonProjectTransformation: ClassTransform,
-        onNewModuleClassLoader: Runnable
+    fun getShared(
+        parent: ClassLoader?
     ): ModuleClassLoaderManager.Reference<ModuleClassLoader> {
         val classLoader = sharedClassLoadersLock.withLock {
             sharedClassLoaders.get(parent) { preloader.getClassLoader() }
         }
-        return ModuleClassLoaderManager.Reference(this, classLoader)
+        return ModuleClassLoaderManager.Reference(classLoader, {})
     }
 
-    override fun getPrivate(
-        parent: ClassLoader?,
-        moduleRenderContext: ModuleRenderContext,
-        additionalProjectTransformation: ClassTransform,
-        additionalNonProjectTransformation: ClassTransform
+    fun getPrivate(
+        parent: ClassLoader?
     ): ModuleClassLoaderManager.Reference<ModuleClassLoader> {
-        return ModuleClassLoaderManager.Reference(this, createClassLoader(parent))
+        return ModuleClassLoaderManager.Reference(createClassLoader(parent), {})
     }
-
-    override fun release(moduleClassLoaderReference: ModuleClassLoaderManager.Reference<*>) { }
 
     override fun clearCache(module: Module) { }
 

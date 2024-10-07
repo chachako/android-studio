@@ -24,6 +24,7 @@ import com.android.tools.analytics.crash.CrashReporter
 import com.android.tools.fonts.DownloadableFontCacheService
 import com.android.tools.idea.layoutlib.LayoutLibrary
 import com.android.tools.layoutlib.LayoutlibContext
+import com.android.tools.render.StandaloneModuleClassLoaderManager
 import com.android.tools.rendering.HtmlLinkManager
 import com.android.tools.rendering.IRenderLogger
 import com.android.tools.rendering.RenderProblem
@@ -40,9 +41,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 /** [EnvironmentContext] for the CLI case with no UI. */
-internal class StandaloneEnvironmentContext(
+class StandaloneEnvironmentContext(
     private val project: Project,
-    private val moduleClassLoaderManager: ModuleClassLoaderManager<out ModuleClassLoader>,
+    val moduleClassLoaderManager: StandaloneModuleClassLoaderManager,
     override val downloadableFontCacheService: DownloadableFontCacheService
 ) : EnvironmentContext {
     private val crashReporter = ConsoleCrashReporter()
@@ -82,9 +83,6 @@ internal class StandaloneEnvironmentContext(
     override fun getOriginalFile(psiFile: PsiFile): PsiFile {
         throw UnsupportedOperationException("Should not be called in standalone rendering")
     }
-
-    override fun getModuleClassLoaderManager(): ModuleClassLoaderManager<out ModuleClassLoader> =
-        moduleClassLoaderManager
 
     override fun getCrashReporter(): CrashReporter = crashReporter
 
