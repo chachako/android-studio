@@ -35,6 +35,7 @@ import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.pom.java.LanguageFeatureProvider
+import com.intellij.psi.PsiFile
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.sequences.forEach
@@ -211,9 +212,12 @@ internal fun configureAnalysisApiProjectStructure(
       }
     }
 
-    val scripts =
+    // NB: this walks through the entire directories as source roots and build scripts
+    // Therefore, we call this only once here and use them with necessary filtering at use-site.
+    val sourceFilePaths =
       getSourceFilePaths(m.sourceRoots + m.gradleBuildScripts, includeDirectoryRoot = true)
-        .filter<KtFile>(kotlinCoreProjectEnvironment, KtFile::isScript)
+
+    val scripts = sourceFilePaths.filter<KtFile>(kotlinCoreProjectEnvironment, KtFile::isScript)
     // TODO: https://youtrack.jetbrains.com/issue/KT-62161
     //   This must be [KtScriptModule], but until the above YT resolved
     //   add this fake [KtSourceModule] to suppress errors from module lookup.
@@ -261,9 +265,13 @@ internal fun configureAnalysisApiProjectStructure(
                 )
             }
 
-            // NB: This should include both .kt and .java sources if any,
-            //  and thus we don't need to specify the reified type for the return file type.
-            addSourcePaths(getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
+            addSourcePaths(
+              sourceFilePaths.filter<PsiFile>(kotlinCoreProjectEnvironment) { file ->
+                // If it's [KtFile], filter out (build) script files
+                // since they were already created as a separate module
+                file !is KtFile || !file.isScript()
+              }
+            )
           }
         }
         classPaths.isNotEmpty() -> {
