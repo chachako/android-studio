@@ -23,7 +23,7 @@ def _lint_test_impl(ctx):
     for zip in ctx.files.external_annotations:
         project_xml += "<annotations file=\"{0}\" />\n".format(zip.short_path)
 
-    project_xml += "<module name=\"{0}\" android=\"false\" library=\"true\">\n".format(ctx.label.name)
+    project_xml += "<module name=\"{0}\" android=\"false\">\n".format(ctx.label.name)
 
     for file in ctx.files.srcs:
         project_xml += "  <src file=\"{0}\" ".format(file.path)
