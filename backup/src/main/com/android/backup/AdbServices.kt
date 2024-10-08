@@ -68,7 +68,7 @@ interface AdbServices {
    */
   suspend fun writeContent(inputStream: InputStream, uri: String)
 
-  suspend fun backupNow(applicationId: String)
+  suspend fun backupNow(applicationId: String, type: BackupType)
 
   suspend fun restore(token: String, applicationId: String)
 

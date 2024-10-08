@@ -58,7 +58,7 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
           initializeTransport(transport)
           try {
             reportProgress("Running backup")
-            adbServices.backupNow(applicationId)
+            adbServices.backupNow(applicationId, type)
             reportProgress("Fetching backup")
             pullBackup(adbServices, applicationId, backupFile)
           } finally {

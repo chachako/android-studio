@@ -67,7 +67,8 @@ abstract class AbstractAdbServices(
     }
   }
 
-  override suspend fun backupNow(applicationId: String) {
+  override suspend fun backupNow(applicationId: String, type: BackupType) {
+    setBackupType(type)
     val out =
       executeCommand("bmgr backupnow @pm@ $applicationId --non-incremental", BACKUP_FAILED).stdout
     when {
@@ -237,6 +238,10 @@ abstract class AbstractAdbServices(
 
   private suspend fun enableTestMode(enabled: Boolean) {
     executeCommand("settings put secure backup_enable_android_studio_mode ${if (enabled) 1 else 0}")
+  }
+
+  private suspend fun setBackupType(type: BackupType) {
+    executeCommand("settings put secure backup_android_studio_mode_backup_type ${type.type}")
   }
 }
 

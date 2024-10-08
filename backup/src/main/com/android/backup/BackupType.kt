@@ -16,10 +16,8 @@
 
 package com.android.backup
 
-enum class BackupType(val displayName: String, internal val transport: String) {
-  CLOUD("Cloud", "com.google.android.gms/.backup.BackupTransportService"),
-  DEVICE_TO_DEVICE(
-    "Device to Device",
-    "com.google.android.gms/.backup.migrate.service.D2dTransport",
-  ),
+
+enum class BackupType(val displayName: String, internal val type: Int) {
+  CLOUD("Cloud", 1),
+  DEVICE_TO_DEVICE("Device to Device", 0),
 }
