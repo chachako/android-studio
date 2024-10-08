@@ -24,6 +24,8 @@ def getuser():
     return 'atp-dev'
   return user
 
-print('BUILD_USER %s' % getuser())
 print('BUILD_USERNAME %s' % getuser())
 print('BUILD_HOSTNAME %s' % socket.gethostname())
+# It's important this is the last line, because BUILD_USER is needed for
+# kelloggs. Windows will add \r to the end of line, and cause lookup failures.
+print('BUILD_USER %s' % getuser())
