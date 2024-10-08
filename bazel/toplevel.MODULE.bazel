@@ -1,3 +1,83 @@
 module(
     name = "android_studio",
 )
+
+local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+
+new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
+
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.10")
+bazel_dep(name = "rules_python", version = "0.36.0")
+
+# TODO(b/340640065): Replace with bazel_dep.
+local_repository(
+    name = "googletest",
+    path = "external/googletest",
+)
+
+# TODO(b/340640065): Replace with bazel_dep.
+local_repository(
+    name = "nanopb_repo",
+    path = "external/nanopb-c",
+)
+
+# TODO(b/340640065): Replace with bazel_dep.
+local_repository(
+    name = "grpc_repo",
+    path = "external/grpc-grpc",
+)
+
+# TODO(b/340640065): Replace with bazel_dep.
+local_repository(
+    name = "gflags_repo",
+    path = "external/gflags",
+)
+
+new_local_repository(
+    name = "native_toolchain",
+    build_file = "//tools/base/bazel/toolchains:clang.BUILD",
+    path = "prebuilts/clang",
+)
+
+new_local_repository(
+    name = "slicer",
+    build_file = "//tools/base/profiler:native/external/slicer.BUILD",
+    path = "external/dexter/slicer",
+)
+
+new_local_repository(
+    name = "zlib_repo",
+    build_file = "//tools/base/bazel:external/zlib.BUILD",
+    path = "external/zlib",
+)
+
+# CC toolchains
+register_toolchains(
+    "@native_toolchain//:cc-toolchain-x64_linux",
+    "@native_toolchain//:cc-toolchain-darwin",
+    "@native_toolchain//:cc-toolchain-x64_windows-clang-cl",
+    "//build/bazel/toolchains/cc/linux_clang:x64_toolchain",
+    "//build/bazel/toolchains/cc/mac_clang:x64_toolchain",
+    "//build/bazel/toolchains/cc/mac_clang:arm64_toolchain",
+    "//build/bazel/toolchains/cc/windows_clang:x64_toolchain",
+)
+
+# Python toolchains
+register_toolchains(
+    "//tools/base/bazel/toolchains/darwin:python_toolchain",
+    "//prebuilts/python/linux-x86:python_toolchain",
+)
+
+# Java toolchains
+register_toolchains(
+    "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
+    "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
+    "//prebuilts/studio/jdk/jdk17:bootstrap_runtime_toolchain_type",
+    "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
+    "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
+    "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
+    "//prebuilts/studio/jdk/jbr-next:jetbrains_java_runtime_toolchain",
+    "//prebuilts/studio/jdk/jbr-next:bootstrap_runtime_toolchain_type",
+)

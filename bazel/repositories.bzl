@@ -11,20 +11,8 @@ bazel_version_repository = repository_rule(
 
 # Bazel repository mapped to git repositories.
 _git = [
-    {
-        "name": "native_toolchain",
-        "build_file": "//tools/base/bazel/toolchains:clang.BUILD",
-        "path": "prebuilts/clang",
-    },
-    {
-        "name": "googletest",
-        "path": "external/googletest",
-    },
-    {
-        "name": "slicer",
-        "build_file": "//tools/base/profiler:native/external/slicer.BUILD",
-        "path": "external/dexter/slicer",
-    },
+    # TODO(b/340640065): Perfetto relies on a load() for @perfetto_cfg that
+    # cannot be overridden with bzlmod.
     {
         "name": "perfetto",
         "path": "external/perfetto",
@@ -43,23 +31,7 @@ _git = [
         "build_file": "//tools/base/profiler:native/external/perfetto.BUILD",
         "path": "external/perfetto",
     },
-    {
-        "name": "nanopb_repo",
-        "path": "external/nanopb-c",
-    },
-    {
-        "name": "zlib_repo",
-        "build_file": "//tools/base/bazel:external/zlib.BUILD",
-        "path": "external/zlib",
-    },
-    {
-        "name": "grpc_repo",
-        "path": "external/grpc-grpc",
-    },
-    {
-        "name": "gflags_repo",
-        "path": "external/gflags",
-    },
+    # TODO(b/340640065): Must be moved with @maven.
     {
         "name": "android_system_logging_repo",
         "build_file": "//tools/base/bazel:external/android_system_logging.BUILD",
@@ -172,10 +144,12 @@ filegroup(
 ]
 
 # Needed for grpc.
+# TODO(b/340640065): These binds currently use canonical repository names, which is not recommended.
+# Binds should be removed entirely.
 _binds = {
     "protobuf_clib": "@com_google_protobuf//:protoc_lib",
-    "nanopb": "@nanopb_repo//:nanopb",
-    "madler_zlib": "@zlib_repo//:zlib",
+    "nanopb": "@@_main~_repo_rules~nanopb_repo//:nanopb",
+    "madler_zlib": "@@_main~_repo_rules~zlib_repo//:zlib",
     "protobuf_headers": "@com_google_protobuf//:protobuf_headers",
     "protoc": "@com_google_protobuf//:protoc",
 }

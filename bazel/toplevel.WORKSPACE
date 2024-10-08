@@ -54,35 +54,6 @@ windows_sdk_repository(
 
 # END Cc toolchain dependencies
 
-# Cc toolchains
-register_toolchains(
-    "@native_toolchain//:cc-toolchain-x64_linux",
-    "@native_toolchain//:cc-toolchain-darwin",
-    "@native_toolchain//:cc-toolchain-x64_windows-clang-cl",
-    "//build/bazel/toolchains/cc/linux_clang:x64_toolchain",
-    "//build/bazel/toolchains/cc/mac_clang:x64_toolchain",
-    "//build/bazel/toolchains/cc/mac_clang:arm64_toolchain",
-    "//build/bazel/toolchains/cc/windows_clang:x64_toolchain",
-)
-
-# Python toolchains
-register_toolchains(
-    "//tools/base/bazel/toolchains/darwin:python_toolchain",
-    "//prebuilts/python/linux-x86:python_toolchain",
-)
-
-# Java toolchains
-register_toolchains(
-    "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
-    "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
-    "//prebuilts/studio/jdk/jdk17:bootstrap_runtime_toolchain_type",
-    "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
-    "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
-    "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
-    "//prebuilts/studio/jdk/jbr-next:jetbrains_java_runtime_toolchain",
-    "//prebuilts/studio/jdk/jbr-next:bootstrap_runtime_toolchain_type",
-)
-
 new_local_repository(
     name = "studio_jdk",
     build_file = "prebuilts/studio/jdk/jdk8/BUILD.studio_jdk",
