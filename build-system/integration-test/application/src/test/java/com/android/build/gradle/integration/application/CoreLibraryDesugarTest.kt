@@ -34,23 +34,33 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
+import com.android.testutils.TestClassesGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.TestInputsGenerator.jarWithClasses
 import com.android.testutils.apk.AndroidArchive
+import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.DexClassSubject
 import com.android.testutils.truth.DexSubject
 import com.android.tools.profgen.ArtProfile
+import com.android.tools.profgen.DexFile
 import com.android.tools.smali.dexlib2.immutable.debug.ImmutableStartLocal
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.OutputStream
 import java.nio.file.Files
+import java.nio.file.Path
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+import kotlin.io.path.name
+import kotlin.io.path.pathString
 import kotlin.test.assertNotNull
 import kotlin.test.fail
 
@@ -58,12 +68,18 @@ class CoreLibraryDesugarTest {
 
     private val aar = generateAarWithContent(
         packageName = "com.example.myaar",
-        mainJar = jarWithClasses(listOf(ClassWithDesugarApi::class.java))
+        mainJar = jarWithClasses(listOf(ClassWithDesugarApi::class.java)),
+    )
+
+    private val aarWithClassesWithManyMethods = generateAarWithContent(
+        packageName = "com.example.classwithmanymethod",
+        mainJar = jarWithLargeClassWithManyMethods()
     )
 
     private val mavenRepo = MavenRepoGenerator(
         listOf(
-            MavenRepoGenerator.Library("com.example:myaar:1", "aar", aar)
+            MavenRepoGenerator.Library("com.example:myaar:1", "aar", aar),
+            MavenRepoGenerator.Library("com.example:classwithmanymethods:1", "aar", aarWithClassesWithManyMethods)
         )
     )
 
@@ -85,6 +101,7 @@ class CoreLibraryDesugarTest {
     private val usedDesugarClass3 = "Lj$/time/LocalTime;"
     private val usedDesugarClass4 = "Lj$/nio/file/Path;"
     private val unusedDesugarClass = "Lj$/time/Year;"
+    private val manyMethodsClass = "Ltest/ClassWithManyMethods;"
     // Class java.util.stream.StreamOpFlag is selected as it is package private, and used
     // indirectly by the test.
     private val unObfuscatedClass = "Lj$/util/stream/StreamOpFlag;"
@@ -632,38 +649,62 @@ class CoreLibraryDesugarTest {
     }
 
     @Test
-    fun testArtProfileDexNamingForApk() {
-      TestFileUtils.appendToFile(
+    fun testArtProfileDexNamingAndContentForApk() {
+        TestFileUtils.appendToFile(
             FileUtils.join(app .getMainSrcDir(""),"baseline-prof.txt"),
-          programClass + "\n" + usedDesugarClass +"\n")
+            programClass + "\n" + usedDesugarClass +"\n" + manyMethodsClass)
+        addExternalDependencyWithManyMethods(app)
 
         executor().run(":app:assembleRelease")
 
-        val apkFile = app.getApk(GradleTestProject.ApkType.RELEASE).file.toFile()
-        val zip = ZipFile(apkFile)
-        val entry = zip.entries().asSequence().first { it.name == "assets/dexopt/baseline.prof" }
-        zip.getInputStream(entry)
-        val profile = ArtProfile(zip.getInputStream(entry))
-        Truth.assertThat(profile!!.profileData.keys.map { it.name })
-            .containsExactly("classes.dex","classes2.dex")
+        val apk = app.getApk(GradleTestProject.ApkType.RELEASE)
+        val apkFile = apk.file.toFile()
+        ZipFile(apkFile).use { apkZip ->
+            val apkDexFiles = apk.getDexPaths().map {
+                DexFile(apkZip.getInputStream(apkZip.getEntry(it.pathString)), it.name)
+            }
+            val entry = apkZip.entries().asSequence()
+                .first { it.name == "assets/dexopt/baseline.prof" }
+            val profile = ArtProfile(apkZip.getInputStream(entry))
+            val profileData = profile!!.profileData
+
+            // Regression test for b/346268213
+            assertThat(apkDexFiles.size).isEqualTo(profileData.entries.size)
+            apkDexFiles.zip(profileData.entries).forEach {
+                assertThat(it.first.name).isEqualTo(it.second.key.name)
+                assertThat(it.first.dexChecksum).isEqualTo(it.second.key.dexChecksum)
+            }
+        }
     }
 
     @Test
-    fun testArtProfileDexNamingForAab() {
+    fun testArtProfileDexNamingAndContentForAab() {
         TestFileUtils.appendToFile(
             FileUtils.join(app .getMainSrcDir(""),"baseline-prof.txt"),
-            programClass + "\n" + usedDesugarClass +"\n")
+            programClass + "\n" + usedDesugarClass +"\n" + manyMethodsClass)
+        addExternalDependencyWithManyMethods(app)
 
         executor().run(":app:bundleRelease")
 
-        val apkFile = app.getBundle(GradleTestProject.ApkType.RELEASE).file.toFile()
-        val zip = ZipFile(apkFile)
-        val entry = zip.entries().asSequence()
-            .first { it.name == "BUNDLE-METADATA/com.android.tools.build.profiles/baseline.prof" }
-        zip.getInputStream(entry)
-        val profile = ArtProfile(zip.getInputStream(entry))
-        Truth.assertThat(profile!!.profileData.keys.map { it.name })
-            .containsExactly("classes.dex","classes2.dex")
+        val bundle = app.getBundle(GradleTestProject.ApkType.RELEASE)
+        val bundleFile = bundle.file.toFile()
+        ZipFile(bundleFile).use { bundleZip ->
+            val entry = bundleZip.entries().asSequence()
+                .first { it.name == "BUNDLE-METADATA/com.android.tools.build.profiles/baseline.prof" }
+            val profile = ArtProfile(bundleZip.getInputStream(entry))
+            val profileData = profile!!.profileData
+
+            val bundleDexFiles =
+                bundle.getDexPathsForModule("base").map {
+                    DexFile(bundleZip.getInputStream(bundleZip.getEntry(it.pathString)), it.name)
+                }
+            // Regression test for b/346268213
+            assertThat(bundleDexFiles.size).isEqualTo(profileData.entries.size)
+            bundleDexFiles.zip(profileData.entries).forEach {
+                assertThat(it.first.name).isEqualTo(it.second.key.name)
+                assertThat(it.first.dexChecksum).isEqualTo(it.second.key.dexChecksum)
+            }
+        }
     }
 
     @Test
@@ -788,6 +829,14 @@ class CoreLibraryDesugarTest {
             }
         """.trimIndent())
     }
+    private fun addExternalDependencyWithManyMethods(project: GradleTestProject) {
+        project.buildFile.appendText("""
+
+            dependencies {
+                implementation 'com.example:classwithmanymethods:1'
+            }
+        """.trimIndent())
+    }
 
     private fun collectKeepRulesUnderDirectory(dir: File) : String {
         val stringBuilder = StringBuilder()
@@ -837,6 +886,28 @@ class CoreLibraryDesugarTest {
         dexes.filter {
             it.classes.keys.any { it.startsWith("Lj$/") }
         }
+
+    private fun jarWithLargeClassWithManyMethods(): ByteArray {
+        val className = "ClassWithManyMethods"
+        val numMethodsToSurpassSingleDexLimit = 65524
+        val generatedClass = TestClassesGenerator.classWithEmptyMethods(className,
+            *(0..numMethodsToSurpassSingleDexLimit).map {"$className$it:()V"}.toTypedArray())
+        val outputStream = ByteArrayOutputStream()
+        ZipOutputStream(outputStream as OutputStream).use {
+            it.putNextEntry(ZipEntry("$className.class"))
+            it.write(generatedClass)
+            it.closeEntry()
+        }
+        return outputStream.toByteArray()
+    }
+
+    private fun Apk.getDexPaths(): List<Path> {
+        var index = 1
+        return generateSequence {
+            getEntry("classes${if (index == 1) "" else index}.dex")
+                ?.also { index++ }
+        }.toList()
+    }
 
     private fun executor() = project.executor()
 

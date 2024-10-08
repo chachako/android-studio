@@ -41,6 +41,7 @@ import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
 import com.android.builder.files.NativeLibraryAbiPredicate
 import com.android.builder.packaging.JarFlinger
+import com.android.builder.packaging.sortDexFiles
 import com.android.bundle.RuntimeEnabledSdkConfigProto
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -168,15 +169,18 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
 
             jarCreator.addJar(resFiles.get().asFile.toPath(), excludeJarManifest, ResRelocator())
 
-            // dex files
-            val dexFilesSet = if (baseConsumesDynamicFeatures()) featureDexDirectories.files else dexDirectories.files
-            if (dexFilesSet.size == 1) {
-                // Don't rename if there is only one input folder
-                // as this might be the legacy multidex case.
-                addHybridFolder(jarCreator, dexFilesSet, Relocator(FD_DEX), excludeJarManifest)
+            val dexDirectoryToAdd = if (baseConsumesDynamicFeatures()) {
+                featureDexDirectories
             } else {
-                addHybridFolder(jarCreator, dexFilesSet, DexRelocator(FD_DEX), excludeJarManifest)
+                dexDirectories
             }
+            val sortedDexFiles = sortDexFiles(dexDirectoryToAdd.asFileTree.files)
+            addHybridFolder(
+                jarCreator,
+                sortedDexFiles,
+                DexRelocator(FD_DEX),
+                excludeJarManifest
+            )
 
             // we check baseConsumesDynamicFeatures() instead of checking if
             // featureJavaResFiles.files.isNotEmpty() because we want to use featureJavaResFiles

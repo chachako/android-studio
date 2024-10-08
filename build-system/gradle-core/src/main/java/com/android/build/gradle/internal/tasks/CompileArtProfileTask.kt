@@ -32,6 +32,7 @@ import com.android.build.gradle.tasks.PackageAndroidArtifact
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.packaging.DexFileComparator
 import com.android.builder.packaging.DexFileNameSupplier
+import com.android.builder.packaging.sortDexFiles
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile
@@ -133,8 +134,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             }
             val supplier = DexFileNameSupplier()
             // need to rename dex files with sequential numbers the same way [DexIncrementalRenameManager] does
-            val dexFiles =
-                parameters.dexFolders.asFileTree.files.sortedWith(DexFileComparator()).map {
+            val dexFiles = sortDexFiles(parameters.dexFolders.asFileTree.files).map {
                     DexFile(it.inputStream(), supplier.get())
                 }
 
