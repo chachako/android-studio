@@ -60,6 +60,9 @@ public class PropertyFetcherTest extends TestCase {
                     + "reboot,remount-test,ERROR\n" // not ended properly
                     + "[persist.after]: [after]\r\n";
 
+    private static final String ERROR_MULTI_LINE_PROP2 =
+             "reboot,remount-test,ERROR]\n"; // not started properly
+
     private static final String[] MULTILINE_CUT_LINES = {
         "[foo.bar]: [a, b\n c, d ,e\n", "f ,g] \n"
     };
@@ -129,6 +132,15 @@ public class PropertyFetcherTest extends TestCase {
         assertNull(receiver.getCollectedProperties().get("persist.sys.boot.reason.history"));
         assertEquals("before", receiver.getCollectedProperties().get("persist.before"));
         assertEquals("after", receiver.getCollectedProperties().get("persist.after"));
+    }
+
+    /** Test that properties with multi-lines value are ignored if not well formatted */
+    public void testGetPropReceiver_multilineproperty_formatError2() {
+        GetPropReceiver receiver = new GetPropReceiver();
+        byte[] byteData = ERROR_MULTI_LINE_PROP2.getBytes();
+        receiver.addOutput(byteData, 0, byteData.length);
+        receiver.done();
+        assertTrue(receiver.getCollectedProperties().isEmpty());
     }
 
     /**
