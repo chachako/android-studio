@@ -79,7 +79,6 @@ import com.google.common.base.Joiner
 import com.google.common.collect.Lists
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.function.Consumer
 import java.util.regex.Pattern
 import org.jetbrains.annotations.VisibleForTesting
 import org.w3c.dom.Attr
@@ -384,7 +383,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     // Gather data about scheme, host, port, path, mimeType tags so that we can check them
     val schemes = mutableSetOf<String>()
     val hostPortPairs = mutableSetOf<Pair<String?, String?>>()
-    val paths = mutableSetOf<AndroidPatternMatcher>()
+    val paths = mutableSetOf<Path>()
     var hasMimeType = false
     var data = firstData
     while (data != null) {
@@ -418,51 +417,18 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       if (host != null) {
         hostPortPairs.add(Pair(host, port))
       }
-      checkAndAddPathMatcher(
-        context,
-        ATTR_PATH,
-        PATTERN_LITERAL,
-        paths,
-        data,
-        intentFilter,
-        intentFilter,
-      )
-      checkAndAddPathMatcher(
-        context,
-        ATTR_PATH_PREFIX,
-        PATTERN_PREFIX,
-        paths,
-        data,
-        intentFilter,
-        intentFilter,
-      )
-      checkAndAddPathMatcher(
-        context,
-        ATTR_PATH_PATTERN,
-        PATTERN_SIMPLE_GLOB,
-        paths,
-        data,
-        intentFilter,
-        intentFilter,
-      )
+      checkAndAddPathMatcher(context, ATTR_PATH, paths, data, intentFilter, intentFilter)
+      checkAndAddPathMatcher(context, ATTR_PATH_PREFIX, paths, data, intentFilter, intentFilter)
+      checkAndAddPathMatcher(context, ATTR_PATH_PATTERN, paths, data, intentFilter, intentFilter)
       checkAndAddPathMatcher(
         context,
         ATTR_PATH_ADVANCED_PATTERN,
-        PATTERN_ADVANCED_GLOB,
         paths,
         data,
         intentFilter,
         intentFilter,
       )
-      checkAndAddPathMatcher(
-        context,
-        ATTR_PATH_SUFFIX,
-        PATTERN_SUFFIX,
-        paths,
-        data,
-        intentFilter,
-        intentFilter,
-      )
+      checkAndAddPathMatcher(context, ATTR_PATH_SUFFIX, paths, data, intentFilter, intentFilter)
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
     var isHttp = false
@@ -801,8 +767,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   private fun checkAndAddPathMatcher(
     context: XmlContext,
     attributeName: String,
-    type: Int,
-    matcher: MutableSet<AndroidPatternMatcher>,
+    matcher: MutableSet<Path>,
     data: Element,
     intentFilter: Element,
     parent: Element,
@@ -814,7 +779,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       if (value.startsWith(PREFIX_RESOURCE_REF) || value.startsWith(PREFIX_THEME_REF)) {
         value = replaceUrlWithValue(context, value)
       }
-      val currentMatcher = AndroidPatternMatcher(value, type)
+      val currentMatcher = Path(attributeValue = value, attributeName = attributeName)
       matcher.add(currentMatcher)
       if (!isSubstituted(value) && !value.startsWith(PREFIX_RESOURCE_REF)) {
         if (!value.startsWith("/") && attributeName in setOf(ATTR_PATH, ATTR_PATH_PREFIX)) {
@@ -954,7 +919,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
   class UriInfo(
     private val schemes: Set<String>,
     private val hostPortPairs: Set<Pair<String?, String?>>,
-    private val paths: Set<AndroidPatternMatcher>,
+    private val paths: Set<Path>,
   ) {
     /**
      * Matches a URL against this info, and returns null if successful or the failure reason if not
@@ -983,14 +948,11 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
       if (paths.isNotEmpty()) {
         val testPath = testUrl.path
-        val pathOk = paths.any { isSubstituted(it.path) || it.match(testPath) }
+        val pathOk =
+          paths.any { isSubstituted(it.attributeValue) || it.toPatternMatcher().match(testPath) }
         if (!pathOk) {
           val sb = StringBuilder()
-          paths.forEach(
-            Consumer { matcher: AndroidPatternMatcher ->
-              sb.append("path ").append(matcher.toString()).append(", ")
-            }
-          )
+          paths.forEach { sb.append("path ").append(it.toString()).append(", ") }
           if (CharSequences.endsWith(sb, ", ", true)) {
             sb.setLength(sb.length - 2)
           }
@@ -1004,8 +966,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       return null // OK
     }
 
-    private fun containsUpperCase(matchers: Set<AndroidPatternMatcher>): Boolean {
-      return matchers.any { CharSequences.containsUpperCase(it.path) }
+    private fun containsUpperCase(matchers: Set<Path>): Boolean {
+      return matchers.any { CharSequences.containsUpperCase(it.attributeValue) }
     }
 
     /**
@@ -1101,6 +1063,27 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       return scheme == HTTP || scheme == HTTPS
     }
 
+    data class Path(val attributeValue: String, val attributeName: String) {
+      fun toPatternMatcher(): AndroidPatternMatcher {
+        return AndroidPatternMatcher(attributeValue, attrToAndroidPatternMatcher(attributeName))
+      }
+
+      override fun toString(): String {
+        // Don't update this, since that would change AppLinksValidDetector's messages.
+        return when (attributeName) {
+          ATTR_PATH -> "literal "
+          ATTR_PATH_PREFIX -> "prefix "
+          ATTR_PATH_PATTERN -> "glob "
+          ATTR_PATH_SUFFIX -> "suffix "
+          ATTR_PATH_ADVANCED_PATTERN -> "advanced "
+          else ->
+            throw AssertionError(
+              "Expected attributeName to be a path attribute but was $attributeName"
+            )
+        } + attributeValue
+      }
+    }
+
     interface TagWrapper {
       val name: String
       val subTags: Sequence<TagWrapper>
@@ -1134,7 +1117,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       val categories: Set<String>, // These strings may be blank.
       val schemes: Set<String>, // These strings may be blank.
       val hostPortPairs: Set<Pair<String, String?>>, // These strings may be blank.
-      val paths: Set<AndroidPatternMatcher>,
+      val paths: Set<Path>,
       val mimeTypes: Set<String>,
     )
 
@@ -1151,7 +1134,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       val categories = mutableSetOf<String>()
       val schemes = mutableSetOf<String>()
       val hostPortPairs = mutableSetOf<Pair<String, String?>>()
-      val paths = mutableSetOf<AndroidPatternMatcher>()
+      val paths = mutableSetOf<Path>()
       val mimeTypes = mutableSetOf<String>()
       for (subTag in intentFilter.subTags) {
         when (subTag.name) {
@@ -1166,7 +1149,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             }
             for (pathAttribute in PATH_ATTRIBUTES) {
               subTag.getAttributeValueWithSubstitution(pathAttribute)?.let {
-                paths.add(AndroidPatternMatcher(it, attrToAndroidPatternMatcher(pathAttribute)))
+                paths.add(Path(attributeValue = it, attributeName = pathAttribute))
               }
             }
             subTag.getAttributeValueWithSubstitution(ATTR_MIME_TYPE)?.let { mimeTypes.add(it) }
