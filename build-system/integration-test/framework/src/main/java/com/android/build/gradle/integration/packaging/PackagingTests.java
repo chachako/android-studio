@@ -41,7 +41,7 @@ public class PackagingTests {
             throws IOException, InterruptedException {
         ImmutableList.Builder<String> args = ImmutableList.builder();
 
-        args.add(SdkHelper.getBuildTool(BuildToolInfo.PathId.ZIP_ALIGN).getAbsolutePath());
+        args.add(SdkHelper.getBuildToolVersion35(BuildToolInfo.PathId.ZIP_ALIGN).getAbsolutePath());
         args.add("-c"); // check
         args.add("-v"); // verbose
         args.add(additionalFlags);

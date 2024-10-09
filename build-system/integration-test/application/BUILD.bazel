@@ -388,6 +388,9 @@ gradle_integration_test(
     deps = TEST_DEPS,
 )
 
+# TODO (b/365798973): remove once `//prebuilts/studio/sdk:build-tools/latest` is updated to 35.0.0
+BUILD_TOOLS_35 = ["//prebuilts/studio/sdk:build-tools/35.0.0"]
+
 gradle_integration_test(
     name = "packaging-tests",
     timeout = "long",
@@ -398,7 +401,7 @@ gradle_integration_test(
         ],
         exclude = CONNECTED_TESTS,
     ),
-    data = TEST_DATA + OLD_SDKS,
+    data = TEST_DATA + OLD_SDKS + BUILD_TOOLS_35,
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
     ],

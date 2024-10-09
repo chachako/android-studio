@@ -18,5 +18,5 @@ package com.android.build.gradle.internal.dsl
 
 object SdkConstants {
     const val NDK_VERSION = "27.0.12077973"
-    const val BUILD_TOOLS_VERSION = "35.0.0"
+    const val BUILD_TOOLS_VERSION = "34.0.0"
 }
