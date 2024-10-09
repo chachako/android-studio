@@ -28,6 +28,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
+import kotlin.io.path.isDirectory
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtBinaryModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtSourceModuleBuilder
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
@@ -59,14 +60,16 @@ private fun getFilePaths(
   includeDirectoryRoot: Boolean = false,
 ): PathCollection {
   val physicalPaths = hashSetOf<Path>()
+  val physicalDirectoryPaths = hashSetOf<Path>()
   val virtualFiles = hashSetOf<VirtualFile>()
+  val virtualDirectories = hashSetOf<VirtualFile>()
 
   fun fromFile(root: File) {
     val path = Paths.get(root.path)
     when {
       Files.isDirectory(path) -> {
         collectFilePaths(path, physicalPaths, isExtensionWanted) // E.g., project/app/src
-        if (includeDirectoryRoot) physicalPaths.add(path)
+        if (includeDirectoryRoot) physicalDirectoryPaths.add(path)
       }
       else -> physicalPaths.add(path) // E.g., project/app/src/some/pkg/main.kt
     }
@@ -81,7 +84,7 @@ private fun getFilePaths(
       }
     }
     visit(root)
-    if (root.isDirectory && includeDirectoryRoot) virtualFiles.add(root)
+    if (root.isDirectory && includeDirectoryRoot) virtualDirectories.add(root)
   }
 
   for (root in roots) {
@@ -90,7 +93,7 @@ private fun getFilePaths(
       else -> fromFile(root)
     }
   }
-  return PathCollection(physicalPaths, virtualFiles)
+  return PathCollection(physicalPaths, physicalDirectoryPaths, virtualFiles, virtualDirectories)
 }
 
 /**
@@ -98,15 +101,29 @@ private fun getFilePaths(
  * prevents failure from extracting a [Path] our of a non-physical file.
  */
 internal fun Iterable<File>.toPathCollection(): PathCollection {
-  val physicalPaths = hashSetOf<Path>()
+  val physicalFilePaths = hashSetOf<Path>()
+  val physicalDirectoryPaths = hashSetOf<Path>()
   val virtualFiles = hashSetOf<VirtualFile>()
+  val virtualDirectories = hashSetOf<VirtualFile>()
   for (file in this) {
     when (file) {
-      is VirtualFileWrapper -> virtualFiles.add(file.file)
-      else -> physicalPaths.add(Paths.get(file.path))
+      is VirtualFileWrapper -> {
+        if (file.file.isDirectory) {
+          virtualDirectories.add(file.file)
+        } else {
+          virtualFiles.add(file.file)
+        }
+      }
+      else -> {
+        if (file.isDirectory) {
+          physicalDirectoryPaths.add(Paths.get(file.path))
+        } else {
+          physicalFilePaths.add(Paths.get(file.path))
+        }
+      }
     }
   }
-  return PathCollection(physicalPaths, virtualFiles)
+  return PathCollection(physicalFilePaths, physicalDirectoryPaths, virtualFiles, virtualDirectories)
 }
 
 /**
@@ -151,10 +168,18 @@ private fun collectFilePaths(
 }
 
 internal class PathCollection(
-  val physical: Collection<Path>,
-  val virtual: Collection<VirtualFile>,
+  val physicalFiles: Collection<Path>,
+  val physicalDirectories: Collection<Path>,
+  val virtualFiles: Collection<VirtualFile>,
+  val virtualDirectories: Collection<VirtualFile>,
 ) {
-  fun isEmpty(): Boolean = physical.isEmpty() && virtual.isEmpty()
+  fun isEmpty(): Boolean =
+    physicalFiles.isEmpty() &&
+      physicalDirectories.isEmpty() &&
+      virtualFiles.isEmpty() &&
+      virtualDirectories.isEmpty()
+
+  fun hasFiles(): Boolean = physicalFiles.isNotEmpty() || virtualFiles.isNotEmpty()
 
   fun isNotEmpty(): Boolean = !isEmpty()
 
@@ -177,21 +202,58 @@ internal class PathCollection(
           vFile != null && keepVirtual(vFile)
         }
       }
-    return PathCollection(physical.filter(keepPhysical), virtual.filter(keepVirtual))
+    return PathCollection(
+      physicalFiles.filter(keepPhysical),
+      physicalDirectories.filter(keepPhysical),
+      virtualFiles.filter(keepVirtual),
+      virtualDirectories.filter(keepVirtual),
+    )
   }
 
-  operator fun plus(paths: Collection<Path>): PathCollection =
-    PathCollection((physical.asSequence() + paths.asSequence()).distinct().toList(), virtual)
+  operator fun plus(paths: Collection<Path>): PathCollection {
+    val newPhysicalFiles = physicalFiles.toMutableSet()
+    val newPhysicalDirectories = physicalDirectories.toMutableSet()
+    for (path in paths) {
+      if (path.isDirectory()) {
+        newPhysicalDirectories.add(path)
+      } else {
+        newPhysicalFiles.add(path)
+      }
+    }
+    return PathCollection(
+      newPhysicalFiles,
+      newPhysicalDirectories,
+      virtualFiles,
+      virtualDirectories,
+    )
+  }
+
+  override fun toString(): String {
+    return buildString {
+      appendLine("PathCollection {")
+      append("  physical: ")
+      (physicalDirectories + physicalFiles).joinTo(buffer = this, prefix = "[", postfix = "]")
+      appendLine()
+      append("  virtual: ")
+      (virtualDirectories + virtualFiles).joinTo(buffer = this, prefix = "[", postfix = "]")
+      appendLine()
+      appendLine("}")
+    }
+  }
 }
 
 internal fun KtSourceModuleBuilder.addSourcePaths(paths: PathCollection) {
-  addSourceRoots(paths.physical)
-  addSourceVirtualFiles(paths.virtual)
+  addSourceRoots(paths.physicalDirectories)
+  addSourceRoots(paths.physicalFiles)
+  addSourceVirtualFiles(paths.virtualDirectories)
+  addSourceVirtualFiles(paths.virtualFiles)
 }
 
 internal fun KtBinaryModuleBuilder.addBinaryPaths(paths: PathCollection) {
-  addBinaryRoots(paths.physical)
-  addBinaryVirtualFiles(paths.virtual)
+  addBinaryRoots(paths.physicalDirectories)
+  addBinaryRoots(paths.physicalFiles)
+  addBinaryVirtualFiles(paths.virtualDirectories)
+  addBinaryVirtualFiles(paths.virtualFiles)
 }
 
 private val sourceFileExtensions =
