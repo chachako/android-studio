@@ -1124,7 +1124,6 @@ public class AvdManager {
                     Files.move(oldMetadataIniFile, newMetadataIniFile);
                 } catch (IOException exception) {
                     mLog.warning(
-                            null,
                             "Failed to move '%1$s' to '%2$s'.",
                             oldMetadataIniFile,
                             newMetadataIniFile);
