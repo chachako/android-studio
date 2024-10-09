@@ -41,10 +41,8 @@ public final class DeviceSystemImageMatcher {
             return false;
         }
 
-        if (!Device.isTablet(device)) {
-            if (tags.contains(SystemImageTags.TABLET_TAG)) {
-                return false;
-            }
+        if (!Device.isTablet(device) && SystemImageTags.isTabletImage(tags)) {
+            return false;
         }
 
         Object id = device.getTagId();

@@ -87,6 +87,13 @@ public class SystemImageTags {
     public static final IdDisplay TABLET_TAG = IdDisplay.create("tablet", "Tablet");
 
     /**
+     * Tags that indicate a tablet system image. Only TABLET_TAG should be used; any other tag is
+     * deprecated.
+     */
+    public static final ImmutableSet<IdDisplay> ALL_TABLET_TAGS =
+            ImmutableSet.of(TABLET_TAG, IdDisplay.create("aosp_tablet", "AOSP Tablet"));
+
+    /**
      * A separate tag to apply to system images that include Google APIs on x86 systems. Note this
      * tag was only used for api 19 and has not been used since.
      */
@@ -154,6 +161,10 @@ public class SystemImageTags {
 
     public static boolean isTvImage(Collection<IdDisplay> tags) {
         return tags.stream().anyMatch(TV_TAGS::contains);
+    }
+
+    public static boolean isTabletImage(Collection<IdDisplay> tags) {
+        return tags.stream().anyMatch(ALL_TABLET_TAGS::contains);
     }
 
     public static boolean isDesktopImage(Collection<IdDisplay> tags) {
