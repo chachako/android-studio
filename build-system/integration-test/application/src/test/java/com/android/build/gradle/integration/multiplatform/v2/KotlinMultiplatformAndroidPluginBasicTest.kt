@@ -96,7 +96,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
-            "Android tests on jvm has already been enabled, and a corresponding compilation (`unitTest`) has already been created."
+            "Android tests on jvm has already been enabled, and a corresponding compilation (`testOnJvm`) has already been created."
         )
     }
 
@@ -111,9 +111,9 @@ class KotlinMultiplatformAndroidPluginBasicTest {
                             compilations {
                                 val main by getting {
                                 }
-                                val unitTest by getting {
+                                val testOnJvm by getting {
                                 }
-                                val instrumentedTest by getting {
+                                val testOnDevice by getting {
                                 }
                             }
                         }
@@ -133,10 +133,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """
                 kotlin {
                     androidLibrary {
-                        withAndroidTestOnDeviceBuilder {
-                            compilationName = "instrumentedTest"
-                            defaultSourceSetName = "androidInstrumentedTest"
-                        }
+                        withDeviceTest {}
                     }
                 }
             """.trimIndent()
@@ -151,13 +148,13 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         val manifest = FileUtils.join(
             project.getSubproject("kmpFirstLib").projectDir,
             "src",
-            "androidInstrumentedTest",
+            "androidTestOnDevice",
             "AndroidManifest.xml"
         ).toPath()
 
         val deleted = Files.deleteIfExists(manifest)
         Truth.assertThat(deleted).isTrue()
-        val result = project.executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
+        val result = project.executor().run(":kmpFirstLib:packageAndroidTestOnDevice")
 
         ScannerSubject.assertThat(result.stderr).doesNotContain(
             "Manifest file does not exist"

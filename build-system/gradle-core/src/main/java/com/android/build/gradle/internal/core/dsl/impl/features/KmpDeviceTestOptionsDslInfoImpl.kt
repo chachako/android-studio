@@ -30,7 +30,7 @@ internal class KmpDeviceTestOptionsDslInfoImpl(
 ): DeviceTestOptionsDslInfo {
     private val testOnDeviceConfig
         get() = extension.androidTestOnDeviceOptions ?: throw RuntimeException(
-            "Android tests on device are not enabled. (use `kotlin.${KotlinMultiplatformAndroidPlugin.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME}.withAndroidTestOnDevice()` to enable)"
+            "Android tests on device are not enabled. (use `kotlin.${KotlinMultiplatformAndroidPlugin.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME}.withDeviceTest {}` to enable)"
         )
     override val animationsDisabled: Boolean
         get() = testOnDeviceConfig.animationsDisabled

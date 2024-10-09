@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
@@ -89,7 +88,7 @@ class KotlinMultiplatformAndroidDexingTest {
 
         val result = project.executor()
             .expectFailure()
-            .run(":kmpFirstLib:assembleInstrumentedTest")
+            .run(":kmpFirstLib:assembleTestOnDevice")
 
         ScannerSubject.assertThat(result.stderr).contains(
             "In order to use core library desugaring, please enable multidex."
@@ -99,7 +98,7 @@ class KotlinMultiplatformAndroidDexingTest {
     @Test
     fun testDesugaringForInstrumentedTestApk() {
         project.executor()
-            .run(":kmpFirstLib:assembleInstrumentedTest")
+            .run(":kmpFirstLib:assembleTestOnDevice")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )
@@ -155,7 +154,7 @@ class KotlinMultiplatformAndroidDexingTest {
         )
 
         project.executor()
-            .run(":kmpFirstLib:assembleInstrumentedTest")
+            .run(":kmpFirstLib:assembleTestOnDevice")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )

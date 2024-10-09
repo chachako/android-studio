@@ -16,8 +16,6 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
-import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.utils.FileUtils
@@ -54,7 +52,7 @@ class KotlinMultiplatformTestingTest {
             FileUtils.join(
                 kmpFirstLib.projectDir,
                 "src",
-                "androidUnitTest",
+                "androidTestOnJvm",
                 "kotlin",
                 "com",
                 "example",
@@ -99,7 +97,7 @@ class KotlinMultiplatformTestingTest {
         )
 
         // Check that the test runs successfully
-        project.executor().run(":kmpFirstLib:testAndroidUnitTest")
+        project.executor().run(":kmpFirstLib:testAndroidTestOnJvm")
 
         // Check that the test fails as expected after toggling isReturnDefaultValues to false
         TestFileUtils.searchAndReplace(
@@ -107,6 +105,6 @@ class KotlinMultiplatformTestingTest {
             "isReturnDefaultValues = true",
             "isReturnDefaultValues = false"
         )
-        project.executor().expectFailure().run(":kmpFirstLib:testAndroidUnitTest")
+        project.executor().expectFailure().run(":kmpFirstLib:testAndroidTestOnJvm")
     }
 }

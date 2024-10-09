@@ -124,7 +124,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 }
             """.trimIndent())
 
-        addNewApiIssuesToKmpFirstLib(addAndroidUnitTestIssues = true)
+        addNewApiIssuesToKmpFirstLib(addAndroidTestOnJvmIssues = true)
 
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
@@ -812,7 +812,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
     private fun addNewApiIssuesToKmpFirstLib(
         addCommonMainIssues: Boolean = false,
         addAndroidMainIssues: Boolean = false,
-        addAndroidUnitTestIssues: Boolean = false
+        addAndroidTestOnJvmIssues: Boolean = false
     ) {
         if (addCommonMainIssues) {
             TestFileUtils.addMethod(
@@ -850,13 +850,13 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 }
             """.trimIndent())
         }
-        if (addAndroidUnitTestIssues) {
+        if (addAndroidTestOnJvmIssues) {
 
             TestFileUtils.addMethod(
                 FileUtils.join(
                     project.getSubproject("kmpFirstLib").projectDir,
                     "src",
-                    "androidUnitTest",
+                    "androidTestOnJvm",
                     "kotlin",
                     "com",
                     "example",

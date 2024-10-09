@@ -47,8 +47,8 @@ class KotlinMultiplatformAndroidVariantApiTest {
 
         val result = project.executor().run(":kmpFirstLib:assemble")
 
-        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidUnitTest")
-        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidInstrumentedTest")
+        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidTestOnJvm")
+        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidTestOnDevice")
     }
 
     @Test

@@ -75,7 +75,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
                     }
                 }
 
-                kotlin.sourceSets.getByName("androidInstrumentedTest") {
+                kotlin.sourceSets.getByName("androidTestOnDevice") {
                     dependencies {
                         implementation(project(":nativeLib"))
                     }
@@ -182,7 +182,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
         )
 
         executor()
-            .run(":kmpFirstLib:assembleInstrumentedTest")
+            .run(":kmpFirstLib:assembleTestOnDevice")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"

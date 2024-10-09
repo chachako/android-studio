@@ -56,7 +56,7 @@ class KotlinMultiplatformAndroidConnectedTest {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.sourceSets.getByName("androidInstrumentedTest").dependencies {
+                kotlin.sourceSets.getByName("androidTestOnDevice").dependencies {
                     implementation("androidx.core:core-ktx:1.1.0")
                     implementation("androidx.test.espresso:espresso-core:$ANDROIDX_TEST_ESPRESSO_ESPRESSO_CORE_VERSION", {
                         exclude(group="com.google.guava", module="listenablefuture")

@@ -8,17 +8,9 @@ plugins {
 kotlin {
   androidLibrary {
     withJava()
-    withAndroidTestOnJvmBuilder {
-        compilationName = "unitTest"
-        defaultSourceSetName = "androidUnitTest"
-    }.configure {
-      isIncludeAndroidResources = true
-    }
+    withHostTestBuilder {}.configure { isIncludeAndroidResources = true }
 
-    withAndroidTestOnDeviceBuilder {
-        compilationName = "instrumentedTest"
-        defaultSourceSetName = "androidInstrumentedTest"
-    }
+    withDeviceTest {}
 
     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java) {
         instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -32,7 +24,7 @@ kotlin {
       }
     }
 
-    sourceSets.getByName("androidInstrumentedTest") {
+    sourceSets.getByName("androidTestOnDevice") {
       dependencies {
         implementation("androidx.test:runner:1.4.0-alpha06", {
             exclude(group="com.google.guava", module="listenablefuture")
@@ -46,7 +38,7 @@ kotlin {
       }
     }
 
-    compilations.getByName("instrumentedTest") {
+    compilations.getByName("testOnDevice") {
         kotlinOptions.languageVersion = "1.8"
     }
 

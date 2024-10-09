@@ -16,8 +16,6 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
-import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
@@ -75,10 +73,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:mergeAndroidInstrumentedTestJavaResource")
+            .run(":kmpFirstLib:mergeAndroidTestOnDeviceJavaResource")
 
         val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(
-            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidInstrumentedTest/mergeAndroidInstrumentedTestJavaResource/feature-kmpFirstLib.jar"
+            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidTestOnDevice/mergeAndroidTestOnDeviceJavaResource/feature-kmpFirstLib.jar"
         )
 
         assertThat(androidTestMergedRes.exists()).isTrue()
@@ -88,61 +86,6 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 "android lib resource\n"
             )
         }
-    }
-
-    @Test
-    fun testChangingTheSourceSetTreeForAndroidUnitTests() {
-        Assume.assumeFalse(publishLibs)
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            """
-                defaultSourceSetName = "androidUnitTest"
-            """.trimIndent(),
-            """
-                defaultSourceSetName = "androidUnitTest"
-                sourceSetTreeName = "unitTest"
-            """.trimIndent()
-        )
-
-        TestFileUtils.appendToFile(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            """
-                kotlin.androidLibrary.compilations.withType(
-                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation::class.java
-                ) {
-                    enableCoverage = true
-                }
-            """.trimIndent()
-        )
-
-        TestFileUtils.appendToFile(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            """
-                kotlin.sourceSets.getByName("androidUnitTest") {
-                    dependencies {
-                        implementation("junit:junit:4.13.2")
-                    }
-                }
-            """.trimIndent()
-        )
-
-        project.executor()
-            .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
-
-        assertWithMessage(
-            "Running android unit tests should not run common tests because they are not part of the" +
-                    " same source set tree"
-        ).that(
-            FileUtils.join(
-                project.getSubproject("kmpFirstLib").buildDir,
-                "reports",
-                "tests",
-                "testAndroidUnitTest",
-                "classes"
-            ).listFiles()!!.map { it.name }
-        ).containsExactly(
-            "com.example.kmpfirstlib.KmpAndroidFirstLibClassTest.html",
-        )
     }
 
     @Test
@@ -160,7 +103,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
+            .run(":kmpFirstLib:createAndroidTestOnJvmCoverageReport")
 
         assertWithMessage(
             "Running kmp unit tests should run common tests as well"
@@ -169,7 +112,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 project.getSubproject("kmpFirstLib").buildDir,
                 "reports",
                 "tests",
-                "testAndroidUnitTest",
+                "testAndroidTestOnJvm",
                 "classes"
             ).listFiles()!!.map { it.name }
         ).containsExactly(
@@ -346,7 +289,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:assembleInstrumentedTest")
+            .run(":kmpFirstLib:assembleTestOnDevice")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
@@ -423,8 +366,8 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         val apkIdeRedirectFile = FileUtils.join(
             project.getSubproject("kmpFirstLib").intermediatesDir,
             "apk_ide_redirect_file",
-            "androidInstrumentedTest",
-            "createAndroidInstrumentedTestApkListingFileRedirect",
+            "androidTestOnDevice",
+            "createAndroidTestOnDeviceApkListingFileRedirect",
             "redirect.txt"
         )
         assertThat(apkIdeRedirectFile.exists()).isTrue()
