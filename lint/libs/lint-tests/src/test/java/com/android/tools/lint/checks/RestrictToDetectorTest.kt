@@ -23,7 +23,6 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.mavenLibrary
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Project
-import com.android.tools.lint.useFirUast
 import java.io.File
 
 class RestrictToDetectorTest : AbstractCheckTest() {
@@ -115,12 +114,6 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       // data class's constructor, copy, toString, and component2 will have
       // type reference to @VisibleForTesting Foo in a different package.
       .allowDuplicates()
-      .apply {
-        // TODO(b/369691626): source-rewritten @Suppress is not resolved
-        if (useFirUast()) {
-          skipTestModes(TestMode.SUPPRESSIBLE)
-        }
-      }
       .run()
       // In particular, compiler-generated data class's copy will trigger
       // implicit reference (as long as it is sorted out that way).
