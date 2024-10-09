@@ -19,6 +19,7 @@ import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Configuration.Companion.isKMP
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toTargetPlatform
 import com.android.tools.lint.detector.api.GraphUtils
+import com.android.tools.lint.detector.api.LintModelModuleLibraryProject
 import com.android.tools.lint.detector.api.Project
 import com.intellij.codeInsight.CustomExceptionHandler
 import com.intellij.codeInsight.ExternalAnnotationsManager
@@ -38,7 +39,6 @@ import com.intellij.pom.java.LanguageFeatureProvider
 import com.intellij.psi.PsiFile
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.sequences.forEach
 import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
@@ -147,12 +147,24 @@ internal fun configureAnalysisApiProjectStructure(
     GraphUtils.reverseTopologicalSort(uastEnvModuleByProject.keys) {
       uastEnvModuleByProject[it]!!.directDependencies.map { (depProject, _) -> depProject }
     }
-  val builtKtModuleByName = hashMapOf<Project, KaModule>() // incrementally added below
+  val builtKtModuleByProject = hashMapOf<Project, KaModule>() // incrementally added below
   val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
 
+  val projectsWithNoSource = mutableSetOf<Project>()
   for (proj in uastEnvModuleOrder) {
     val m = uastEnvModuleByProject[proj]!!
     val mPlatform = m.variant.toTargetPlatform()
+
+    // NB: this walks through the entire directories as source roots and build scripts
+    // Therefore, we call this only once here and use them with necessary filtering at use-site.
+    val sourceFilePaths =
+      getSourceFilePaths(m.sourceRoots + m.gradleBuildScripts, includeDirectoryRoot = true)
+
+    // b/371220733: AGP library modules might refer to `out` directory w/o source files
+    if (proj is LintModelModuleLibraryProject && !sourceFilePaths.hasFiles()) {
+      projectsWithNoSource.add(proj)
+      continue
+    }
 
     val classPaths =
       if (mPlatform.has<JvmPlatform>()) {
@@ -212,11 +224,6 @@ internal fun configureAnalysisApiProjectStructure(
       }
     }
 
-    // NB: this walks through the entire directories as source roots and build scripts
-    // Therefore, we call this only once here and use them with necessary filtering at use-site.
-    val sourceFilePaths =
-      getSourceFilePaths(m.sourceRoots + m.gradleBuildScripts, includeDirectoryRoot = true)
-
     val scripts = sourceFilePaths.filter<KtFile>(kotlinCoreProjectEnvironment, KtFile::isScript)
     // TODO: https://youtrack.jetbrains.com/issue/KT-62161
     //   This must be [KtScriptModule], but until the above YT resolved
@@ -253,8 +260,12 @@ internal fun configureAnalysisApiProjectStructure(
             platform = mPlatform
             moduleName = m.name
 
-            m.directDependencies.forEach { (depProj, depKind) ->
-              builtKtModuleByName[depProj]?.let { depKtModule ->
+            for ((depProj, depKind) in m.directDependencies) {
+              if (depProj in projectsWithNoSource) {
+                // [Project] w/o source files has been skipped.
+                continue
+              }
+              builtKtModuleByProject[depProj]?.let { depKtModule ->
                 when (depKind) {
                   Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
                   Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
@@ -274,10 +285,10 @@ internal fun configureAnalysisApiProjectStructure(
             )
           }
         }
-        classPaths.isNotEmpty() -> {
+        m.classpathRoots.isNotEmpty() -> {
           buildKtLibraryModule {
             platform = mPlatform
-            addBinaryPaths(classPaths)
+            addBinaryPaths(m.classpathRoots.toPathCollection())
             libraryName = m.name
           }
         }
@@ -285,7 +296,7 @@ internal fun configureAnalysisApiProjectStructure(
       }
 
     addModule(ktModule)
-    builtKtModuleByName[proj] = ktModule
+    builtKtModuleByProject[proj] = ktModule
   }
 }
 
