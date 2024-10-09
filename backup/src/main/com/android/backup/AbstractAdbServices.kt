@@ -74,7 +74,10 @@ abstract class AbstractAdbServices(
     when {
       out.isBackupSuccess(applicationId) -> return
       out.isBackupNotAllowd() ->
-        throw BackupException(BACKUP_NOT_ALLOWED, "Backup of '$applicationId` is not allowed")
+        throw BackupException(
+          BACKUP_NOT_ALLOWED,
+          "Application '$applicationId' is in a stopped state. Please launch the app and try again.",
+        )
       else -> throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
     }
   }

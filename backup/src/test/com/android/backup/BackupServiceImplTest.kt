@@ -86,9 +86,12 @@ class BackupServiceImplTest {
     assertThat(backupFile.exists()).isTrue()
     assertThat(backupFile.unzip())
       .containsExactly(
-        "pm_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
-        "restore_token_file" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
-        "app_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
+        "pm_backup_data" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
+        "restore_token_file" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
+        "app_backup_data" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
         "app_id" to "com.app",
       )
   }
@@ -123,9 +126,12 @@ class BackupServiceImplTest {
     assertThat(backupFile.exists()).isTrue()
     assertThat(backupFile.unzip())
       .containsExactly(
-        "pm_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
-        "restore_token_file" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
-        "app_backup_data" to "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
+        "pm_backup_data" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/pm_backup_data",
+        "restore_token_file" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/restore_token_file",
+        "app_backup_data" to
+          "content://com.google.android.gms.fileprovider/android_studio_backup_data/app_backup_data",
         "app_id" to "com.app",
       )
   }
@@ -277,7 +283,9 @@ class BackupServiceImplTest {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
     val backupService =
       BackupServiceImpl(
-        FakeAdbServicesFactory { it.addCommandOverride(Output("bmgr backupnow @pm@ com.app --non-incremental", "Error")) }
+        FakeAdbServicesFactory {
+          it.addCommandOverride(Output("bmgr backupnow @pm@ com.app --non-incremental", "Error"))
+        }
       )
 
     val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
@@ -292,7 +300,10 @@ class BackupServiceImplTest {
       BackupServiceImpl(
         FakeAdbServicesFactory {
           it.addCommandOverride(
-            Output("bmgr backupnow @pm@ com.app --non-incremental", "Package com.app with result: Backup is not allowed")
+            Output(
+              "bmgr backupnow @pm@ com.app --non-incremental",
+              "Package com.app with result: Backup is not allowed",
+            )
           )
         }
       )
@@ -300,7 +311,11 @@ class BackupServiceImplTest {
     val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
 
     assertThat(result)
-      .isEqualTo(BACKUP_NOT_ALLOWED.asBackupResult("Backup of 'com.app` is not allowed"))
+      .isEqualTo(
+        BACKUP_NOT_ALLOWED.asBackupResult(
+          "Application 'com.app' is in a stopped state. Please launch the app and try again."
+        )
+      )
   }
 
   @Test
