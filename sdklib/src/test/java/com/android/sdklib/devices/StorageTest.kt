@@ -90,6 +90,8 @@ class StorageTest {
     assertThat(Storage.getStorageFromString("2048   M")).isEqualTo(Storage(2, Storage.Unit.GiB))
     assertThat(Storage.getStorageFromString("8G")).isEqualTo(Storage(8, Storage.Unit.GiB))
     assertThat(Storage.getStorageFromString("9T")).isEqualTo(Storage(9, Storage.Unit.TiB))
+    assertThat(Storage.getStorageFromString("10000000000", Storage.Unit.B))
+        .isEqualTo(Storage(10000000000, Storage.Unit.B))
 
     assertThat(Storage.getStorageFromString("")).isNull()
     assertThat(Storage.getStorageFromString("blah")).isNull()
