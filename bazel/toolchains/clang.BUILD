@@ -16,7 +16,6 @@ cc_toolchain_suite(
         "k8": ":cc-compiler-k8",
         "darwin|compiler": ":cc-compiler-darwin",
         "darwin": ":cc-compiler-darwin",
-        # TODO(b/224790112): Use native toolchain for Mac arm64.
         "darwin_arm64|compiler": ":cc-compiler-darwin",
         "darwin_arm64": ":cc-compiler-darwin",
         "x64_windows|clang-cl": ":cc-compiler-x64_windows-clang-cl",
@@ -327,13 +326,9 @@ cc_toolchain_config(
 toolchain(
     name = "cc-toolchain-darwin",
     exec_compatible_with = [
-        # TODO(b/224790112): Use separate native toolchain for Mac arm64.
-        # "@platforms//cpu:x86_64",
         "@platforms//os:osx",
     ],
     target_compatible_with = [
-        # TODO(b/224790112): Use separate native toolchain for Mac arm64.
-        # "@platforms//cpu:x86_64",
         "@platforms//os:osx",
     ],
     target_settings = [
