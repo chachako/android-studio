@@ -716,7 +716,19 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             "Scheme matching is case sensitive and should only " + "use lower-case characters",
           )
         }
+        // Scheme matching also does URI decoding. However, any <a> tag where the scheme has a % or
+        // a whitespace is treated as a relative path, so unexpected behavior may occur if the
+        // developer attempts to create a custom scheme with non-URI characters in it.
+        // However, it's difficult for us to be sure that an intent filter is intended to be used as
+        // a deeplink unless the intent filter is also an applink (i.e. has autoVerify="true"), so
+        // we don't want to unnecessarily enforce that scheme attributes can't have non-URI
+        // characters.
+        // (If autoVerify="true", then scheme must be http(s), so URI-encoded characters are not
+        // allowed anyway.)
       }
+      // Note that while whitespace is not allowed in URIs, Android performs URI decoding.
+      // Thus, `scheme://hello%20world` matches an intent filter with android:host="hello world".
+      // So it is OK for hosts to have whitespace characters.
       ATTR_HOST -> {
         if (value.lastIndexOf('*') > 0) {
           reportUrlError(
@@ -772,6 +784,9 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     intentFilter: Element,
     parent: Element,
   ) {
+    // Note that while whitespace is not allowed in URIs, Android performs URI decoding.
+    // Thus, `scheme://host/hello%20world` matches an intent filter with android:path="hello world".
+    // So it is OK for paths to have whitespace characters.
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
     if (attribute != null) {
       var value = attribute.value
