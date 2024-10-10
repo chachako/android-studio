@@ -10,7 +10,7 @@ filegroup(
 
 filegroup(
     name = "build-tools/latest",
-    srcs = [":build-tools/34.0.0"],
+    srcs = [":build-tools/35.0.0"],
     visibility = ["//visibility:public"],
 )
 

@@ -72,13 +72,6 @@ public class SdkHelper {
         return adb;
     }
 
-    // TODO (b/365798973): remove once latest build tool is updated to 35.0.0
-    @NonNull
-    public static File getBuildToolVersion35(@NonNull BuildToolInfo.PathId pathId) {
-        Revision revision = Revision.parseRevision("35.0.0", Revision.Precision.MICRO);
-        return getBuildTool(revision, pathId);
-    }
-
     @NonNull
     public static File getBuildTool(@NonNull BuildToolInfo.PathId pathId) {
         Revision revision = Revision.parseRevision(

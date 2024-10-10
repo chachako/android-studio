@@ -10,7 +10,7 @@ gradle_integration_test(
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/3534162-studio.sdk-patcher.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/addon2-3.xml",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/android-ndk-r23-beta4-linux-x86_64.zip",
-        "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/build-tools_r34-linux.zip",
+        "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/build-tools_r35_linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/cmake-3.22.1-linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/google_apis-24_r1.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-24_r02.zip",

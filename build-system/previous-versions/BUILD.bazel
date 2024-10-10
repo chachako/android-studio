@@ -315,7 +315,7 @@ gradle_build(
     build_file = "tests/3.5.0/build.gradle",
     data = [
         "tests/3.5.0/src/main/AndroidManifest.xml",
-        "//prebuilts/studio/sdk:build-tools/latest",
+        "//prebuilts/studio/sdk:build-tools/34.0.0",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:platforms/android-34",
     ],
@@ -346,7 +346,7 @@ gradle_build(
     build_file = "tests/3.3.2/build.gradle",
     data = [
         "tests/3.3.2/src/main/AndroidManifest.xml",
-        "//prebuilts/studio/sdk:build-tools/latest",
+        "//prebuilts/studio/sdk:build-tools/34.0.0",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:platforms/android-34",
     ],
