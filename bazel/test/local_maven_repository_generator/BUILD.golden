@@ -134,6 +134,9 @@ maven_import(
     pom = "repository/com/google/example/c/2/c-2.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/c/2",
+    deps_with_exclusions = [
+        "com.google.example.r",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -341,6 +344,9 @@ maven_import(
     pom = "repository/com/google/example/k/1/k-1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/k/1",
+    deps_with_exclusions = [
+        "com.google.example.m",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -402,6 +408,11 @@ maven_import(
     pom = "repository/com/google/example/m/1/m-1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/m/1",
+    exclusions_for_parents = {
+        "com.google.example.k": [
+            "com.google.example.n",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -518,6 +529,11 @@ maven_import(
     pom = "repository/com/google/example/r/1/r-1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/r/1",
+    exclusions_for_parents = {
+        "com.google.example.c": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 

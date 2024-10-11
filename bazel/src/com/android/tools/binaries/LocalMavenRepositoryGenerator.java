@@ -20,8 +20,20 @@ import com.android.tools.json.JsonFileWriter;
 import com.android.tools.maven.MavenRepository;
 import com.android.tools.repository_generator.BuildFileWriter;
 import com.android.tools.repository_generator.ResolutionResult;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.graph.DependencyVisitor;
+import org.eclipse.aether.graph.Exclusion;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.util.graph.transformer.ConflictResolver;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,14 +49,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.graph.DependencyNode;
-import org.eclipse.aether.graph.DependencyVisitor;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.util.graph.transformer.ConflictResolver;
 
 /**
  * A tool that generates a virtual Maven repository from a given list of initial artifacts, and
@@ -186,7 +190,7 @@ public class LocalMavenRepositoryGenerator {
             }
         }
 
-        result.sortByCoord();
+        result.finishBuilding();
 
         if (fetch) {
             for (DependencyNode node : unresolvedNodes) {
@@ -291,8 +295,28 @@ public class LocalMavenRepositoryGenerator {
             originalDeps.add(child.getArtifact().toString());
         }
 
+        Map<String, List<String>> exclusions = new HashMap<>();
+
         if (isResolved) {
             for (DependencyNode child : node.getChildren()) {
+                // If there are exclusions, save a map of dependency -> exclusions to be included
+                // in the BUILD targets for this node and the dependencies.
+                // TODO: exclusion of indirect dependencies (e.g. A->B->C->D, A excludes D in the
+                // context of B) are not currently supported.
+                if (!child.getDependency().getExclusions().isEmpty()) {
+                    String generalChild =
+                            child.getArtifact().getGroupId()
+                                    + "."
+                                    + child.getArtifact().getArtifactId();
+                    for (Exclusion excludedArtifact : child.getDependency().getExclusions()) {
+                        List<String> excluded =
+                                exclusions.computeIfAbsent(generalChild, (n) -> new ArrayList<>());
+                        excluded.add(
+                                excludedArtifact.getGroupId()
+                                        + "."
+                                        + excludedArtifact.getArtifactId());
+                    }
+                }
                 DependencyNode winnerChildNode = getWinner(child);
                 if (winnerChildNode == null
                         || winnerChildNode.getArtifact() == null
@@ -330,6 +354,7 @@ public class LocalMavenRepositoryGenerator {
                                     .map(d -> d.getArtifact().toString())
                                     .toArray(String[]::new),
                             null,
+                            null,
                             null));
         } else {
             result.addDependency(
@@ -341,7 +366,8 @@ public class LocalMavenRepositoryGenerator {
                             sourcesJarPath,
                             originalDeps.toArray(new String[0]),
                             resolvedDeps,
-                            conflictResolution));
+                            conflictResolution,
+                            exclusions));
         }
     }
 

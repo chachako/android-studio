@@ -1,9 +1,9 @@
-load(":functions.bzl", "create_option_file", "explicit_target")
 load(":coverage.bzl", "coverage_baseline")
+load(":functions.bzl", "create_option_file", "explicit_target")
+load(":jvm_import.bzl", "jvm_import")
 load(":kotlin.bzl", "kotlin_library")
 load(":merge_archives.bzl", "run_singlejar")
 load(":utils.bzl", "is_release")
-load(":jvm_import.bzl", "jvm_import")
 
 def generate_pom(
         ctx,
@@ -232,9 +232,13 @@ def maven_import(
         name,
         jars = [],
         deps = [],
+        original_deps = [],
         repo_root_path = "",
         repo_path = "",
         classifiers = [],
+        deps_with_exclusions = [],
+        exclusions_for_parents = {},
+        exports = [],
         **kwargs):
     """Imports jars with a pom and parent attributes for use with Maven rules.
 
@@ -243,27 +247,51 @@ def maven_import(
     Files at repo_root_path and repo_path are included in the _maven_import target.
     This includes the NOTICE file.
 
+    A note on exclusions:
+    If we have A -> B -> C, and A excludes C in the context of B, we'd expect the
+    maven_import for A to include deps_with_exclusions = [B], and the maven_import
+    for B should have exclusions_for_parents = { A: [C] }. B will then generate
+    additional targets like :B_for_A which exclude the dependency on C, and :A will
+    depend on those instead of the normal dependency on :B.
+
     Args:
         name: The name for the maven_import target.
         jars: The list of jars to import.
         deps: The list of deps the imported jars depend on.
+        original_deps: Additional targets to provide to users of this rule.
         repo_root_path: The root repository path, for globbing additional files.
         repo_path: A subpath under repo_root_path, for globbing additional files.
         classifiers: unused.
+        deps_with_exclusions: The dependencies of this rule for which this artifact
+            has declared exclusions.
+        exclusions_for_parents: A map of dependant artifact to dependencies of this
+            rule that should be excluded in the context of the dependant.
+        exports: The exported dependencies of this library.
         **kwargs: See arguments for _maven_import.
     """
     import_name = name + "_jars"
+    renamed_deps = {d: d + "_for_" + name if d in deps_with_exclusions else d for d in deps}
+    renamed_exports = {e: e + "_for_" + name if e in deps_with_exclusions else e for e in exports}
+
     jvm_import(
         name = import_name,
         jars = jars,
-        deps = deps,
+        deps = renamed_deps.values(),
     )
+
+    for parent, exclusions in exclusions_for_parents.items():
+        jvm_import(
+            name = name + "_for_" + parent + "_jars",
+            jars = jars,
+            deps = [renamed for (d, renamed) in renamed_deps.items() if d not in exclusions],
+        )
 
     artifact_dir = _get_artifact_dir(repo_root_path, repo_path)
     _maven_import(
         name = name,
         java_deps = [":" + import_name],
-        deps = deps,
+        deps = renamed_deps.values(),
+        original_deps = original_deps,
         repo_path = repo_path,
         repo_root_path = repo_root_path,
         files = native.glob(
@@ -272,8 +300,27 @@ def maven_import(
         ),
         notice = artifact_dir + "NOTICE",
         tags = ["require_license"],
+        exports = renamed_exports.values(),
         **kwargs
     )
+
+    for parent, exclusions in exclusions_for_parents.items():
+        _maven_import(
+            name = name + "_for_" + parent,
+            java_deps = [":" + name + "_for_" + parent + "_jars"],
+            deps = [renamed for (d, renamed) in renamed_deps.items() if d not in exclusions],
+            original_deps = original_deps,
+            repo_path = repo_path,
+            repo_root_path = repo_root_path,
+            files = native.glob(
+                include = [artifact_dir + "**"],
+                exclude = [artifact_dir + "**/" + exclude for exclude in _REPO_GLOB_EXCLUDES],
+            ),
+            notice = artifact_dir + "NOTICE",
+            tags = ["require_license"],
+            exports = [renamed for (e, renamed) in renamed_exports.items() if e not in exclusions],
+            **kwargs
+        )
 
 MavenRepoInfo = provider(fields = {
     "artifacts": "The list of files in the repo",

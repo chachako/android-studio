@@ -16,6 +16,8 @@
 
 package com.android.tools.repository_generator;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.SystemUtils;
 
 /** Utility for generating a BUILD file from a {@link ResolutionResult} object. */
 public class BuildFileWriter {
@@ -61,15 +62,17 @@ public class BuildFileWriter {
      * Generates a BUILD file from the given {@link ResolutionResult} object.
      *
      * <p>Inside the generated BUILD file, it puts:
+     *
      * <ul>
-     *     <li>maven_import rules for {@link ResolutionResult.dependencies},</li>
-     *     <li>maven_artifact rules for {@link ResolutionResult.conflictLosers},</li>
-     *     <li>maven_artifact rules for {@link ResolutionResult.parents},</li>
+     *   <li>maven_import rules for {@link ResolutionResult#dependencies},
+     *   <li>maven_artifact rules for {@link ResolutionResult#unresolvedDependencies},
+     *   <li>maven_artifact rules for {@link ResolutionResult#parents},
      * </ul>
      */
     public void write(ResolutionResult result) throws Exception {
         fileWriter.append(
-                "load(\"@//tools/base/bazel:maven.bzl\", \"maven_artifact\", \"maven_import\")\n\n");
+                "load(\"@//tools/base/bazel:maven.bzl\", \"maven_artifact\","
+                        + " \"maven_import\")\n\n");
         fileWriter.append("# Bazel rules auto-generated from maven repo.");
         for (ResolutionResult.Dependency dep : result.dependencies) {
             write(result, dep, false);
@@ -105,9 +108,12 @@ public class BuildFileWriter {
             fileWriter.append("\n");
             fileWriter.append("maven_artifact(\n");
             fileWriter.append(String.format("    name = \"%s\",\n", mavenArtifactRuleName));
-            fileWriter.append(String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(dep.pomPath)));
-            fileWriter.append(String.format("    repo_root_path = \"%s\",\n", pathToString(repoPrefix)));
-            fileWriter.append(String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
+            fileWriter.append(
+                    String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(dep.pomPath)));
+            fileWriter.append(
+                    String.format("    repo_root_path = \"%s\",\n", pathToString(repoPrefix)));
+            fileWriter.append(
+                    String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
             if (dep.parentCoord != null) {
                 String parentRuleName = getMavenArtifactRuleName(dep.parentCoord);
                 fileWriter.append(String.format("    parent = \"%s\",\n", parentRuleName));
@@ -174,7 +180,8 @@ public class BuildFileWriter {
             }
             fileWriter.append("    jars = [\n");
             if (dep.file.endsWith(".jar")) {
-                fileWriter.append(String.format("        \"%s/%s\"\n", repoPrefix, pathToString(dep.file)));
+                fileWriter.append(
+                        String.format("        \"%s/%s\"\n", repoPrefix, pathToString(dep.file)));
             }
             fileWriter.append("    ],\n");
             for (Map.Entry<String, List<String>> scopedDeps : dep.directDependencies.entrySet()) {
@@ -185,14 +192,18 @@ public class BuildFileWriter {
                         case "compile":
                             fileWriter.append("    exports = [\n");
                             for (String d : deps) {
-                                fileWriter.append(String.format("        \"%s\",\n", getMavenImportRuleName(d)));
+                                fileWriter.append(
+                                        String.format(
+                                                "        \"%s\",\n", getMavenImportRuleName(d)));
                             }
                             fileWriter.append("    ],\n");
                             break;
                         case "runtime":
                             fileWriter.append("    deps = [\n");
                             for (String d : deps) {
-                                fileWriter.append(String.format("        \"%s\",\n", getMavenImportRuleName(d)));
+                                fileWriter.append(
+                                        String.format(
+                                                "        \"%s\",\n", getMavenImportRuleName(d)));
                             }
                             fileWriter.append("    ],\n");
                             break;
@@ -220,12 +231,36 @@ public class BuildFileWriter {
             } else {
                 fileWriter.append("    original_deps = [],\n");
             }
-            fileWriter.append(String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(dep.pomPath)));
+            fileWriter.append(
+                    String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(dep.pomPath)));
             fileWriter.append(String.format("    repo_root_path = \"%s\",\n", repoPrefix));
-            fileWriter.append(String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
+            fileWriter.append(
+                    String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
             if (dep.srcjar != null) {
                 fileWriter.append(
-                        String.format("    srcjar = \"%s/%s\",\n", repoPrefix, pathToString(dep.srcjar)));
+                        String.format(
+                                "    srcjar = \"%s/%s\",\n", repoPrefix, pathToString(dep.srcjar)));
+            }
+            if (dep.declaredExclusions != null && !dep.declaredExclusions.isEmpty()) {
+                fileWriter.append("    deps_with_exclusions = [\n");
+
+                for (String child : dep.declaredExclusions.keySet()) {
+                    fileWriter.append(String.format("        \"%s\",\n", child));
+                }
+                fileWriter.append("     ],\n");
+            }
+            if (dep.exclusionsForParent != null && !dep.exclusionsForParent.isEmpty()) {
+                fileWriter.append("    exclusions_for_parents = {\n");
+
+                for (Map.Entry<String, List<String>> exclusions :
+                        dep.exclusionsForParent.entrySet()) {
+                    fileWriter.append(String.format("        \"%s\": [\n", exclusions.getKey()));
+                    for (String depToExclude : exclusions.getValue()) {
+                        fileWriter.append(String.format("            \"%s\",\n", depToExclude));
+                    }
+                    fileWriter.append("        ],\n");
+                }
+                fileWriter.append("    },\n");
             }
             fileWriter.append("    visibility = [\"//visibility:public\"],\n");
             fileWriter.append(")\n");
@@ -243,11 +278,13 @@ public class BuildFileWriter {
         fileWriter.append("\n");
         fileWriter.append("maven_artifact(\n");
         fileWriter.append(String.format("    name = \"%s\",\n", ruleName));
-        fileWriter.append(String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(parent.pomPath)));
+        fileWriter.append(
+                String.format("    pom = \"%s/%s\",\n", repoPrefix, pathToString(parent.pomPath)));
         fileWriter.append(String.format("    repo_root_path = \"%s\",\n", repoPrefix));
         // Deduce the repo path of the artifact from the pom file.
         Path artifactRepoPath = Paths.get(parent.pomPath).getParent();
-        fileWriter.append(String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
+        fileWriter.append(
+                String.format("    repo_path = \"%s\",\n", pathToString(artifactRepoPath)));
         if (parent.parentCoord != null) {
             String parentRuleName = getMavenArtifactRuleName(parent.parentCoord);
             fileWriter.append(String.format("    parent = \"%s\",\n", parentRuleName));

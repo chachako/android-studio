@@ -34,6 +34,7 @@ public class ResolutionResult {
     public List<Parent> parents = new ArrayList<>();
 
     public static class Dependency {
+
         public String coord;
         public String file;
         public String pomPath;
@@ -42,6 +43,8 @@ public class ResolutionResult {
         public String[] originalDependencies;
         public Map<String, List<String>> directDependencies;
         public Map<String, String> conflictResolution;
+        public final Map<String, List<String>> declaredExclusions;
+        public Map<String, List<String>> exclusionsForParent = new HashMap<>();
 
         public Dependency(
                 String coord,
@@ -51,7 +54,8 @@ public class ResolutionResult {
                 String srcjar,
                 String[] originalDependencies,
                 Map<String, List<String>> directDependencies,
-                Map<String, String> conflictResolution) {
+                Map<String, String> conflictResolution,
+                Map<String, List<String>> exclusions) {
             this.coord = coord;
             this.file = file;
             this.pomPath = pomPath;
@@ -60,6 +64,7 @@ public class ResolutionResult {
             this.originalDependencies = originalDependencies;
             this.directDependencies = directDependencies;
             this.conflictResolution = conflictResolution;
+            this.declaredExclusions = exclusions;
 
             if (this.originalDependencies == null) {
                 this.originalDependencies = new String[0];
@@ -82,10 +87,29 @@ public class ResolutionResult {
         }
     }
 
-    public void sortByCoord() {
+    public void finishBuilding() {
         dependencies.sort(Comparator.comparing(d -> d.coord));
         unresolvedDependencies.sort(Comparator.comparing(d -> d.coord));
         parents.sort(Comparator.comparing(d -> d.coord));
+        Map<String, Dependency> dependenciesByCoord = new HashMap<>();
+        for (Dependency d : dependencies) {
+            String[] segments = d.coord.split(":");
+            dependenciesByCoord.put(segments[0] + "." + segments[1], d);
+        }
+        // Exclusion information is only stored in the Dependencies that declared them at this,
+        // but we also need to add information to the build rules for the affected children.
+        // Add the relevant information to those Dependencies here.
+        for (Dependency parentDep : dependencies) {
+            String[] segments = parentDep.coord.split(":");
+            String parentCoord = segments[0] + "." + segments[1];
+            if (parentDep.declaredExclusions != null && !parentDep.declaredExclusions.isEmpty()) {
+                for (Map.Entry<String, List<String>> entry :
+                        parentDep.declaredExclusions.entrySet()) {
+                    Dependency childDep = dependenciesByCoord.get(entry.getKey());
+                    childDep.exclusionsForParent.put(parentCoord, entry.getValue());
+                }
+            }
+        }
     }
 
     public void addDependency(Dependency dependency) {
@@ -121,8 +145,12 @@ public class ResolutionResult {
      * merge, so we prefer to be consistent with Aether.
      */
     private void mergeDependencies(Dependency existing, Dependency other) {
-        if (existing.directDependencies.size() < other.directDependencies.size()) {
-            existing.directDependencies = other.directDependencies;
+        for (Map.Entry<String, List<String>> entry : other.directDependencies.entrySet()) {
+            if (!existing.directDependencies.containsKey(entry.getKey())
+                    || existing.directDependencies.get(entry.getKey()).size()
+                            < entry.getValue().size()) {
+                existing.directDependencies.put(entry.getKey(), entry.getValue());
+            }
         }
 
         if (existing.originalDependencies.length < other.originalDependencies.length) {

@@ -117,6 +117,11 @@ maven_import(
     pom = "repository/androidx/test/monitor/1.4.0/monitor-1.4.0.pom",
     repo_root_path = "repository",
     repo_path = "androidx/test/monitor/1.4.0",
+    exclusions_for_parents = {
+        "org.robolectric.shadows-framework": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -303,6 +308,9 @@ maven_import(
     pom = "repository/com/android/tools/build/bundletool/1.17.1/bundletool-1.17.1.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/build/bundletool/1.17.1",
+    deps_with_exclusions = [
+        "org.bitbucket.b_c.jose4j",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -705,6 +713,10 @@ maven_import(
     pom = "repository/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2.11.1/jackson-dataformat-xml-2.11.1.pom",
     repo_root_path = "repository",
     repo_path = "com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2.11.1",
+    deps_with_exclusions = [
+        "com.fasterxml.woodstox.woodstox-core",
+        "org.codehaus.woodstox.stax2-api",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -816,6 +828,14 @@ maven_import(
     pom = "repository/com/fasterxml/woodstox/woodstox-core/6.2.1/woodstox-core-6.2.1.pom",
     repo_root_path = "repository",
     repo_path = "com/fasterxml/woodstox/woodstox-core/6.2.1",
+    deps_with_exclusions = [
+        "org.codehaus.woodstox.stax2-api",
+     ],
+    exclusions_for_parents = {
+        "com.fasterxml.jackson.dataformat.jackson-dataformat-xml": [
+            "javax.xml.stream.stax-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -1003,6 +1023,11 @@ maven_import(
     pom = "repository/com/google/api/grpc/proto-google-common-protos/2.17.0/proto-google-common-protos-2.17.0.pom",
     repo_root_path = "repository",
     repo_path = "com/google/api/grpc/proto-google-common-protos/2.17.0",
+    exclusions_for_parents = {
+        "io.grpc.grpc-protobuf": [
+            "com.google.api.api-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -1646,6 +1671,9 @@ maven_import(
     pom = "repository/com/google/gradle/osdetector-gradle-plugin/1.7.3/osdetector-gradle-plugin-1.7.3.pom",
     repo_root_path = "repository",
     repo_path = "com/google/gradle/osdetector-gradle-plugin/1.7.3",
+    deps_with_exclusions = [
+        "kr.motd.maven.os-maven-plugin",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -3447,6 +3475,13 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-api/1.57.0",
     srcjar = "repository/io/grpc/grpc-api/1.57.0/grpc-api-1.57.0-sources.jar",
+    exclusions_for_parents = {
+        "io.grpc.grpc-context": [
+            "com.google.code.findbugs.jsr305",
+            "com.google.guava.guava",
+            "com.google.errorprone.error_prone_annotations",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -3515,6 +3550,9 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-context/1.57.0",
     srcjar = "repository/io/grpc/grpc-context/1.57.0/grpc-context-1.57.0-sources.jar",
+    deps_with_exclusions = [
+        "io.grpc.grpc-api",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -3790,6 +3828,11 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-protobuf-lite/1.57.0",
     srcjar = "repository/io/grpc/grpc-protobuf-lite/1.57.0/grpc-protobuf-lite-1.57.0-sources.jar",
+    exclusions_for_parents = {
+        "io.grpc.grpc-protobuf": [
+            "com.google.protobuf.protobuf-javalite",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -3837,6 +3880,10 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-protobuf/1.57.0",
     srcjar = "repository/io/grpc/grpc-protobuf/1.57.0/grpc-protobuf-1.57.0-sources.jar",
+    deps_with_exclusions = [
+        "io.grpc.grpc-protobuf-lite",
+        "com.google.api.grpc.proto-google-common-protos",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -4318,6 +4365,35 @@ maven_import(
     pom = "repository/io/netty/netty-all/4.1.93.Final/netty-all-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-all/4.1.93.Final",
+    deps_with_exclusions = [
+        "io.netty.netty-handler-proxy",
+        "io.netty.netty-codec-xml",
+        "io.netty.netty-codec",
+        "io.netty.netty-codec-http",
+        "io.netty.netty-transport-sctp",
+        "io.netty.netty-transport-rxtx",
+        "io.netty.netty-transport",
+        "io.netty.netty-resolver-dns",
+        "io.netty.netty-codec-dns",
+        "io.netty.netty-handler-ssl-ocsp",
+        "io.netty.netty-codec-redis",
+        "io.netty.netty-common",
+        "io.netty.netty-codec-memcache",
+        "io.netty.netty-codec-haproxy",
+        "io.netty.netty-codec-socks",
+        "io.netty.netty-codec-mqtt",
+        "io.netty.netty-handler",
+        "io.netty.netty-transport-native-unix-common",
+        "io.netty.netty-buffer",
+        "io.netty.netty-resolver-dns-classes-macos",
+        "io.netty.netty-transport-udt",
+        "io.netty.netty-resolver",
+        "io.netty.netty-codec-smtp",
+        "io.netty.netty-codec-stomp",
+        "io.netty.netty-transport-classes-epoll",
+        "io.netty.netty-codec-http2",
+        "io.netty.netty-transport-classes-kqueue",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -4349,6 +4425,11 @@ maven_import(
     pom = "repository/io/netty/netty-buffer/4.1.93.Final/netty-buffer-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-buffer/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4389,6 +4470,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-dns/4.1.93.Final/netty-codec-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-dns/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4412,6 +4501,13 @@ maven_import(
     pom = "repository/io/netty/netty-codec-haproxy/4.1.93.Final/netty-codec-haproxy-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-haproxy/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4458,6 +4554,19 @@ maven_import(
     pom = "repository/io/netty/netty-codec-http2/4.1.93.Final/netty-codec-http2-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-http2/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+            "io.netty.netty-handler",
+            "io.netty.netty-codec-http",
+            "com.jcraft.jzlib",
+            "com.aayushatharva.brotli4j.brotli4j",
+            "com.github.luben.zstd-jni",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4501,6 +4610,18 @@ maven_import(
     pom = "repository/io/netty/netty-codec-http/4.1.93.Final/netty-codec-http-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-http/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+            "io.netty.netty-handler",
+            "com.jcraft.jzlib",
+            "com.aayushatharva.brotli4j.brotli4j",
+            "com.github.luben.zstd-jni",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4524,6 +4645,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-memcache/4.1.93.Final/netty-codec-memcache-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-memcache/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4547,6 +4676,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-mqtt/4.1.93.Final/netty-codec-mqtt-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-mqtt/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4570,6 +4707,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-redis/4.1.93.Final/netty-codec-redis-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-redis/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4593,6 +4738,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-smtp/4.1.93.Final/netty-codec-smtp-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-smtp/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4633,6 +4786,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-socks/4.1.93.Final/netty-codec-socks-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-socks/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4656,6 +4817,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-stomp/4.1.93.Final/netty-codec-stomp-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-stomp/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4679,6 +4848,14 @@ maven_import(
     pom = "repository/io/netty/netty-codec-xml/4.1.93.Final/netty-codec-xml-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec-xml/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+            "com.fasterxml.aalto-xml",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4716,6 +4893,27 @@ maven_import(
     pom = "repository/io/netty/netty-codec/4.1.93.Final/netty-codec-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-codec/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "com.google.protobuf.protobuf-java",
+            "com.google.protobuf.nano.protobuf-javanano",
+            "org.jboss.marshalling.jboss-marshalling",
+            "com.jcraft.jzlib",
+            "com.ning.compress-lzf",
+            "net.jpountz.lz4.lz4",
+            "com.github.jponge.lzma-java",
+            "com.github.luben.zstd-jni",
+            "com.aayushatharva.brotli4j.brotli4j",
+            "com.aayushatharva.brotli4j.native-linux-x86_64",
+            "com.aayushatharva.brotli4j.native-linux-aarch64",
+            "com.aayushatharva.brotli4j.native-osx-x86_64",
+            "com.aayushatharva.brotli4j.native-osx-aarch64",
+            "com.aayushatharva.brotli4j.native-windows-x86_64",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4739,6 +4937,17 @@ maven_import(
     pom = "repository/io/netty/netty-common/4.1.93.Final/netty-common-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-common/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "org.graalvm.nativeimage.svm",
+            "org.jetbrains.annotations-java5",
+            "org.slf4j.slf4j-api",
+            "commons-logging.commons-logging",
+            "org.apache.logging.log4j.log4j-1.2-api",
+            "org.apache.logging.log4j.log4j-api",
+            "io.projectreactor.tools.blockhound",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4785,6 +4994,16 @@ maven_import(
     pom = "repository/io/netty/netty-handler-proxy/4.1.93.Final/netty-handler-proxy-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-handler-proxy/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+            "io.netty.netty-codec-socks",
+            "io.netty.netty-codec-http",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4808,6 +5027,14 @@ maven_import(
     pom = "repository/io/netty/netty-handler-ssl-ocsp/4.1.93.Final/netty-handler-ssl-ocsp-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-handler-ssl-ocsp/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "org.bouncycastle.bcpkix-jdk15on",
+            "io.netty.netty-codec-http",
+            "io.netty.netty-transport",
+            "io.netty.netty-resolver-dns",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4854,6 +5081,23 @@ maven_import(
     pom = "repository/io/netty/netty-handler/4.1.93.Final/netty-handler-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-handler/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-resolver",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-transport-native-unix-common",
+            "io.netty.netty-codec",
+            "io.netty.netty-tcnative-classes",
+            "io.netty.netty-tcnative",
+            "org.bouncycastle.bcpkix-jdk15on",
+            "org.bouncycastle.bctls-jdk15on",
+            "org.eclipse.jetty.npn.npn-api",
+            "org.eclipse.jetty.alpn.alpn-api",
+            "org.conscrypt.conscrypt-openjdk-uber",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4891,6 +5135,13 @@ maven_import(
     pom = "repository/io/netty/netty-resolver-dns-classes-macos/4.1.93.Final/netty-resolver-dns-classes-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-resolver-dns-classes-macos/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-resolver-dns",
+            "io.netty.netty-transport-native-unix-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -4990,6 +5241,17 @@ maven_import(
     pom = "repository/io/netty/netty-resolver-dns/4.1.93.Final/netty-resolver-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-resolver-dns/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-resolver",
+            "io.netty.netty-transport",
+            "io.netty.netty-codec",
+            "io.netty.netty-codec-dns",
+            "io.netty.netty-handler",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5021,6 +5283,11 @@ maven_import(
     pom = "repository/io/netty/netty-resolver/4.1.93.Final/netty-resolver-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-resolver/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5061,6 +5328,14 @@ maven_import(
     pom = "repository/io/netty/netty-transport-classes-epoll/4.1.93.Final/netty-transport-classes-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-classes-epoll/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-transport-native-unix-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5101,6 +5376,14 @@ maven_import(
     pom = "repository/io/netty/netty-transport-classes-kqueue/4.1.93.Final/netty-transport-classes-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-classes-kqueue/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "io.netty.netty-transport-native-unix-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5282,6 +5565,14 @@ maven_import(
     pom = "repository/io/netty/netty-transport-native-unix-common/4.1.93.Final/netty-transport-native-unix-common-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-native-unix-common/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-jni-util",
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5305,6 +5596,13 @@ maven_import(
     pom = "repository/io/netty/netty-transport-rxtx/4.1.93.Final/netty-transport-rxtx-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-rxtx/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "org.rxtx.rxtx",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5328,6 +5626,14 @@ maven_import(
     pom = "repository/io/netty/netty-transport-sctp/4.1.93.Final/netty-transport-sctp-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-sctp/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-codec",
+            "io.netty.netty-transport",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5351,6 +5657,14 @@ maven_import(
     pom = "repository/io/netty/netty-transport-udt/4.1.93.Final/netty-transport-udt-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport-udt/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-transport",
+            "com.barchart.udt.barchart-udt-bundle",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5388,6 +5702,13 @@ maven_import(
     pom = "repository/io/netty/netty-transport/4.1.93.Final/netty-transport-4.1.93.Final.pom",
     repo_root_path = "repository",
     repo_path = "io/netty/netty-transport/4.1.93.Final",
+    exclusions_for_parents = {
+        "io.netty.netty-all": [
+            "io.netty.netty-common",
+            "io.netty.netty-buffer",
+            "io.netty.netty-resolver",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5759,6 +6080,11 @@ maven_import(
     pom = "repository/jline/jline/2.14.6/jline-2.14.6.pom",
     repo_root_path = "repository",
     repo_path = "jline/jline/2.14.6",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-groovysh": [
+            "junit.junit",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -5819,6 +6145,12 @@ maven_import(
     pom = "repository/kr/motd/maven/os-maven-plugin/1.7.1/os-maven-plugin-1.7.1.pom",
     repo_root_path = "repository",
     repo_path = "kr/motd/maven/os-maven-plugin/1.7.1",
+    exclusions_for_parents = {
+        "com.google.gradle.osdetector-gradle-plugin": [
+            "org.codehaus.plexus.plexus-utils",
+            "org.apache.maven.maven-plugin-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -6147,6 +6479,11 @@ maven_import(
     pom = "repository/org/apache/ant/ant-junit/1.10.14/ant-junit-1.10.14.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/ant/ant-junit/1.10.14",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-ant": [
+            "junit.junit",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -6201,6 +6538,11 @@ maven_import(
     pom = "repository/org/apache/ant/ant/1.10.14/ant-1.10.14.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/ant/ant/1.10.14",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-ant": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -6315,6 +6657,11 @@ maven_import(
     pom = "repository/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/httpcomponents/httpclient/4.5.14",
+    exclusions_for_parents = {
+        "org.eclipse.aether.aether-transport-http": [
+            "commons-logging.commons-logging",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -6428,6 +6775,9 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "org/apache/maven/maven-aether-provider/3.3.9",
     srcjar = "repository/org/apache/maven/maven-aether-provider/3.3.9/maven-aether-provider-3.3.9-sources.jar",
+    deps_with_exclusions = [
+        "org.codehaus.plexus.plexus-component-annotations",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -6619,6 +6969,11 @@ maven_import(
     pom = "repository/org/bitbucket/b_c/jose4j/0.9.5/jose4j-0.9.5.pom",
     repo_root_path = "repository",
     repo_path = "org/bitbucket/b_c/jose4j/0.9.5",
+    exclusions_for_parents = {
+        "com.android.tools.build.bundletool": [
+            "org.slf4j.slf4j-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -6953,6 +7308,11 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-ant/3.0.22/groovy-ant-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-ant/3.0.22",
+    deps_with_exclusions = [
+        "org.codehaus.groovy.groovy-groovydoc",
+        "org.apache.ant.ant",
+        "org.apache.ant.ant-junit",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7051,6 +7411,9 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-console/3.0.22/groovy-console-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-console/3.0.22",
+    deps_with_exclusions = [
+        "org.codehaus.groovy.groovy-templates",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7115,6 +7478,9 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-docgenerator/3.0.22/groovy-docgenerator-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-docgenerator/3.0.22",
+    deps_with_exclusions = [
+        "org.codehaus.groovy.groovy-templates",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7155,6 +7521,11 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-groovydoc/3.0.22/groovy-groovydoc-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-groovydoc/3.0.22",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-ant": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -7196,6 +7567,10 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-groovysh/3.0.22/groovy-groovysh-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-groovysh/3.0.22",
+    deps_with_exclusions = [
+        "jline.jline",
+        "org.codehaus.groovy.groovy-templates",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7378,6 +7753,9 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-servlet/3.0.22/groovy-servlet-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-servlet/3.0.22",
+    deps_with_exclusions = [
+        "org.codehaus.groovy.groovy-templates",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7468,6 +7846,52 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-templates/3.0.22/groovy-templates-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-templates/3.0.22",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-console": [
+            "org.slf4j.slf4j-api",
+            "org.slf4j.jcl-over-slf4j",
+            "*.groovy-all",
+            "org.slf4j.log4j-over-slf4j",
+            "org.apache.ant.ant",
+            "org.apache.ant.ant-launcher",
+            "commons-logging.commons-logging",
+            "log4j.log4j",
+            "ant.ant",
+        ],
+        "org.codehaus.groovy.groovy-docgenerator": [
+            "org.slf4j.slf4j-api",
+            "org.slf4j.jcl-over-slf4j",
+            "*.groovy-all",
+            "org.slf4j.log4j-over-slf4j",
+            "org.apache.ant.ant",
+            "org.apache.ant.ant-launcher",
+            "commons-logging.commons-logging",
+            "log4j.log4j",
+            "ant.ant",
+        ],
+        "org.codehaus.groovy.groovy-groovysh": [
+            "org.slf4j.slf4j-api",
+            "org.slf4j.jcl-over-slf4j",
+            "*.groovy-all",
+            "org.slf4j.log4j-over-slf4j",
+            "org.apache.ant.ant",
+            "org.apache.ant.ant-launcher",
+            "commons-logging.commons-logging",
+            "log4j.log4j",
+            "ant.ant",
+        ],
+        "org.codehaus.groovy.groovy-servlet": [
+            "org.slf4j.slf4j-api",
+            "org.slf4j.jcl-over-slf4j",
+            "*.groovy-all",
+            "org.slf4j.log4j-over-slf4j",
+            "org.apache.ant.ant",
+            "org.apache.ant.ant-launcher",
+            "commons-logging.commons-logging",
+            "log4j.log4j",
+            "ant.ant",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -7508,6 +7932,11 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-test-junit5/3.0.22/groovy-test-junit5-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-test-junit5/3.0.22",
+    deps_with_exclusions = [
+        "org.junit.jupiter.junit-jupiter-api",
+        "org.junit.jupiter.junit-jupiter-engine",
+        "org.junit.platform.junit-platform-launcher",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7574,6 +8003,9 @@ maven_import(
     pom = "repository/org/codehaus/groovy/groovy-testng/3.0.22/groovy-testng-3.0.22.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/groovy/groovy-testng/3.0.22",
+    deps_with_exclusions = [
+        "org.testng.testng",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -7671,6 +8103,11 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "org/codehaus/plexus/plexus-component-annotations/1.6",
     srcjar = "repository/org/codehaus/plexus/plexus-component-annotations/1.6/plexus-component-annotations-1.6-sources.jar",
+    exclusions_for_parents = {
+        "org.apache.maven.maven-aether-provider": [
+            "junit.junit",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -7740,6 +8177,14 @@ maven_import(
     pom = "repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.pom",
     repo_root_path = "repository",
     repo_path = "org/codehaus/woodstox/stax2-api/4.2.1",
+    exclusions_for_parents = {
+        "com.fasterxml.woodstox.woodstox-core": [
+            "javax.xml.stream.stax-api",
+        ],
+        "com.fasterxml.jackson.dataformat.jackson-dataformat-xml": [
+            "javax.xml.stream.stax-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -7996,6 +8441,9 @@ maven_import(
     pom = "repository/org/eclipse/aether/aether-transport-http/1.0.2.v20150114/aether-transport-http-1.0.2.v20150114.pom",
     repo_root_path = "repository",
     repo_path = "org/eclipse/aether/aether-transport-http/1.0.2.v20150114",
+    deps_with_exclusions = [
+        "org.apache.httpcomponents.httpclient",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -8827,6 +9275,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-android-extensions/1.9.20/kotlin-android-extensions-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-android-extensions/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -8848,6 +9306,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.20/kotlin-build-tools-api-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-build-tools-api/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -8882,6 +9350,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20/kotlin-compiler-embeddable-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -8917,6 +9395,20 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.20/kotlin-compiler-runner-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-compiler-runner/1.9.20",
+    deps_with_exclusions = [
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
+     ],
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-build-common",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -8958,6 +9450,9 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-compiler/1.9.20/kotlin-compiler-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-compiler/1.9.20",
+    deps_with_exclusions = [
+        "org.jetbrains.kotlin.kotlin-reflect",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -9026,6 +9521,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.20/kotlin-gradle-plugin-annotations-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9066,6 +9571,22 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.20/kotlin-gradle-plugin-api-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.20",
+    deps_with_exclusions = [
+        "org.jetbrains.kotlin.kotlin-project-model",
+        "org.jetbrains.kotlin.kotlin-native-utils",
+        "org.jetbrains.kotlin.kotlin-tooling-core",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-annotations",
+     ],
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9095,6 +9616,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.20/kotlin-gradle-plugin-idea-proto-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9127,6 +9658,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.20/kotlin-gradle-plugin-idea-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9153,6 +9694,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.20/kotlin-gradle-plugin-model-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9219,6 +9770,20 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.20/kotlin-gradle-plugin-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.20",
+    deps_with_exclusions = [
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-idea",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-model",
+        "org.jetbrains.kotlin.kotlin-scripting-compiler-impl-embeddable",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-idea-proto",
+        "org.jetbrains.kotlin.kotlin-android-extensions",
+        "org.jetbrains.kotlin.kotlin-scripting-compiler-embeddable",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api",
+        "org.jetbrains.kotlin.kotlin-compiler-runner",
+        "org.jetbrains.kotlin.kotlin-build-tools-api",
+        "org.jetbrains.kotlin.kotlin-klib-commonizer-api",
+        "org.jetbrains.kotlin.kotlin-util-klib",
+        "org.jetbrains.kotlin.kotlin-compiler-embeddable",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -9268,6 +9833,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.20/kotlin-klib-commonizer-api-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9302,6 +9877,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-native-utils/1.9.20/kotlin-native-utils-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-native-utils/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9331,6 +9916,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-project-model/1.9.20/kotlin-project-model-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-project-model/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9360,6 +9955,11 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-reflect/1.9.20/kotlin-reflect-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-reflect/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-compiler": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9431,6 +10031,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20/kotlin-scripting-compiler-embeddable-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9463,6 +10073,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20/kotlin-scripting-compiler-impl-embeddable-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9692,6 +10312,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-tooling-core/1.9.20/kotlin-tooling-core-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-tooling-core/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9742,6 +10372,16 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-util-klib/1.9.20/kotlin-util-klib-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-util-klib/1.9.20",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-gradle-plugin": [
+            "org.jetbrains.kotlin.kotlin-reflect",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+            "org.jetbrains.kotlin.kotlin-stdlib-jdk7",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "org.jetbrains.kotlin.kotlin-script-runtime",
+            "org.jetbrains.kotlin.kotlin-stdlib-common",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -9865,6 +10505,11 @@ maven_import(
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.7.1/kotlinx-coroutines-core-jvm-1.7.1.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.7.1",
+    exclusions_for_parents = {
+        "org.jetbrains.kotlin.kotlin-compiler-runner": [
+            "*.*",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -10121,6 +10766,12 @@ maven_import(
     pom = "repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.pom",
     repo_root_path = "repository",
     repo_path = "org/junit/jupiter/junit-jupiter-api/5.9.2",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-test-junit5": [
+            "org.apiguardian.apiguardian-api",
+            "org.junit.platform.junit-platform-commons",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -10157,6 +10808,11 @@ maven_import(
     pom = "repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.pom",
     repo_root_path = "repository",
     repo_path = "org/junit/jupiter/junit-jupiter-engine/5.9.2",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-test-junit5": [
+            "org.apiguardian.apiguardian-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -10248,6 +10904,11 @@ maven_import(
     pom = "repository/org/junit/platform/junit-platform-launcher/1.9.2/junit-platform-launcher-1.9.2.pom",
     repo_root_path = "repository",
     repo_path = "org/junit/platform/junit-platform-launcher/1.9.2",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-test-junit5": [
+            "org.apiguardian.apiguardian-api",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
@@ -11089,6 +11750,9 @@ maven_import(
     pom = "repository/org/robolectric/shadows-framework/4.8.2/shadows-framework-4.8.2.pom",
     repo_root_path = "repository",
     repo_path = "org/robolectric/shadows-framework/4.8.2",
+    deps_with_exclusions = [
+        "androidx.test.monitor",
+     ],
     visibility = ["//visibility:public"],
 )
 
@@ -11326,6 +11990,15 @@ maven_import(
     pom = "repository/org/testng/testng/7.5/testng-7.5.pom",
     repo_root_path = "repository",
     repo_path = "org/testng/testng/7.5",
+    exclusions_for_parents = {
+        "org.codehaus.groovy.groovy-testng": [
+            "junit.junit",
+            "com.google.code.findbugs.jsr305",
+            "org.yaml.snakeyaml",
+            "org.apache.ant.ant",
+            "com.google.inject.guice",
+        ],
+    },
     visibility = ["//visibility:public"],
 )
 
