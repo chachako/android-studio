@@ -3,7 +3,6 @@
 #
 common:linux --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/linux/ndk/27.0.12077973
 common:linux --repo_env=ANDROID_HOME=prebuilts/studio/sdk/linux
-common:linux --@native_toolchain//:enable_legacy
 
 build:linux --bes_keywords=linux
 build:linux --host_platform=//tools/base/bazel/platforms:linux
