@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import re
+import subprocess
 import tempfile
 from typing import Iterator, List, Sequence
 
@@ -25,6 +26,7 @@ _LOCAL_REPOSITORIES = [
 @dataclasses.dataclass
 class SelectivePresubmitResult:
   """Represents the result of attempting a selective presubmit."""
+
   found: bool
   targets: List[str]
   flags: List[str]
@@ -54,7 +56,6 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
   with tempfile.TemporaryDirectory() as temp_dir:
     temp_path = pathlib.Path(temp_dir)
 
-    current_hashes = _generate_hash_file(build_env)
     base_hashes = temp_path / 'base-hashes.json'
     reference_bid = gce.get_reference_build_id(
         build_env.build_number,
@@ -74,6 +75,12 @@ def _find_impacted_targets(build_env: bazel.BuildEnv) -> List[str] | None:
       logging.info('Base hash file %s not found', object_name)
       return None
     logging.info('Base hash file %s found', object_name)
+
+    try:
+      current_hashes = _generate_hash_file(build_env)
+    except subprocess.TimeoutExpired as e:
+      logging.warning('generate-hashes timed out after %f seconds.', e.timeout)
+      return None
 
     impacted_targets = temp_path / 'impacted-targets.txt'
     bazel_diff.get_impacted_targets(
@@ -127,12 +134,14 @@ def _find_impacted_test_targets(
       else:
         include_query.append(f'attr(tags, "{test_filter}", {target})')
 
-    exclude_query.append(f'attr(target_compatible_with, "@platforms//:incompatible", {target})')
+    exclude_query.append(
+        f'attr(target_compatible_with, "@platforms//:incompatible", {target})'
+    )
 
   query = (
-      ' union '.join(include_query) +
-      ' except ' +
-      ' except '.join(exclude_query)
+      ' union '.join(include_query)
+      + ' except '
+      + ' except '.join(exclude_query)
   )
   result = build_env.bazel_query(query)
 
@@ -176,7 +185,11 @@ def generate_and_upload_hash_file(build_env: bazel.BuildEnv) -> None:
       bid=build_env.build_number,
       target=build_env.build_target_name,
   )
-  hash_file_path = _generate_hash_file(build_env)
+  try:
+    hash_file_path = _generate_hash_file(build_env)
+  except subprocess.TimeoutExpired as e:
+    logging.warning('generate-hashes timed out after %f seconds.', e.timeout)
+    return
   gce.upload_to_gcs(hash_file_path, _HASH_FILE_BUCKET, object_name)
   logging.info('Uploaded hash file to GCS with object name: %s', object_name)
 
@@ -273,7 +286,9 @@ def generate_runs_per_test_flags(build_env: bazel.BuildEnv) -> List[str]:
 
     # Limit the number of runs per test.
     if runs > _MAX_RUNS_PER_TEST:
-      raise ValueError(f'Exceeded maximum runs per test: {runs} > {_MAX_RUNS_PER_TEST}')
+      raise ValueError(
+          f'Exceeded maximum runs per test: {runs} > {_MAX_RUNS_PER_TEST}'
+      )
 
     # Prevent wildcards.
     if target.endswith('...') or target.endswith(':all'):

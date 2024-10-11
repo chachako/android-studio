@@ -28,8 +28,12 @@ class BuildEnv:
   # Startup options for Bazel commands.
   _startup_options: List[str]
 
-  def __init__(self, bazel_path: str, user: str = getpass.getuser(),
-               bazel_version: str = ""):
+  def __init__(
+      self,
+      bazel_path: str,
+      user: str = getpass.getuser(),
+      bazel_version: str = "",
+  ):
     self.build_number = os.environ.get("BUILD_NUMBER", "SNAPSHOT")
     self.build_target_name = os.environ.get("BUILD_TARGET_NAME", "")
     self.workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", "")
@@ -49,7 +53,8 @@ class BuildEnv:
     self._startup_options = ["--max_idle_secs=60"]
     if self.is_ab_environment():
       install_base = os.path.join(
-          self.tmp_dir, "bazel_install", self.bazel_version)
+          self.tmp_dir, "bazel_install", self.bazel_version
+      )
       self._startup_options.extend([
           f"--output_base={os.path.join(self.tmp_dir, 'bazel_out')}",
           f"--install_base={install_base}",
@@ -59,21 +64,23 @@ class BuildEnv:
     """Returns true if on an Android Build machine."""
     return self.build_target_name and self.user == "android-build"
 
-  def bazel_build(self, *build_args) -> subprocess.CompletedProcess:
+  def bazel_build(
+      self, *build_args, timeout=None
+  ) -> subprocess.CompletedProcess:
     """Runs a 'bazel build' command."""
-    return self._bazel(True, False, "build", *build_args)
+    return self._bazel(True, False, "build", *build_args, timeout=timeout)
 
-  def bazel_test(self, *test_args) -> subprocess.CompletedProcess:
+  def bazel_test(self, *test_args, timeout=None) -> subprocess.CompletedProcess:
     """Runs a 'bazel test' command."""
-    return self._bazel(False, False, "test", *test_args)
+    return self._bazel(False, False, "test", *test_args, timeout=timeout)
 
-  def bazel_run(self, *run_args) -> subprocess.CompletedProcess:
+  def bazel_run(self, *run_args, timeout=None) -> subprocess.CompletedProcess:
     """Runs a 'bazel run' command.
 
     Raises:
       CalledProcessError: If the command fails.
     """
-    return self._bazel(False, True, "run", *run_args)
+    return self._bazel(False, True, "run", *run_args, timeout=timeout)
 
   def bazel_query(self, *query_args) -> subprocess.CompletedProcess:
     """Runs a 'bazel query' command.
@@ -104,7 +111,11 @@ class BuildEnv:
     return self._bazel(False, False, "shutdown")
 
   def _bazel(
-      self, capture_output: bool, check: bool, *args: List[str]
+      self,
+      capture_output: bool,
+      check: bool,
+      *args: List[str],
+      timeout: int = None,
   ) -> subprocess.CompletedProcess:
     """Runs a Bazel command with the given args."""
     cmd = [self.bazel_path]
@@ -116,4 +127,5 @@ class BuildEnv:
         capture_output=capture_output,
         check=check,
         cwd=self.workspace_dir,
+        timeout=timeout,
     )

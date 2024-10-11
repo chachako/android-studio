@@ -27,6 +27,7 @@ def generate_hash_file(
       '--fineGrainedHashExternalRepos',
       ','.join(external_repos),
       str(output_path),
+      timeout=600,
   )
   end = time.time()
   logging.info('generate-hashes took %d seconds', end - start)
@@ -51,6 +52,7 @@ def get_impacted_targets(
       final_hashes_path,
       '--output',
       str(output_path),
+      timeout=300,
   )
   end = time.time()
   logging.info('get-impacted-targets took %d seconds', end - start)
