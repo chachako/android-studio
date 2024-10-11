@@ -765,4 +765,30 @@ class ScreenshotTest {
             "simpleComposableTest2_simpleComposable_7362dd6b_0.png",
         )
     }
+
+    @Test
+    fun runPreviewScreenshotTestRemoveUnusedImages() {
+        getExecutor().run(":app:updateDebugScreenshotTest")
+        val exampleTestReferenceScreenshotDir = appProject.projectDir.resolve("src/debug/screenshotTest/reference/pkg/name/ExampleTest").toPath()
+        assertThat(exampleTestReferenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
+            "simpleComposableTest_simpleComposable_c5877f71_0.png",
+            "simpleComposableTest2_simpleComposable_7362dd6b_0.png",
+            "multiPreviewTest_with_Background_6d9364e2_0.png",
+            "multiPreviewTest_withoutBackground_3619adf7_0.png",
+            "parameterProviderTest_simplePreviewParameterProvider_893e015e_b983d6d8_1.png",
+            "parameterProviderTest_simplePreviewParameterProvider_893e015e_b983d6d8_0.png",
+            "previewNameCannotBeUsedAsFileNameTest_aa50de45_0.png",
+        )
+        val testFile = appProject.projectDir.resolve("src/screenshotTest/java/com/ExampleTest.kt")
+        TestFileUtils.searchAndReplace(testFile, "@Preview(name = \"simplePreviewParameterProvider\")", "")
+
+        getExecutor().run(":app:updateDebugScreenshotTest")
+        assertThat(exampleTestReferenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
+            "simpleComposableTest_simpleComposable_c5877f71_0.png",
+            "simpleComposableTest2_simpleComposable_7362dd6b_0.png",
+            "multiPreviewTest_with_Background_6d9364e2_0.png",
+            "multiPreviewTest_withoutBackground_3619adf7_0.png",
+            "previewNameCannotBeUsedAsFileNameTest_aa50de45_0.png",
+        )
+    }
 }

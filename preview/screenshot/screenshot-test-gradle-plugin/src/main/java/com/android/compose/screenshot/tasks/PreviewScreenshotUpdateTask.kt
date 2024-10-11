@@ -33,6 +33,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -62,7 +63,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         val resultFile = renderTaskResultFile.get().asFile
         val results = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         verifyRender(results)
-        FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
+        removeUnusedRefImages()
         if (results.isNotEmpty()) {
             for (result in results) {
                 saveReferenceImage(result)
@@ -70,6 +71,23 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         } else {
             this.logger.lifecycle("No reference images were updated because no previews were found.")
         }
+    }
+
+    private fun removeUnusedRefImages() {
+        val renderDir = renderTaskOutputDir.get().asFile
+        val referenceDir = referenceImageDir.get().asFile
+
+        referenceDir.walkTopDown().forEach { refFile ->
+            if (refFile.isFile) {
+                val relativePath = refFile.relativeTo(referenceDir).path
+                val correspondingRenderFile = File(renderDir, relativePath)
+
+                if (!correspondingRenderFile.exists()) {
+                    FileUtils.delete(refFile)
+                }
+            }
+        }
+
     }
 
     private fun verifyRender(results: List<ComposeScreenshotResult>) {
