@@ -28,8 +28,10 @@ import com.android.tools.bazel.model.JvmImport;
 import com.android.tools.bazel.model.Package;
 import com.android.tools.bazel.model.UnmanagedRule;
 import com.android.tools.bazel.model.Workspace;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,6 +41,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class IrToBazel {
 
@@ -67,6 +71,7 @@ public class IrToBazel {
         Map<IrModule, ImlModule> modules = new HashMap<>();
         Map<String, UnmanagedRule> unmanaged = new HashMap<>();
         Map<String, JvmImport> reuse = Maps.newHashMap();
+        Set<String> artifacts = new TreeSet<>();
 
         // 1st pass: Creation.
         for (IrModule bazelModule : bazelProject.modules) {
@@ -165,6 +170,9 @@ public class IrToBazel {
                     );
                     IrLibrary library = (IrLibrary) dependency.dependency;
                     JvmImport javaImport = imports.get(library);
+                    // An artifact is a library that needs to be built in the
+                    // IDE prebuild step when using in IDE jps build
+                    boolean isArtifact = false;
                     if (javaImport == null) {
                         Map.Entry<String, String> unmanagedEntry = null;
                         for (Map.Entry<String, String> entry : UNMANAGED.entrySet()) {
@@ -233,6 +241,7 @@ public class IrToBazel {
                                 pkg = libPackage;
                                 String targetName = new File(relJar).getName();
                                 source = "//" + jarPkg.getName() + ":" + targetName;
+                                isArtifact = true;
                             } else if (jarPkg == libPackage) {
                                 // This must be a prebuilt jar in the source tree.
                                 pkg = libPackage;
@@ -296,12 +305,23 @@ public class IrToBazel {
                         imports.put(library, javaImport);
                     }
                     imlModule.addDependency(javaImport, dependency.exported, scopes);
+                    if (isArtifact) {
+                        artifacts.add(javaImport.getLabel());
+                    }
+
                 } else if (dependency.dependency instanceof IrModule) {
                     scopes.add(0, ImlModule.Tag.MODULE);
                     imlModule.addDependency(
                             moduleRefs.get(dependency.dependency), dependency.exported, scopes);
                 }
             }
+        }
+
+        // The one place where we save external artifacts.
+        Package artifactsPackage = bazel.findPackage("tools/adt/idea/android");
+        FileGroup artifactRule = new FileGroup(artifactsPackage, "jps_artifacts");
+        for (String artifact : artifacts) {
+            artifactRule.addSource(artifact);
         }
 
         logger.info("Updating BUILD files...");
