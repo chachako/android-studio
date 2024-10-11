@@ -698,4 +698,71 @@ class ScreenshotTest {
         assert(diffDir1.listDirectoryEntries().isEmpty())
         assert(diffDir2.listDirectoryEntries().isEmpty())
     }
+
+    @Test
+    fun runPreviewScreenshotTestWithFilter() {
+        TestFileUtils.appendToFile(
+            // cannot set filter using the conventional command ./gradlew validateDebugScreenshotTest --tests "Pattern". https://github.com/gradle/gradle/issues/1228
+            appProject.buildFile,
+            """
+            afterEvaluate {
+                tasks.named('validateDebugScreenshotTest', Test) {
+                    setTestNameIncludePatterns(['*simpleComposableTest*'])
+                }
+            }
+            """.trimIndent()
+        )
+
+        // Generate screenshots to be tested against
+        getExecutor().run(":app:updateDebugScreenshotTest")
+
+        // Validate previews matches screenshots
+        getExecutor().run(":app:validateDebugScreenshotTest")
+
+        // Verify that HTML reports are generated and all tests pass
+        val indexHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/index.html")
+        val classHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/pkg.name.ExampleTest.html")
+        val class2HtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/pkg.name.TopLevelPreviewTestKt.html")
+        val packageHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/pkg.name.html")
+        assertThat(indexHtmlReport).exists()
+        assertThat(classHtmlReport).exists()
+        val expectedOutput = listOf(
+            """<h3 class="success">simpleComposableTest_simpleComposable</h3>""",
+            """<h3 class="success">simpleComposableTest2_simpleComposable</h3>"""
+        )
+        val unExpectedOutput = listOf(
+            """<h3 class="success">multiPreviewTest_with_Background_{showBackground=true}</h3>""",
+            """<h3 class="success">multiPreviewTest_withoutBackground_{showBackground=false}</h3>""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>""",
+            """<h3 class="success">previewNameCannotBeUsedAsFileNameTest_invalid/File/Name</h3>""",
+            """<h3 class="success">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
+        )
+        var classHtmlReportText = classHtmlReport.readText()
+        expectedOutput.forEach { assertThat(classHtmlReportText).contains(it) }
+        unExpectedOutput.forEach { assertThat(classHtmlReportText).doesNotContain(it) }
+        assertThat(class2HtmlReport.readText()).contains("""<h3 class="success">simpleComposableTest_3</h3>""")
+        assertThat(packageHtmlReport).exists()
+
+        // Assert that no diff images were generated because screenshot matched the reference image
+        val exampleTestDiffDir = appProject.buildDir.resolve("outputs/screenshotTest-results/preview/debug/diffs/pkg/name/ExampleTest").toPath()
+        val topLevelTestDiffDir = appProject.buildDir.resolve("outputs/screenshotTest-results/preview/debug/diffs/pkg/name/TopLevelPreviewTestKt").toPath()
+        assert(exampleTestDiffDir.listDirectoryEntries().isEmpty())
+        assert(topLevelTestDiffDir.listDirectoryEntries().isEmpty())
+
+        // Update previews to be different from the references
+        val testFile = appProject.projectDir.resolve("src/main/java/com/Example.kt")
+        TestFileUtils.searchAndReplace(testFile, "Hello World", "HelloWorld ")
+        val previewParameterProviderFile = appProject.projectDir.resolve("src/main/java/com/ParameterProviders.kt")
+        TestFileUtils.searchAndReplace(previewParameterProviderFile, "Primary text", " Primarytext")
+
+        // Rerun validation task - modified tests should fail and diffs are generated
+        getExecutor().expectFailure().run(":app:validateDebugScreenshotTest")
+
+        assertThat(exampleTestDiffDir.listDirectoryEntries().map { it.name }).containsExactly(
+            "simpleComposableTest_simpleComposable_c5877f71_0.png",
+            "simpleComposableTest2_simpleComposable_7362dd6b_0.png",
+        )
+    }
 }
