@@ -31,10 +31,6 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 // Misc tests to verify type handling in the Kotlin UAST initialization.
 class TypesTest : TestCase() {
   fun testPrimitiveKotlinTypes() {
-    // TODO(jsjeon): exp type of ctor call should return null, not Unit
-    if (useFirUast()) {
-      return
-    }
     val pair =
       LintUtilsTest.parseKotlin(
         "" +
@@ -287,10 +283,6 @@ class TypesTest : TestCase() {
   }
 
   fun testPrimitiveKotlinTypes3() {
-    // TODO(jsjeon): exp type of ctor call should return null, not Unit
-    if (useFirUast()) {
-      return
-    }
     val pair =
       LintUtilsTest.parseKotlin(
         "" +

@@ -2489,6 +2489,47 @@ class UastTest : TestCase() {
     }
   }
 
+  fun testConstructorDelegationType() {
+    // https://youtrack.jetbrains.com/issue/KTIJ-31633
+    val source =
+      kotlin(
+          """
+          class Constructors {
+            class ThisCall {
+              constructor() // (1)
+              constructor(i: Int) : this() // (2)
+            }
+            open class SuperCallToImplicit {
+              class C : SuperCallToImplicit {
+                constructor() : super() // (3)
+              }
+            }
+            open class SuperCallToExplicit {
+              constructor() // (4)
+              class C : SuperCallToExplicit {
+                constructor() : super() // (5)
+              }
+            }
+          }
+        """
+        )
+        .indented()
+    var count = 0
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val t = node.getExpressionType()
+            assertNull(node.sourcePsi?.text ?: "<null source PSI>", t)
+            count++
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(5, count)
+  }
+
   fun testConstructorReferences() {
     val source =
       kotlin(
