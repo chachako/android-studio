@@ -9692,6 +9692,37 @@ public class ApiDetectorTest extends AbstractCheckTest {
                             + "0 errors, 6 warnings");
     }
 
+    @SuppressWarnings("all") // sample code
+    public void testMethodRefDesugared() {
+        // Regression test for b/373243841
+        lint().files(
+                        manifest().minSdk(21),
+                        java(
+                                "package test.pkg;\n"
+                                    + "\n"
+                                    + "import java.util.Objects;\n"
+                                    + "\n"
+                                    + "class MyTestClass {\n"
+                                    + "    private Object object;\n"
+                                    + "\n"
+                                    + "    public interface Filter {\n"
+                                    + "        boolean filter(Object o);\n"
+                                    + "    }\n"
+                                    + "\n"
+                                    + "    public boolean someMethod(Filter filter) {\n"
+                                    + "        return filter.filter(object);\n"
+                                    + "    }\n"
+                                    + "\n"
+                                    + "     public void doSomethingWithFilter() {\n"
+                                    + "        if (someMethod(Objects::nonNull)) {\n"
+                                    + "            // do something\n"
+                                    + "        }\n"
+                                    + "    }\n"
+                                    + "}\n"))
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

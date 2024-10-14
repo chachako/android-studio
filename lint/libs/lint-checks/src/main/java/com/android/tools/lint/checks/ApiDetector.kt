@@ -1337,6 +1337,21 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       if (suppressed) {
         return
       }
+
+      // Builtin R8 desugaring, such as rewriting compare calls (see b/36390874)
+      if (
+        isDesugaredMethod(
+          owner,
+          name,
+          desc,
+          context.sourceSetType,
+          if (context.driver.isGlobalAnalysis()) context.mainProject else context.project,
+          containingClass,
+        )
+      ) {
+        return
+      }
+
       minSdk = max(minSdk, localMinSdk)
 
       val signature = expression.asSourceString()
