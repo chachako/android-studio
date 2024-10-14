@@ -2979,4 +2979,101 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
     //      .expect("")
     //      .expectFixDiffs("")
   }
+
+  fun test_splitToWebAndCustomSchemes() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="34" />
+
+                <application>
+                    <activity android:name=".SplitWebAndCustomActivity" android:exported="true">
+                        <intent-filter android:autoVerify="true" android:order="-1" android:priority="-1">
+                            <action android:name="android.intent.action.VIEW" />
+                            <category android:name="android.intent.category.DEFAULT" />
+                            <category android:name="android.intent.category.BROWSABLE" />
+                            <uri-relative-filter-group>
+                                <data android:path="/path" />
+                                <data android:query="queryparam=value" />
+                            </uri-relative-filter-group>
+                            <data android:scheme="http" />
+                            <data android:scheme="custom" />
+                            <data android:host="library.com" />
+                            <data android:path="@string/path" />
+                            <data android:path="/&lt;&amp;&apos;'" />
+                            <data android:path='/single"quote' />
+                            <!-- Test having tags underneath the host elements as well -->
+                            <action android:name="android.intent.action.SEND"/>
+                            <uri-relative-filter-group>
+                                <data android:path="/path" />
+                                <data android:query="queryparam=value" />
+                            </uri-relative-filter-group>
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+          """,
+          )
+          .indented(),
+        xml(
+            "res/values/strings.xml",
+            """
+                <resources>
+                    <string name="path">/path</string>
+                </resources>
+                """,
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:7: Error: Split your http(s) and custom schemes into separate intent filters [AppLinkSplitToWebAndCustom]
+                    <intent-filter android:autoVerify="true" android:order="-1" android:priority="-1">
+                    ^
+        1 errors, 0 warnings
+      """
+      )
+      .expectFixDiffs(
+        """
+      Fix for AndroidManifest.xml line 7: Replace with <intent-filter android:autoVerify="true" android:order="-1" android:priority="-1">...:
+      @@ -15 +15
+      +                 <action android:name="android.intent.action.SEND" />
+      +                 <uri-relative-filter-group>
+      +                     <data android:path="/path" />
+      +                     <data android:query="queryparam=value" />
+      +                 </uri-relative-filter-group>
+      @@ -16 +21
+      -                 <data android:scheme="custom" />
+      @@ -18 +22
+      -                 <data android:path="@string/path" />
+      @@ -20 +23
+      -                 <data android:path='/single"quote' />
+      -                 <!-- Test having tags underneath the host elements as well -->
+      -                 <action android:name="android.intent.action.SEND"/>
+      +                 <data android:path="/single"quote" />
+      +                 <data android:path="@string/path" />
+      +             </intent-filter>
+      +             <intent-filter android:order="-1" android:priority="-1">
+      +                 <action android:name="android.intent.action.VIEW" />
+      +                 <category android:name="android.intent.category.DEFAULT" />
+      +                 <category android:name="android.intent.category.BROWSABLE" />
+      @@ -27 +34
+      +                 <action android:name="android.intent.action.SEND" />
+      +                 <uri-relative-filter-group>
+      +                     <data android:path="/path" />
+      +                     <data android:query="queryparam=value" />
+      +                 </uri-relative-filter-group>
+      +                 <data android:scheme="custom" />
+      +                 <data android:host="library.com" />
+      +                 <data android:path="/&lt;&amp;&apos;'" />
+      +                 <data android:path="/single"quote" />
+      +                 <data android:path="@string/path" />
+      """
+      )
+  }
 }
