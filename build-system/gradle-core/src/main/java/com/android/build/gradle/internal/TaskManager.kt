@@ -200,6 +200,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.KaptExtensionConfig
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.Callable
 
 /**
  * Abstract class containing tasks creation logic that is shared between variants and components.
@@ -718,7 +719,7 @@ abstract class TaskManager(
                 // dependencies.
 
                 // First collect symbols from this module.
-                taskFactory.register(ParseLibraryResourcesTask.CreateAction(creationConfig))
+                registerParseLibraryResourcesTask(creationConfig)
 
                 // Only generate the keep rules when we need them. We don't need to generate them here
                 // for non-library modules since AAPT2 will generate them from MergeType.MERGE.
@@ -1787,6 +1788,24 @@ abstract class TaskManager(
         return taskFactory.register(
                 R8Task.CreationAction(creationConfig, isTestApplication, addCompileRClass))
     }
+
+    protected fun registerParseLibraryResourcesTask(creationConfig: ComponentCreationConfig) {
+        addAndroidJarDependency()
+        taskFactory.register(ParseLibraryResourcesTask.CreateAction(creationConfig))
+    }
+
+    protected fun addAndroidJarDependency() {
+        project.dependencies
+            .add(
+                VariantDependencies.CONFIG_NAME_ANDROID_APIS,
+                project.files(
+                    Callable {
+                        globalConfig.versionedSdkLoader.flatMap {
+                            it.androidJarProvider
+                        }.orNull
+                    } as Callable<*>))
+    }
+
 
     /**
      * We have a separate method for publishing artifacts back to the features (instead of using the

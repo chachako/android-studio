@@ -125,7 +125,7 @@ class KmpTaskManager(
                     }
                 }
             )
-            taskFactory.register(ParseLibraryResourcesTask.CreateAction(variant))
+            registerParseLibraryResourcesTask(variant)
             taskFactory.register(GenerateLibraryRFileTask.CreationAction(variant))
 
             // tasks to package assets in the library aar
