@@ -474,7 +474,7 @@ _iml_module_ = rule(
             executable = True,
         ),
         "_compose_plugin": attr.label(
-            default = Label("//prebuilts/tools/common/m2:compose-compiler-hosted"),
+            default = Label("//prebuilts/tools/common/m2:kotlin-compose-compiler-plugin"),
             cfg = "exec",
             allow_single_file = [".jar"],
         ),

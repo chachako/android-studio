@@ -9,7 +9,7 @@ Fields:
   L$0       : java.lang.Object
   label     : int
 ====== Local Variables ==================================================
-6  [31-35]    [20-53]   : $result                       : java.lang.Object
-1  [32-35]    [24-53]   : s                             : java.lang.String
-2  [33-35]    [25-53]   : i3                            : int
+5  [31-35]    [19-53]   : $result                       : java.lang.Object
+0  [32-35]    [23-53]   : s                             : java.lang.String
+1  [33-35]    [24-53]   : i3                            : int
 

@@ -127,7 +127,6 @@ class DependenciesAnalyzerTest {
                 "com/android/build/gradle/internal/transforms/testdata/Toy.class",
                 "org/jetbrains/annotations/NotNull.class",
                 "kotlin/jvm/internal/Intrinsics.class",
-                "kotlin/jvm/internal/SourceDebugExtension.class",
                 "java/lang/String.class"
                 )
         )
