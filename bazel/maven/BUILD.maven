@@ -6114,6 +6114,7 @@ maven_import(
     pom = "repository/junit/junit/4.13.2/junit-4.13.2.pom",
     repo_root_path = "repository",
     repo_path = "junit/junit/4.13.2",
+    srcjar = "repository/junit/junit/4.13.2/junit-4.13.2-sources.jar",
     visibility = ["//visibility:public"],
 )
 

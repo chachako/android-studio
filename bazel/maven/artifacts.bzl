@@ -1165,6 +1165,7 @@ DATA = [
     "io.grpc:grpc-protobuf:jar:sources:1.57.0",
     "io.grpc:grpc-protobuf-lite:jar:sources:1.57.0",
     "io.grpc:grpc-stub:jar:sources:1.57.0",
+    "junit:junit:jar:sources:4.13.2",
     "org.brotli:dec:jar:sources:0.1.2",
     "org.commonmark:commonmark:jar:sources:0.22.0",
     "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose-desktop:jar:sources:2.8.1",
