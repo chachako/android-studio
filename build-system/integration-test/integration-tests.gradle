@@ -31,6 +31,7 @@ ext.testEnvironment =
                     key == "GENERATE_MODEL_GOLDEN_FILES" || // For updating model files
                     key == "USE_GRADLE_NIGHTLY" ||
                     key == "DEBUG_INNER_TEST" ||
+                    key == "AGP_WORKSPACE_LOCATION" ||
                     // For NDK tests on Windows. See init.mk.
                     key == "OS" ||
                     key == "PROCESSOR_ARCHITECTURE" ||
