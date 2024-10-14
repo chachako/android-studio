@@ -31,6 +31,7 @@ import org.hamcrest.CoreMatchers
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -167,23 +168,21 @@ class AdblibIDeviceWrapperTest {
         )
         val adblibIDeviceWrapper = createAdblibIDeviceWrapper(connectedDevice, bridge)
         val avdDataFuture = adblibIDeviceWrapper.avdData
-        yieldUntil { avdDataFuture.isDone }
 
         // Act / Assert
         // Note that `serialNumber` above matches an emulator pattern and as a result a call to
         // `createAvdData` triggers `connectedDevice.session.openEmulatorConsole` which throws
         // a `java.io.IOException: Error connecting channel to address 'localhost/127.0.0.1:64178'`.
-        assertNull(adblibIDeviceWrapper.avdData.get())
+        assertNull(avdDataFuture.get())
         assertNull(adblibIDeviceWrapper.avdName)
         assertNull(adblibIDeviceWrapper.avdPath)
 
         // Act / Assert
         // Trying to retrieve avdData again retries querying the data from the emulator as indicated
-        // by avdDataFuture2 not being in a completed state at first
+        // by avdDataFuture2 not being an `ImmediateFuture`
         val avdDataFuture2 = adblibIDeviceWrapper.avdData
-        assertFalse(avdDataFuture2.isDone)
-        yieldUntil { avdDataFuture.isDone }
-        assertNull(adblibIDeviceWrapper.avdData.get())
+        assertNotEquals(avdDataFuture2::class.java.simpleName, "ImmediateFuture")
+        assertNull(avdDataFuture2.get())
     }
 
     @Test
