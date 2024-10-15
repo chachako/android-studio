@@ -19,17 +19,16 @@ import com.android.adblib.AdbChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.testutils.MockitoKt.mock
-import com.android.testutils.MockitoKt.whenever
 import java.util.concurrent.CountDownLatch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class ReverseServiceTest {
   private val fakeAdbSession = FakeAdbSession()
@@ -106,12 +105,10 @@ class ReverseServiceTest {
   fun testListForward() = runBlockingWithTimeout {
     countDownLatch = CountDownLatch(2)
     val testSocket2 = fakeAdbSession.channelFactory.createServerSocket().apply { bind() }
-    doReturn(getCommand(testSocket.port), getCommand(testSocket2.port))
-      .whenever(mockReverseForwardStream)
-      .devicePort
-    doReturn("${testSocket.port}", "${testSocket2.port}")
-      .whenever(mockReverseForwardStream)
-      .localPort
+    whenever(mockReverseForwardStream.devicePort)
+      .thenReturn(getCommand(testSocket.port), getCommand(testSocket2.port))
+    whenever(mockReverseForwardStream.localPort)
+      .thenReturn("${testSocket.port}", "${testSocket2.port}")
     reverseService.handleReverse(getReverseCommand(testSocket), 0)
     reverseService.handleReverse(getReverseCommand(testSocket2), 1)
     countDownLatch.await()
