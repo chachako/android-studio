@@ -25,7 +25,6 @@ import com.android.backup.BackupService.Companion.TOKEN_FILE
 import com.android.backup.BackupService.Companion.getApplicationId
 import com.android.backup.BackupService.Companion.getRestoreToken
 import io.ktor.utils.io.core.toByteArray
-import kotlinx.coroutines.withContext
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -33,6 +32,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.pathString
+import kotlinx.coroutines.withContext
 
 private const val TRANSPORT_DTD = "com.google.android.gms/.backup.migrate.service.D2dTransport"
 private const val TRANSPORT_CLOUD = "com.google.android.gms/.backup.BackupTransportService"
@@ -57,10 +57,12 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
           reportProgress("Initializing backup transport")
           initializeTransport(transport)
           try {
-            reportProgress("Running backup")
-            adbServices.backupNow(applicationId, type)
-            reportProgress("Fetching backup")
-            pullBackup(adbServices, applicationId, backupFile)
+            withTestApplicationId(applicationId) {
+              reportProgress("Running backup")
+              adbServices.backupNow(applicationId, type)
+              reportProgress("Fetching backup")
+              pullBackup(adbServices, applicationId, backupFile)
+            }
           } finally {
             reportProgress("Cleaning up")
           }
@@ -84,12 +86,18 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
       with(adbServices) {
         // Restore is always handled by the Cloud transport
         withSetup(TRANSPORT_CLOUD) {
-          reportProgress("Initializing backup transport")
-          initializeTransport(TRANSPORT_CLOUD)
-          reportProgress("Pushing backup file")
-          val (token, applicationId) = pushBackup(adbServices, backupFile)
-          reportProgress("Restoring $applicationId")
-          restore(token, applicationId)
+          ZipFile(backupFile.pathString).use { zip ->
+            val token = zip.getRestoreToken()
+            val applicationId = zip.getApplicationId()
+            withTestApplicationId(applicationId) {
+              reportProgress("Initializing backup transport")
+              initializeTransport(TRANSPORT_CLOUD)
+              reportProgress("Pushing backup file")
+              zip.pushBackup(adbServices)
+              reportProgress("Restoring $applicationId")
+              restore(token, applicationId)
+            }
+          }
         }
         reportProgress("Done")
         Success
@@ -130,38 +138,19 @@ internal class BackupServiceImpl(private val factory: AdbServicesFactory) : Back
     }
   }
 
-  private suspend fun pushBackup(adbServices: AdbServices, path: Path): Metadata {
+  private suspend fun ZipFile.pushBackup(adbServices: AdbServices) {
     with(adbServices) {
-      ZipFile(path.pathString).use { zip ->
-        val token = zip.getRestoreToken()
-        val applicationId = zip.getApplicationId()
-        BACKUP_FILES.forEach {
-          writeContent(zip.getInputStream(zip.getEntry(it)), CONTENT_URI + it)
-        }
-        return Metadata(token, applicationId)
-      }
+      BACKUP_FILES.forEach { writeContent(getInputStream(getEntry(it)), CONTENT_URI + it) }
     }
   }
 
-  private suspend fun ZipOutputStream.putContent(
-    adbServices: AdbServices,
-    name: String,
-  ) {
-    withContext(adbServices.ioContext) {
-      putNextEntry(ZipEntry(name))
-    }
+  private suspend fun ZipOutputStream.putContent(adbServices: AdbServices, name: String) {
+    withContext(adbServices.ioContext) { putNextEntry(ZipEntry(name)) }
     adbServices.readContent(this@putContent, CONTENT_URI + name)
   }
 
-  private class Metadata(val token: String, val applicationId: String) {
-
-    operator fun component1(): String = token
-
-    operator fun component2(): String = applicationId
-  }
-
   companion object {
-    const val BACKUP_STEPS = 10
-    const val RESTORE_STEPS = 9
+    const val BACKUP_STEPS = 12
+    const val RESTORE_STEPS = 11
   }
 }

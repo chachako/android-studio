@@ -34,6 +34,13 @@ interface AdbServices {
   suspend fun withSetup(transport: String, block: suspend () -> Unit)
 
   /**
+   * Execute a block of code after setting backup_android_studio_test_package_name
+   *
+   * @param applicationId The application id of the app being backed up or restored
+   */
+  suspend fun withTestApplicationId(applicationId: String, block: suspend () -> Unit)
+
+  /**
    * Initialize a backup transport
    *
    * @param transport The backup transport to initialize

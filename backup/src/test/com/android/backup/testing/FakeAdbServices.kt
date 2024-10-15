@@ -30,6 +30,8 @@ import kotlin.coroutines.EmptyCoroutineContext
 private const val BMGR_ENABLE = "bmgr enable "
 private const val SET_TEST_MODE = "settings put secure backup_enable_android_studio_mode "
 private const val SET_BACKUP_TYPE = "settings put secure backup_android_studio_mode_backup_type "
+private const val SET_TEST_APP = "settings put secure backup_android_studio_test_package_name "
+private const val CLEAR_TEST_APP = "settings delete secure backup_android_studio_test_package_name"
 private const val SET_TRANSPORT = "bmgr transport "
 private const val LIST_TRANSPORT = "bmgr list transports"
 private const val INIT_TRANSPORT = "bmgr init "
@@ -103,6 +105,8 @@ internal class FakeAdbServices(
         command == "bmgr enabled" -> handleBmgrEnabled()
         command.startsWith(BMGR_ENABLE) -> handleEnableBmgr(command)
         command.startsWith(SET_TEST_MODE) -> handleSetTestMode(command)
+        command.startsWith(SET_TEST_APP) -> "".asStdout()
+        command == CLEAR_TEST_APP -> "".asStdout()
         command.startsWith(SET_TRANSPORT) -> handleSetTransport(command)
         command == LIST_TRANSPORT -> handleListTransports()
         command.startsWith(INIT_TRANSPORT) -> handleInitTransport(command)

@@ -60,6 +60,17 @@ abstract class AbstractAdbServices(
     withBmgr { withTestMode { withTransport(transport) { block() } } }
   }
 
+  override suspend fun withTestApplicationId(applicationId: String, block: suspend () -> Unit) {
+    reportProgress("Setting test app")
+    executeCommand("settings put secure backup_android_studio_test_package_name $applicationId")
+    try {
+      block()
+    } finally {
+      reportProgress("Clearing test app")
+      executeCommand("settings delete secure backup_android_studio_test_package_name")
+    }
+  }
+
   override suspend fun initializeTransport(transport: String) {
     val out = executeCommand("bmgr init $transport", TRANSPORT_INIT_FAILED)
     if (out.stdout.lines().last() != "Initialization result: 0") {
