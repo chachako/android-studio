@@ -16,10 +16,6 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequest
 import com.google.api.client.http.HttpRequestFactory
@@ -42,12 +38,15 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mock
 import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 /** Unit tests for [ToolResultsManager] */
 class ToolResultsManagerTest {
@@ -164,10 +163,7 @@ class ToolResultsManagerTest {
       it.verify(mockHistories).list("my_project")
       it
         .verify(mockHistories)
-        .create(
-          eq("my_project"),
-          argThat { it.name == "my_other_history" && it.displayName == it.name },
-        )
+        .create(eq("my_project"), argThat { name == "my_other_history" && displayName == name })
     }
 
     inOrder(mockHistoryList).also {

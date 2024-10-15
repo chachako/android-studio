@@ -17,10 +17,6 @@
 package com.android.tools.firebase.testlab.gradle.services.testrunner
 
 import com.android.build.api.instrumentation.StaticTestData
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.capture
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.android.tools.firebase.testlab.gradle.services.StorageManager
 import com.android.tools.firebase.testlab.gradle.services.TestResultProcessor
@@ -50,13 +46,16 @@ import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.capture
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 class TestRunnerTest {
 

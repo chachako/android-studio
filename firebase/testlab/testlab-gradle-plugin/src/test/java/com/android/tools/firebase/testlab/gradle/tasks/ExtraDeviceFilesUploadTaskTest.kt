@@ -16,15 +16,10 @@
 
 package com.android.tools.firebase.testlab.gradle.tasks
 
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.api.services.storage.model.StorageObject
 import com.google.common.truth.Truth.assertThat
 import java.io.File
-import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -34,10 +29,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 private const val tab = "\t"
 

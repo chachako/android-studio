@@ -16,7 +16,6 @@
 
 package com.android.tools.firebase.testlab.gradle.tasks
 
-import com.android.testutils.MockitoKt.mock
 import com.google.api.services.storage.model.StorageObject
 import com.google.common.truth.Truth.assertThat
 import java.nio.charset.StandardCharsets
@@ -26,6 +25,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.mock
 
 class ExtraDeviceFilesManagerTest {
 

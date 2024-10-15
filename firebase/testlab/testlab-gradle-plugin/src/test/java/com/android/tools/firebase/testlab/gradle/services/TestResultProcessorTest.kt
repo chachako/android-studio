@@ -16,7 +16,6 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
-import com.android.testutils.MockitoKt.any
 import com.android.tools.firebase.testlab.gradle.services.ToolResultsManager.TestCases
 import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
 import com.google.api.client.googleapis.util.Utils
@@ -36,6 +35,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
 
 class TestResultProcessorTest {
 

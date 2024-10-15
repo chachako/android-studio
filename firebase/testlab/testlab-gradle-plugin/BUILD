@@ -1,10 +1,11 @@
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
 
 filegroup(
     name = "agp_gradle_build_files",
+    #buildifier: disable=globs
     srcs = glob([
         "src/main/**/*.java",
         "src/main/**/*.kt",
@@ -17,6 +18,7 @@ filegroup(
 
 filegroup(
     name = "agp_gradle_test_files",
+    #buildifier: disable=globs
     srcs = glob([
         "src/test/**/*.java",
         "src/test/**/*.kt",
@@ -69,6 +71,7 @@ maven_repository(
         "@maven//:com.google.apis.google-api-services-testing_v1-rev82-1.22.0",
         "@maven//:com.google.apis.google-api-services-toolresults_v1beta3-rev82-1.22.0",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
+        "@maven//:org.mockito.kotlin.mockito-kotlin_5.4.0",
     ],
 )
 
@@ -110,64 +113,19 @@ gradle_test(
     visibility = ["//visibility:public"],
 )
 
-kotlin_library(
-    name = "lib",
-    srcs = glob([
-        "src/main/java/**/*.kt",
-        "src/main/java/**/*.java",
-    ]),
-    lint_baseline = "lint_baseline.xml",
-    lint_custom_rules = [
-        "@maven//:androidx.lint.lint-gradle",  # For gradle-specific lint checks
-    ],
-    deps = [
-        "//prebuilts/tools/common/m2:com.google.api-client.google-api-client_1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-storage_v1-rev82-1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-testing_v1-rev82-1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-toolresults_v1beta3-rev82-1.22.0",
-        "//prebuilts/tools/common/m2:com.google.oauth-client.google-oauth-client_1.22.0",
-        "//tools/base/build-system:gradle-api",
-        "//tools/base/build-system/gradle-core",
-        "//tools/base/common:tools.common",
-        "//tools/base/sdk-common:tools.sdk-common",
-        "//tools/base/sdklib:tools.sdklib",
-        "//tools/base/testutils:tools.testutils",
-        "//tools/base/utp/android-test-plugin-host-device-info-proto",
-        "@maven//:com.google.http-client.google-http-client-jackson2",
-        "@maven//:com.google.protobuf.protobuf-java",
-        "@maven//:com.google.testing.platform.core-proto",
-    ],
-)
-
+# TODO: Remove this empty test build rule.
 kotlin_test(
     name = "tests",
-    srcs = glob([
-        "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
-    ]),
-    friends = [":lib"],
+    srcs = [
+        "src/main/java/com/android/tools/firebase/testlab/gradle/UtpTestSuiteResultMerger.kt",
+        "src/test/java/com/android/tools/firebase/testlab/gradle/services/UtpTestSuiteResultMergerTest.kt",
+    ],
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
     resources = glob(["src/test/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
-        ":lib",
-        "//prebuilts/tools/common/m2:com.google.api-client.google-api-client_1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-storage_v1-rev82-1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-testing_v1-rev82-1.22.0",
-        "//prebuilts/tools/common/m2:com.google.apis.google-api-services-toolresults_v1beta3-rev82-1.22.0",
-        "//tools/base/build-system:gradle-api",
-        "//tools/base/build-system/gradle-core",
-        "//tools/base/common:tools.common",
-        "//tools/base/sdk-common:tools.sdk-common",
-        "//tools/base/sdklib:tools.sdklib",
         "//tools/base/testutils:tools.testutils",
-        "//tools/base/utp/android-test-plugin-host-device-info-proto",
-        "@maven//:com.google.http-client.google-http-client-jackson2",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.testing.platform.core-proto",
-        "@maven//:com.google.truth.truth",
-        "@maven//:junit.junit",
-        "@maven//:nl.jqno.equalsverifier.equalsverifier",
-        "@maven//:org.mockito.mockito-core",
     ],
 )

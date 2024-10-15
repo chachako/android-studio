@@ -17,9 +17,6 @@
 package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.build.api.dsl.CommonExtension
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.testing.http.MockHttpTransport
@@ -45,9 +42,11 @@ import org.mockito.Mockito.argThat
 import org.mockito.Mockito.startsWith
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 /** Unit tests for [TestLabBuildService]. */
 class TestLabBuildServiceTest {
@@ -84,7 +83,7 @@ class TestLabBuildServiceTest {
     val credentialFileRegularFile = mock<RegularFile>()
     `when`(credentialFileRegularFile.asFile).thenReturn(credentialFile)
 
-    val mockProject = mock<Project>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+    val mockProject = mock<Project>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
     `when`(mockProject.path).thenReturn("mockProjectPath")
     `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
       .thenReturn(mockExtension)
@@ -106,7 +105,7 @@ class TestLabBuildServiceTest {
 
     val mockSpec = mock<BuildServiceSpec<TestLabBuildService.Parameters>>()
     val mockParams =
-      mock<TestLabBuildService.Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+      mock<TestLabBuildService.Parameters>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
     `when`(mockSpec.parameters).thenReturn(mockParams)
     `when`(mockParams.credentialFile.map<String>(any())).then {
       val file =
@@ -125,7 +124,7 @@ class TestLabBuildServiceTest {
     val buildService =
       object : TestLabBuildService() {
         override fun getParameters(): Parameters {
-          val params = mock<Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+          val params = mock<Parameters>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
           `when`(params.credentialFile.get().asFile).thenReturn(credentialFile)
           return params
         }
@@ -181,7 +180,7 @@ class TestLabBuildServiceTest {
               .build()
 
         override fun getParameters() =
-          mock<Parameters>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+          mock<Parameters>(defaultAnswer = Answers.RETURNS_DEEP_STUBS).apply {
             val mockOffline: Property<Boolean> = mock()
             `when`(mockOffline.get()).thenReturn(false)
             `when`(offlineMode).thenReturn(mockOffline)

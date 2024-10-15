@@ -16,9 +16,6 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.google.api.services.testing.Testing
 import com.google.api.services.testing.Testing.Projects.TestMatrices
 import com.google.api.services.testing.model.AndroidDeviceCatalog
@@ -35,6 +32,9 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 class TestingManagerTest {
 
