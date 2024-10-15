@@ -65,8 +65,9 @@ class ViaBundleDeviceApkOutput(
                 deviceSpec.codeName?.let {  spec.codename = it  }
                 deviceSpec.abis.takeIf { it.isNotEmpty() }?.let { spec.addAllSupportedAbis(it) }
                 deviceSpec.screenDensity.takeIf { it > 0 }?.let { spec.screenDensity = it }
+                spec.setSdkRuntime(Devices.SdkRuntime.newBuilder().setSupported(deviceSpec.supportsPrivacySandbox).build())
             }.build()
-            var apkFiles: MutableList<RegularFile> = Lists.newLinkedList()
+            val apkFiles: MutableList<RegularFile> = Lists.newLinkedList()
             val bundleApkFiles = apkFetcher.getApkFiles(apkBuiltArtifacts, spec).map { RegularFile { it.toFile() } }
             apkFiles.addAll(bundleApkFiles)
             apkInstallGroups.add(DefaultDeviceApkOutput.DefaultApkInstallGroup(apkFiles, "Apks from Main Bundle"))

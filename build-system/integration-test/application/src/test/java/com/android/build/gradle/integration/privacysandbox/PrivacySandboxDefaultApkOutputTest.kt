@@ -50,15 +50,15 @@ class PrivacySandboxDefaultApkOutputTest {
                 onVariants(selector().withName("debug")) { variant ->
                     if (variant instanceof ApplicationVariant) {
                         ApplicationVariant appVariant = (ApplicationVariant) variant
-                        appVariant.outputProviders.provideApkOutputToTask(taskProvider, FetchApkTask::getPrivacySandboxEnabledApkOutput, new DeviceSpec.Builder().setName("testDevice").setApiLevel(33).setCodeName("").setAbis([]).setSupportsPrivacySandbox(true).build())
-                        appVariant.outputProviders.provideApkOutputToTask(taskProvider, FetchApkTask::getPrivacySandboxDisabledApkOutput, new DeviceSpec.Builder().setName("testDevice").setApiLevel(33).setCodeName("").setAbis([]).setSupportsPrivacySandbox(false).build())
+                        appVariant.outputProviders.provideApkOutputToTask(taskProvider, FetchApkTask::getPrivacySandboxEnabledApkOutput, new DeviceSpec.Builder().setName("testDevice").setApiLevel(34).setCodeName("").setAbis([]).setSupportsPrivacySandbox(true).build())
+                        appVariant.outputProviders.provideApkOutputToTask(taskProvider, FetchApkTask::getPrivacySandboxDisabledApkOutput, new DeviceSpec.Builder().setName("testDevice").setApiLevel(34).setCodeName("").setAbis([]).setSupportsPrivacySandbox(false).build())
                     }
                 }
             }
         """.trimIndent()
         val viaBundleVerificationString = """
                     def apkInstall = getPrivacySandboxEnabledApkOutput().get().apkInstallGroups
-                    if (apkInstall.size() != 3 || apkInstall[0].apks.size() != 1 || apkInstall[1].apks.size() != 1 || apkInstall[2].apks.size() != 3) {
+                    if (apkInstall.size() != 3 || apkInstall[0].apks.size() != 1 || apkInstall[1].apks.size() != 1 || apkInstall[2].apks.size() != 1) {
                         throw new GradleException("Unexpected number of apks")
                     }
                     assert apkInstall[0].apks.first().getAsFile().name.contains("extracted-apk.apk")
@@ -67,9 +67,9 @@ class PrivacySandboxDefaultApkOutputTest {
                     assert apkInstall[1].apks.first().getAsFile().name.contains("extracted-apk.apk")
                     assert apkInstall[1].description.contains("Source Sdk: privacy-sandbox-sdk-b.apks")
 
-                    assert apkInstall[2].apks.any { it.getAsFile().name.contains("base-master_2.apk") }
-                    assert apkInstall[2].apks.any { it.getAsFile().name.contains("comexampleprivacysandboxsdk-master.apk") }
-                    assert apkInstall[2].apks.any { it.getAsFile().name.contains("comexampleprivacysandboxsdkb-master.apk") }
+                    assert apkInstall[2].apks.first().asFile.name.contains("base-master_3.apk")
+                    assert apkInstall[2].description.contains("Apks from Main Bundle")
+
                     apkInstall = getPrivacySandboxDisabledApkOutput().get().apkInstallGroups
                     if (apkInstall.size() != 1 || apkInstall[0].apks.size() != 3) {
                         throw new GradleException("Unexpected number of apks")
