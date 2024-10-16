@@ -1,5 +1,4 @@
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
 
@@ -111,21 +110,4 @@ gradle_test(
     tasks = [":base:firebase:testlab:testlab-gradle-plugin:test"],
     test_output_dir = "build/base/firebase/testlab/testlab-gradle-plugin/build/test-results/test",
     visibility = ["//visibility:public"],
-)
-
-# TODO: Remove this empty test build rule.
-kotlin_test(
-    name = "tests",
-    srcs = [
-        "src/main/java/com/android/tools/firebase/testlab/gradle/UtpTestSuiteResultMerger.kt",
-        "src/test/java/com/android/tools/firebase/testlab/gradle/services/UtpTestSuiteResultMergerTest.kt",
-    ],
-    jvm_flags = ["-Dtest.suite.jar=tests.jar"],
-    resources = glob(["src/test/resources/**"]),
-    test_class = "com.android.testutils.JarTestSuite",
-    deps = [
-        "//tools/base/testutils:tools.testutils",
-        "@maven//:com.google.protobuf.protobuf-java",
-        "@maven//:com.google.testing.platform.core-proto",
-    ],
 )
