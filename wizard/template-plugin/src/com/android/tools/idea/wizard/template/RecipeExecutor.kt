@@ -67,10 +67,10 @@ interface RecipeExecutor {
 
   /**
    * Add plugins according to the existing project setup. First it adds plugin to catalog if project
-   * has it. Then it add plugin project level declaration to first component that exists:
-   * settings plugins management block, root project plugins block (if exists),
-   * dependencies classpath if it's an old syntax. In case nothing was found
-   * - we force adding plugin alias to root project plugins block.
+   * has it. Then it add plugin project level declaration to first component that exists: settings
+   * plugins management block, root project plugins block (if exists), dependencies classpath if
+   * it's an old syntax. In case nothing was found - we force adding plugin alias to root project
+   * plugins block.
    *
    * Plugin version must be located in classpath parameter.
    */
@@ -81,18 +81,9 @@ interface RecipeExecutor {
    * settings.gradle[.kts] has a `pluginManagement` block, it also adds "plugins { id '`plugin`'
    * version '`revision`'}" statement to the project top level build.gradle[.kts] file.
    */
-  fun applyPluginInModule(
-    plugin: String,
-    module: Module,
-    revision: String?,
-    minRev: String? = null,
-  )
+  fun applyPluginInModule(plugin: String, module: Module, revision: String?, minRev: String? = null)
 
-  fun applyPluginInModule(
-    plugin: String,
-    module: Module,
-    revision: AgpVersion,
-  )
+  fun applyPluginInModule(plugin: String, module: Module, revision: AgpVersion)
 
   /**
    * Records a classpath dependency. If settings.gradle[.kts] has a `pluginManagement` block this
@@ -101,7 +92,7 @@ interface RecipeExecutor {
   fun addClasspathDependency(
     mavenCoordinate: String,
     minRev: String? = null,
-    forceAdding: Boolean = false
+    forceAdding: Boolean = false,
   )
 
   /**
@@ -125,7 +116,7 @@ interface RecipeExecutor {
     minRev: String? = null,
     moduleDir: File? = null,
     toBase: Boolean = false,
-    sourceSetName: String? = null
+    sourceSetName: String? = null,
   )
 
   /**
@@ -145,8 +136,16 @@ interface RecipeExecutor {
   fun addPlatformDependency(
     mavenCoordinate: String,
     configuration: String = "implementation",
-    enforced: Boolean = false
+    enforced: Boolean = false,
   )
+
+  /**
+   * Records a file dependency, e.g. implementation(files("./libs/my_lib.aar"))
+   *
+   * @param configuration Gradle configuration to use.
+   * @param file path to the file to depend on
+   */
+  fun addFileDependency(file: String, configuration: String = "implementation")
 
   /**
    * Adds a new entry to 'sourceSets' block of Gradle build file.
@@ -254,5 +253,5 @@ enum class SourceSetType {
   MANIFEST,
   RENDERSCRIPT,
   RES,
-  RESOURCES
+  RESOURCES,
 }
