@@ -2460,6 +2460,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/low/level/api/fir/api/services/
   org/jetbrains/kotlin/analysis/low/level/api/fir/api/targets/
   org/jetbrains/kotlin/analysis/low/level/api/fir/caches/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/caches/cleanable/
   org/jetbrains/kotlin/analysis/low/level/api/fir/compile/
   org/jetbrains/kotlin/analysis/low/level/api/fir/diagnostics/
   org/jetbrains/kotlin/analysis/low/level/api/fir/diagnostics/fir/
@@ -2507,6 +2508,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/common/actualizer/
   org/jetbrains/kotlin/backend/common/actualizer/checker/
   org/jetbrains/kotlin/backend/common/bridges/
+  org/jetbrains/kotlin/backend/common/checkers/
   org/jetbrains/kotlin/backend/common/diagnostics/
   org/jetbrains/kotlin/backend/common/linkage/
   org/jetbrains/kotlin/backend/common/linkage/issues/
@@ -2655,8 +2657,9 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/analysis/checkers/config/
   org/jetbrains/kotlin/fir/analysis/checkers/context/
   org/jetbrains/kotlin/fir/analysis/checkers/declaration/
+  org/jetbrains/kotlin/fir/analysis/checkers/experimental/
   org/jetbrains/kotlin/fir/analysis/checkers/expression/
-  org/jetbrains/kotlin/fir/analysis/checkers/extended/
+  org/jetbrains/kotlin/fir/analysis/checkers/extra/
   org/jetbrains/kotlin/fir/analysis/checkers/syntax/
   org/jetbrains/kotlin/fir/analysis/checkers/type/
   org/jetbrains/kotlin/fir/analysis/collectors/
