@@ -20,13 +20,15 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /** Test cases for {@link CombinedInputStream}. */
 public class CombinedInputStreamTest {
@@ -40,18 +42,26 @@ public class CombinedInputStreamTest {
         combinedInputStream =
                 new CombinedInputStream(
                         ImmutableList.of(
-                                new ByteArrayInputStream(new byte[] {1, 2}),
-                                new ByteArrayInputStream(new byte[] {}),
-                                new ByteArrayInputStream(new byte[] {3, 4, '\n'}),
-                                new ByteArrayInputStream(new byte[] {5, 6})),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {1, 2}), "array1"),
+                                new MergeInput(new ByteArrayInputStream(new byte[] {}), "array2"),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {3, 4, '\n'}),
+                                        "array3"),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {5, 6}), "array4")),
                         false);
         paddedCombinedInputStream =
                 new CombinedInputStream(
                         ImmutableList.of(
-                                new ByteArrayInputStream(new byte[] {1, 2}),
-                                new ByteArrayInputStream(new byte[] {}),
-                                new ByteArrayInputStream(new byte[] {3, 4, '\n'}),
-                                new ByteArrayInputStream(new byte[] {5, 6})),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {1, 2}), "array1"),
+                                new MergeInput(new ByteArrayInputStream(new byte[] {}), "array1"),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {3, 4, '\n'}),
+                                        "array1"),
+                                new MergeInput(
+                                        new ByteArrayInputStream(new byte[] {5, 6}), "array1")),
                         true);
     }
 

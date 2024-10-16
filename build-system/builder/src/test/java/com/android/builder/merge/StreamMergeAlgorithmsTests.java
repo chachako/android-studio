@@ -17,21 +17,25 @@
 package com.android.builder.merge;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.fail;
 
 import com.android.annotations.NonNull;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
+
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 public class StreamMergeAlgorithmsTests {
 
@@ -46,12 +50,12 @@ public class StreamMergeAlgorithmsTests {
      * @return a list with as many elements as {@code data}
      */
     @NonNull
-    private static ImmutableList<InputStream> makeInputs(@NonNull byte[][] data) {
+    private static ImmutableList<MergeInput> makeInputs(@NonNull byte[][] data) {
         Preconditions.checkArgument(data.length > 0);
 
-        ImmutableList.Builder<InputStream> builder = ImmutableList.builder();
+        ImmutableList.Builder<MergeInput> builder = ImmutableList.builder();
         for (byte[] streamData : data) {
-            builder.add(new ByteArrayInputStream(streamData));
+            builder.add(new MergeInput(new ByteArrayInputStream(streamData), "name"));
         }
 
         return builder.build();
@@ -60,27 +64,27 @@ public class StreamMergeAlgorithmsTests {
     @Test
     public void pickFirstOneFile() throws IOException {
         StreamMergeAlgorithm pickFirst = StreamMergeAlgorithms.pickFirst();
-        List<InputStream> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
+        List<MergeInput> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
         try (Closer closer = Closer.create()) {
             mergedStream = pickFirst.merge("foo", inputStreams, closer);
-            assertThat(mergedStream).isSameAs(inputStreams.get(0));
+            assertThat(mergedStream).isSameAs(inputStreams.get(0).getStream());
         }
     }
 
     @Test
     public void pickFirstTwoFiles() throws IOException {
         StreamMergeAlgorithm pickFirst = StreamMergeAlgorithms.pickFirst();
-        List<InputStream> inputStreams = makeInputs(new byte[][] {{1, 2, 3}, {4, 5, 6}});
+        List<MergeInput> inputStreams = makeInputs(new byte[][] {{1, 2, 3}, {4, 5, 6}});
         try (Closer closer = Closer.create()) {
             mergedStream = pickFirst.merge("foo", inputStreams, closer);
-            assertThat(mergedStream).isSameAs(inputStreams.get(0));
+            assertThat(mergedStream).isSameAs(inputStreams.get(0).getStream());
         }
     }
 
     @Test
     public void concatOneFile() throws IOException {
         StreamMergeAlgorithm concat = StreamMergeAlgorithms.concat();
-        List<InputStream> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
+        List<MergeInput> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
         try (Closer closer = Closer.create()) {
             mergedStream = concat.merge("foo", inputStreams, closer);
             assertThat(ByteStreams.toByteArray(mergedStream)).isEqualTo(new byte[] {1, 2, 3});
@@ -90,8 +94,7 @@ public class StreamMergeAlgorithmsTests {
     @Test
     public void concatTwoFiles() throws IOException {
         StreamMergeAlgorithm concat = StreamMergeAlgorithms.concat();
-        List<InputStream> inputStreams =
-                makeInputs(new byte[][] {{1, 2}, {}, {3, 4, '\n'}, {5, 6}});
+        List<MergeInput> inputStreams = makeInputs(new byte[][] {{1, 2}, {}, {3, 4, '\n'}, {5, 6}});
         try (Closer closer = Closer.create()) {
             mergedStream = concat.merge("foo", inputStreams, closer);
             assertThat(ByteStreams.toByteArray(mergedStream))
@@ -102,10 +105,10 @@ public class StreamMergeAlgorithmsTests {
     @Test
     public void acceptOnlyOneOneFile() throws IOException {
         StreamMergeAlgorithm acceptOne = StreamMergeAlgorithms.acceptOnlyOne();
-        List<InputStream> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
+        List<MergeInput> inputStreams = makeInputs(new byte[][] {{1, 2, 3}});
         try (Closer closer = Closer.create()) {
             mergedStream = acceptOne.merge("foo", inputStreams, closer);
-            assertThat(mergedStream).isSameAs(inputStreams.get(0));
+            assertThat(mergedStream).isSameAs(inputStreams.get(0).getStream());
         }
     }
 
@@ -130,7 +133,7 @@ public class StreamMergeAlgorithmsTests {
 
         StreamMergeAlgorithm select = StreamMergeAlgorithms.select(f);
 
-        ImmutableList<InputStream> inputs = makeInputs(new byte[][] { { 1, 2, 3 } });
+        ImmutableList<MergeInput> inputs = makeInputs(new byte[][] {{1, 2, 3}});
         try (Closer closer = Closer.create()) {
             select.merge("foo", inputs, closer);
 

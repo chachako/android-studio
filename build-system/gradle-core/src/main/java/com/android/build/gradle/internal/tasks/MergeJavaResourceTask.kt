@@ -21,13 +21,14 @@ import com.android.build.api.variant.Packaging
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVA_RES
+import com.android.build.gradle.internal.tasks.MergeJavaResWorkAction.SourcedInput
 import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
@@ -35,16 +36,20 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.getChangesInSerializableForm
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.files.SerializableInputChanges
-import org.gradle.api.attributes.Usage
+import org.gradle.api.artifacts.ArtifactCollection
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
@@ -56,6 +61,7 @@ import org.gradle.work.DisableCachingByDefault
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
+import java.io.Serializable
 import java.util.function.Predicate
 import javax.inject.Inject
 
@@ -67,26 +73,65 @@ import javax.inject.Inject
 abstract class MergeJavaResourceTask
 @Inject constructor(objects: ObjectFactory) : NewIncrementalTask() {
 
+    /**
+     * Wrapper around an [ArtifactCollection] that's optional.
+     *
+     * There are cases where the collection is optional and not set. This makes it cumbersome
+     * to hold the artifact collection and compute on-demand the fileCollection from it. Instead,
+     * we have to set the file collection manually if the collection is set.
+     *
+     * While this is not a problem on the declaration side, it makes the setup side more
+     * awkward and error-prone. Therefore, this class attempts to encapsulate all this in a single
+     * place so that we can have all the instance behave the same reliably.
+     */
+    abstract class OptionalCollectionWithProvenance @Inject constructor(objects: ObjectFactory) :
+        Serializable {
+
+        @get:Internal
+        val artifactCollection: Property<ArtifactCollection> = objects.property(ArtifactCollection::class.java)
+
+        @get:Classpath
+        @get:Incremental
+        @get:Optional
+        val fileCollection: ConfigurableFileCollection = objects.fileCollection()
+
+        internal fun set(collection: ArtifactCollection) {
+            artifactCollection.set(collection)
+            // We cannot have the fileCollection be a getter that just queries the
+            // artifact collection in case it's not set.
+            fileCollection.from(collection.artifactFiles)
+        }
+
+        internal fun disallowChanges() {
+            artifactCollection.disallowChanges()
+            fileCollection.disallowChanges()
+        }
+
+        internal fun setDisallowChanges(collection: ArtifactCollection) {
+            set(collection)
+            disallowChanges()
+        }
+    }
+
     @get:InputFiles
     @get:Incremental
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
     abstract val projectJavaRes: ConfigurableFileCollection
 
-    @get:Classpath
-    @get:Incremental
-    @get:Optional
-    abstract val subProjectJavaRes: ConfigurableFileCollection
+    @get:Nested
+    val subProjectJavaRes = objects.newInstance(OptionalCollectionWithProvenance::class.java)
+
+    @get:Nested
+    val externalLibJavaRes = objects.newInstance(OptionalCollectionWithProvenance::class.java)
 
     @get:Classpath
     @get:Incremental
     @get:Optional
-    abstract val externalLibJavaRes: ConfigurableFileCollection
+    abstract val localDepsJavaRes: ConfigurableFileCollection
 
-    @get:Classpath
-    @get:Incremental
-    @get:Optional
-    abstract val featureJavaRes: ConfigurableFileCollection
+    @get:Nested
+    val featureJavaRes = objects.newInstance(OptionalCollectionWithProvenance::class.java)
 
     @get:Input
     abstract val mergeScopes: SetProperty<InternalScopedArtifacts.InternalScope>
@@ -115,6 +160,9 @@ abstract class MergeJavaResourceTask
     @get:OutputFile
     val outputFile: RegularFileProperty = objects.fileProperty()
 
+    @get:Internal
+    abstract val hasIncludedBuilds: Property<Boolean>
+
     override fun doTaskAction(inputChanges: InputChanges) {
         if (inputChanges.isIncremental) {
             // TODO(b/225872980): Unify with IncrementalChanges.classpathToRelativeFileSet
@@ -122,9 +170,9 @@ abstract class MergeJavaResourceTask
             doIncrementalTaskAction(
                     listOf(
                             inputChanges.getChangesInSerializableForm(projectJavaRes),
-                            inputChanges.getChangesInSerializableForm(subProjectJavaRes),
-                            inputChanges.getChangesInSerializableForm(externalLibJavaRes),
-                            inputChanges.getChangesInSerializableForm(featureJavaRes)
+                            inputChanges.getChangesInSerializableForm(subProjectJavaRes.fileCollection),
+                            inputChanges.getChangesInSerializableForm(externalLibJavaRes.fileCollection),
+                            inputChanges.getChangesInSerializableForm(featureJavaRes.fileCollection)
                     ).let {
                         SerializableInputChanges(
                                 roots = it.flatMap(SerializableInputChanges::roots),
@@ -140,9 +188,9 @@ abstract class MergeJavaResourceTask
         workerExecutor.noIsolation().submit(MergeJavaResWorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
             it.projectJavaRes.from(projectJavaRes)
-            it.subProjectJavaRes.from(subProjectJavaRes)
-            it.externalLibJavaRes.from(externalLibJavaRes)
-            it.featureJavaRes.from(featureJavaRes)
+            it.subProjectJavaRes.set(subProjectJavaRes.toSourcedInputs())
+            it.externalLibJavaRes.set(externalLibJavaRes.toSourcedInputs() + localDepsJavaRes.toSourcedInputs())
+            it.featureJavaRes.set(featureJavaRes.toSourcedInputs())
             it.outputFile.set(outputFile)
             it.incrementalStateFile.set(incrementalStateFile)
             it.incremental.set(false)
@@ -164,9 +212,9 @@ abstract class MergeJavaResourceTask
         workerExecutor.noIsolation().submit(MergeJavaResWorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
             it.projectJavaRes.from(projectJavaRes)
-            it.subProjectJavaRes.from(subProjectJavaRes)
-            it.externalLibJavaRes.from(externalLibJavaRes)
-            it.featureJavaRes.from(featureJavaRes)
+            it.subProjectJavaRes.set(subProjectJavaRes.toSourcedInputs())
+            it.externalLibJavaRes.set(externalLibJavaRes.toSourcedInputs() + localDepsJavaRes.toSourcedInputs())
+            it.featureJavaRes.set(featureJavaRes.toSourcedInputs())
             it.outputFile.set(outputFile)
             it.incrementalStateFile.set(incrementalStateFile)
             it.incremental.set(true)
@@ -178,6 +226,34 @@ abstract class MergeJavaResourceTask
             it.merges.set(merges)
         }
     }
+
+    private fun OptionalCollectionWithProvenance.toSourcedInputs(): List<SourcedInput> {
+        if (!artifactCollection.isPresent) {
+            return listOf()
+        }
+
+        val displayBuildInfo = hasIncludedBuilds.get()
+
+        return artifactCollection.get().artifacts.map { it ->
+            val owner = it.variant.owner
+
+            val name = when (owner) {
+                is ModuleComponentIdentifier -> "${owner.group}:${owner.module}:${owner.version}"
+                is ProjectComponentIdentifier -> {
+                    if (displayBuildInfo) {
+                        "project(\"${owner.projectPath}\") - Build: ${owner.build.buildPath}"
+                    } else {
+                        "project(\"${owner.projectPath}\")"
+                    }
+                }
+                else -> owner.displayName
+            }
+            SourcedInput(it.file, name)
+        }
+    }
+
+    private fun ConfigurableFileCollection.toSourcedInputs(): List<SourcedInput> =
+        map { SourcedInput(it, it.absolutePath) }
 
     class CreationAction(
         private val mergeScopes: Set<InternalScopedArtifacts.InternalScope>,
@@ -216,14 +292,12 @@ abstract class MergeJavaResourceTask
         ) {
             super.configure(task)
 
-            task.projectJavaRes.fromDisallowChanges(
-                creationConfig.artifacts.get(JAVA_RES)
-            )
+            task.projectJavaRes.fromDisallowChanges(creationConfig.artifacts.get(JAVA_RES))
 
             run {
                 if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)) {
-                    task.subProjectJavaRes.fromDisallowChanges(
-                        creationConfig.variantDependencies.getArtifactFileCollection(
+                    task.subProjectJavaRes.set(
+                        creationConfig.variantDependencies.getArtifactCollection(
                             AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactScope.PROJECT,
                             AndroidArtifacts.ArtifactType.JAVA_RES
@@ -232,20 +306,24 @@ abstract class MergeJavaResourceTask
                 }
                 task.subProjectJavaRes.disallowChanges()
 
-                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
-                    || mergeScopes.contains(
-                        InternalScopedArtifacts.InternalScope.LOCAL_DEPS
+                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)) {
+                    task.externalLibJavaRes.set(
+                        creationConfig.variantDependencies.getArtifactCollection(
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                            AndroidArtifacts.ArtifactScope.EXTERNAL,
+                            AndroidArtifacts.ArtifactType.JAVA_RES
+                        )
                     )
-                ) {
-                    // Local jars are treated the same as external libraries
-                    task.externalLibJavaRes.fromDisallowChanges(getExternalLibJavaRes(creationConfig, mergeScopes))
+                } else if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)) {
+                    task.localDepsJavaRes.from(creationConfig.computeLocalPackagedJars())
                 }
                 task.externalLibJavaRes.disallowChanges()
+                task.localDepsJavaRes.disallowChanges()
             }
 
             if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.FEATURES)) {
-                task.featureJavaRes.fromDisallowChanges(
-                    creationConfig.variantDependencies.getArtifactFileCollection(
+                task.featureJavaRes.set(
+                    creationConfig.variantDependencies.getArtifactCollection(
                         AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
                         AndroidArtifacts.ArtifactScope.PROJECT,
                         AndroidArtifacts.ArtifactType.REVERSE_METADATA_JAVA_RES
@@ -267,6 +345,8 @@ abstract class MergeJavaResourceTask
                 task.noCompress.set(creationConfig.androidResources.noCompress)
             }
             task.noCompress.disallowChanges()
+
+            configureBuildCount(task)
         }
     }
 
@@ -291,14 +371,14 @@ abstract class MergeJavaResourceTask
         override fun configure(task: MergeJavaResourceTask) {
             super.configure(task)
 
-            task.subProjectJavaRes.from(
-                    creationConfig.dependencies.getArtifactFileCollection(
+            task.subProjectJavaRes.setDisallowChanges(
+                    creationConfig.dependencies.getArtifactCollection(
                             AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                             AndroidArtifacts.ArtifactType.JAVA_RES
                     )
             )
 
-            // For configuring the merging rules (we may want to add DSL for this in the future.
+            // For configuring the merging rules (we may want to add DSL for this in the future.)
             task.excludes.setDisallowChanges(defaultExcludes)
             task.pickFirsts.setDisallowChanges(emptySet())
             task.merges.setDisallowChanges(emptySet())
@@ -310,16 +390,16 @@ abstract class MergeJavaResourceTask
             task.incrementalStateFile = File(task.intermediateDir, "merge-state")
 
             // External libraries can just be consumed via the subProjectJavaRes (the inputs are
-            // only intended for finer grain incremental runs.
+            // only intended for finer grain incremental runs.)
             task.externalLibJavaRes.disallowChanges()
 
             // No sources in fused library projects, so none of the below need set.
             task.projectJavaRes.disallowChanges()
             task.featureJavaRes.disallowChanges()
+
+            configureBuildCount(task)
         }
-
     }
-
 
     class PrivacySandboxSdkCreationAction(
             val creationConfig: PrivacySandboxSdkVariantScope
@@ -342,14 +422,14 @@ abstract class MergeJavaResourceTask
         override fun configure(task: MergeJavaResourceTask) {
             super.configure(task)
 
-            task.subProjectJavaRes.from(
-                creationConfig.dependencies.getArtifactFileCollection(
+            task.subProjectJavaRes.set(
+                creationConfig.dependencies.getArtifactCollection(
                     AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                     AndroidArtifacts.ArtifactType.JAVA_RES
                 )
             )
 
-            // For configuring the merging rules (we may want to add DSL for this in the future.
+            // For configuring the merging rules (we may want to add DSL for this in the future.)
             task.excludes.setDisallowChanges(defaultExcludes)
             task.pickFirsts.setDisallowChanges(emptySet())
             task.merges.setDisallowChanges(emptySet())
@@ -361,14 +441,15 @@ abstract class MergeJavaResourceTask
             task.incrementalStateFile = File(task.intermediateDir, "merge-state")
 
             // External libraries can just be consumed via the subProjectJavaRes (the inputs are
-            // only intended for finer grain incremental runs.
+            // only intended for finer grain incremental runs.)
             task.externalLibJavaRes.disallowChanges()
 
             // No sources in fused library projects, so none of the below need set.
             task.projectJavaRes.disallowChanges()
             task.featureJavaRes.disallowChanges()
-        }
 
+            configureBuildCount(task)
+        }
     }
 
     companion object {
@@ -391,23 +472,10 @@ abstract class MergeJavaResourceTask
     }
 }
 
-private fun getExternalLibJavaRes(
-    creationConfig: ComponentCreationConfig,
-    mergeScopes: Collection<InternalScopedArtifacts.InternalScope>
-): FileCollection {
-    val externalLibJavaRes = creationConfig.services.fileCollection()
-    if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)) {
-        externalLibJavaRes.from(
-            creationConfig.variantDependencies.getArtifactFileCollection(
-                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                AndroidArtifacts.ArtifactScope.EXTERNAL,
-                AndroidArtifacts.ArtifactType.JAVA_RES
-            )
-        )
-    } else if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)) {
-        externalLibJavaRes.from(creationConfig.computeLocalPackagedJars())
-    }
-    return externalLibJavaRes
+private fun configureBuildCount(task: MergeJavaResourceTask) {
+    val gradle = task.project.gradle
+    val gradle2 = gradle.parent ?: gradle
+    task.hasIncludedBuilds.setDisallowChanges(gradle2.includedBuilds.isNotEmpty())
 }
 
 /** Returns true if anything's been added to the annotation processor configuration. */

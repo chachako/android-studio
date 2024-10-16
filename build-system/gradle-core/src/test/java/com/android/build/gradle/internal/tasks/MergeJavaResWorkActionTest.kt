@@ -21,11 +21,11 @@ import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.packaging.defaultMerges
 import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.tasks.MergeJavaResWorkAction.SourcedInput
 import com.android.builder.files.SerializableChange
 import com.android.builder.files.SerializableInputChanges
 import com.android.builder.merge.DuplicateRelativeFileException
 import com.android.builder.packaging.JarFlinger
-import com.android.builder.utils.agpReferenceDocsVersion
 import com.android.ide.common.resources.FileStatus
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
@@ -34,6 +34,7 @@ import com.android.utils.FileUtils
 import com.android.zipflinger.BytesSource
 import com.android.zipflinger.ZipArchive
 import com.google.common.truth.Truth.assertThat
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.junit.Rule
 import org.junit.Test
@@ -73,10 +74,9 @@ class MergeJavaResWorkActionTest {
                 return object: Params() {
                     override val projectJavaRes =
                         FakeObjectFactory.factory.fileCollection().from(jarFile1)
-                    override val subProjectJavaRes =
-                        FakeObjectFactory.factory.fileCollection().from(jarFile2)
-                    override val externalLibJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val featureJavaRes = FakeObjectFactory.factory.fileCollection()
+                    override val subProjectJavaRes = toSourcedInput(jarFile2)
+                    override val externalLibJavaRes = toSourcedInput()
+                    override val featureJavaRes = toSourcedInput()
                     override val outputFile =
                         FakeObjectFactory.factory.fileProperty().also { it.set(outputFile) }
                     override val excludes =
@@ -133,6 +133,14 @@ class MergeJavaResWorkActionTest {
         }
     }
 
+    private fun toSourcedInput(vararg files: File): ListProperty<SourcedInput> {
+        return FakeObjectFactory.factory.listProperty(SourcedInput::class.java).also {
+            for (file in files) {
+                it.add(SourcedInput(file, file.name))
+            }
+        }
+    }
+
     @Test
     fun testMergeResourcesWithNoCompress() {
         // Create jar file containing java resources to be merged
@@ -157,10 +165,9 @@ class MergeJavaResWorkActionTest {
                 return object: Params() {
                     override val projectJavaRes =
                         FakeObjectFactory.factory.fileCollection().from(dir)
-                    override val subProjectJavaRes =
-                        FakeObjectFactory.factory.fileCollection().from(jarFile)
-                    override val externalLibJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val featureJavaRes = FakeObjectFactory.factory.fileCollection()
+                    override val subProjectJavaRes = toSourcedInput(jarFile)
+                    override val externalLibJavaRes = toSourcedInput()
+                    override val featureJavaRes = toSourcedInput()
                     override val outputFile =
                         FakeObjectFactory.factory.fileProperty().also { it.set(outputFile) }
                     override val excludes =
@@ -224,9 +231,9 @@ class MergeJavaResWorkActionTest {
                 return object: Params() {
                     override val projectJavaRes =
                         FakeObjectFactory.factory.fileCollection().from(jarFile)
-                    override val subProjectJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val externalLibJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val featureJavaRes = FakeObjectFactory.factory.fileCollection()
+                    override val subProjectJavaRes = toSourcedInput()
+                    override val externalLibJavaRes = toSourcedInput()
+                    override val featureJavaRes = toSourcedInput()
                     override val outputFile =
                         FakeObjectFactory.factory.fileProperty().also { it.set(outputFile) }
                     override val excludes =
@@ -278,9 +285,9 @@ class MergeJavaResWorkActionTest {
                 return object: Params() {
                     override val projectJavaRes =
                         FakeObjectFactory.factory.fileCollection().from(jarFile)
-                    override val subProjectJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val externalLibJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val featureJavaRes = FakeObjectFactory.factory.fileCollection()
+                    override val subProjectJavaRes = toSourcedInput()
+                    override val externalLibJavaRes = toSourcedInput()
+                    override val featureJavaRes = toSourcedInput()
                     override val outputFile =
                         FakeObjectFactory.factory.fileProperty().also { it.set(outputFile) }
                     override val excludes =
@@ -342,10 +349,9 @@ class MergeJavaResWorkActionTest {
                 return object: Params() {
                     override val projectJavaRes =
                         FakeObjectFactory.factory.fileCollection().from(jarFile1)
-                    override val subProjectJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val externalLibJavaRes = FakeObjectFactory.factory.fileCollection()
-                    override val featureJavaRes =
-                        FakeObjectFactory.factory.fileCollection().from(jarFile2)
+                    override val subProjectJavaRes = toSourcedInput()
+                    override val externalLibJavaRes = toSourcedInput()
+                    override val featureJavaRes = toSourcedInput(jarFile2)
                     override val outputFile =
                         FakeObjectFactory.factory.fileProperty().also { it.set(outputFile) }
                     override val excludes =
@@ -369,7 +375,7 @@ class MergeJavaResWorkActionTest {
                         FakeObjectFactory.factory.property(SerializableInputChanges::class.java)
                     override val noCompress =
                         FakeObjectFactory.factory.listProperty(String::class.java)
-                    override val projectPath = FakeGradleProperty("projectName")
+                    override val projectPath = FakeGradleProperty(":project:path")
                     override val taskOwner = FakeGradleProperty("taskOwner")
                     override val workerKey = FakeGradleProperty("workerKey")
                     override val analyticsService: Property<AnalyticsService> = FakeGradleProperty(FakeNoOpAnalyticsService())
@@ -381,10 +387,10 @@ class MergeJavaResWorkActionTest {
         assertThat(e.message).isEqualTo(
             """
                 2 files found with path 'duplicate' from inputs:
-                 - ${jarFile1.absolutePath}
-                 - ${jarFile2.absolutePath}
+                 - project(":project:path") - This project
+                 - jarFile2.jar
                 Adding a packaging block may help, please refer to
-                https://developer.android.com/reference/tools/gradle-api/$agpReferenceDocsVersion/com/android/build/api/dsl/Packaging
+                https://developer.android.com/reference/tools/gradle-api/com/android/build/api/dsl/Packaging
                 for more information
             """.trimIndent()
         )

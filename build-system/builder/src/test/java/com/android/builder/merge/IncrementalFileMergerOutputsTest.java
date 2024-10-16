@@ -22,8 +22,12 @@ import static org.junit.Assert.assertTrue;
 
 import com.android.annotations.NonNull;
 import com.android.tools.build.apkzlib.utils.IOExceptionFunction;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +35,6 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.Test;
 
 public class IncrementalFileMergerOutputsTest {
 
@@ -41,10 +44,12 @@ public class IncrementalFileMergerOutputsTest {
             (path, from, closer) -> {
                 algFrom.add(
                         from.stream()
-                                .map(IOExceptionFunction.asFunction(ByteStreams::toByteArray))
+                                .map(
+                                        IOExceptionFunction.asFunction(
+                                                it -> ByteStreams.toByteArray(it.getStream())))
                                 .collect(Collectors.toList()));
                 InputStream mergedStream = new ByteArrayInputStream(new byte[] {4, 5, 6, 3});
-                from.forEach(closer::register);
+                from.forEach(it -> closer.register((it.getStream())));
                 closer.register(mergedStream);
                 return mergedStream;
             };

@@ -318,11 +318,7 @@ internal class AndroidProjectBuilderImpl(
                 throw RuntimeException("Dynamic Features declared in project with plugins: ${appliedPlugins.joinToString { it.id }}")
             }
 
-            sb.append("    dynamicFeatures += [${dynamicFeatures.joinToString(
-                separator = ",",
-                prefix = "\"",
-                postfix = "\"",
-            )}]\n")
+            sb.append("    dynamicFeatures += [${dynamicFeatures.joinToString(separator = ",") { "\"$it\"" }}]\n")
         }
 
         if (sourceSetsContainer.items.isNotEmpty()) {
