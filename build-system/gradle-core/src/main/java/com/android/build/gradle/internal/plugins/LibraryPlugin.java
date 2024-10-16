@@ -15,6 +15,8 @@
  */
 package com.android.build.gradle.internal.plugins;
 
+import static com.android.build.gradle.internal.utils.KgpUtils.ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID;
+
 import com.android.AndroidProjectTypes;
 import com.android.annotations.NonNull;
 import com.android.build.api.dsl.LibraryBuildFeatures;
@@ -143,6 +145,9 @@ public class LibraryPlugin
         if (getProjectServices()
                 .getProjectOptions()
                 .get(BooleanOption.USE_DECLARATIVE_INTERFACES)) {
+
+            project.getPlugins().apply(ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID);
+
             // noinspection unchecked,rawtypes: Hacks to make the parameterized types make sense
             Class<LibraryExtension> instanceType =
                     (Class) com.android.build.gradle.LibraryExtensionInternal.class;

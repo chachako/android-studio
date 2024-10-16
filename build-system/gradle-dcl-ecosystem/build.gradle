@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.tools.java-library'
+    id 'com.android.tools.kotlin'
+    id 'com.android.tools.publish'
+    id 'java-gradle-plugin'
+    id 'license-report'
+}
+
+if (!findProperty('release')?.toBoolean()) {
+    gradlePlugin {
+        plugins {
+            comAndroidEcosystem {
+                id = "com.android.ecosystem"
+                implementationClass = "com.android.build.gradle.AndroidEcosystemPlugin"
+            }
+        }
+    }
+}
+
+validatePlugins {
+    // Enable strict mode so we can see more warnings
+    enableStricterValidation = true
+}
+
+// create an empty jar.
+// Need to use a classifier to make it unique for publishing
+// (since the name is specific to the artifactId)
+project.tasks.register("apiJar", org.gradle.jvm.tasks.Jar) {
+    from(file('NOTICE'))
+    archiveClassifier.set("api")
+}
+
+tasks.withType(PublishToMavenRepository) {
+    onlyIf {
+        findProperty('release')?.toBoolean() == 'false'
+    }
+}
+
+// replace the api publication with the empty jar
+configurations.apiElements.outgoing.artifacts.clear()
+configurations.apiElements.outgoing.artifact(apiJar)
+
+dependencies {
+    implementation gradleApi()
+    implementation(project(':base:build-system:gradle-kotlin'))
+    implementation(project(':base:build-system:gradle-core'))
+}
+
+group = 'com.android.tools.build'
+version = rootProject.ext.buildVersion
+
+project.ext.pomName = 'Android Declarative Ecosystem Gradle Plugin'
+project.ext.pomDesc = 'Gradle plugin to build Android declarative projects'
