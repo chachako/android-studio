@@ -10,6 +10,7 @@
     <orderEntry type="module" module-name="android.sdktools.lint.cli" />
     <orderEntry type="module" module-name="android.sdktools.lint-api" />
     <orderEntry type="module" module-name="android.sdktools.lint-checks" />
+    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
     <orderEntry type="module" module-name="android.sdktools.lint.testinfrastructure" scope="TEST" />
     <orderEntry type="module" module-name="android.sdktools.lint.studio-checks" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="studio-sdk" level="project" />

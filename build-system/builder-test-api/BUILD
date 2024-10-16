@@ -14,6 +14,7 @@ iml_module(
     exports = ["//tools/base/ddmlib:studio.android.sdktools.ddmlib"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",

@@ -13,6 +13,7 @@ iml_module(
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "//tools/adt/idea/.idea/libraries:studio-proto",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//prebuilts/tools/common/m2:junit-4.12[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/base/common:studio.android.sdktools.common[module]",

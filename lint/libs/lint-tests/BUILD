@@ -61,6 +61,7 @@ iml_module(
         "//tools/base/lint:studio.android.sdktools.lint-model[module]",
         "//tools/base/lint:studio.android.sdktools.lint-checks[module]",
         "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module]",
+        "//tools/adt/idea/.idea/libraries:junit4",
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
     ],
@@ -79,6 +80,7 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/tools/common/m2:groovy-3.0.9",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module, test]",
         "//tools/base/lint:studio.android.sdktools.lint-api[module, test]",
         "//tools/base/lint/libs/lint-tests:studio.android.sdktools.lint.testinfrastructure[module, test]",

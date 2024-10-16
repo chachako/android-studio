@@ -33,6 +33,7 @@ iml_module(
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api[module]",
         "//tools/base/sdklib:studio.android.sdktools.sdklib[module]",
         "//tools/base/sdk-common:studio.android.sdktools.sdk-common[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:aapt-proto",
         "@intellij//:intellij-sdk",

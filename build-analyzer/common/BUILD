@@ -16,6 +16,7 @@ iml_module(
         "@intellij//:com.intellij.java",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/base/sdk-common:studio.android.sdktools.sdk-common[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
 )

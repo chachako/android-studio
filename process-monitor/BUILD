@@ -20,6 +20,7 @@ iml_module(
         "//tools/base/device-provisioner:studio.android.sdktools.device-provisioner[module]",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",
         "//tools/base/sdklib:studio.android.sdktools.sdklib[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:jetbrains.kotlinx.coroutines.test[test]",

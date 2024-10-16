@@ -14,6 +14,7 @@ iml_module(
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",

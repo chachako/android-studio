@@ -20,6 +20,7 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "@intellij//:intellij-sdk[test]",

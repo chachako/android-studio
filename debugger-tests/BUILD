@@ -131,6 +131,7 @@ iml_module(
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "@intellij//:org.jetbrains.kotlin",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/as-driver:as-driver.utils[module, test]",
         "//tools/adt/idea/.idea/libraries:jetbrains.kotlinx.coroutines.test[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",

@@ -18,6 +18,7 @@ iml_module(
     deps = [
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:libadb-server-proto",

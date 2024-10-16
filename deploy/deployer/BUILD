@@ -31,6 +31,7 @@ iml_module(
         "@intellij//:com.intellij.java",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/base/apkparser:studio.android.sdktools.binary-resources[module]",
         "//tools/base/deploy/deployer:deploy_java_proto",

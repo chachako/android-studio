@@ -22,6 +22,7 @@ iml_module(
     exports = ["//tools/adt/idea/android-test-framework:intellij.android.testFramework"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:studio-grpc[test]",
         "@intellij//:intellij-sdk[test]",
         "@intellij//:com.intellij.java",

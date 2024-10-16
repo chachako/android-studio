@@ -375,6 +375,7 @@ iml_module(
         "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module]",
         "//tools/base/lint:studio.android.sdktools.lint-api[module]",
         "//tools/base/lint:studio.android.sdktools.lint-checks[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/lint/libs/lint-tests:studio.android.sdktools.lint.testinfrastructure[module, test]",
         "//tools/base/lint:studio.android.sdktools.lint.studio-checks[module, test]",
         "@intellij//:intellij-sdk[test]",
@@ -415,6 +416,7 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module, test]",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module, test]",
         "//tools/base/lint:studio.android.sdktools.lint.gradle[module, test]",

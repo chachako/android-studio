@@ -71,6 +71,7 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "@intellij//:intellij-sdk",
         "//tools/base/zipflinger:studio.android.sdktools.zipflinger[module]",
     ],

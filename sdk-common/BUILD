@@ -30,6 +30,7 @@ iml_module(
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "//tools/base/sdk-common:aia-proto",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api[module]",
         "//tools/base/build-system/builder-model:studio.android.sdktools.builder-model[module]",

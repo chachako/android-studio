@@ -35,6 +35,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
     <orderEntry type="module" module-name="android.sdktools.layoutlib-api" exported="" />
     <orderEntry type="module" module-name="android.sdktools.builder-model" exported="" />

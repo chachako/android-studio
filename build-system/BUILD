@@ -20,6 +20,7 @@ iml_module(
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
         "//tools/base/sdklib:studio.android.sdktools.sdklib[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/base/sdk-common:studio.android.sdktools.sdk-common[module]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",

@@ -30,6 +30,7 @@ iml_module(
         "@intellij//:com.intellij.java",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/base/common:studio.android.sdktools.common[module]",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",

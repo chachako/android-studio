@@ -12,6 +12,7 @@
     <orderEntry type="module" module-name="android.sdktools.lint-model" />
     <orderEntry type="module" module-name="android.sdktools.lint-checks" />
     <orderEntry type="module" module-name="android.sdktools.lint.cli" />
+    <orderEntry type="library" name="junit4" level="project" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="library" name="studio-plugin-com.intellij.java" level="project" />
   </component>

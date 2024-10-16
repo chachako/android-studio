@@ -23,6 +23,7 @@ iml_module(
         "//prebuilts/tools/common/archive-patcher:shared",
         "//tools/adt/idea/.idea/libraries:google-dexlib2",
         "//tools/adt/idea/.idea/libraries:google-baksmali",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/adt/idea/.idea/libraries:jimfs[test]",

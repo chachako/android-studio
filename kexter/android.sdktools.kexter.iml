@@ -9,6 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="android.sdktools.zipflinger" />

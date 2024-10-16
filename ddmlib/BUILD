@@ -27,6 +27,7 @@ iml_module(
         "@intellij//:com.intellij.java",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/adt/idea/.idea/libraries:kxml2",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
@@ -232,6 +233,7 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/base/bazel/avd:studio.android.sdktools.base.bazel.avd[module, test]",

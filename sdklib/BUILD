@@ -38,6 +38,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:agp-version",
         "@intellij//:com.intellij.java",
         "@intellij//:intellij-sdk",
+        "//tools/adt/idea/.idea/libraries:junit4[test]",
         "//tools/adt/idea/.idea/libraries:guava-testlib[test]",
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
