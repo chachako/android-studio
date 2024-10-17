@@ -71,7 +71,7 @@ void DeltaInstallCommand::StreamInstall(proto::DeltaInstallResponse* response) {
     session_id = output;
   } else {
     ErrEvent("Unable to create session"_s + output);
-    response->set_status(proto::DeltaStatus::ERROR);
+    response->set_status(proto::DeltaStatus::SESSION_CREATE_FAILED);
     response->set_install_output(output);
     return;
   }

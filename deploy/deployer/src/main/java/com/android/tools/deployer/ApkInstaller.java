@@ -47,7 +47,8 @@ public class ApkInstaller {
         DUMP_UNKNOWN_PACKAGE,
         STREAM_APK_FAILED,
         STREAM_APK_NOT_SUPPORTED,
-        BASELINE_PROFILE_NOT_SUPPORTED
+        BASELINE_PROFILE_NOT_SUPPORTED,
+        SESSION_CREATE_FAILED
     }
 
     private static class DeltaInstallResult {
@@ -143,6 +144,7 @@ public class ApkInstaller {
             case STREAM_APK_FAILED:
             case STREAM_APK_NOT_SUPPORTED:
             case BASELINE_PROFILE_NOT_SUPPORTED:
+            case SESSION_CREATE_FAILED:
                 {
                     logger.info("Deltapush failed: " + deltaInstallResult.status.name());
                     logger.info("Falling back to standard full install");
@@ -343,6 +345,8 @@ public class ApkInstaller {
             case UNRECOGNIZED:
             case ERROR:
                 return DeltaInstallStatus.ERROR;
+            case SESSION_CREATE_FAILED:
+                return DeltaInstallStatus.SESSION_CREATE_FAILED;
             case STREAM_APK_NOT_SUPPORTED:
                 return DeltaInstallStatus.STREAM_APK_NOT_SUPPORTED;
         }

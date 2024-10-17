@@ -606,6 +606,7 @@ enum DeltaStatus {
   ERROR = 2;
   STREAM_APK_FAILED = 3;
   STREAM_APK_NOT_SUPPORTED = 4;
+  SESSION_CREATE_FAILED = 5;
 }
 
 message DeltaPreinstallResponse {
