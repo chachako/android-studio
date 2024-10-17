@@ -18,6 +18,7 @@ package com.android.backup
 import ai.grazie.utils.dropPrefix
 import com.android.adblib.DeviceSelector
 import com.android.backup.BackupProgressListener.Step
+import com.android.backup.ErrorCode.APP_STOPPED
 import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.BACKUP_NOT_ALLOWED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
@@ -81,13 +82,24 @@ abstract class AbstractAdbServices(
   override suspend fun backupNow(applicationId: String, type: BackupType) {
     setBackupType(type)
     val out =
-      executeCommand("bmgr backupnow @pm@ $applicationId --non-incremental", BACKUP_FAILED).stdout
+      executeCommand(
+          "bmgr backupnow @pm@ $applicationId --non-incremental --monitor",
+          BACKUP_FAILED,
+        )
+        .stdout
+    // TODO(b/348406593): Naive parsing of the output. Replace this when Backup team provides a
+    //  proper parser library
     when {
       out.isBackupSuccess(applicationId) -> return
-      out.isBackupNotAllowd() ->
+      out.isAppStopped() ->
+        throw BackupException(
+          APP_STOPPED,
+          "Application '$applicationId' is in a stopped state. Please launch the app and try again.",
+        )
+      out.isBackupNotAllowed() ->
         throw BackupException(
           BACKUP_NOT_ALLOWED,
-          "Application '$applicationId' is in a stopped state. Please launch the app and try again.",
+          "Backup not allowed. Please ensure manifest value 'android:allowBackup' is set to true.",
         )
       else -> throw BackupException(BACKUP_FAILED, "Failed to backup '$applicationId`: $out")
     }
@@ -272,4 +284,6 @@ private fun String.isBackupSuccess(applicationId: String) =
       .trimIndent()
   )
 
-private fun String.isBackupNotAllowd() = contains(" with result: Backup is not allowed")
+private fun String.isBackupNotAllowed() = contains(" with result: Backup is not allowed")
+
+private fun String.isAppStopped() = contains("PACKAGE_STOPPED")

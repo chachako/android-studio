@@ -20,6 +20,7 @@ import com.android.backup.BackupResult.Error
 import com.android.backup.BackupResult.Success
 import com.android.backup.BackupType.CLOUD
 import com.android.backup.BackupType.DEVICE_TO_DEVICE
+import com.android.backup.ErrorCode.APP_STOPPED
 import com.android.backup.ErrorCode.BACKUP_FAILED
 import com.android.backup.ErrorCode.BACKUP_NOT_ALLOWED
 import com.android.backup.ErrorCode.CANNOT_ENABLE_BMGR
@@ -77,7 +78,7 @@ class BackupServiceImplTest {
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
         "settings put secure backup_android_studio_test_package_name com.app",
         "settings put secure backup_android_studio_mode_backup_type 0",
-        "bmgr backupnow @pm@ com.app --non-incremental",
+        "bmgr backupnow @pm@ com.app --non-incremental --monitor",
         "settings delete secure backup_android_studio_test_package_name",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
@@ -119,7 +120,7 @@ class BackupServiceImplTest {
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
         "settings put secure backup_android_studio_test_package_name com.app",
         "settings put secure backup_android_studio_mode_backup_type 1",
-        "bmgr backupnow @pm@ com.app --non-incremental",
+        "bmgr backupnow @pm@ com.app --non-incremental --monitor",
         "settings delete secure backup_android_studio_test_package_name",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
@@ -160,7 +161,7 @@ class BackupServiceImplTest {
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
         "settings put secure backup_android_studio_test_package_name com.app",
         "settings put secure backup_android_studio_mode_backup_type 0",
-        "bmgr backupnow @pm@ com.app --non-incremental",
+        "bmgr backupnow @pm@ com.app --non-incremental --monitor",
         "settings delete secure backup_android_studio_test_package_name",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
         "settings put secure backup_enable_android_studio_mode 0",
@@ -191,7 +192,7 @@ class BackupServiceImplTest {
         "bmgr init com.google.android.gms/.backup.migrate.service.D2dTransport",
         "settings put secure backup_android_studio_test_package_name com.app",
         "settings put secure backup_android_studio_mode_backup_type 0",
-        "bmgr backupnow @pm@ com.app --non-incremental",
+        "bmgr backupnow @pm@ com.app --non-incremental --monitor",
         "settings delete secure backup_android_studio_test_package_name",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
@@ -294,7 +295,9 @@ class BackupServiceImplTest {
     val backupService =
       BackupServiceImpl(
         FakeAdbServicesFactory {
-          it.addCommandOverride(Output("bmgr backupnow @pm@ com.app --non-incremental", "Error"))
+          it.addCommandOverride(
+            Output("bmgr backupnow @pm@ com.app --non-incremental --monitor", "Error")
+          )
         }
       )
 
@@ -311,7 +314,7 @@ class BackupServiceImplTest {
         FakeAdbServicesFactory {
           it.addCommandOverride(
             Output(
-              "bmgr backupnow @pm@ com.app --non-incremental",
+              "bmgr backupnow @pm@ com.app --non-incremental --monitor",
               "Package com.app with result: Backup is not allowed",
             )
           )
@@ -323,6 +326,31 @@ class BackupServiceImplTest {
     assertThat(result)
       .isEqualTo(
         BACKUP_NOT_ALLOWED.asBackupResult(
+          "Backup not allowed. Please ensure manifest value 'android:allowBackup' is set to true."
+        )
+      )
+  }
+
+  @Test
+  fun backup_appStopped(): Unit = runBlocking {
+    val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
+    val backupService =
+      BackupServiceImpl(
+        FakeAdbServicesFactory {
+          it.addCommandOverride(
+            Output(
+              "bmgr backupnow @pm@ com.app --non-incremental --monitor",
+              "=> Event{BACKUP_MANAGER_POLICY / PACKAGE_STOPPED : package = com.app(v1)}",
+            )
+          )
+        }
+      )
+
+    val result = backupService.backup("serial", "com.app", DEVICE_TO_DEVICE, backupFile, null)
+
+    assertThat(result)
+      .isEqualTo(
+        APP_STOPPED.asBackupResult(
           "Application 'com.app' is in a stopped state. Please launch the app and try again."
         )
       )
