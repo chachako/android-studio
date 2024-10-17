@@ -32,6 +32,7 @@ import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.apk.Aar
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -59,7 +60,7 @@ class BuiltInKaptForTestFixturesTest(private val kotlinVersion: String) {
                 )
             )
         ).withKotlinGradlePlugin(true)
-            .withBuiltInKotlinSupport(true)
+            .withBuiltInKotlinSupport(kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS)
             .create()
 
     @Before
@@ -103,6 +104,7 @@ class BuiltInKaptForTestFixturesTest(private val kotlinVersion: String) {
 
     @Test
     fun testAnnotationProcessingWithAgpKaptPlugin() {
+        Assume.assumeTrue(kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS)
         val app = project.getSubproject(":app")
         TestFileUtils.searchAndReplace(
             app.buildFile,

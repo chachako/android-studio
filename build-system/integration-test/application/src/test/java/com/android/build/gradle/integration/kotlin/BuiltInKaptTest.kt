@@ -39,6 +39,7 @@ import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject
 import com.android.utils.appendCapitalized
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -283,6 +284,7 @@ class BuiltInKaptTest {
     /**
      * Test to ensure that the built-in KaptGenerateStubs task handles basic compose code
      */
+    @Ignore("https://youtrack.jetbrains.com/issue/KT-69967")
     @Test
     fun testBuiltInKaptWithCompose() {
         TestFileUtils.searchAndReplace(

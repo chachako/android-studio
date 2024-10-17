@@ -526,6 +526,8 @@ maven_repository(
         "@maven//:org.jacoco.org.jacoco.report",
         "@maven//:org.jetbrains.dokka.dokka-core",
         "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin",
+        "@maven//:org.jetbrains.kotlin.kotlin-build-common_2.0.21",
+        "@maven//:org.jetbrains.kotlin.kotlin-build-tools-impl_2.0.21",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler",
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",

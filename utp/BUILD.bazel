@@ -54,6 +54,8 @@ maven_repository(
         "@maven//:commons-io.commons-io",
         "@maven//:commons-lang.commons-lang",
         "@maven//:gradle.plugin.org.jetbrains.gradle.plugin.idea-ext.gradle-idea-ext",
+        "@maven//:org.jetbrains.kotlin.kotlin-build-common_2.0.21",
+        "@maven//:org.jetbrains.kotlin.kotlin-build-tools-impl_2.0.21",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler",
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin",
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
