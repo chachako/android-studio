@@ -57,7 +57,6 @@ import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.Usage
-import org.gradle.api.attributes.Usage.JAVA_RUNTIME
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -416,7 +415,7 @@ abstract class ProguardConfigurableTask(
     ) {
 
         private val includeFeaturesInScopes: Boolean = (creationConfig as? ApplicationCreationConfig)
-            ?.consumesFeatureJars == true
+            ?.consumesDynamicFeatures == true
         protected val componentType: ComponentType = creationConfig.componentType
         private val testedConfig = (creationConfig as? TestComponentCreationConfig)?.mainVariant
 

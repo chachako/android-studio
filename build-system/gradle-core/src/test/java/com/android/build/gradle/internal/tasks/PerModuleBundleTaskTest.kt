@@ -68,7 +68,7 @@ class PerModuleBundleTaskTest {
     @Test
     fun testSingleDexFiles() {
         val dexFolder = testFolder.newFolder("dex_files")
-        task.dexFiles.from(createDex(dexFolder, "classes.dex"))
+        task.dexDirectories.from(createDex(dexFolder, "classes.dex"))
         task.doTaskAction()
         verifyOutputZip(task.outputDir.get().asFileTree.singleFile, 1)
     }
@@ -76,7 +76,7 @@ class PerModuleBundleTaskTest {
     @Test
     fun testNoDuplicateDexFiles() {
         val dexFolder = testFolder.newFolder("dex_files")
-        task.dexFiles.from(
+        task.dexDirectories.from(
             setOf(
                 createDex(dexFolder, "classes.dex"),
                 createDex(dexFolder, "classes2.dex"),
@@ -91,7 +91,7 @@ class PerModuleBundleTaskTest {
     fun testDuplicateDexFiles() {
         val dexFolder0 = testFolder.newFolder("0")
         val dexFolder1 = testFolder.newFolder("1")
-        task.dexFiles.from(
+        task.dexDirectories.from(
             setOf(
                 createDex(dexFolder0, "classes.dex"),
                 createDex(dexFolder0, "classes2.dex"),
@@ -109,7 +109,7 @@ class PerModuleBundleTaskTest {
     @Test
     fun testMainDexNotRenamedFiles() {
         val dexFolder0 = testFolder.newFolder("0")
-        task.dexFiles.from(
+        task.dexDirectories.from(
             setOf(
                 createDex(dexFolder0, "classes2.dex"),
                 createDex(dexFolder0, "classes.dex"),
@@ -126,7 +126,7 @@ class PerModuleBundleTaskTest {
     fun testExcludeJarManifest() {
         val metadata = "META-INF/MANIFEST.MF"
         val dexFolder = testFolder.newFolder("0")
-        task.dexFiles.from(
+        task.dexDirectories.from(
             setOf(
                 createDex(dexFolder, "classes.dex"),
                 createDex(dexFolder,metadata)

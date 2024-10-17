@@ -374,7 +374,7 @@ abstract class R8Task @Inject constructor(
                     .withName("shrunkClasses.jar")
                     .on(InternalArtifactType.SHRUNK_CLASSES)
 
-                (creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true -> {
+                (creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true -> {
                     creationConfig.artifacts.setInitialProvider(
                         taskProvider,
                         R8Task::baseDexDir
@@ -517,7 +517,7 @@ abstract class R8Task @Inject constructor(
                     creationConfig.dexing.multiDexKeepFile
                 )
 
-                if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true) {
+                if ((creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true) {
                     creationConfig.artifacts.setTaskInputToFinalProduct(
                         InternalArtifactType.MODULE_AND_RUNTIME_DEPS_CLASSES,
                         task.baseJar

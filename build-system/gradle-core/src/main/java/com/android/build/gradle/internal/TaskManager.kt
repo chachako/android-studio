@@ -367,7 +367,7 @@ abstract class TaskManager(
         // dynamic-features.
         // The main dex list calculation for the bundle also needs the feature classes for reference
         // only
-        if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true ||
+        if ((creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true ||
             (creationConfig as? ApkCreationConfig)?.dexing?.needsMainDexListForBundle == true) {
             creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.FEATURES)
                 .setInitialContent(
@@ -596,7 +596,7 @@ abstract class TaskManager(
         val packageOutputType: InternalArtifactType<Directory>? =
                 if (componentType.isApk && !componentType.isForTesting) FEATURE_RESOURCE_PKG else null
         createApkProcessResTask(creationConfig, packageOutputType)
-        if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true) {
+        if ((creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true) {
             taskFactory.register(MergeAaptProguardFilesCreationAction(creationConfig))
         }
     }
@@ -1234,7 +1234,7 @@ abstract class TaskManager(
         // or a base module consuming feature jars. Merged runtime classes are needed if code
         // minification is enabled in a project with features or dynamic-features.
         if (creationConfig.componentType.isDynamicFeature
-                || (creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true) {
+                || (creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true) {
             taskFactory.register(MergeClassesTask.CreationAction(creationConfig))
         }
 
