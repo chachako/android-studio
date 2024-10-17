@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.application
-import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
+package com.android.build.gradle.internal.tasks
+
+import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import com.android.build.gradle.internal.tasks.MergeFileTask
 import java.io.File
 
 class MergeFileTaskTest {
@@ -50,6 +50,6 @@ class MergeFileTaskTest {
 
         MergeFileTask.mergeFiles(inputs, output)
 
-        assertThat(output.readText()).matches(totalTxt)
+        Truth.assertThat(output.readText()).matches(totalTxt)
     }
 }
