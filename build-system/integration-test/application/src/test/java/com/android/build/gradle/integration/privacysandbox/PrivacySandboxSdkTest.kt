@@ -342,7 +342,7 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun testTargetSdkVersion() {
-        project.getSubproject(":privacy-sandbox-sdk").buildFile.appendText("\nandroid.targetSdk 33")
+        project.getSubproject(":privacy-sandbox-sdk").buildFile.appendText("\nandroid.targetSdk 34")
         executor().run(":privacy-sandbox-sdk:assemble")
         val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
         val asbManifest = sdkProject.getIntermediateFile(
@@ -352,7 +352,7 @@ class PrivacySandboxSdkTest {
             listOf(
                 "    <uses-sdk",
                 "        android:minSdkVersion=\"23\"",
-                "        android:targetSdkVersion=\"33\" />"
+                "        android:targetSdkVersion=\"34\" />"
             )
         )
     }

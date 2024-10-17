@@ -34,7 +34,7 @@ fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -
         android {
             defaultCompileSdk()
             namespace = "com.example.privacysandboxsdk"
-            minSdk = 33
+            minSdk = 23
         }
         dependencies {
             include(project(":privacy-sandbox-sdk-impl"))
@@ -56,7 +56,7 @@ fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -
         android {
             defaultCompileSdk()
             namespace = "com.example.privacysandboxsdk"
-            minSdk = 33
+            minSdk = 23
         }
     }
     action(this)
@@ -252,7 +252,7 @@ fun TestProjectBuilder.buildPrivacySandboxSampleProject() {
         android {
             defaultCompileSdk()
             namespace = "com.example.privacysandboxsdkb"
-            minSdk = 33
+            minSdk = 23
         }
         dependencies {
             include(project(":sdk-impl-b"))
