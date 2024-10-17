@@ -352,7 +352,7 @@ public class DeployerRunnerTest {
                     "cmd package install-create -r -t -S ${size:com.example.helloworld}",
                     "cmd package install-write -S ${size:com.example.helloworld} 1 sample.apk -",
                     "cmd package install-commit 1");
-        } else {
+        } else if (device.getApi() < 35) {
             String packageCommand = "path";
             assertMetrics(
                     runner.getMetrics(),
@@ -375,6 +375,44 @@ public class DeployerRunnerTest {
                             "/system/bin/cmd package %s com.example.helloworld", packageCommand),
                     cmd(
                             "%s package install-create -r -t -S ${size:com.example.helloworld}",
+                            device),
+                    cmd(
+                            "%s package install-write -S ${size:com.example.helloworld} 1"
+                                    + " sample.apk -",
+                            device),
+                    cmd("%s package install-commit 1", device),
+                    "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                    "/system/bin/run-as com.example.helloworld cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.helloworld")
+                            + "coroutine_debugger_agent.so",
+                    "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                            + Sites.appCodeCache("com.example.helloworld")
+                            + "coroutine_debugger_agent.so");
+        } else {
+            String packageCommand = "path";
+            assertMetrics(
+                    runner.getMetrics(),
+                    "DELTAINSTALL:DUMP_UNKNOWN_PACKAGE",
+                    "INSTALL:OK",
+                    "DDMLIB_UPLOAD",
+                    "DDMLIB_INSTALL");
+            assertHistory(
+                    device,
+                    "getprop",
+                    INSTALLER_INVOCATION, // dump com.example.helloworld
+                    AdbInstallerTest.RM_DIR,
+                    AdbInstallerTest.MK_DIR,
+                    AdbInstallerTest.CHMOD_DIR,
+                    AdbInstallerTest.CHOWN_DIR,
+                    AdbInstallerTest.CHMOD_INSTALLER,
+                    INSTALLER_INVOCATION, // dump com.example.helloworld
+                    "/system/bin/run-as com.example.helloworld id -u",
+                    String.format(
+                            "/system/bin/cmd package %s com.example.helloworld", packageCommand),
+                    cmd(
+                            "%s package install-create -r -t --dexopt-compiler-filter"
+                                    + " assume-verified -S ${size:com.example.helloworld}",
                             device),
                     cmd(
                             "%s package install-write -S ${size:com.example.helloworld} 1"
@@ -1351,7 +1389,7 @@ public class DeployerRunnerTest {
                         "INSTALL:OK",
                         "DDMLIB_UPLOAD",
                         "DDMLIB_INSTALL");
-            } else {
+            } else if (device.getApi() < 35) {
                 String packageCommand = "path";
                 assertHistory(
                         device,
@@ -1363,6 +1401,49 @@ public class DeployerRunnerTest {
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         cmd(
                                 "%s package install-create -r -t -S ${size:com.example.simpleapp}",
+                                device),
+                        cmd(
+                                "%s package install-write -S ${size:com.example.simpleapp:base.apk}"
+                                        + " 2 simple.apk -",
+                                device),
+                        cmd(
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                        + " split.apk -",
+                                device),
+                        cmd(
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_02.apk} 2"
+                                        + " split2.apk -",
+                                device),
+                        cmd("%s package install-commit 2", device),
+                        "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so",
+                        "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so");
+                assertMetrics(
+                        runner.getMetrics(),
+                        "DELTAINSTALL:CANNOT_GENERATE_DELTA",
+                        "INSTALL:OK",
+                        "DDMLIB_UPLOAD",
+                        "DDMLIB_INSTALL");
+            } else {
+                String packageCommand = "path";
+                assertHistory(
+                        device,
+                        "getprop",
+                        INSTALLER_INVOCATION, // dump com.example.simpleapp
+                        "/system/bin/run-as com.example.simpleapp id -u",
+                        "id -u",
+                        String.format(
+                                "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                        cmd(
+                                "%s package install-create -r -t --dexopt-compiler-filter"
+                                        + " assume-verified -S ${size:com.example.simpleapp}",
                                 device),
                         cmd(
                                 "%s package install-write -S ${size:com.example.simpleapp:base.apk}"
@@ -1504,7 +1585,7 @@ public class DeployerRunnerTest {
                         "INSTALL:OK",
                         "DDMLIB_UPLOAD",
                         "DDMLIB_INSTALL");
-            } else {
+            } else if (device.getApi() < 35) {
                 String packageCommand = "path";
                 assertHistory(
                         device,
@@ -1516,6 +1597,44 @@ public class DeployerRunnerTest {
                                 "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
                         cmd(
                                 "%s package install-create -r -t -S ${size:com.example.simpleapp}",
+                                device),
+                        cmd(
+                                "%s package install-write -S ${size:com.example.simpleapp:base.apk}"
+                                        + " 2 simple.apk -",
+                                device),
+                        cmd(
+                                "%s package install-write -S"
+                                        + " ${size:com.example.simpleapp:split_split_01.apk} 2"
+                                        + " split.apk -",
+                                device),
+                        cmd("%s package install-commit 2", device),
+                        "/data/local/tmp/.studio/bin/installer -version=$VERSION",
+                        "/system/bin/run-as com.example.simpleapp cp -F"
+                            + " /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so",
+                        "cp -F /data/local/tmp/.studio/tmp/$VERSION/coroutine_debugger_agent.so "
+                                + Sites.appCodeCache("com.example.simpleapp")
+                                + "coroutine_debugger_agent.so");
+                assertMetrics(
+                        runner.getMetrics(),
+                        "DELTAINSTALL:CANNOT_GENERATE_DELTA",
+                        "INSTALL:OK",
+                        "DDMLIB_UPLOAD",
+                        "DDMLIB_INSTALL");
+            } else {
+                String packageCommand = "path";
+                assertHistory(
+                        device,
+                        "getprop",
+                        INSTALLER_INVOCATION, // dump com.example.simpleapp
+                        "/system/bin/run-as com.example.simpleapp id -u",
+                        "id -u",
+                        String.format(
+                                "/system/bin/cmd package %s com.example.simpleapp", packageCommand),
+                        cmd(
+                                "%s package install-create -r -t --dexopt-compiler-filter"
+                                        + " assume-verified -S ${size:com.example.simpleapp}",
                                 device),
                         cmd(
                                 "%s package install-write -S ${size:com.example.simpleapp:base.apk}"

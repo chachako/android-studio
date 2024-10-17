@@ -28,6 +28,8 @@ import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.utils.ILogger;
 
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -122,7 +124,13 @@ public class ApkInstaller {
                     switch (result.status) {
                         case NO_CERTIFICATE:
                         case INSTALL_PARSE_FAILED_NO_CERTIFICATES:
-                            result = adb.install(app, options.getFlags(), allowReinstall);
+                            result =
+                                    invokeAdbInstall(
+                                            adb,
+                                            app,
+                                            options.getFlags(),
+                                            allowReinstall,
+                                            options.getAssumeVerified());
                             long installStartTime = System.nanoTime();
                             DeployMetric installResult =
                                     new DeployMetric("INSTALL", installStartTime);
@@ -155,7 +163,13 @@ public class ApkInstaller {
                     deltaNotPatchableMetric.finish(deltaInstallResult.status.name(), metrics);
 
                     long installStartedNs = System.nanoTime();
-                    result = adb.install(app, options.getFlags(), allowReinstall);
+                    result =
+                            invokeAdbInstall(
+                                    adb,
+                                    app,
+                                    options.getFlags(),
+                                    allowReinstall,
+                                    options.getAssumeVerified());
 
                     DeployMetric installResult = new DeployMetric("INSTALL", installStartedNs);
                     installResult.finish(result.status.name(), metrics);
@@ -209,7 +223,13 @@ public class ApkInstaller {
                 sb.append("Do you want to uninstall the existing application?");
                 if (service.prompt(sb.toString())) {
                     adb.uninstall(app.getAppId());
-                    result = adb.install(app, options.getFlags(), allowReinstall);
+                    result =
+                            invokeAdbInstall(
+                                    adb,
+                                    app,
+                                    options.getFlags(),
+                                    allowReinstall,
+                                    options.getAssumeVerified());
                     message = message(result);
                 }
                 break;
@@ -432,6 +452,27 @@ public class ApkInstaller {
                 return "Installation failed due to: '"
                         + (result.reason == null ? result.status.toString() : result.reason)
                         + "'";
+        }
+    }
+
+    private AdbClient.InstallResult invokeAdbInstall(
+            AdbClient adb,
+            @NonNull App app,
+            List<String> options,
+            boolean allowReinstall,
+            boolean assumeVerified) {
+        return adb.install(
+                app, assumeVerified ? injectAssumeVerified(options) : options, allowReinstall);
+    }
+
+    private List<String> injectAssumeVerified(List<String> options) {
+        if (options.contains("assume-verfied")) {
+            return options;
+        } else {
+            List<String> newOptions = Lists.newArrayList(options);
+            newOptions.add("--dexopt-compiler-filter");
+            newOptions.add("assume-verified");
+            return newOptions;
         }
     }
 }
