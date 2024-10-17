@@ -169,7 +169,8 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
             mergeBlameDirectory = mergeBlameLogFolder.get().asFile,
             manifestMergeBlameFile = manifestMergeBlameFile.orNull?.asFile,
             identifiedSourceSetMap = identifiedSourceSetMap,
-            localeFilters = ImmutableSet.copyOf(localeFilters.get())
+            localeFilters = ImmutableSet.copyOf(localeFilters.get()),
+            pseudoLocalesEnabled = pseudoLocalesEnabled.get()
         )
         if (logger.isInfoEnabled) {
             logger.info("Aapt output file {}", outputFile.absolutePath)
@@ -204,6 +205,9 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
 
     @get:Input
     abstract val aaptAdditionalParameters: ListProperty<String>
+
+    @get:Input
+    abstract val pseudoLocalesEnabled: Property<Boolean>
 
     /**
      * Returns a file collection of the directories containing the compiled remote libraries
@@ -305,6 +309,10 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
                     task.localeFilters.setDisallowChanges(ImmutableSet.of())
                 }
             }
+
+            task.pseudoLocalesEnabled.setDisallowChanges(
+                androidResourcesCreationConfig.pseudoLocalesEnabled
+            )
 
             task.manifestMergeBlameFile.setDisallowChanges(creationConfig.artifacts.get(
                 InternalArtifactType.MANIFEST_MERGE_BLAME_FILE

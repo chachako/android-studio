@@ -124,6 +124,9 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
     @get:Optional
     abstract val compileSdk: Property<Int>
 
+    @get:Input
+    abstract val pseudoLocalesEnabled: Property<Boolean>
+
     // These properties are only used with res configs as well, but they cannot be optional because
     // they use `Nested` And `Inject`
     @get:Inject
@@ -150,6 +153,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
             it.tempProjectDir.set(tempProjectDir)
             it.androidJarInput.set(androidJarInput)
             it.compileSdk.set(compileSdk)
+            it.pseudoLocalesEnabled.set(pseudoLocalesEnabled)
         }
     }
 
@@ -167,6 +171,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
         abstract val tempProjectDir: DirectoryProperty
         abstract val androidJarInput: Property<AndroidJarInput>
         abstract val compileSdk: Property<Int>
+        abstract val pseudoLocalesEnabled: Property<Boolean>
     }
 
     abstract class GenerateLocaleWorkAction: ProfileAwareWorkAction<GenerateLocaleWorkParameters>() {
@@ -311,6 +316,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
                 .setResourceConfigs(localeResConfigs.toImmutableSet())
                 .setResourceOutputApk(resApk)
                 .addResourceDir(parameters.compiledResOutput.get().asFile)
+                .setPseudoLocalesEnabled(parameters.pseudoLocalesEnabled.get())
                 .build()
 
             val logger = Logging.getLogger(GenerateLocaleConfigTask::class.java)
@@ -378,6 +384,11 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
                 creationConfig.paths.getIncrementalDir("${task.name}_resApkDir"))
             task.tempProjectDir.set(
                 creationConfig.paths.getIncrementalDir("${task.name}_tempProject"))
+
+            creationConfig.androidResourcesCreationConfig?.let {
+                task.pseudoLocalesEnabled.set(it.pseudoLocalesEnabled)
+            }
+            task.pseudoLocalesEnabled.disallowChanges()
         }
     }
 }

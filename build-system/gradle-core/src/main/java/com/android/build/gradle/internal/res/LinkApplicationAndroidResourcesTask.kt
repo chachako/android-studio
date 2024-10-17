@@ -286,6 +286,9 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
     @get:Input
     abstract val localeFilters: SetProperty<String>
 
+    @get:Input
+    abstract val pseudoLocalesEnabled: Property<Boolean>
+
     @Internal
     override fun getManifestFile(): File? {
         val manifestDirectory = if (aaptFriendlyManifestFiles.isPresent) {
@@ -370,6 +373,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
             parameters.outputsHandler.set(outputsHandler.get().toSerializable())
             parameters.componentType.set(type)
             parameters.localeFilters.set(localeFilters)
+            parameters.pseudoLocalesEnabled.set(pseudoLocalesEnabled)
         }
     }
 
@@ -416,6 +420,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
         abstract val variantName: Property<String>
         abstract val componentType: Property<ComponentType>
         abstract val localeFilters: SetProperty<String>
+        abstract val pseudoLocalesEnabled: Property<Boolean>
     }
 
     abstract class TaskAction : ProfileAwareWorkAction<TaskWorkActionParameters>() {
@@ -678,6 +683,10 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                     task.localeFilters.setDisallowChanges(ImmutableSet.of())
                 }
             }
+
+            task.pseudoLocalesEnabled.setDisallowChanges(
+                androidResourcesCreationConfig.pseudoLocalesEnabled
+            )
         }
     }
 
@@ -973,6 +982,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
                         .setMergeBlameDirectory(parameters.mergeBlameDirectory.get().asFile)
                         .setManifestMergeBlameFile(parameters.manifestMergeBlameFile.orNull?.asFile)
                         .setLocaleFilters(parameters.localeFilters.get())
+                        .setPseudoLocalesEnabled(parameters.pseudoLocalesEnabled.get())
                         .apply {
                             val compiledDependencyResourceFiles =
                                 parameters.compiledDependenciesResources.files

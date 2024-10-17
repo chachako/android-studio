@@ -181,9 +181,7 @@ class LocaleConfigGenerationTest {
                 """.trimIndent()
         }
         if (pseudoLocalesEnabled) {
-            dslString += """
-                android.buildTypes.debug.pseudoLocalesEnabled true
-            """.trimIndent()
+            dslString += "\nandroid.buildTypes.debug.pseudoLocalesEnabled true\n"
         }
 
         project.getSubproject("app").buildFile.appendText(dslString)
@@ -655,6 +653,30 @@ class LocaleConfigGenerationTest {
         getExpectedLocaleList(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB), "en-US"))
         assertLocaleList("lib1", "debug").isEmpty()
         assertLocaleList("lib2", "debug").isEmpty()
+        validateLocalesInLocaleConfigAndApk(listOf("en-US", "en-XA", "ar-XB"))
+    }
+
+    @Test
+    fun `Test pseudolocales are present with locale filters specified`() {
+        buildDsl(generateLocaleConfig = true, pseudoLocalesEnabled = true)
+
+        project.getSubproject("app").buildFile.appendText(
+            """
+                android.androidResources.localeFilters += ["en"]
+            """.trimIndent()
+        )
+
+        project.withLocales(
+            appLocales = listOf(DEFAULT),
+            lib1Locales = listOf(DE),
+            lib2Locales = listOf()
+        ).execute("assembleDebug")
+
+        assertLocaleList("app", "debug").isEqualTo(
+        getExpectedLocaleList(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB), "en-US"))
+        assertLocaleList("lib1", "debug").isEqualTo(listOf("de"))
+        assertLocaleList("lib2", "debug").isEmpty()
+        // The pseudolocales should be present even when locale filters are specified
         validateLocalesInLocaleConfigAndApk(listOf("en-US", "en-XA", "ar-XB"))
     }
 

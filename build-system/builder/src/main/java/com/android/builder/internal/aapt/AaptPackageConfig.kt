@@ -63,7 +63,8 @@ data class AaptPackageConfig(
     val mergeBlameDirectory: File? = null,
     val manifestMergeBlameFile: File? = null,
     val identifiedSourceSetMap: Map<String, String> = emptyMap(),
-    val localeFilters: Set<String> = emptySet()
+    val localeFilters: Set<String> = emptySet(),
+    val pseudoLocalesEnabled: Boolean = false,
 ) : Serializable {
 
     init {
@@ -117,6 +118,7 @@ data class AaptPackageConfig(
         private var manifestMergeBlameFile: File? = null
         private var identifiedSourceSetMap: Map<String, String> = emptyMap()
         private var localeFilters: ImmutableSet<String> = ImmutableSet.of()
+        private var pseudoLocalesEnabled: Boolean = false
         /**
          * Creates a new [AaptPackageConfig] from the data already placed in the builder.
          *
@@ -159,7 +161,8 @@ data class AaptPackageConfig(
                 mergeBlameDirectory = mergeBlameDirectory,
                 manifestMergeBlameFile = manifestMergeBlameFile,
                 identifiedSourceSetMap = identifiedSourceSetMap,
-                localeFilters = localeFilters
+                localeFilters = localeFilters,
+                pseudoLocalesEnabled = pseudoLocalesEnabled
             )
         }
 
@@ -360,6 +363,11 @@ data class AaptPackageConfig(
 
         fun setLocaleFilters(localeFilters: Collection<String>): Builder {
             this.localeFilters = ImmutableSet.copyOf(localeFilters)
+            return this
+        }
+
+        fun setPseudoLocalesEnabled(pseudoLocalesEnabled: Boolean): Builder {
+            this.pseudoLocalesEnabled = pseudoLocalesEnabled
             return this
         }
     }
