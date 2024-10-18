@@ -1,7 +1,7 @@
 .out
 tools/out/
 tools/adt/idea/out
-tools/idea/out
+tools/idea
 tools/vendor/intellij/cidr/cidr-common/tests/testData
 tools/adt/idea/aswb/testing/test_deps/projects
 prebuilts/rust
