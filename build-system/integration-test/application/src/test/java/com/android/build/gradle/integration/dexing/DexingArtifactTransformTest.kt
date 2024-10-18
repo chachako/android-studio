@@ -246,11 +246,11 @@ class DexingArtifactTransformTest {
                 implementation 'com.android.support:support-core-utils:$SUPPORT_LIB_VERSION'
             }
         """.trimIndent())
-        executor().run("assembleDebug")
-        project.buildResult.stdout.use { scanner ->
+        val result = executor().run("assembleDebug")
+        result.stdout.use { scanner ->
             ScannerSubject.assertThat(scanner).doesNotContain(DexingWithClasspathTransform::class.java.simpleName)
         }
-        project.buildResult.stdout.use { scanner ->
+        result.stdout.use { scanner ->
             ScannerSubject.assertThat(scanner).contains(DexingNoClasspathTransform::class.java.simpleName)
         }
     }

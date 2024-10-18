@@ -47,8 +47,8 @@ class GenerateApkDataTest {
 
     @Test
     fun testMicroApkAndroidManifestInCorrectFolder() {
-        project.execute("assembleDebug")
-        assertTrue(project.buildResult.didWorkTasks.contains(":handleDebugMicroApk"))
+        val result = project.execute("assembleDebug")
+        assertTrue(result.didWorkTasks.contains(":handleDebugMicroApk"))
         val manifestFile = FileUtils.join(
                 project.generatedDir,
                 "manifests",

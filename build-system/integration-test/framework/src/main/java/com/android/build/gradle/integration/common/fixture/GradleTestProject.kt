@@ -388,10 +388,11 @@ open class GradleTestProject @JvmOverloads constructor(
     override val additionalMavenRepoDir: Path?
         get() = _additionalMavenRepoDir
 
-    /** \Returns the latest build result.  */
+    /** Returns the latest build result.  */
     private var _buildResult: GradleBuildResult? = null
 
     /** Returns the latest build result.  */
+    @Deprecated("Consider getting the result from the execute command directly")
     val buildResult: GradleBuildResult
         get() = _buildResult ?: throw RuntimeException("No result available. Run Gradle first.")
 
@@ -1450,22 +1451,14 @@ allprojects { proj ->
      *
      * @param tasks Variadic list of tasks to execute.
      */
-    fun execute(vararg tasks: String) {
-        _buildResult = executor().run(*tasks)
-    }
+    fun execute(vararg tasks: String): GradleBuildResult = executor().run(*tasks)
 
-    fun execute(
-        arguments: List<String>,
-        vararg tasks: String
-    ) {
-        _buildResult = executor().withArguments(arguments).run(*tasks)
+    fun execute(arguments: List<String>, vararg tasks: String): GradleBuildResult {
+        return executor().withArguments(arguments).run(*tasks)
     }
 
     fun executeExpectingFailure(vararg tasks: String): GradleConnectionException? {
-        return executor().expectFailure().run(*tasks).run {
-            _buildResult = this
-            exception
-        }
+        return executor().expectFailure().run(*tasks).exception
     }
 
     fun setLastBuildResult(lastBuildResult: GradleBuildResult) {

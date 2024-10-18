@@ -69,9 +69,9 @@ class ListenToApiTest {
             """.trimIndent()
         )
 
-        project.execute("processDebugMainManifest")
-        Truth.assertThat(project.buildResult.didWorkTasks.contains(":debugVerifyManifest")).isTrue()
-        Truth.assertThat(project.buildResult.stdout.findAll(
+        val result = project.execute("processDebugMainManifest")
+        Truth.assertThat(result.didWorkTasks.contains(":debugVerifyManifest")).isTrue()
+        Truth.assertThat(result.stdout.findAll(
             "Got a manifest at"
         ).count()).isEqualTo(1)
     }
@@ -116,8 +116,8 @@ class ListenToApiTest {
             """.trimIndent()
         )
 
-        project.execute("assembleRelease")
-        Truth.assertThat(project.buildResult.stdout.findAll(
+        val result = project.execute("assembleRelease")
+        Truth.assertThat(result.stdout.findAll(
             "releaseVerifyProguardFiles was registered to listen to the production of the MULTIDEX_KEEP_PROGUARD"
         ).count()).isEqualTo(1)
     }
@@ -179,15 +179,15 @@ class ListenToApiTest {
             """.trimIndent()
         )
 
-        project.execute(":releaseVerifyProguardFiles")
-        Truth.assertThat(project.buildResult.didWorkTasks.contains(":releaseVerifyProguardFiles")).isTrue()
-        Truth.assertThat(project.buildResult.stdout.findAll(
+        val result = project.execute(":releaseVerifyProguardFiles")
+        Truth.assertThat(result.didWorkTasks.contains(":releaseVerifyProguardFiles")).isTrue()
+        Truth.assertThat(result.stdout.findAll(
             "Got a File at"
         ).count()).isEqualTo(1)
 
-        project.execute(":debugVerifyProguardFiles")
-        Truth.assertThat(project.buildResult.didWorkTasks.contains(":debugVerifyProguardFiles")).isTrue()
-        Truth.assertThat(project.buildResult.stdout.findAll(
+        val result2 = project.execute(":debugVerifyProguardFiles")
+        Truth.assertThat(result2.didWorkTasks.contains(":debugVerifyProguardFiles")).isTrue()
+        Truth.assertThat(result2.stdout.findAll(
             "default-rules"
         ).count()).isEqualTo(1)
     }
@@ -253,10 +253,10 @@ class ListenToApiTest {
             """.trimIndent()
         )
 
-        project.execute("assembleDebug")
-        Truth.assertThat(project.buildResult.didWorkTasks.contains(":debugVerifyApks")).isTrue()
-        Truth.assertThat(project.buildResult.didWorkTasks.contains(":debugVerifyAgainApks")).isTrue()
-        Truth.assertThat(project.buildResult.stdout.findAll(
+        val result = project.execute("assembleDebug")
+        Truth.assertThat(result.didWorkTasks.contains(":debugVerifyApks")).isTrue()
+        Truth.assertThat(result.didWorkTasks.contains(":debugVerifyAgainApks")).isTrue()
+        Truth.assertThat(result.stdout.findAll(
             "Got an APK at"
         ).count()).isEqualTo(2)
     }

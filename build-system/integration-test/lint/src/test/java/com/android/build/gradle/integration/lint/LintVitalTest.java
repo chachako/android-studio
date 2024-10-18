@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.lint;
 
 import static com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
@@ -26,11 +27,13 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.truth.TaskStateList;
 import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import java.io.File;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 /** Checks if fatal lint errors stop the release build. */
 public class LintVitalTest {
@@ -55,11 +58,12 @@ public class LintVitalTest {
                         + "    defaultConfig.minSdk = "
                         + TestVersions.SUPPORT_LIB_MIN_SDK
                         + "\n"
-                        + "    dependenciesInfo.includeInApk = false"
-                        + "}\n"
+                        + "    dependenciesInfo.includeInApk = false}\n"
                         + "dependencies {\n"
-                        + "    androidTestImplementation \"com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}\"\n"
-                        + "    androidTestImplementation \"com.android.support.test:rules:${libs.versions.testSupportLibVersion.get()}\"\n"
+                        + "    androidTestImplementation"
+                        + " \"com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}\"\n"
+                        + "    androidTestImplementation"
+                        + " \"com.android.support.test:rules:${libs.versions.testSupportLibVersion.get()}\"\n"
                         + "}\n"
                         // Make sure lint task is created on plugin apply, not afterEvaluate.
                         + "task(\"myCheck\").dependsOn(lint)\n"
@@ -98,8 +102,7 @@ public class LintVitalTest {
         assertThat(result.findTask(":lintVitalAnalyzeRelease")).didWork();
         TruthHelper.assertThat(result.getTask(":lintVitalRelease")).failed();
         TruthHelper.assertThat(result.getTask(":lintVitalReportRelease")).didWork();
-        assertThat(project.getBuildResult().getFailedTasks())
-                .doesNotContain(":lintVitalReportRelease");
+        assertThat(result.getFailedTasks()).doesNotContain(":lintVitalReportRelease");
     }
 
     @Test

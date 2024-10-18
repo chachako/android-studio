@@ -187,10 +187,12 @@ class BuiltInKaptForTestFixturesTest(private val kotlinVersion: String) {
                 // Version 1.9.22 of the jetbrains KAPT plugin uses deprecated Gradle features
                 .withFailOnWarning(kotlinVersion == TestUtils.KOTLIN_VERSION_FOR_TESTS)
         // test for caching when useBuildCache = true
-        executor.run("app:assembleDebugTestFixtures")
-        assertThat(project.buildResult.didWorkTasks).contains(":app:kaptDebugTestFixturesKotlin")
-        executor.run("clean", "app:assembleDebugTestFixtures")
-        assertThat(project.buildResult.fromCacheTasks).contains(":app:kaptDebugTestFixturesKotlin")
+        assertThat(
+            executor.run("app:assembleDebugTestFixtures").didWorkTasks
+        ).contains(":app:kaptDebugTestFixturesKotlin")
+        assertThat(
+            executor.run("clean", "app:assembleDebugTestFixtures").fromCacheTasks
+        ).contains(":app:kaptDebugTestFixturesKotlin")
 
         // test no caching when useBuildCache = false
         TestFileUtils.searchAndReplace(
@@ -198,9 +200,10 @@ class BuiltInKaptForTestFixturesTest(private val kotlinVersion: String) {
             "useBuildCache = true",
             "useBuildCache = false"
         )
+
         executor.run("app:assembleDebugTestFixtures")
-        executor.run("clean", "app:assembleDebugTestFixtures")
-        assertThat(project.buildResult.fromCacheTasks)
-            .doesNotContain(":app:kaptDebugTestFixturesKotlin")
+        assertThat(
+            executor.run("clean", "app:assembleDebugTestFixtures").fromCacheTasks
+        ).doesNotContain(":app:kaptDebugTestFixturesKotlin")
     }
 }

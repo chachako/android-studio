@@ -20,8 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.category.SmokeTests;
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -60,12 +62,8 @@ public class BasicTest {
         // First enable renderscript, then execute renderscript task and check if it was skipped
         TestFileUtils.appendToFile(
                 project.getBuildFile(), "android.buildFeatures.renderScript true");
-        project.execute("compileDebugRenderscript");
-        assertThat(
-                        project.getBuildResult()
-                                .getTask(":compileDebugRenderscript")
-                                .getExecutionState()
-                                .toString())
+        GradleBuildResult result = project.execute("compileDebugRenderscript");
+        assertThat(result.getTask(":compileDebugRenderscript").getExecutionState().toString())
                 .isEqualTo("SKIPPED");
     }
 }

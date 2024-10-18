@@ -217,8 +217,9 @@ class BuiltInKotlinForTestFixturesTest {
                }
             """.trimIndent()
         )
-        lib.executor().run(":lib:compileDebugTestFixturesKotlin")
-        ScannerSubject.assertThat(lib.buildResult.stdout).contains("My jvmTarget: 17")
+        ScannerSubject.assertThat(
+            lib.executor().run(":lib:compileDebugTestFixturesKotlin").stdout
+        ).contains("My jvmTarget: 17")
 
         // Then check that setting jvmTarget on the task overrides the compilerOptions DSL
         TestFileUtils.appendToFile(
@@ -232,8 +233,10 @@ class BuiltInKotlinForTestFixturesTest {
                 }
                 """.trimIndent()
         )
-        lib.executor().run(":lib:compileDebugTestFixturesKotlin")
-        ScannerSubject.assertThat(lib.buildResult.stdout).contains("My jvmTarget: 21")
+
+        ScannerSubject.assertThat(
+            lib.executor().run(":lib:compileDebugTestFixturesKotlin").stdout
+        ).contains("My jvmTarget: 21")
     }
 
 

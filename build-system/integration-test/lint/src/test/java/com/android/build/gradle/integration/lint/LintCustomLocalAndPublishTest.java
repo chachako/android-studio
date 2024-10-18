@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.lint;
 
 import static com.android.SdkConstants.FN_LINT_JAR;
 import static com.android.testutils.truth.PathSubject.assertThat;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
@@ -28,10 +29,12 @@ import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.UnresolvedDependency;
 import com.android.builder.model.v2.models.AndroidProject;
 import com.android.utils.FileUtils;
-import java.io.File;
-import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Test for publishing a custom jar in a library model, used by a consuming app, as well as having a
@@ -39,11 +42,14 @@ import org.junit.Test;
  */
 public class LintCustomLocalAndPublishTest {
 
-    @Rule public final GradleTestProject project =
+    @Rule
+    public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintCustomLocalAndPublishRules")
-                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
-                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
+                    // Enforcing unique package names to prevent regressions. Remove when
+                    // b/116109681 fixed.
+                    .addGradleProperties(
+                            BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
                     .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
                     .create();
 
@@ -53,18 +59,23 @@ public class LintCustomLocalAndPublishTest {
         executor().withFailOnWarning(false).run(":library-remote:publish");
         // Run twice to catch issues with configuration caching
         executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
-        executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
-        project.getBuildResult().assertConfigurationCacheHit();
+        executor()
+                .withFailOnWarning(false)
+                .expectFailure()
+                .run(":library:lintDebug")
+                .assertConfigurationCacheHit();
 
         String libexpected =
-                ""
-                        + "build.gradle:17: Warning: Unknown issue id \"UnitTestLintCheck\". Did you mean 'UnitTestLintCheck2' (Custom Lint Check) ? [UnknownIssueId]\n"
+                "build.gradle:17: Warning: Unknown issue id \"UnitTestLintCheck\". Did you mean"
+                        + " 'UnitTestLintCheck2' (Custom Lint Check) ? [UnknownIssueId]\n"
                         + "        checkOnly 'UnitTestLintCheck'\n"
                         + "                   ~~~~~~~~~~~~~~~~~\n"
                         + "\n"
                         + "   Explanation for issues of type \"UnknownIssueId\":\n"
-                        + "   Lint will report this issue if it is configured with an issue id it does\n"
-                        + "   not recognize in for example Gradle files or lint.xml configuration files.\n"
+                        + "   Lint will report this issue if it is configured with an issue id it"
+                        + " does\n"
+                        + "   not recognize in for example Gradle files or lint.xml configuration"
+                        + " files.\n"
                         + "\n"
                         + "src"
                         + File.separator
@@ -78,7 +89,8 @@ public class LintCustomLocalAndPublishTest {
                         + File.separator
                         + "app"
                         + File.separator
-                        + "MyClass.java:19: Error: Do not implement java.util.List directly [UnitTestLintCheck2 from com.example.google.lint]\n"
+                        + "MyClass.java:19: Error: Do not implement java.util.List directly"
+                        + " [UnitTestLintCheck2 from com.example.google.lint]\n"
                         + "public abstract class MyClass implements java.util.List {}\n"
                         + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "\n"
@@ -99,8 +111,7 @@ public class LintCustomLocalAndPublishTest {
         executor().withFailOnWarning(false).expectFailure().run(":app:lintDebug");
 
         String appExpected =
-                ""
-                        + "build.gradle:16: Warning: Unknown issue id \"UnitTestLintCheck2\". Did you mean:\n"
+                "build.gradle:16: Warning: Unknown issue id \"UnitTestLintCheck2\". Did you mean:\n"
                         + "'UnitTestLintCheck' (Custom Lint Check)\n"
                         + "'UnitTestLintCheck3' (Custom Lint Check)\n"
                         + "? [UnknownIssueId]\n"
@@ -108,14 +119,17 @@ public class LintCustomLocalAndPublishTest {
                         + "                   ~~~~~~~~~~~~~~~~~~\n"
                         + "\n"
                         + "   Explanation for issues of type \"UnknownIssueId\":\n"
-                        + "   Lint will report this issue if it is configured with an issue id it does\n"
-                        + "   not recognize in for example Gradle files or lint.xml configuration files.\n"
+                        + "   Lint will report this issue if it is configured with an issue id it"
+                        + " does\n"
+                        + "   not recognize in for example Gradle files or lint.xml configuration"
+                        + " files.\n"
                         + "\n"
                         + "src"
                         + File.separator
                         + "main"
                         + File.separator
-                        + "AndroidManifest.xml:10: Error: Should not specify <activity>. [UnitTestLintCheck from com.example.google.lintpublish]\n"
+                        + "AndroidManifest.xml:10: Error: Should not specify <activity>."
+                        + " [UnitTestLintCheck from com.example.google.lintpublish]\n"
                         + "        <activity android:name=\".MainActivity\">\n"
                         + "        ^\n"
                         + "\n"
@@ -125,7 +139,8 @@ public class LintCustomLocalAndPublishTest {
                         + "   Identifier: com.example.google.lintpublish\n"
                         + "\n"
                         + FileUtils.toSystemDependentPath("src/main/java/com/example/app/Util.java")
-                        + ":5: Error: Do not implement java.util.Set directly [UnitTestLintCheck3 from com.example.remote.lint]\n"
+                        + ":5: Error: Do not implement java.util.Set directly [UnitTestLintCheck3"
+                        + " from com.example.remote.lint]\n"
                         + "public abstract class Util implements Set {}\n"
                         + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "\n"

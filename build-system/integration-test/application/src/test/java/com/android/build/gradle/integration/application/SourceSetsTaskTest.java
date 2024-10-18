@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application;
 
+import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
@@ -38,8 +39,8 @@ public class SourceSetsTaskTest {
 
     @Test
     public void testDeprecationMessage() throws Exception {
-        project.execute("sourceSets");
-        try (Scanner scanner = project.getBuildResult().getStdout()) {
+        GradleBuildResult result = project.execute("sourceSets");
+        try (Scanner scanner = result.getStdout()) {
             ScannerSubject.assertThat(scanner)
                     .contains("SourceSetsTask has been deprecated and will be removed in AGP 9.0");
         }
@@ -47,7 +48,7 @@ public class SourceSetsTaskTest {
 
     @Test
     public void runsSuccessfully() throws Exception {
-        project.execute("sourceSets");
+        GradleBuildResult result = project.execute("sourceSets");
 
         String expected =
                 "debug\n"
@@ -90,7 +91,7 @@ public class SourceSetsTaskTest {
                         + FileUtils.toSystemDependentPath("src/debug/resources")
                         + "]\n\n";
 
-        try (Scanner scanner = project.getBuildResult().getStdout()) {
+        try (Scanner scanner = result.getStdout()) {
             ScannerSubject.assertThat(scanner).contains(expected);
         }
     }

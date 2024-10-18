@@ -39,28 +39,33 @@ class AnalyticsConfigurationCachingTest {
     @Test
     fun buildLevelStatisticsExistInConfigurationCachedRun() {
         val capturer = ProfileCapturer(project)
-        val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
-        project.buildResult.assertConfigurationCacheMiss()
-        val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        val nonCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheMiss() }
+                .single()
+        val configCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheHit() }
+                .single()
         Truth.assertThat(configCachedRun.gradleVersion).isEqualTo(nonCachedRun.gradleVersion)
-        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun projectLevelStatisticsExistInConfigurationCachedRun() {
         val capturer = ProfileCapturer(project)
-        val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
-        project.buildResult.assertConfigurationCacheMiss()
-        val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        val nonCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheMiss() }
+                .single()
+        val configCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheHit() }
+                .single()
         Truth.assertThat(configCachedRun.projectCount).isEqualTo(nonCachedRun.projectCount)
-        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun testConfigurationSpans() {
         val capturer = ProfileCapturer(project)
-        val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
-        project.buildResult.assertConfigurationCacheMiss()
+        val nonCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheMiss() }
+                .single()
 
         var configurationSpans = nonCachedRun.spanList.filter {
             it.type == ExecutionType.BASE_PLUGIN_PROJECT_CONFIGURE
@@ -69,13 +74,14 @@ class AnalyticsConfigurationCachingTest {
 
         // spans of config types(e.g. BASE_PLUGIN_PROJECT_CONFIGURE) should not exist
         // in configuration cached run
-        val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        val configCachedRun =
+            capturer.capture { project.execute("assembleDebug").assertConfigurationCacheHit() }
+                .single()
 
         configurationSpans = configCachedRun.spanList.filter {
             it.type == ExecutionType.BASE_PLUGIN_PROJECT_CONFIGURE
         }
         Truth.assertThat(configurationSpans).isEmpty()
-        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
@@ -85,8 +91,8 @@ class AnalyticsConfigurationCachingTest {
             project.executor()
                 .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .run("assembleDebug")
+                .assertConfigurationCacheMiss()
         }.single()
-        project.buildResult.assertConfigurationCacheMiss()
 
         // ensure uniqueness of allocated ids
         var allSpansWithId = nonCachedRun.spanList.filter { it.hasId() }
@@ -97,24 +103,29 @@ class AnalyticsConfigurationCachingTest {
         val configCachedRun = capturer.capture {
             project.executor()
                 .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("assembleDebug") }.single()
+                .run("assembleDebug")
+                .assertConfigurationCacheHit()
+        }.single()
+
         // ensure uniqueness of allocated ids
         allSpansWithId = configCachedRun.spanList.filter { it.hasId() }
         uniqueSpanIds = configCachedRun.spanList.map { it.id }.distinct()
         Truth.assertThat(allSpansWithId.size).isEqualTo(uniqueSpanIds.size)
         // ensure id is allocated from a fixed number
         Truth.assertThat(uniqueSpanIds.minOrNull()).isEqualTo(2)
-        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun totalBuildTimeRecorded() {
         val capturer = ProfileCapturer(project)
-        val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
-        project.buildResult.assertConfigurationCacheMiss()
+        val nonCachedRun = capturer.capture {
+            project.execute("assembleDebug").assertConfigurationCacheMiss()
+        }.single()
+
         Truth.assertThat(nonCachedRun.buildTime).isGreaterThan(0)
-        val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        val configCachedRun = capturer.capture {
+            project.execute("assembleDebug").assertConfigurationCacheHit()
+        }.single()
         Truth.assertThat(configCachedRun.buildTime).isGreaterThan(0)
-        project.buildResult.assertConfigurationCacheHit()
     }
 }

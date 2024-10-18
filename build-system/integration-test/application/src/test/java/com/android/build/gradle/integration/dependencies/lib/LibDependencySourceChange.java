@@ -18,10 +18,13 @@ package com.android.build.gradle.integration.dependencies.lib;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -41,8 +44,8 @@ public class LibDependencySourceChange {
     @Test
     public void checkLibDependencyJarIsPackaged() throws Exception {
         replaceActivityClass();
-        project.execute("assembleDebug");
-        assertThat(project.getBuildResult().getException()).isNull();
+        GradleBuildResult result = project.execute("assembleDebug");
+        assertThat(result.getException()).isNull();
     }
 
     private void replaceActivityClass() throws Exception {

@@ -28,7 +28,14 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.options.OptionalBooleanOption;
 import com.android.testutils.apk.Zip;
+
 import com.google.common.truth.Truth;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -37,10 +44,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 import java.util.Scanner;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Integration test for extracting annotations.
@@ -71,9 +74,9 @@ public class ExtractAnnotationsTest {
 
     @Test
     public void checkExtractAnnotation() throws Exception {
-        getExecutor().run("clean", "assembleDebug");
+        GradleBuildResult result = getExecutor().run("clean", "assembleDebug");
 
-        try (Scanner stderr = project.getBuildResult().getStderr()) {
+        try (Scanner stderr = result.getStderr()) {
             ScannerSubject.assertThat(stderr).doesNotContain("Unknown flag");
         }
 
@@ -82,59 +85,102 @@ public class ExtractAnnotationsTest {
                 debugAar -> {
                     //noinspection SpellCheckingInspection
                     String expectedContent =
-                            (""
-                                    + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                                    + "<root>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest int getVisibility()\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE, com.android.tests.extractannotations.ExtractTest.INVISIBLE, com.android.tests.extractannotations.ExtractTest.GONE, 5, 17, com.android.tests.extractannotations.Constants.CONSTANT_1}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest java.lang.String getStringMode(int)\">\n"
-                                    + "    <annotation name=\"android.support.annotation.StringDef\">\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.ExtractTest.STRING_1, com.android.tests.extractannotations.ExtractTest.STRING_2, &quot;literalValue&quot;, &quot;concatenated&quot;}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest java.lang.String getStringMode(int) 0\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE, com.android.tests.extractannotations.ExtractTest.INVISIBLE, com.android.tests.extractannotations.ExtractTest.GONE, 5, 17, com.android.tests.extractannotations.Constants.CONSTANT_1}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest void checkForeignTypeDef(int) 0\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"flag\" val=\"true\" />\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.Constants.CONSTANT_1, com.android.tests.extractannotations.Constants.CONSTANT_2}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest void testMask(int) 0\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"flag\" val=\"true\" />\n"
-                                    + "      <val name=\"value\" val=\"{0, com.android.tests.extractannotations.Constants.FLAG_VALUE_1, com.android.tests.extractannotations.Constants.FLAG_VALUE_2}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest void testNonMask(int) 0\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"flag\" val=\"false\" />\n"
-                                    + "      <val name=\"value\" val=\"{0, com.android.tests.extractannotations.Constants.CONSTANT_1, com.android.tests.extractannotations.Constants.CONSTANT_3}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest.StringMode\">\n"
-                                    + "    <annotation name=\"android.support.annotation.StringDef\">\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.ExtractTest.STRING_1, com.android.tests.extractannotations.ExtractTest.STRING_2, &quot;literalValue&quot;, &quot;concatenated&quot;}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.ExtractTest.Visibility\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE, com.android.tests.extractannotations.ExtractTest.INVISIBLE, com.android.tests.extractannotations.ExtractTest.GONE, 5, 17, com.android.tests.extractannotations.Constants.CONSTANT_1}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "  <item name=\"com.android.tests.extractannotations.TopLevelTypeDef\">\n"
-                                    + "    <annotation name=\"android.support.annotation.IntDef\">\n"
-                                    + "      <val name=\"flag\" val=\"true\" />\n"
-                                    + "      <val name=\"value\" val=\"{com.android.tests.extractannotations.Constants.CONSTANT_1, com.android.tests.extractannotations.Constants.CONSTANT_2}\" />\n"
-                                    + "    </annotation>\n"
-                                    + "  </item>\n"
-                                    + "</root>\n");
+                            ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                 + "<root>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " int getVisibility()\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.INVISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.GONE, 5, 17,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_1}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " java.lang.String getStringMode(int)\">\n"
+                                 + "    <annotation"
+                                 + " name=\"android.support.annotation.StringDef\">\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.ExtractTest.STRING_1,"
+                                 + " com.android.tests.extractannotations.ExtractTest.STRING_2,"
+                                 + " &quot;literalValue&quot;, &quot;concatenated&quot;}\" />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " java.lang.String getStringMode(int) 0\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.INVISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.GONE, 5, 17,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_1}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " void checkForeignTypeDef(int) 0\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"flag\" val=\"true\" />\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.Constants.CONSTANT_1,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_2}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " void testMask(int) 0\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"flag\" val=\"true\" />\n"
+                                 + "      <val name=\"value\" val=\"{0,"
+                                 + " com.android.tests.extractannotations.Constants.FLAG_VALUE_1,"
+                                 + " com.android.tests.extractannotations.Constants.FLAG_VALUE_2}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item name=\"com.android.tests.extractannotations.ExtractTest"
+                                 + " void testNonMask(int) 0\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"flag\" val=\"false\" />\n"
+                                 + "      <val name=\"value\" val=\"{0,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_1,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_3}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item"
+                                 + " name=\"com.android.tests.extractannotations.ExtractTest.StringMode\">\n"
+                                 + "    <annotation"
+                                 + " name=\"android.support.annotation.StringDef\">\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.ExtractTest.STRING_1,"
+                                 + " com.android.tests.extractannotations.ExtractTest.STRING_2,"
+                                 + " &quot;literalValue&quot;, &quot;concatenated&quot;}\" />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item"
+                                 + " name=\"com.android.tests.extractannotations.ExtractTest.Visibility\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.ExtractTest.VISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.INVISIBLE,"
+                                 + " com.android.tests.extractannotations.ExtractTest.GONE, 5, 17,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_1}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "  <item"
+                                 + " name=\"com.android.tests.extractannotations.TopLevelTypeDef\">\n"
+                                 + "    <annotation name=\"android.support.annotation.IntDef\">\n"
+                                 + "      <val name=\"flag\" val=\"true\" />\n"
+                                 + "      <val name=\"value\""
+                                 + " val=\"{com.android.tests.extractannotations.Constants.CONSTANT_1,"
+                                 + " com.android.tests.extractannotations.Constants.CONSTANT_2}\""
+                                 + " />\n"
+                                 + "    </annotation>\n"
+                                 + "  </item>\n"
+                                 + "</root>\n");
 
                     // check the resulting .aar file to ensure annotations.zip inclusion.
                     assertThat(debugAar).contains("annotations.zip");
@@ -182,9 +228,7 @@ public class ExtractAnnotationsTest {
                     }
                 });
 
-        GradleBuildResult result = getExecutor().run("assembleDebug");
-
-        Truth.assertThat(result.getDidWorkTasks()).isEmpty();
+        Truth.assertThat(getExecutor().run("assembleDebug").getDidWorkTasks()).isEmpty();
 
         // Make sure that annotations.zip contains no timestamps (for making it binary identical on
         // every build)

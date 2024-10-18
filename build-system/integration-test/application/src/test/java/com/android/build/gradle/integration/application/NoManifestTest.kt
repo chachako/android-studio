@@ -131,7 +131,7 @@ class NoManifestTest {
         val result = project.executor().run(":lib:build", ":lib:assembleAndroidTest")
         ScannerSubject.assertThat(result.stdout).doesNotContain(warning)
 
-        assertThat(project.buildResult.failedTasks).isEmpty()
+        assertThat(result.failedTasks).isEmpty()
         val fileOutput =
                 FileUtils.join(
                         SingleArtifact.MERGED_MANIFEST.getOutputDir(

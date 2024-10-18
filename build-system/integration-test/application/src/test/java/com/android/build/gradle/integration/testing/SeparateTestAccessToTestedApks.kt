@@ -74,12 +74,12 @@ class SeparateTestAccessToTestedApks {
 
     @Test
     fun build() {
-        project.execute(":test:debugDisplayApks")
+        val result = project.execute(":test:debugDisplayApks")
         Truth.assertThat(
-            project.buildResult.didWorkTasks.contains(":test:debugDisplayApks")
+            result.didWorkTasks.contains(":test:debugDisplayApks")
         ).isTrue()
         Truth.assertThat(
-            project.buildResult.stdout.findAll("app-debug.apk").count()
+            result.stdout.findAll("app-debug.apk").count()
         ).isEqualTo(1)
     }
 }
