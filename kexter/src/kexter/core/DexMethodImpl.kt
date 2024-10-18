@@ -17,6 +17,7 @@
 package kexter.core
 
 import kexter.DexMethod
+import kexter.DexMethodDebugInfo
 
 internal class CodeItem(
   val registerSize: UShort,
@@ -93,6 +94,21 @@ internal class DexMethodImpl(
         val codeItem = CodeItem.from(dex.reader)
         codeItem.instructions
       }
-    return DexBytecodeImpl(bytecode, dex.logger)
+
+    // Debug info
+    val debugInfo =
+      if (bytecode.isEmpty()) {
+        DexMethodDebugInfo()
+      } else {
+        retrieveDebugInfo()
+      }
+    return DexBytecodeImpl(bytecode, debugInfo, dex.logger)
+  }
+
+  private fun retrieveDebugInfo(): DexMethodDebugInfo {
+    dex.reader.position = method.codeOffset
+    val codeItem = CodeItem.from(dex.reader)
+    dex.reader.position = codeItem.debugInfoOffset
+    return kexter.core.DexMethodDebugInfo.fromReader(dex.reader, dex.logger)
   }
 }

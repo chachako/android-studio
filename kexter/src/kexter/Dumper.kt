@@ -35,11 +35,21 @@ class DexDumper {
         logger.debug("${prefix}${clazz.name}")
         clazz.methods.values.forEach { m ->
           logger.debug("$prefix   ${m.name}(${m.shorty}) returnType=${m.returnType}")
-          m.byteCode.instructions.forEach { i ->
+
+          val bc = m.byteCode
+          logger.debug("$prefix        Instructions:(${bc.instructions.size})")
+          bc.instructions.forEach { i ->
             logger.debug(
               "$prefix        ${i.opcode.name} ${i.opcode.toHex()} ${i.payload.joinToString( ",", "[", "]") { i -> "0x%02x".format(i) }}"
             )
           }
+          logger.debug("")
+
+          logger.debug("$prefix        LineTable (${bc.debugInfo.lineTable.size}):")
+          bc.debugInfo.lineTable.forEach { lt ->
+            logger.debug("$prefix        [idx=${lt.index}, ln${lt.lineNumber}]")
+          }
+          logger.debug("")
         }
       }
     }

@@ -16,7 +16,7 @@
 
 package kexter
 
-class Instruction(val opcode: Opcode, val payload: ByteArray)
+class Instruction(val opcode: Opcode, val index: UInt, val payload: ByteArray)
 
 enum class InstructionFormat(val payloadSize: UInt) {
   K10x(1u),

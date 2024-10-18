@@ -16,8 +16,6 @@
 
 package kexter
 
-import kexter.core.DexBytecodeImpl
-
 /**
  * A representation of ART bytecode, typically found in classesXX.dex files inside an apk, or
  * directly returned by JDWP Method.Bytecodes command, see more details here:
@@ -31,9 +29,17 @@ interface DexBytecode {
   /** An interpreted version of the raw bytes. Much easier to navigate than raw bytes. */
   val instructions: List<Instruction>
 
+  fun instructionsForLineNumber(lineNumber: Int): List<Instruction>
+
+  val debugInfo: DexMethodDebugInfo
+
   companion object {
-    fun fromBytes(bytes: ByteArray, logger: Logger = Logger()): DexBytecode {
-      return DexBytecodeImpl(bytes, logger)
+    fun fromBytes(
+      bytes: ByteArray,
+      debugInfo: DexMethodDebugInfo = DexMethodDebugInfo(),
+      logger: Logger = Logger(),
+    ): DexBytecode {
+      return kexter.core.DexBytecodeImpl(bytes, debugInfo, logger)
     }
   }
 }

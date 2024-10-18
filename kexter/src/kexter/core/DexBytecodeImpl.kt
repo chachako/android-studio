@@ -16,19 +16,25 @@
 
 package kexter.core
 
+import java.util.stream.Collectors
 import kexter.DexBytecode
+import kexter.DexMethodDebugInfo
 import kexter.Instruction
 import kexter.Logger
 import kexter.Opcode
 
-internal class DexBytecodeImpl(override val bytes: ByteArray, private val logger: Logger) :
-  DexBytecode {
+internal class DexBytecodeImpl(
+  override val bytes: ByteArray,
+  override val debugInfo: DexMethodDebugInfo,
+  private val logger: Logger,
+) : DexBytecode {
   override val instructions by lazy((LazyThreadSafetyMode.NONE)) { retrieveInstructions() }
 
   private fun retrieveInstructions(): List<Instruction> {
     val instrs = mutableListOf<Instruction>()
     val reader = DexReader(bytes)
     while (reader.position < bytes.size.toUInt()) {
+      val index = reader.position / 2u // Dex bytecode index are in unit of 16-bit.
       val opcode = Opcode.fromUByte(reader.ubyte())
       var payloadSize = opcode.format.payloadSize
       if (opcode == Opcode.NOP) {
@@ -37,7 +43,7 @@ internal class DexBytecodeImpl(override val bytes: ByteArray, private val logger
         payloadSize += pseudoCodeSize(reader)
         reader.position = pos
       }
-      instrs.add(Instruction(opcode, reader.bytes(payloadSize)))
+      instrs.add(Instruction(opcode, index, reader.bytes(payloadSize)))
     }
     return instrs
   }
@@ -65,7 +71,6 @@ internal class DexBytecodeImpl(override val bytes: ByteArray, private val logger
         FILL_ARRAY_DATA_IDENTITY -> {
           val elementWidth = reader.ushort()
           val size = reader.uint()
-          println("elements=$elementWidth, size=$size")
 
           // Account for padding because dex instructions must be aligned.
           var totalSize =
@@ -81,5 +86,31 @@ internal class DexBytecodeImpl(override val bytes: ByteArray, private val logger
           )
       }
     return size
+  }
+
+  override fun instructionsForLineNumber(lineNumber: Int): List<Instruction> {
+    val lineTable = debugInfo.lineTable
+    if (lineTable.isEmpty()) {
+      throw IllegalStateException("Unable to extract instruction without DebugInfo")
+    }
+
+    val startIndex = lineTable.indexOfFirst { e -> e.lineNumber == lineNumber }
+
+    if (startIndex == -1) {
+      throw IllegalStateException("Line $lineNumber not found in TableLine")
+    }
+    val startBc = lineTable[startIndex].index
+
+    val endIndex = startIndex + 1
+    val endBc =
+      if (endIndex < lineTable.size) {
+        lineTable[endIndex].index
+      } else {
+        UInt.MAX_VALUE
+      }
+    return instructions
+      .stream()
+      .filter { e -> (startBc..<endBc).contains(e.index) }
+      .collect(Collectors.toList())
   }
 }
