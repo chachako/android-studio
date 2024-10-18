@@ -36,7 +36,6 @@ build:windows --nobuild_python_zip
 #
 common:macos --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/darwin/ndk/27.0.12077973
 common:macos --repo_env=ANDROID_HOME=prebuilts/studio/sdk/darwin
-common:macos --@native_toolchain//:enable_legacy
 
 build:macos --bes_keywords=macos
 build:macos --host_platform=//tools/base/bazel/platforms:macos
