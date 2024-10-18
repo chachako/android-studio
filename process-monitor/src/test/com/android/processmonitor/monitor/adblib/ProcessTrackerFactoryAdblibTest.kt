@@ -26,8 +26,8 @@ import com.android.sdklib.deviceprovisioner.DeviceProperties
 import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.EmptyIcon
 import com.android.sdklib.devices.Abi
-import com.android.testutils.MockitoKt.mock
-import com.android.testutils.MockitoKt.whenever
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
