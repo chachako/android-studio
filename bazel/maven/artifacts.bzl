@@ -176,6 +176,7 @@ ARTIFACTS = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.6.4",
     "org.jetbrains:markdown:pom:0.2.1",
     "org.jspecify:jspecify:0.2.0",
+    "org.mockito.kotlin:mockito-kotlin:5.4.0",
     "org.mockito:mockito-core:5.12.0",
     "org.mortbay.jetty:jetty:6.1.26",
     "org.ow2.asm:asm:9.7",
