@@ -329,6 +329,10 @@ public class AnalyticsUtilTest {
                 ModulePropertyKey.OptionalBoolean.values()) {
             modulePropertyKeys.add(optionalBoolean.name());
         }
+        for (ModulePropertyKey.OptionalFile optionalFile :
+                ModulePropertyKey.OptionalFile.values()) {
+            modulePropertyKeys.add(optionalFile.name());
+        }
         checkModulePropertyKeys(modulePropertyKeys.toArray(new String[0]), AnalyticsUtil::toProto);
     }
 

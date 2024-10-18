@@ -46,6 +46,7 @@ class AssetPackBundleTest {
     private val assetFileOneContent = "This is an asset file from asset pack one."
     private val assetFileTwoContent = "This is an asset file from asset pack two."
     private val onDemandAiPackContent = "This is a state-of-the-art machine learning model."
+    private val deviceGroupConfig = "This is a device group config."
 
     private val assetPackBundleTestApp = MultiModuleTestProject.builder().apply {
         val bundle = MinimalSubProject.assetPackBundle()
@@ -73,8 +74,16 @@ class AssetPackBundleTest {
                         enableSplit = true
                       }
                     }
+
+                project.ext {
+                  android_experimental_bundle_deviceGroup_enableSplit = true
+                  android_experimental_bundle_deviceGroup_defaultGroup = "highRam"
+                  android_experimental_bundle_deviceGroupConfig = file('src/main/device_group_config.json')
+                }
+
                 """.trimIndent()
             )
+            .withFile("src/main/device_group_config.json", deviceGroupConfig)
 
         val assetPackOne = MinimalSubProject.assetPack()
             .appendToBuild(
@@ -144,6 +153,10 @@ class AssetPackBundleTest {
                 "onDemandAiPack/assets/customModel.tflite",
                 onDemandAiPackContent
             )
+            it.containsFileWithContent(
+                "BUNDLE-METADATA/com.android.tools.build.bundletool/DeviceGroupConfig.json",
+                deviceGroupConfig
+            )
             it.contains("assetPackOne/manifest/AndroidManifest.xml")
             it.contains("assetPackTwo/manifest/AndroidManifest.xml")
             it.contains("onDemandAiPack/manifest/AndroidManifest.xml")
@@ -165,6 +178,12 @@ class AssetPackBundleTest {
                 .suffixStrippingBuilder
                 .setEnabled(true)
                 .setDefaultSuffix("medium")
+            splitsConfigBuilder
+                .addSplitDimensionBuilder()
+                .setValue(Config.SplitDimension.Value.DEVICE_GROUP)
+                .suffixStrippingBuilder
+                .setEnabled(true)
+                .setDefaultSuffix("highRam")
             splitsConfigBuilder
                 .addSplitDimensionBuilder()
                 .setValue(Config.SplitDimension.Value.COUNTRY_SET)

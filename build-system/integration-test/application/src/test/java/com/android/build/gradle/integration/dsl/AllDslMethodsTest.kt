@@ -39,6 +39,7 @@ import com.google.common.truth.Truth
 import org.gradle.api.JavaVersion
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -393,7 +394,8 @@ private class DslScriptGenerator(
             NamedDomainObjectCollection::class.java,
             ExtensionContainer::class.java,
             CommandLineArgumentProvider::class.java,
-            DirectoryProperty::class.java
+            DirectoryProperty::class.java,
+            RegularFileProperty::class.java
         )
 
         private val methodsWithReturnValue = mapOf(
