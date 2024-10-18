@@ -19,7 +19,6 @@ import com.android.SdkConstants
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.Version
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.GRADLE_TEST_VERSION
-import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder.MemoryRequirement
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2.Companion.ROOT_BUILD_ID
 import com.android.build.gradle.integration.common.fixture.gradle_project.BuildSystem
 import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
@@ -64,6 +63,7 @@ import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 import org.gradle.util.GradleVersion
 import org.junit.Assert
+import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.io.File
@@ -99,11 +99,10 @@ open class GradleTestProject @JvmOverloads constructor(
     private val targetGradleVersion: String?,
     private val targetGradleInstallation: File?,
     private val withDependencyChecker: Boolean,
-    override val withConfigurationCaching: BaseGradleExecutor.ConfigurationCaching,
+    val gradleOptions: GradleOptions,
     private val gradleProperties: Collection<String>,
-    override val heapSize: MemoryRequirement,
     private val compileSdkVersion: String = DEFAULT_COMPILE_SDK_VERSION,
-    private val profileDirectory: Path?,
+    private val _profileDirectory: Path?,
     // CMake's version to be used
     private val cmakeVersion: String?,
     // Indicates if CMake's directory information needs to be saved in local.properties
@@ -131,7 +130,7 @@ open class GradleTestProject @JvmOverloads constructor(
     private val openConnections: MutableList<ProjectConnection>? = mutableListOf(),
     /** root project if one exist. This is null for the actual root */
     private val _rootProject: GradleTestProject? = null
-) : GradleTestRule {
+) : GradleTestInfo, TestRule {
     companion object {
         const val ENV_CUSTOM_REPO = "CUSTOM_REPO"
 
@@ -445,11 +444,10 @@ open class GradleTestProject @JvmOverloads constructor(
             targetGradleVersion = rootProject.targetGradleVersion,
             targetGradleInstallation = rootProject.targetGradleInstallation,
             withDependencyChecker = rootProject.withDependencyChecker,
-            withConfigurationCaching = rootProject.withConfigurationCaching,
+            gradleOptions = rootProject.gradleOptions,
             gradleProperties = ImmutableList.of(),
-            heapSize = rootProject.heapSize,
             compileSdkVersion = rootProject.compileSdkVersion,
-            profileDirectory = rootProject.profileDirectory,
+            _profileDirectory = rootProject._profileDirectory,
             cmakeVersion = rootProject.cmakeVersion,
             withCmakeDirInLocalProp = rootProject.withCmakeDirInLocalProp,
             relativeNdkSymlinkPath = rootProject.relativeNdkSymlinkPath,
@@ -835,13 +833,14 @@ allprojects { proj ->
      * profiles may not be generated, though setting [ ][com.android.build.gradle.options.StringOption.PROFILE_OUTPUT_DIR] in gradle.properties will
      * induce profile generation without affecting this return value
      */
-    override fun getProfileDirectory(): Path? {
-        return if (profileDirectory == null || profileDirectory.isAbsolute) {
-            profileDirectory
-        } else {
-            rootProject.projectDir.toPath().resolve(profileDirectory)
+    override val profileDirectory: Path?
+        get() {
+            return if (_profileDirectory == null || _profileDirectory.isAbsolute) {
+                _profileDirectory
+            } else {
+                rootProject.projectDir.toPath().resolve(_profileDirectory)
+            }
         }
-    }
 
     /**
      * Return the output apk File from the application plugin for the given dimension.
@@ -899,7 +898,7 @@ allprojects { proj ->
             }
             tmpApkFiles.add(apk)
         } else {
-            // the IDE erroneously indicate to use try-with-resources because APK is a autocloseable
+            // the IDE erroneously indicate to use try-with-resources because APK is an autocloseable
             // but nothing is opened here.
             apk = Apk(apkFile)
         }
@@ -1373,12 +1372,16 @@ allprojects { proj ->
 
     /** Fluent method to run a build.  */
     fun executor(): GradleTaskExecutor {
-        return applyOptions(GradleTaskExecutor(this, projectConnection))
+        return applyOptions(GradleTaskExecutor(this, gradleOptions, projectConnection) { it ->
+            setLastBuildResult(it)
+        })
     }
 
     /** Fluent method to get the model.  */
     fun modelV2(): ModelBuilderV2 {
-        return applyOptions(ModelBuilderV2(this, projectConnection)).withPerTestPrefsRoot(true)
+        return applyOptions(ModelBuilderV2(this, gradleOptions, projectConnection) {
+            setLastBuildResult(it)
+        }).withPerTestPrefsRoot(true)
     }
 
     /** Returns [SyncIssue]s after fetching the model. */
@@ -1465,7 +1468,7 @@ allprojects { proj ->
         }
     }
 
-    override fun setLastBuildResult(lastBuildResult: GradleBuildResult) {
+    fun setLastBuildResult(lastBuildResult: GradleBuildResult) {
         _buildResult = lastBuildResult
     }
 

@@ -32,7 +32,6 @@ import com.android.testutils.TestUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
@@ -44,7 +43,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-public class GradleTestProjectBuilder {
+public class GradleTestProjectBuilder implements GradleOptionBuilder<GradleTestProjectBuilder> {
 
     public static final Path DEFAULT_PROFILE_DIR = Paths.get("build", "android-profile");
 
@@ -61,12 +60,8 @@ public class GradleTestProjectBuilder {
                     "org.gradle.java.installations.paths="
                             + TestUtils.getJava17Jdk().toString().replace("\\", "/"));
 
-    @Nullable private String heapSize;
-    @Nullable private String metaspace;
     @Nullable private Path profileDirectory;
     private boolean withDependencyChecker = true;
-    private BaseGradleExecutor.ConfigurationCaching withConfigurationCaching =
-            BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION;
     // Indicates if we need to create a project without setting cmake.dir in local.properties.
     private boolean withCmakeDirInLocalProp = false;
     // NDK symlink path is relative to the test's BUILD_DIR. A full path example of
@@ -157,8 +152,6 @@ public class GradleTestProjectBuilder {
             kotlinVersion = TestUtils.KOTLIN_VERSION_FOR_TESTS;
         }
 
-        MemoryRequirement memoryRequirement = MemoryRequirement.use(heapSize, metaspace);
-
         return new GradleTestProject(
                 (name != null ? name : DEFAULT_TEST_PROJECT_NAME),
                 rootProjectName,
@@ -166,9 +159,8 @@ public class GradleTestProjectBuilder {
                 targetGradleVersion,
                 targetGradleInstallation,
                 withDependencyChecker,
-                withConfigurationCaching,
+                gradleOptionDelegate.getAsGradleOptions(),
                 gradleProperties,
-                memoryRequirement,
                 (compileSdkVersion != null ? compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION),
                 profileDirectory,
                 cmakeVersion,
@@ -200,44 +192,6 @@ public class GradleTestProjectBuilder {
         return this;
     }
 
-    /** Policy for setting Heap Size for Gradle process */
-    public static class MemoryRequirement {
-
-        private static final String DEFAULT_HEAP = "1G";
-        private static final String DEFAULT_METASPACE = "1G";
-
-        /** use default heap size for gradle. */
-        public static MemoryRequirement useDefault() {
-            return use(null, null);
-        }
-
-        /**
-         * Use a provided heap size for Gradle
-         *
-         * @param heap the desired heap size
-         * @param metaspace the desired metaspace size
-         */
-        public static MemoryRequirement use(@Nullable String heap, @Nullable String metaspace) {
-            return new MemoryRequirement(
-                    heap != null ? heap : DEFAULT_HEAP,
-                    metaspace != null ? metaspace : DEFAULT_METASPACE);
-        }
-
-        @NonNull private final String heap;
-        @NonNull private final String metaspace;
-
-        private MemoryRequirement(@NonNull String heap, @NonNull String metaspace) {
-            this.heap = heap;
-            this.metaspace = metaspace;
-        }
-
-        @NonNull
-        public List<String> getJvmArgs() {
-            return ImmutableList.of("-XX:MaxMetaspaceSize=" + metaspace, "-Xmx" + heap);
-        }
-
-
-    }
 
     /**
      * Set the name of the project.
@@ -343,12 +297,6 @@ public class GradleTestProjectBuilder {
         return this;
     }
 
-    public GradleTestProjectBuilder withConfigurationCaching(
-            BaseGradleExecutor.ConfigurationCaching configurationCaching) {
-        this.withConfigurationCaching = configurationCaching;
-        return this;
-    }
-
     public GradleTestProjectBuilder withIncludedBuilds(String... relativePaths) {
         withIncludedBuilds.addAll(Arrays.asList(relativePaths));
         return this;
@@ -430,28 +378,6 @@ public class GradleTestProjectBuilder {
         return this;
     }
 
-    /**
-     * Sets the test heap size requirement. Example values : 1024m, 2048m...
-     *
-     * @param heapSize the heap size in a format understood by the -Xmx JVM parameter
-     * @return itself.
-     */
-    public GradleTestProjectBuilder withHeap(String heapSize) {
-        this.heapSize = heapSize;
-        return this;
-    }
-
-    /**
-     * Sets the test metaspace size requirement. Example values : 128m, 1024m...
-     *
-     * @param metaspaceSize the metaspacesize in a format understood by the -Xmx JVM parameter
-     * @return itself.
-     */
-    public GradleTestProjectBuilder withMetaspace(String metaspaceSize) {
-        this.metaspace = metaspaceSize;
-        return this;
-    }
-
     public GradleTestProjectBuilder withDependencyChecker(
             boolean dependencyChecker) {
         this.withDependencyChecker = dependencyChecker;
@@ -497,6 +423,28 @@ public class GradleTestProjectBuilder {
     /** Sets the cmake version to use */
     public GradleTestProjectBuilder setCmakeVersion(@NonNull String cmakeVersion) {
         this.cmakeVersion = cmakeVersion;
+        return this;
+    }
+
+    private final GradleOptionBuilderDelegate gradleOptionDelegate =
+            new GradleOptionBuilderDelegate(null);
+
+    @Override
+    public GradleTestProjectBuilder withHeap(@Nullable String heapSize) {
+        gradleOptionDelegate.withHeap(heapSize);
+        return this;
+    }
+
+    @Override
+    public GradleTestProjectBuilder withMetaspace(@Nullable String metaspaceSize) {
+        gradleOptionDelegate.withMetaspace(metaspaceSize);
+        return this;
+    }
+
+    @Override
+    public GradleTestProjectBuilder withConfigurationCaching(
+            @NonNull BaseGradleExecutor.ConfigurationCaching configurationCaching) {
+        gradleOptionDelegate.withConfigurationCaching(configurationCaching);
         return this;
     }
 

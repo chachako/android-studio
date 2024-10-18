@@ -31,19 +31,16 @@ import java.util.function.Consumer
 
 /** A Gradle tooling api build builder. */
 class GradleTaskExecutor(
-    gradleTestProject: GradleTestRule,
-    projectConnection: ProjectConnection
+    gradleTestInfo: GradleTestInfo,
+    gradleOptions: GradleOptions,
+    projectConnection: ProjectConnection,
+    lastBuildResultConsumer: Consumer<GradleBuildResult>
 ) :
     BaseGradleExecutor<GradleTaskExecutor>(
-        gradleTestProject,
-        gradleTestProject.location,
+        gradleTestInfo,
         projectConnection,
-        Consumer { lastBuildResult: GradleBuildResult ->
-            gradleTestProject.setLastBuildResult(lastBuildResult)
-        },
-        gradleTestProject.getProfileDirectory(),
-        gradleTestProject.heapSize,
-        gradleTestProject.withConfigurationCaching
+        lastBuildResultConsumer,
+        gradleOptions
     ) {
 
     private var isExpectingFailure = false
@@ -114,7 +111,7 @@ class GradleTaskExecutor(
             BufferedOutputStream(FileOutputStream(tmpStdOut)).use { stdout ->
                 BufferedOutputStream(FileOutputStream(tmpStdErr)).use { stderr ->
                     val message =
-                        ("""[GradleTestProject ${projectLocation.projectDir}] Executing tasks:
+                        ("""[GradleTestProject ${gradleTestInfo.location.projectDir}] Executing tasks:
 gradle ${Joiner.on(' ').join(args)} ${Joiner.on(' ').join(tasksList)}
 
 """)

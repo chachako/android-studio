@@ -18,8 +18,6 @@
 package com.android.build.gradle.integration.common.fixture
 
 import com.android.SdkConstants
-import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder.MemoryRequirement
-import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
 import com.android.build.gradle.integration.common.utils.JacocoAgent
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
@@ -66,14 +64,11 @@ import kotlin.streams.asSequence
  * @param T The concrete implementing class.
  */
 abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructor(
-    protected val project: GradleTestRule?,
-    @JvmField val projectLocation: ProjectLocation,
+    @JvmField val gradleTestInfo: GradleTestInfo,
     @JvmField val projectConnection: ProjectConnection,
     @JvmField val lastBuildResultConsumer: Consumer<GradleBuildResult>,
-    profileDirectory: Path?,
-    private val memoryRequirement: MemoryRequirement,
-    private var configurationCaching: ConfigurationCaching
-) {
+    gradleOptions: GradleOptions,
+): GradleOptionBuilder<T> {
 
     /** Location of the Android Preferences folder (normally in ~/.android)  */
     lateinit var preferencesRootDir: File
@@ -89,10 +84,12 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
     private var perTestPrefsRoot: Boolean = false
     private var failOnWarning: Boolean = true
     private var crashOnOutOfMemory: Boolean = false
+    private val gradleOptionBuilderDelegate = GradleOptionBuilderDelegate(gradleOptions)
+
 
     init {
-        if (profileDirectory != null) {
-            with(StringOption.PROFILE_OUTPUT_DIR, profileDirectory.toString())
+        gradleTestInfo.profileDirectory?.let {
+            with(StringOption.PROFILE_OUTPUT_DIR, it.toString())
         }
     }
 
@@ -185,14 +182,47 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
         return this as T
     }
 
-    fun withConfigurationCaching(configurationCaching: ConfigurationCaching): T {
-        this.configurationCaching = configurationCaching
-        return this as T
-    }
-
     /** Forces JVM exit in the event of an OutOfMemoryError, without collecting a heap dump.  */
     fun crashOnOutOfMemory(): T {
         this.crashOnOutOfMemory = true
+        return this as T
+    }
+
+    /**
+     * API option 1
+     * This allows writing
+     * ```
+     * executor().configureOptions {
+     *    withHeap("12G").withMetaspace("2G")
+     * }.run("...")
+     */
+    fun configureOptions(action: GradleOptionBuilder<*>.() -> Unit): T {
+        action(gradleOptionBuilderDelegate)
+        return this as T
+    }
+
+    /**
+     * API option 2
+     * This allows writing
+     * ```
+     * executor().withHeap("12G").withMetaspace("2G").run("...")
+     *
+     * but has significantly more code duplication in the fixtures.
+     */
+    override fun withHeap(heapSize: String?): T {
+        gradleOptionBuilderDelegate.withHeap(heapSize)
+        return this as T
+    }
+
+    // API option 2
+    override fun withMetaspace(metaspaceSize: String?): T {
+        gradleOptionBuilderDelegate.withMetaspace(metaspaceSize)
+        return this as T
+    }
+
+    // API option 2
+    override fun withConfigurationCaching(configurationCaching: ConfigurationCaching): T {
+        gradleOptionBuilderDelegate.withConfigurationCaching(configurationCaching)
         return this as T
     }
 
@@ -215,7 +245,7 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
             arguments.add("--warning-mode=fail")
         }
 
-        when (configurationCaching) {
+        when (gradleOptionBuilderDelegate.asGradleOptions.configurationCaching) {
             ConfigurationCaching.ON -> {
                 arguments.add("--configuration-cache")
                 arguments.add("--configuration-cache-problems=fail")
@@ -238,9 +268,9 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
 
         if (!localPrefsRoot) {
             val preferencesRootDir = if (perTestPrefsRoot) {
-                File(projectLocation.projectDir.parentFile, "android_prefs_root")
+                File(gradleTestInfo.location.projectDir.parentFile, "android_prefs_root")
             } else {
-                File(projectLocation.testLocation.buildDir, "android_prefs_root")
+                File(gradleTestInfo.location.testLocation.buildDir, "android_prefs_root")
             }
 
             FileUtils.mkdirs(preferencesRootDir)
@@ -276,7 +306,7 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
 
     protected fun setJvmArguments(launcher: LongRunningOperation) {
         val jvmArguments: MutableList<String> = ArrayList(
-            memoryRequirement.jvmArgs
+            gradleOptionBuilderDelegate.asGradleOptions.memoryRequirement.asJvmArgs
         )
 
         if (crashOnOutOfMemory) {
@@ -293,7 +323,7 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
         }
 
         if (JacocoAgent.isJacocoEnabled()) {
-            jvmArguments.add(JacocoAgent.getJvmArg(projectLocation.testLocation.buildDir))
+            jvmArguments.add(JacocoAgent.getJvmArg(gradleTestInfo.location.testLocation.buildDir))
         }
 
         jvmArguments.add("-XX:ErrorFile=$jvmErrorLog")
@@ -312,7 +342,7 @@ abstract class BaseGradleExecutor<T : BaseGradleExecutor<T>> internal constructo
             return
         }
 
-        val projectDirectory: Path = projectLocation.projectDir.toPath()
+        val projectDirectory: Path = gradleTestInfo.location.projectDir.toPath()
         val outputs: Path = if (TestUtils.runningFromBazel()) {
             // Put in test undeclared output directory.
             TestUtils.getTestOutputDir()

@@ -17,7 +17,6 @@ package com.android.build.gradle.integration.common.fixture
 
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
-import com.android.build.gradle.integration.common.fixture.ModelBuilderV2.FetchResult
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2.ModelInfo
 import com.android.build.gradle.integration.common.fixture.model.FileNormalizer
 import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
@@ -52,18 +51,15 @@ import java.util.function.Consumer
  * This returns the v2 model as a [FetchResult]
  */
 class ModelBuilderV2 internal constructor(
-    project: GradleTestProject,
-    projectConnection: ProjectConnection
+    gradleTestInfo: GradleTestInfo,
+    gradleOptions: GradleOptions,
+    projectConnection: ProjectConnection,
+    lastBuildResultConsumer: Consumer<GradleBuildResult>
 ) : BaseGradleExecutor<ModelBuilderV2>(
-    project,
-    project.location,
+    gradleTestInfo,
     projectConnection,
-    Consumer{ lastBuildResult: GradleBuildResult? ->
-        project.setLastBuildResult(lastBuildResult!!)
-    },
-    project.getProfileDirectory(),
-    project.heapSize,
-    ConfigurationCaching.ON
+    lastBuildResultConsumer,
+    gradleOptions.mutate { withConfigurationCaching(ConfigurationCaching.ON) }
 ) {
     private val explicitlyAllowedOptions = mutableSetOf<String>()
     private var maxSyncIssueSeverityLevel = 0
@@ -163,13 +159,13 @@ class ModelBuilderV2 internal constructor(
     private fun getFileNormalizer(container: ModelContainerV2): FileNormalizerImpl {
         return FileNormalizerImpl(
             buildMap = container.buildMap,
-            gradleUserHome = projectLocation.testLocation.gradleUserHome.toFile(),
-            gradleCacheDir = projectLocation.testLocation.gradleCacheDir,
-            androidSdkDir = project?.androidSdkDir,
+            gradleUserHome = gradleTestInfo.location.testLocation.gradleUserHome.toFile(),
+            gradleCacheDir = gradleTestInfo.location.testLocation.gradleCacheDir,
+            androidSdkDir = gradleTestInfo.androidSdkDir,
             androidPrefsDir = preferencesRootDir,
-            androidNdkSxSRoot = project?.androidNdkSxSRootSymlink,
+            androidNdkSxSRoot = gradleTestInfo.androidNdkSxSRootSymlink,
             localRepos = GradleTestProject.localRepositories,
-            additionalMavenRepo = project?.additionalMavenRepoDir,
+            additionalMavenRepo = gradleTestInfo.additionalMavenRepoDir,
             defaultNdkSideBySideVersion = DEFAULT_NDK_SIDE_BY_SIDE_VERSION
         )
     }
