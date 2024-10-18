@@ -17,15 +17,13 @@ package com.android.ddmlib.logcat
 
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.Log.LogLevel.INFO
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnit
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when` as whenever
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -53,17 +51,12 @@ private const val APP_NAME = "com.android.app"
 
 @RunWith(JUnit4::class)
 class LogCatHeaderParserTest {
-
-    @get:Rule
-    var mockitoJunit = MockitoJUnit.rule()
-
-    @Mock
-    private lateinit var mockDevice: IDevice
+    private val mockDevice: IDevice = mock()
 
     private val logCatHeaderParser = LogCatHeaderParser(YEAR, ZONE_ID)
 
     @Before
-    fun mockDevice() {
+    fun setUp() {
         whenever(mockDevice.getClientName(PID_APP)).thenReturn(APP_NAME)
         whenever(mockDevice.getClientName(PID_EMPTY_APP)).thenReturn("")
     }

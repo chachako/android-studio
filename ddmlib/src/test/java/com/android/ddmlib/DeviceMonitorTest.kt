@@ -18,11 +18,11 @@ package com.android.ddmlib
 import com.android.ddmlib.internal.DeviceListMonitorTask
 import com.android.ddmlib.internal.DeviceMonitor.DeviceListComparisonResult
 import com.android.ddmlib.testing.FakeAdbRule
-import com.android.testutils.MockitoKt.mock
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when` as whenever
 import java.nio.file.Paths
 import java.util.Arrays
 import java.util.concurrent.CountDownLatch
@@ -114,10 +114,10 @@ class DeviceMonitorTest {
     }
 
     private fun mockDevice(serial: String, state: IDevice.DeviceState): IDevice {
-        val device: IDevice = mock()
-        whenever(device.serialNumber).thenReturn(serial)
-        whenever(device.state).thenReturn(state)
-        return device
+        val mockDevice = mock<IDevice>()
+        whenever(mockDevice.serialNumber).thenReturn(serial)
+        whenever(mockDevice.state).thenReturn(state)
+        return mockDevice
     }
 
     class FakeEmulatorConsoleWithLatency(
