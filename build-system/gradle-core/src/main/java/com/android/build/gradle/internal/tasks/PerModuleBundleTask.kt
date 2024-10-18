@@ -45,6 +45,7 @@ import com.android.builder.packaging.sortDexFiles
 import com.android.bundle.RuntimeEnabledSdkConfigProto
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
@@ -169,12 +170,8 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
 
             jarCreator.addJar(resFiles.get().asFile.toPath(), excludeJarManifest, ResRelocator())
 
-            val dexDirectoryToAdd = if (baseConsumesDynamicFeatures()) {
-                featureDexDirectories
-            } else {
-                dexDirectories
-            }
-            val sortedDexFiles = sortDexFiles(dexDirectoryToAdd.asFileTree.files)
+            // Sort the dex files the same way as CompileArtProfileTask (b/346268213)
+            val sortedDexFiles = sortDexFiles(dexDirectoriesToPackage().asFileTree.files)
             addHybridFolder(
                 jarCreator,
                 sortedDexFiles,
@@ -254,14 +251,32 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
     }
 
     /**
+     * Selects the dex directories to package.
+     *
+     * Note: This decision depends on whether the base module consumes dynamic feature modules
+     * (i.e., whether shrinking is enabled in base), but from a dynamic feature module we don't have
+     * this info at task configuration time, so we have to do it at task execution time.
+     */
+    private fun dexDirectoriesToPackage(): FileCollection {
+        return if (baseConsumesDynamicFeatures()) {
+            featureDexDirectories
+        } else {
+            dexDirectories
+        }
+    }
+
+    /**
      * Whether this is a dynamic feature module, and the base module consumes dynamic feature
      * modules (i.e., shrinking is enabled) -- see [ApplicationCreationConfig.consumesDynamicFeatures].
      *
      * Note: From a dynamic feature module, we don't have this info at task configuration time,
      * that's why we need to check it at task execution time, and check it indirectly through the
-     * presence of [featureDexDirectories] (it is not empty only under the above condition).
+     * presence of [featureDexDirectories] (it is present only under the above condition).
      */
-    private fun baseConsumesDynamicFeatures() = featureDexDirectories.files.isNotEmpty()
+    private fun baseConsumesDynamicFeatures(): Boolean {
+        // This returns true when the directories are present, even if they may be empty directories
+        return featureDexDirectories.files.isNotEmpty()
+    }
 
     class PrivacySandboxSdkCreationAction(
         private val creationConfig: PrivacySandboxSdkVariantScope
@@ -331,7 +346,13 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             task: PerModuleBundleTask
         ) {
             super.configure(task)
+
+            val componentType = creationConfig.componentType
             val artifacts = creationConfig.artifacts
+
+            check(componentType.isBaseModule || componentType.isDynamicFeature) {
+                "Unexpected component type: $componentType"
+            }
 
             if (creationConfig is DynamicFeatureCreationConfig) {
                 task.fileName.set(creationConfig.featureName.map { "$it.zip" })
@@ -340,6 +361,39 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             }
             task.fileName.disallowChanges()
 
+            if (componentType.isBaseModule) {
+                if ((creationConfig as ApplicationCreationConfig).consumesDynamicFeatures) {
+                    task.dexDirectories.from(artifacts.get(InternalArtifactType.BASE_DEX))
+                } else {
+                    task.dexDirectories.from(artifacts.getAll(InternalMultipleArtifactType.DEX))
+                }
+                // DESUGAR_LIB_DEX and GLOBAL_SYNTHETICS_DEX are separate from DEX/BASE_DEX and are
+                // only packaged in base module, not in dynamic feature modules
+                if (creationConfig.dexing.shouldPackageDesugarLibDex) {
+                    task.dexDirectories.from(artifacts.get(InternalArtifactType.DESUGAR_LIB_DEX))
+                }
+                if (creationConfig.enableGlobalSynthetics
+                    && creationConfig.dexing.dexingType == DexingType.NATIVE_MULTIDEX
+                    && !creationConfig.optimizationCreationConfig.minifiedEnabled
+                ) {
+                    task.dexDirectories.from(artifacts.get(InternalArtifactType.GLOBAL_SYNTHETICS_DEX))
+                }
+                task.dexDirectories.disallowChanges()
+            } else {
+                // We set both properties below even though at execution time we'll use only one of
+                // them. This adds more build time, but we currently have no choice
+                // (see `dexDirectoriesToPackage()`).
+                task.featureDexDirectories.fromDisallowChanges(
+                    creationConfig.variantDependencies.getArtifactFileCollection(
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactScope.PROJECT,
+                        AndroidArtifacts.ArtifactType.FEATURE_DEX,
+                        AndroidAttributes(MODULE_PATH to task.project.path)
+                    )
+                )
+                task.dexDirectories.fromDisallowChanges(artifacts.getAll(InternalMultipleArtifactType.DEX))
+            }
+
             task.assetsFilesDirectory.setDisallowChanges(
                 creationConfig.artifacts.get(SingleArtifact.ASSETS)
             )
@@ -347,34 +401,6 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             task.resFiles.set(artifacts.get(InternalArtifactType.LINKED_RESOURCES_FOR_BUNDLE_PROTO_FORMAT))
             task.resFiles.disallowChanges()
 
-            task.dexDirectories.from(
-                if ((creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true) {
-                    artifacts.get(InternalArtifactType.BASE_DEX)
-                } else {
-                    artifacts.getAll(InternalMultipleArtifactType.DEX)
-                }
-            )
-            if (creationConfig.dexing.shouldPackageDesugarLibDex) {
-                task.dexDirectories.from(
-                    artifacts.get(InternalArtifactType.DESUGAR_LIB_DEX)
-                )
-            }
-            if (creationConfig.enableGlobalSynthetics
-                && creationConfig.dexing.dexingType == DexingType.NATIVE_MULTIDEX
-                && !creationConfig.optimizationCreationConfig.minifiedEnabled) {
-                task.dexDirectories.from(
-                    artifacts.get(InternalArtifactType.GLOBAL_SYNTHETICS_DEX)
-                )
-            }
-
-            task.featureDexDirectories.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.PROJECT,
-                    AndroidArtifacts.ArtifactType.FEATURE_DEX,
-                    AndroidAttributes(MODULE_PATH to task.project.path)
-                )
-            )
             task.javaResJar.setDisallowChanges(
                 artifacts.get(InternalArtifactType.MERGED_JAVA_RES)
             )
