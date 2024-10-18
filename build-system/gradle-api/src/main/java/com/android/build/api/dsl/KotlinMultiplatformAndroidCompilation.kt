@@ -41,4 +41,15 @@ interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonO
         ReplaceWith("compilerOptions.configure { }")
     )
     override fun kotlinOptions(configure: Action<KotlinCommonOptions>)
+
+    /**
+     * The name of the component corresponding to this Android compilation.
+     * Consists of the compilation name prefixed by the android target name (e.g "android")
+     * The default component names for the default compilations would be:
+     *   - androidMain
+     *   - androidTestOnJvm
+     *   - androidTestOnDevice
+     */
+    @get:Incubating
+    val componentName: String
 }

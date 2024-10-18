@@ -1262,10 +1262,12 @@ package com.android.build.api.dsl {
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidCompilation extends org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions> {
     method public org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> getCompilerOptions();
+    method @org.gradle.api.Incubating public String getComponentName();
     method @Deprecated public org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions getKotlinOptions();
     method @Deprecated public void kotlinOptions(kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions,kotlin.Unit> configure);
     method @Deprecated public void kotlinOptions(org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions> configure);
     property public abstract org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> compilerOptions;
+    property @org.gradle.api.Incubating public abstract String componentName;
     property @Deprecated public abstract org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions kotlinOptions;
   }
 

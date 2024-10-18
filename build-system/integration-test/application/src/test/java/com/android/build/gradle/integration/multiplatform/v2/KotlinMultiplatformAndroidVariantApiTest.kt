@@ -20,10 +20,13 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuil
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Aar
+import com.android.testutils.apk.Apk
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
+@Suppress("PathAsIterable")
 class KotlinMultiplatformAndroidVariantApiTest {
     @get:Rule
     val project = GradleTestProjectBuilder()
@@ -69,6 +72,7 @@ class KotlinMultiplatformAndroidVariantApiTest {
                     @TaskAction
                     fun taskAction() {
                         val outputFile = File(outputFolder.asFile.get(), "asset.txt")
+                        println(outputFile)
                         outputFile.parentFile.mkdirs()
                         outputFile.writeText("foo")
                     }
@@ -76,8 +80,7 @@ class KotlinMultiplatformAndroidVariantApiTest {
 
                 androidComponents {
                     onVariant { variant ->
-                        val createAssetsTaskProvider =
-                            project.tasks.register<CreateAssets>("${'$'}{variant.name}AddAssets") {
+                        val createAssetsTaskProvider = project.tasks.register<CreateAssets>("${'$'}{variant.name}AddAssets") {
                             outputFolder.set(
                                 File(project.layout.buildDirectory.asFile.get(), "assets/gen")
                             )
@@ -88,15 +91,63 @@ class KotlinMultiplatformAndroidVariantApiTest {
                                 createAssetsTaskProvider,
                                 CreateAssets::outputFolder
                             )
+
+                        variant.androidTest?.sources?.assets?.addGeneratedSourceDirectory(
+                            createAssetsTaskProvider,
+                            CreateAssets::outputFolder
+                        )
                     }
                 }
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:assemble")
+        project.executor().run(":kmpFirstLib:assembleAndroidMain")
 
         val aarFile = project.getSubproject("kmpFirstLib").getOutputFile("aar", "kmpFirstLib.aar")
-        @Suppress("PathAsIterable")
         Aar(aarFile).use { aar -> assertThat(aar.getEntry("assets/asset.txt")).isNotNull() }
+
+        project.executor().run(":kmpFirstLib:assembleTestOnDevice")
+        val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
+            "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
+        )
+        assertThat(testApk.exists()).isTrue()
+
+        Apk(testApk).use { apk ->
+            assertThat(apk.getEntry("assets/asset.txt")).isNotNull()
+        }
+    }
+
+    @Test
+    fun testStaticAssets() {
+        FileUtils.createFile(
+            project.getSubproject("kmpFirstLib").file("src/assets/static.txt"),
+            "foo"
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            // language=kotlin
+            """
+                kotlin.androidLibrary {
+                    experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+                }
+
+                androidComponents {
+                    onVariant { variant ->
+                        variant.androidTest?.sources?.assets?.addStaticSourceDirectory("src/assets")
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run(":kmpFirstLib:assembleTestOnDevice")
+        val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
+            "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
+        )
+        assertThat(testApk.exists()).isTrue()
+
+        Apk(testApk).use { apk ->
+            assertThat(apk.getEntry("assets/static.txt")).isNotNull()
+        }
     }
 }

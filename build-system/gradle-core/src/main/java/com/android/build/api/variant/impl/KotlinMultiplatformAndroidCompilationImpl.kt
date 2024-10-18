@@ -56,6 +56,9 @@ open class KotlinMultiplatformAndroidCompilationImpl(
     override fun kotlinOptions(configure: Action<KotlinCommonOptions>) {
         super.kotlinOptions(configure)
     }
+
+    override val componentName: String
+        get() = this.compilationName.getNamePrefixedWithAndroidTarget()
 }
 
 internal enum class KmpAndroidCompilationType(

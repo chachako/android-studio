@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -157,5 +158,29 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         ScannerSubject.assertThat(result.stderr).doesNotContain(
             "Manifest file does not exist"
         )
+    }
+
+    @Test
+    fun testComponentNamesForEachAndroidCompilation() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                tasks.register("printAndroidComponents") {
+                    doLast {
+                        val compilations = kotlin.androidLibrary.compilations
+                        compilations.forEach {
+                            println(it.componentName)
+                        }
+                    }
+                }
+            """.trimIndent())
+
+        val result = project.executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
+            .run(":kmpFirstLib:printAndroidComponents")
+
+        ScannerSubject.assertThat(result.stdout).contains("androidMain")
+        ScannerSubject.assertThat(result.stdout).contains("androidTestOnJvm")
+        ScannerSubject.assertThat(result.stdout).contains("androidTestOnDevice")
     }
 }

@@ -614,7 +614,11 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         return KmpAndroidTestImpl(
             dslInfo = dslInfo,
             internalServices = variantServices,
-            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(),
+            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(
+                ModulePropertyKey.BooleanWithDefault.KMP_ANDROID_RESOURCES_ENABLED.getValue(
+                    mainVariant.dslInfo.experimentalProperties
+                )
+            ),
             variantDependencies = createVariantDependencies(project, dslInfo, kotlinCompilation, androidTarget),
             paths = paths,
             artifacts = artifacts,
