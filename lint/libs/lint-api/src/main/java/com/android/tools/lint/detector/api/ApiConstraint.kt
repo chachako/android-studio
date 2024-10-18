@@ -123,6 +123,25 @@ sealed class ApiConstraint {
   /** Inverts the given constraint, e.g. X < 20 becomes X >= 20. */
   abstract operator fun not(): ApiConstraint
 
+  /**
+   * Whether this constraint can be negated (using [not]). For example, the [ApiConstraint] derived
+   * from `SDK_INT >= 24` is negatable; in the `else` clause of `if (SDK_INT >= 24)` we can negate
+   * the constraint and conclude that `SDK_INT < 24`.
+   *
+   * However, for the constraint derived from something like `SDK_INT >= 24 && day == TUESDAY`, the
+   * constraint itself should not be negated. This is basically expressing something about the
+   * *context* of the constraint, which we bundle with the constraint itself to make it easier to
+   * pass constraints around. For example, the various [VersionChecks] utility methods which
+   * recursively compute [ApiConstraint] objects for elements can set this bit when combining
+   * contains in `&&` expressions.
+   */
+  abstract fun negatable(): Boolean
+
+  /**
+   * Marks this [ApiConstraint] as not being safe to negate; see [negatable] for more information.
+   */
+  abstract fun asNonNegatable(): ApiConstraint
+
   abstract fun isEmpty(): Boolean
 
   /** Returns a new constraint which takes the union of the two constraints. */
@@ -415,6 +434,19 @@ sealed class ApiConstraint {
      */
     val bits: ULong,
     val sdkId: Int = ANDROID_SDK_ID,
+    /**
+     * Whether this constraint can be negated (using [not]). For example, the [ApiConstraint]
+     * derived from `SDK_INT >= 24` is negatable; in the `else` clause of `if (SDK_INT >= 24)` we
+     * can negate the constraint and conclude that `SDK_INT < 24`.
+     *
+     * However, for the constraint derived from something like `SDK_INT >= 24 && day == TUESDAY`,
+     * the constraint itself should not be negated. This is basically expressing something about the
+     * *context* of the constraint, which we bundle with the constraint itself to make it easier to
+     * pass constraints around. For example, the various [VersionChecks] utility methods which
+     * recursively compute [ApiConstraint] objects for elements can set this bit when combining
+     * contains in `&&` expressions.
+     */
+    private val isNegatable: Boolean = true,
   ) : ApiConstraint() {
     override fun fromInclusive(): Int {
       if (bits == 0UL) {
@@ -545,13 +577,24 @@ sealed class ApiConstraint {
     }
 
     override operator fun not(): SdkApiConstraint {
-      if (this == NONE) {
+      if (!isNegatable) {
+        return SdkApiConstraint(0UL, sdkId)
+      } else if (this == NONE) {
         return ALL
       } else if (this == ALL) {
         return NONE
       } else {
         return SdkApiConstraint(bits.inv(), sdkId)
       }
+    }
+
+    override fun negatable(): Boolean = isNegatable
+
+    override fun asNonNegatable(): SdkApiConstraint {
+      if (!negatable()) {
+        return this
+      }
+      return SdkApiConstraint(bits, sdkId, isNegatable = false)
     }
 
     override fun isEmpty(): Boolean {
@@ -1165,6 +1208,21 @@ sealed class ApiConstraint {
     override fun not(): ApiConstraint {
       val reversed =
         sdkConstraints.map { SdkApiConstraints(it.sdkId, it.sometimes?.not(), it.always?.not()) }
+      return MultiSdkApiConstraint(reversed)
+    }
+
+    override fun negatable(): Boolean {
+      return sdkConstraints.all { it.always?.negatable() ?: it.sometimes?.negatable() ?: true }
+    }
+
+    override fun asNonNegatable(): ApiConstraint {
+      if (!negatable()) {
+        return this
+      }
+      val reversed =
+        sdkConstraints.map {
+          SdkApiConstraints(it.sdkId, it.always?.asNonNegatable(), it.sometimes?.asNonNegatable())
+        }
       return MultiSdkApiConstraint(reversed)
     }
 

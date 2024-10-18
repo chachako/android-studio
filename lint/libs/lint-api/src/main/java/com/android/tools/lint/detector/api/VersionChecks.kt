@@ -1275,7 +1275,11 @@ class VersionChecks(
       if (element.operator === UastPrefixOperator.LOGICAL_NOT) {
         val operand = element.operand
         getVersionCheckConstraint(element = operand, depth = depth)?.let {
-          return it.not()
+          if (!it.negatable()) {
+            return null
+          } else {
+            return it.not()
+          }
         }
       }
     } else if (element is UParenthesizedExpression) {
@@ -1499,13 +1503,17 @@ class VersionChecks(
           if (right !== before) {
             val rightConstraint =
               getVersionCheckConstraint(element = right, apiLookup = apiLookup, depth = depth)
-            return max(leftConstraint, rightConstraint)
+            val max = max(leftConstraint, rightConstraint)
+            if (max != null && (leftConstraint == null || rightConstraint == null)) {
+              return max.asNonNegatable()
+            }
+            return max
           }
-          return leftConstraint
+          return leftConstraint?.asNonNegatable()
         }
       }
       getVersionCheckConditional(binary = element)?.let {
-        return it
+        return it.asNonNegatable()
       }
     } else if (element is UPolyadicExpression) {
       if (element.operator === UastBinaryOperator.LOGICAL_AND) {
@@ -1521,7 +1529,7 @@ class VersionChecks(
               )
           }
         }
-        return constraint
+        return constraint?.asNonNegatable()
       }
     } else if (element is UParenthesizedExpression) {
       return getAndedWithConstraint(element.expression, element, apiLookup, depth)

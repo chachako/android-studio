@@ -6152,6 +6152,45 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "0 errors, 6 warnings");
     }
 
+    @SuppressWarnings("all") // sample code
+    public void testObsoleteSdkInt_373506498() {
+        // Regression test for 373506498
+        lint().files(
+                        manifest().minSdk(23),
+                        kotlin(
+                                ""
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "import android.content.pm.PackageManager\n"
+                                        + "import android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE\n"
+                                        + "import android.os.Build.VERSION.SDK_INT\n"
+                                        + "import androidx.annotation.RequiresApi\n"
+                                        + "\n"
+                                        + "class Feature(pm: PackageManager) {\n"
+                                        + "    private val supportsPip = SDK_INT >= 24 && pm.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)\n"
+                                        + "\n"
+                                        + "    fun available() = when {\n"
+                                        + "        !supportsPip -> false\n"
+                                        + "        SDK_INT >= 26 -> requires26()\n"
+                                        + "        SDK_INT >= 24 -> requires24()\n"
+                                        + "        else -> false\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    @RequiresApi(26)\n"
+                                        + "    private fun requires26() = true\n"
+                                        + "\n"
+                                        + "    @RequiresApi(24)\n"
+                                        + "    private fun requires24() = true\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                // We *don't* want to use provisional computation for this:
+                // limit suggestions around SDK_INT checks to those implied
+                // by the minSdkVersion of the library.
+                .skipTestModes(PARTIAL)
+                .run()
+                .expectClean();
+    }
+
     public void testDocumentationExampleObsoleteSdkInt() {
         lint().files(
                         manifest(

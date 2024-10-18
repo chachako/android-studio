@@ -2132,7 +2132,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         // https://code.google.com/p/android/issues/detail?id=37728
                         if (Build.VERSION.SDK_INT < 14) return;
 
-                        new GridLayout(null); // OK
+                        new GridLayout(null); // OK 1
                     }
 
                     public void testEarlyExit2() {
@@ -2140,7 +2140,7 @@ class VersionChecksTest : AbstractCheckTest() {
                             return;
                         }
 
-                        new GridLayout(null); // OK
+                        new GridLayout(null); // OK 2
                     }
 
                     public void testEarlyExit3(boolean nested) {
@@ -2149,7 +2149,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         }
 
                         if (nested) {
-                            new GridLayout(null); // OK
+                            new GridLayout(null); // OK 3
                         }
                     }
 
@@ -2257,7 +2257,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         // https://code.google.com/p/android/issues/detail?id=37728
                         if (Build.VERSION.SDK_INT < 14) return
 
-                        GridLayout(null) // OK
+                        GridLayout(null) // OK 1
                     }
 
                     fun testEarlyExit2() {
@@ -2265,7 +2265,7 @@ class VersionChecksTest : AbstractCheckTest() {
                             return
                         }
 
-                        GridLayout(null) // OK
+                        GridLayout(null) // OK 2
                     }
 
                     fun testEarlyExit3(nested: Boolean) {
@@ -2274,7 +2274,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         }
 
                         if (nested) {
-                            GridLayout(null) // OK
+                            GridLayout(null) // OK 3
                         }
                     }
 
@@ -2288,7 +2288,6 @@ class VersionChecksTest : AbstractCheckTest() {
                         GridLayout(null) // ERROR
 
                         if (Utils.isIcs) { // too late
-
                             return
                         }
                     }
@@ -2310,7 +2309,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 src/p1/p2/NestedChecks.kt:39: Error: Call requires API level 14 (current min is 11): android.widget.GridLayout() [NewApi]
                         GridLayout(null) // ERROR
                         ~~~~~~~~~~
-                src/p1/p2/NestedChecks.kt:51: Warning: Unnecessary; SDK_INT is always >= 11 [ObsoleteSdkInt]
+                src/p1/p2/NestedChecks.kt:50: Warning: Unnecessary; SDK_INT is always >= 11 [ObsoleteSdkInt]
                             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 1 warnings
@@ -5659,6 +5658,59 @@ class VersionChecksTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  @Suppress("SimplifyNegatedBinaryExpression")
+  fun testInverse() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Build.VERSION.SDK_INT
+            import androidx.annotation.RequiresApi
+
+            fun testInverseIf() {
+                if (SDK_INT >= 24) {
+                    requires24() // OK 1: never crashes
+                }
+                if (!(SDK_INT < 24)) {
+                    requires24() // OK 2: never crashes
+                }
+                if (!(SDK_INT < 24 && System.currentTimeMillis() % 2 == 1L)) {
+                    requires24() // ERROR 1: We can crash here
+                }
+            }
+
+            fun testInverseSwitch(b: Boolean) {
+                when {
+                    SDK_INT >= 32 -> {} // Here we know SDK_INT >= 32
+                    !(SDK_INT < 31) -> {} // Here we know SDK_INT >= 31
+                    !(SDK_INT >= 24 && b) -> {} // Here we know SDK_INT < 24 (and b)
+                    else -> requires24() // ERROR 2: we don't know that SDK_INT >= 24 here; b could have been false
+                }
+            }
+
+            @RequiresApi(24)
+            private fun requires24() = true
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:14: Error: Call requires API level 24 (current min is 1): requires24 [NewApi]
+                requires24() // ERROR 1: We can crash here
+                ~~~~~~~~~~
+        src/test/pkg/test.kt:23: Error: Call requires API level 24 (current min is 1): requires24 [NewApi]
+                else -> requires24() // ERROR 2: we don't know that SDK_INT >= 24 here; b could have been false
+                        ~~~~~~~~~~
+        2 errors, 0 warnings
+        """
+      )
   }
 
   override fun getDetector(): Detector {

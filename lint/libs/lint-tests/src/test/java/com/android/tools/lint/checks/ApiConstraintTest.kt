@@ -236,6 +236,25 @@ class ApiConstraintTest {
   }
 
   @Test
+  fun testNegatable() {
+    assertTrue(atLeast(26).negatable())
+    assertTrue(exactly(26).negatable())
+    assertFalse(exactly(26).asNonNegatable().negatable())
+    assertEquals("API level < 26", atLeast(26).not().toString())
+    assertEquals("No API levels", atLeast(26).asNonNegatable().not().toString())
+    assertTrue(multiSdkAnyOf("0:15,30:2").negatable())
+    assertFalse(multiSdkAnyOf("0:15,30:2").asNonNegatable().negatable())
+    assertEquals(
+      "API level < 15 and SDK 30: version = 1",
+      multiSdkAnyOf("0:15,30:2").not().toString(),
+    )
+    assertEquals(
+      "No API levels and SDK 30: No versions",
+      multiSdkAnyOf("0:15,30:2").asNonNegatable().not().toString(),
+    )
+  }
+
+  @Test
   fun testSerialization() {
     assertEquals("e000000", serialize(atLeast(26) and atMost(28)))
     assertEquals("API level ≥ 26 and API level < 29", deserialize("e000000").toString())
