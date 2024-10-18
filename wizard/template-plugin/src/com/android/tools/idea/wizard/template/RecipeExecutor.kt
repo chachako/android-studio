@@ -148,6 +148,15 @@ interface RecipeExecutor {
   fun addFileDependency(file: String, configuration: String = "implementation")
 
   /**
+   * Appends text to the project-level gradle.properties file, if the specified property doesn't
+   * exist in the file. This is sort of a hack, because GradlePropertiesModel is read-only
+   *
+   * @param propertyName the property to check if already exists
+   * @param textToAdd the raw text to append to the file
+   */
+  fun addProjectGradleProperty(propertyName: String, textToAdd: String)
+
+  /**
    * Adds a new entry to 'sourceSets' block of Gradle build file.
    *
    * @param type type of the source set.
