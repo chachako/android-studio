@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.host.emulatorcontrol
 
-import com.android.testutils.MockitoKt.any
 import com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlPluginProto
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
@@ -45,6 +44,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.openMocks
+import org.mockito.kotlin.any
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit

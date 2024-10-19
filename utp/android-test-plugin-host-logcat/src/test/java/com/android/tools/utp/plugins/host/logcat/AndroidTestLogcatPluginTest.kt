@@ -16,8 +16,6 @@
 
 package com.android.tools.utp.plugins.host.logcat
 
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto.AndroidTestLogcatConfig
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
@@ -47,6 +45,8 @@ import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.quality.Strictness
 import java.util.logging.Logger
 

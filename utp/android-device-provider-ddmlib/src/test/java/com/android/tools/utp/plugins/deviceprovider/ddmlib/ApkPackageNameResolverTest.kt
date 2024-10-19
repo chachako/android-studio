@@ -16,8 +16,6 @@
 
 package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.lib.process.Handle
 import com.google.testing.platform.lib.process.Subprocess
@@ -31,6 +29,8 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.isNull
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.quality.Strictness
 
 /**

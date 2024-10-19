@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.host.icebox
 
-import com.android.testutils.MockitoKt
 import com.google.common.truth.Truth
 import com.google.testing.platform.api.device.CommandHandle
 import com.google.testing.platform.api.device.CommandResult
@@ -29,6 +28,8 @@ import org.junit.runners.JUnit4
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.quality.Strictness
 
 /**
@@ -58,7 +59,7 @@ class LogcatParserTest {
         ).thenReturn(CommandResult(0, listOf(startTime)))
         Mockito.`when`(
             mockDeviceController.executeAsync(
-                MockitoKt.eq(
+                eq(
                     listOf(
                         "shell",
                         "logcat",
@@ -70,7 +71,7 @@ class LogcatParserTest {
                         "\'$startTime.000\'"
                     )
                 ),
-                MockitoKt.any()
+                any()
             )
         ).then {
             it.getArgument<(String) -> Unit>(1).invoke(waitingForDebugger)

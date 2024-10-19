@@ -21,8 +21,6 @@ import com.android.ddmlib.IDevice
 import com.android.ddmlib.InstallException
 import com.android.ddmlib.MultiLineReceiver
 import com.android.sdklib.AndroidVersion
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.deviceprovider.ddmlib.DdmlibAndroidDeviceController.DdmlibAndroidDeviceControllerErrorCode
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Futures
@@ -44,6 +42,8 @@ import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.CountDownLatch

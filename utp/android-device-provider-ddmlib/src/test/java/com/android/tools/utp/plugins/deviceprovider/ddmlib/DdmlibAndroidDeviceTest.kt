@@ -19,8 +19,6 @@ package com.android.tools.utp.plugins.deviceprovider.ddmlib
 import com.android.ddmlib.AvdData
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.MultiLineReceiver
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Futures
 import com.google.testing.platform.api.device.Device
@@ -33,6 +31,8 @@ import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 /**
  * Unit tests for [DdmlibAndroidDevice].

@@ -18,7 +18,6 @@ package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
-import com.android.testutils.MockitoKt.mock
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -27,6 +26,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
+import org.mockito.kotlin.mock
 
 /**
  * Unit test for [DdmlibAndroidDeviceFinder].

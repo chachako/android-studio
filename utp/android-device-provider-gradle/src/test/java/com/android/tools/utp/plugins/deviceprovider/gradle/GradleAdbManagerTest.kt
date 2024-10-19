@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.deviceprovider.gradle
 
-import com.android.testutils.MockitoKt.eq
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.lib.process.Handle
 import com.google.testing.platform.lib.process.Subprocess
@@ -31,6 +30,7 @@ import org.mockito.Mockito.anyList
 import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.nullable
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.eq
 import java.time.Duration
 
 /**

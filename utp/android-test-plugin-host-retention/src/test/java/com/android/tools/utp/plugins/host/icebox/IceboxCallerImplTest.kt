@@ -19,8 +19,6 @@ package com.android.tools.utp.plugins.host.icebox
 import com.android.emulator.control.IceboxTarget
 import com.android.emulator.control.SnapshotPackage
 import com.android.emulator.control.SnapshotServiceGrpc
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.ByteString
@@ -58,6 +56,8 @@ import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.quality.Strictness
 import java.io.DataInputStream
 import java.net.ServerSocket

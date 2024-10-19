@@ -16,9 +16,6 @@
 
 package com.android.tools.utp.plugins.host.coverage.com.android.tools.utp.plugins.host.coverage
 
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.utp.plugins.host.coverage.AndroidTestCoveragePlugin
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig
 import com.google.protobuf.Any
@@ -50,6 +47,9 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.quality.Strictness
 import java.time.Duration
 
@@ -352,7 +352,7 @@ class AndroidTestCoveragePluginTest {
         }
 
         verify(mockLogger, atLeastOnce()).warning(argThat<Supplier<String>> {
-            it.get().contains("Shell command failed (-1)")
+            get().contains("Shell command failed (-1)")
         })
     }
 

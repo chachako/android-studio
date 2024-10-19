@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.host.icebox
 
-import com.android.testutils.MockitoKt.any
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxOutputProto.IceboxOutput
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.google.common.truth.Truth.assertThat
@@ -51,6 +50,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
+import org.mockito.kotlin.any
 import java.io.File
 
 /**

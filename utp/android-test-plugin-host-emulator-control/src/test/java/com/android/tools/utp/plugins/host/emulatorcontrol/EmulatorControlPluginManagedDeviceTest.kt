@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.host.emulatorcontrol
 
-import com.android.testutils.MockitoKt.any
 import com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlPluginProto
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
@@ -44,6 +43,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.openMocks
+import org.mockito.kotlin.any
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -155,7 +155,7 @@ class EmulatorControlPluginManagedDeviceTest {
         emulatorControlPluginConfig = buildemulatorControlConfig(0)
         config = buildConfig(emulatorControlPluginConfig)
         mockContext = fakeContext(config)
-        //`when`(mockEvents.send(anyString(), any(ByteArray::class.java))).thenReturn(Unit)
+        //`when`(mockEvents.send(anyString(), any<ByteArray>())).thenReturn(Unit)
 
         testResult = TestResult.getDefaultInstance()
         failingTestResult = TestResult.newBuilder().setTestStatus(

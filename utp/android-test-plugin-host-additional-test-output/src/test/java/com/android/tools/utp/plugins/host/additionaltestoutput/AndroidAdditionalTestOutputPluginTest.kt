@@ -16,9 +16,6 @@
 
 package com.android.tools.utp.plugins.host.additionaltestoutput
 
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto.AndroidAdditionalTestOutputConfig
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
@@ -48,6 +45,9 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.quality.Strictness
 import java.io.File
 import java.time.Duration

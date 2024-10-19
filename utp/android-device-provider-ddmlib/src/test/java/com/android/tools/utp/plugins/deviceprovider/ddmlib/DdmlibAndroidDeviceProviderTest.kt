@@ -18,8 +18,6 @@ package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
 import com.android.ddmlib.AvdData
 import com.android.ddmlib.IDevice
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDeviceProviderDdmlibConfigProto.DdmlibAndroidDeviceProviderConfig
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Futures
@@ -40,6 +38,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyLong
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 /**
  * Unit tests for [DdmlibAndroidDeviceProvider].
