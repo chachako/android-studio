@@ -16,8 +16,6 @@
 
 package com.android.compose.screenshot.tasks
 
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.compose.screenshot.services.AnalyticsService
 import org.gradle.api.GradleException
 import org.gradle.api.services.BuildServiceRegistry
@@ -30,7 +28,8 @@ import org.mockito.Answers
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import kotlin.test.assertFailsWith
 
 class PreviewScreenshotValidationTaskTest {
@@ -80,10 +79,8 @@ class PreviewScreenshotValidationTaskTest {
         task.resultsDir.set(resultsDir)
 
         val analyticsService = spy(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
-            override fun getParameters(): Params = mock<Params>(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+            override fun getParameters(): Params = mock<Params>(defaultAnswer = Answers.RETURNS_DEEP_STUBS).apply {
                     `when`(androidGradlePluginVersion.get()).thenReturn("")
             }
         })

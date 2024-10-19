@@ -16,7 +16,6 @@
 
 package com.android.compose.screenshot.tasks
 
-import com.android.testutils.MockitoKt.mock
 import com.android.compose.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.ComposeRenderingResult
 import com.android.tools.render.compose.ComposeScreenshotResult
@@ -29,7 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.mock
 import java.nio.file.Files
 import org.gradle.api.GradleException
 import java.io.File
@@ -75,8 +74,8 @@ class PreviewScreenshotUpdateTaskTest {
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
 
@@ -97,8 +96,8 @@ class PreviewScreenshotUpdateTaskTest {
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
 
@@ -132,8 +131,8 @@ class PreviewScreenshotUpdateTaskTest {
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
         val composeScreenshot = composeRenderingResult[2]
@@ -159,8 +158,8 @@ class PreviewScreenshotUpdateTaskTest {
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
         val composeScreenshot = composeRenderingResult[0]

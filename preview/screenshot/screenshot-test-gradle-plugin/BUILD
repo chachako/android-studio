@@ -47,6 +47,7 @@ maven_repository(
         "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",
         "//tools/base/testutils:tools.testutils",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
+        "@maven//:org.mockito.kotlin.mockito-kotlin_5.4.0",
     ],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",

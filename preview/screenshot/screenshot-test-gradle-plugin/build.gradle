@@ -88,6 +88,7 @@ dependencies {
     testImplementation libs.truth_java8_extension
     testImplementation libs.kotlin_test
     testImplementation libs.mockito_core
+    testImplementation libs.mockito_kotlin
     testImplementation libs.com.android.tools.testutils
     testImplementation project(':base:gradle-api')
     testImplementation project(':base:builder-test-api')

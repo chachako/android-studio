@@ -19,9 +19,6 @@ import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
-import com.android.testutils.MockitoKt.argumentCaptor
-import com.android.testutils.MockitoKt.capture
-import com.android.testutils.MockitoKt.eq
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -36,6 +33,8 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 
 /**
  * Unit tests for [PreviewScreenshotGradlePlugin]
@@ -66,8 +65,8 @@ class PreviewScreenshotGradlePluginTest {
         plugin.apply(mockProject)
         val captor = argumentCaptor<Action<AndroidBasePlugin>>()
         verify(mockProject.plugins, atLeastOnce())
-                .withType(eq(AndroidBasePlugin::class.java), capture(captor))
-        captor.value.execute(AndroidBasePlugin())
+                .withType(eq(AndroidBasePlugin::class.java), captor.capture())
+        captor.firstValue.execute(AndroidBasePlugin())
     }
     @Test
     fun agpVersionCheck() {

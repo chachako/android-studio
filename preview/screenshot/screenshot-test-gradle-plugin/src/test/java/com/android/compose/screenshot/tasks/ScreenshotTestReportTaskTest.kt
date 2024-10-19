@@ -16,7 +16,6 @@
 
 package com.android.compose.screenshot.tasks
 
-import com.android.testutils.MockitoKt.mock
 import com.android.compose.screenshot.services.AnalyticsService
 import com.google.common.io.Files
 import org.gradle.api.services.BuildServiceRegistry
@@ -26,7 +25,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.mock
 import java.io.File
 import com.google.common.truth.Truth.assertThat
 import kotlin.io.path.listDirectoryEntries
@@ -92,8 +91,8 @@ class ScreenshotTestReportTaskTest {
         task.outputDir.set(outputDir)
         task.resultsDir.set(resultsDir)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
 
@@ -116,8 +115,8 @@ class ScreenshotTestReportTaskTest {
         task.outputDir.set(outputDir)
         task.resultsDir.set(resultsDir)
         task.analyticsService.set(object: AnalyticsService() {
-            override val buildServiceRegistry: BuildServiceRegistry = mock(
-                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override val buildServiceRegistry: BuildServiceRegistry =
+                mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
             override fun getParameters(): Params = mock()
         })
 
