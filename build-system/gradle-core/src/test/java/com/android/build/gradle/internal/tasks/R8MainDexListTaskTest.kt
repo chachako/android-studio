@@ -33,7 +33,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 import org.objectweb.asm.Type
 import java.io.File
 import java.nio.file.Path
@@ -51,7 +51,7 @@ class R8MainDexListTaskTest {
     @Before
     fun setUp() {
         outputDir = tmp.newFolder().toPath()
-        outputProguard = Mockito.mock(RegularFile::class.java)
+        outputProguard = mock<RegularFile>()
     }
 
     @Test

@@ -24,18 +24,18 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.file.Directory
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.quality.Strictness
 
 class AnalyticsEnabledOutOperationRequestTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: OutOperationRequest<Directory>
+    private val delegate: OutOperationRequest<Directory> = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledOutOperationRequest<Directory> by lazy {
@@ -55,7 +55,7 @@ class AnalyticsEnabledOutOperationRequestTest {
                 VariantPropertiesMethodType.TO_CREATE_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toCreate(
+        verify(delegate, times(1)).toCreate(
             SingleArtifact.APK,
         )
     }
@@ -73,7 +73,7 @@ class AnalyticsEnabledOutOperationRequestTest {
                 VariantPropertiesMethodType.TO_APPEND_TO_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toAppendTo(
+        verify(delegate, times(1)).toAppendTo(
             MultipleArtifact.NATIVE_DEBUG_METADATA,
         )
     }
@@ -92,7 +92,7 @@ class AnalyticsEnabledOutOperationRequestTest {
                 VariantPropertiesMethodType.SINGLE_TO_LISTEN_TO_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toListenTo(
+        verify(delegate, times(1)).toListenTo(
             SingleArtifact.APK,
         )
     }

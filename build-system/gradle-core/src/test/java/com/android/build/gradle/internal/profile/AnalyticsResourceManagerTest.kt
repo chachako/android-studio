@@ -32,7 +32,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
@@ -47,10 +49,10 @@ class AnalyticsResourceManagerTest {
     private lateinit var profileDir: File
     private lateinit var resourceManager: AnalyticsResourceManager
 
-    private val finishEvent = Mockito.mock(TaskFinishEvent::class.java)
-    private val operationDescriptor = Mockito.mock(TaskOperationDescriptor::class.java)
+    private val finishEvent = mock<TaskFinishEvent>()
+    private val operationDescriptor = mock<TaskOperationDescriptor>()
     private val taskPath = "taskPath"
-    private var finishResult = Mockito.mock(TaskSuccessResult::class.java)
+    private var finishResult = mock<TaskSuccessResult>()
     private val startTime = 1L
     private val endTime = 2L
     private val projectPath = "projectPath"
@@ -63,12 +65,12 @@ class AnalyticsResourceManagerTest {
 
     @Before
     fun setUp() {
-        Mockito.doReturn(operationDescriptor).`when`(finishEvent).descriptor
-        Mockito.doReturn(taskPath).`when`(operationDescriptor).taskPath
-        Mockito.doReturn(finishResult).`when`(finishEvent).result
-        Mockito.doReturn(false).`when`(finishResult).isUpToDate
-        Mockito.doReturn(startTime).`when`(finishResult).startTime
-        Mockito.doReturn(endTime).`when`(finishResult).endTime
+        doReturn(operationDescriptor).whenever(finishEvent).descriptor
+        doReturn(taskPath).whenever(operationDescriptor).taskPath
+        doReturn(finishResult).whenever(finishEvent).result
+        doReturn(false).whenever(finishResult).isUpToDate
+        doReturn(startTime).whenever(finishResult).startTime
+        doReturn(endTime).whenever(finishResult).endTime
 
         profileDir = outputDir.newFolder("profile_proto")
         resourceManager = AnalyticsResourceManager(
@@ -163,17 +165,17 @@ class AnalyticsResourceManagerTest {
 
     @Test
     fun testRecordMultipleTaskExecutionSpans() {
-        val secondFinishEvent = Mockito.mock(TaskFinishEvent::class.java)
-        val secondOperationDescriptor = Mockito.mock(TaskOperationDescriptor::class.java)
-        val secondFinishResult = Mockito.mock(TaskSkippedResult::class.java)
+        val secondFinishEvent = mock<TaskFinishEvent>()
+        val secondOperationDescriptor = mock<TaskOperationDescriptor>()
+        val secondFinishResult = mock<TaskSkippedResult>()
         val secondStartTime = 3L
         val secondEndTime = 4L
 
-        Mockito.doReturn(secondOperationDescriptor).`when`(secondFinishEvent).descriptor
-        Mockito.doReturn(secondTaskPath).`when`(secondOperationDescriptor).taskPath
-        Mockito.doReturn(secondFinishResult).`when`(secondFinishEvent).result
-        Mockito.doReturn(secondStartTime).`when`(secondFinishResult).startTime
-        Mockito.doReturn(secondEndTime).`when`(secondFinishResult).endTime
+        doReturn(secondOperationDescriptor).whenever(secondFinishEvent).descriptor
+        doReturn(secondTaskPath).whenever(secondOperationDescriptor).taskPath
+        doReturn(secondFinishResult).whenever(secondFinishEvent).result
+        doReturn(secondStartTime).whenever(secondFinishResult).startTime
+        doReturn(secondEndTime).whenever(secondFinishResult).endTime
 
         resourceManager.recordTaskExecutionSpan(finishEvent)
         resourceManager.recordTaskExecutionSpan(secondFinishEvent)

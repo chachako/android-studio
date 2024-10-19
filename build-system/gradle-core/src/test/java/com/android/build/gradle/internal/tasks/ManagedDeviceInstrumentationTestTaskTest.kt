@@ -40,9 +40,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.TestOptions
 import com.android.repository.Revision
 import com.android.testutils.MockitoKt
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -66,14 +63,15 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.CALLS_REAL_METHODS
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.Mock
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.util.logging.Level
 
@@ -87,98 +85,80 @@ class ManagedDeviceInstrumentationTestTaskTest {
     private lateinit var codeCoverage: File
     private lateinit var reportsFolder: File
 
-    @Mock
-    lateinit var emulatorDirectory: Directory
-    @Mock
-    lateinit var avdDirectory: Directory
-    @Mock
-    lateinit var resultsDirectory: Directory
-    @Mock
-    lateinit var coverageDirectory: Directory
-    @Mock
-    lateinit var reportsDirectory: Directory
-    @Mock
-    lateinit var utpJvmFile: RegularFile
-
-    @get:Rule
-    val mockitoRule = MockitoJUnit.rule()
+    private val emulatorDirectory: Directory = mock()
+    private val avdDirectory: Directory = mock()
+    private val resultsDirectory: Directory = mock()
+    private val coverageDirectory: Directory = mock()
+    private val reportsDirectory: Directory = mock()
+    private val utpJvmFile: RegularFile = mock()
 
     @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
-    @Mock
-    lateinit var avdService: AvdComponentsBuildService
+    private val avdService: AvdComponentsBuildService = mock()
 
-    @Mock
-    lateinit var sdkService: SdkComponentsBuildService
+    private val sdkService: SdkComponentsBuildService = mock()
 
-    @Mock(answer = RETURNS_DEEP_STUBS, extraInterfaces = [DeviceTestCreationConfig::class])
-    lateinit var creationConfig: TestVariantImpl
+    private val creationConfig: TestVariantImpl = mock(defaultAnswer = RETURNS_DEEP_STUBS, extraInterfaces = arrayOf(DeviceTestCreationConfig::class))
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    lateinit var globalConfig: GlobalTaskCreationConfigImpl
+    private val globalConfig: GlobalTaskCreationConfigImpl = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    lateinit var testData: AbstractTestDataImpl
+    private val testData: AbstractTestDataImpl = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
-    @Mock
-    lateinit var runnerFactory: ManagedDeviceInstrumentationTestTask.TestRunnerFactory
+    private val runnerFactory: ManagedDeviceInstrumentationTestTask.TestRunnerFactory = mock()
 
-    @Mock
-    lateinit var intallOptions: ListProperty<String>
+    private val intallOptions: ListProperty<String> = mock()
 
-    @Mock
-    lateinit var dependencies: ArtifactCollection
+    private val dependencies: ArtifactCollection = mock()
 
-    @Mock
-    lateinit var utpRunProfileManager: UtpRunProfileManager
+    private val utpRunProfileManager: UtpRunProfileManager = mock()
 
     private lateinit var project: Project
     private lateinit var workerExecutor: WorkerExecutor
 
     @Before
     fun setup() {
-        `when`(creationConfig.computeTaskNameInternal(any(), any())).then {
+        whenever(creationConfig.computeTaskNameInternal(any(), any())).then {
             val prefix = it.getArgument<String>(0)
             val suffix = it.getArgument<String>(0)
             "${prefix}AndroidDebugTest$suffix"
         }
-        `when`(creationConfig.name).thenReturn("AndroidDebugTest")
+        whenever(creationConfig.name).thenReturn("AndroidDebugTest")
 
         // Setup Build Services for configuration.
-        val mockGeneralRegistration = mock(BuildServiceRegistration::class.java, RETURNS_DEEP_STUBS)
-        `when`(creationConfig.services.buildServiceRegistry.registrations.getByName(any()))
+        val mockGeneralRegistration = mock<BuildServiceRegistration<*, *>>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(creationConfig.services.buildServiceRegistry.registrations.getByName(any()))
             .thenReturn(mockGeneralRegistration)
 
-        mockVersionedSdkLoader = mock(VersionedSdkLoader::class.java)
-        `when`(mockVersionedSdkLoader.offlineMode).thenReturn(false)
+        mockVersionedSdkLoader = mock<VersionedSdkLoader>()
+        whenever(mockVersionedSdkLoader.offlineMode).thenReturn(false)
 
-        `when`(sdkService.sdkLoader(any(), any())).thenReturn(mockVersionedSdkLoader)
+        whenever(sdkService.sdkLoader(any(), any())).thenReturn(mockVersionedSdkLoader)
 
         emulatorFile = temporaryFolderRule.newFolder("emulator")
-        `when`(emulatorDirectory.asFile).thenReturn(emulatorFile)
-        `when`(avdService.emulatorDirectory).thenReturn(FakeGradleProvider(emulatorDirectory))
+        whenever(emulatorDirectory.asFile).thenReturn(emulatorFile)
+        whenever(avdService.emulatorDirectory).thenReturn(FakeGradleProvider(emulatorDirectory))
 
         utpJvm = temporaryFolderRule.newFile("java")
 
         avdFolder = temporaryFolderRule.newFolder("gradle/avd")
-        `when`(avdDirectory.asFile).thenReturn(avdFolder)
-        `when`(avdService.avdFolder).thenReturn(FakeGradleProvider(avdDirectory))
+        whenever(avdDirectory.asFile).thenReturn(avdFolder)
+        whenever(avdService.avdFolder).thenReturn(FakeGradleProvider(avdDirectory))
 
-        val lockManager = mock(ManagedVirtualDeviceLockManager::class.java)
-        val lock = mock(ManagedVirtualDeviceLockManager.DeviceLock::class.java)
-        `when`(lock.lockCount).thenReturn(1)
-        `when`(lockManager.lock(any())).thenReturn(lock)
-        `when`(avdService.lockManager).thenReturn(lockManager)
+        val lockManager = mock<ManagedVirtualDeviceLockManager>()
+        val lock = mock<ManagedVirtualDeviceLockManager.DeviceLock>()
+        whenever(lock.lockCount).thenReturn(1)
+        whenever(lockManager.lock(any())).thenReturn(lock)
+        whenever(avdService.lockManager).thenReturn(lockManager)
 
         reportsFolder = temporaryFolderRule.newFolder("reports")
-        `when`(reportsDirectory.asFile).thenReturn(reportsFolder)
+        whenever(reportsDirectory.asFile).thenReturn(reportsFolder)
 
         resultsFolder = temporaryFolderRule.newFolder("results")
-        `when`(resultsDirectory.asFile).thenReturn(resultsFolder)
+        whenever(resultsDirectory.asFile).thenReturn(resultsFolder)
 
         codeCoverage = temporaryFolderRule.newFolder("coverage")
-        `when`(coverageDirectory.asFile).thenReturn(codeCoverage)
+        whenever(coverageDirectory.asFile).thenReturn(codeCoverage)
 
         project = ProjectBuilder.builder().withProjectDir(temporaryFolderRule.newFolder()).build()
         workerExecutor = FakeGradleWorkExecutor(project.objects, temporaryFolderRule.newFolder())
@@ -186,101 +166,98 @@ class ManagedDeviceInstrumentationTestTaskTest {
 
     private fun <T> mockEmptyProperty(): Property<T> {
         @Suppress("UNCHECKED_CAST")
-        return mock(Property::class.java) as Property<T>
+        return mock<Property<T>>()
     }
 
     private fun mockDirectoryProperty(directory: Directory): DirectoryProperty {
-        val property = mock(DirectoryProperty::class.java)
-        `when`(property.get()).thenReturn(directory)
+        val property = mock<DirectoryProperty>()
+        whenever(property.get()).thenReturn(directory)
         return property
     }
 
     private fun mockFileProperty(file: RegularFile): RegularFileProperty =
-        mock(RegularFileProperty::class.java).apply {
-            `when`(get()).thenReturn(file)
+        mock<RegularFileProperty>().apply {
+            whenever(get()).thenReturn(file)
         }
 
     private fun basicTaskSetup(): ManagedDeviceInstrumentationTestTask {
 
-        val task = mock(
-            ManagedDeviceInstrumentationTestTask::class.java,
-            CALLS_REAL_METHODS)
+        val task = mock<ManagedDeviceInstrumentationTestTask>(defaultAnswer = CALLS_REAL_METHODS)
 
-        doReturn(FakeGradleProperty(mock(AnalyticsService::class.java)))
-            .`when`(task).analyticsService
-        doReturn(FakeGradleProperty("project_path")).`when`(task).projectPath
+        doReturn(FakeGradleProperty(mock<AnalyticsService>()))
+            .whenever(task).analyticsService
+        doReturn(FakeGradleProperty("project_path")).whenever(task).projectPath
 
-        doReturn("path").`when`(task).path
-        doReturn(mock(TaskOutputsInternal::class.java, RETURNS_DEEP_STUBS))
-            .`when`(task).outputs
-        doReturn(MockitoKt.mock<Logger>()).`when`(task).logger
+        doReturn("path").whenever(task).path
+        doReturn(mock<TaskOutputsInternal>(defaultAnswer = RETURNS_DEEP_STUBS))
+            .whenever(task).outputs
+        doReturn(mock<Logger>()).whenever(task).logger
 
-        doReturn(runnerFactory).`when`(task).testRunnerFactory
-        doReturn(FakeGradleProperty(avdService)).`when`(runnerFactory).avdComponents
-        doReturn(FakeGradleProperty(testData)).`when`(task).testData
-        doReturn(mock(ListProperty::class.java)).`when`(task).installOptions
-        val mockManagedDevice = mock(ManagedVirtualDevice::class.java)
-        doReturn("testDevice1").`when`(mockManagedDevice).getName()
-        doReturn(29).`when`(mockManagedDevice).apiLevel
-        doReturn("aosp").`when`(mockManagedDevice).systemImageSource
-        doReturn(false).`when`(mockManagedDevice).require64Bit
-        doReturn(FakeGradleProperty(mockManagedDevice)).`when`(task).device
-        doReturn(FakeGradleProperty(false)).`when`(task).enableEmulatorDisplay
-        doReturn(FakeGradleProperty(false)).`when`(task).getAdditionalTestOutputEnabled()
-        doReturn(dependencies).`when`(task).dependencies
+        doReturn(runnerFactory).whenever(task).testRunnerFactory
+        doReturn(FakeGradleProperty(avdService)).whenever(runnerFactory).avdComponents
+        doReturn(FakeGradleProperty(testData)).whenever(task).testData
+        doReturn(mock<ListProperty<*>>()).whenever(task).installOptions
+        val mockManagedDevice = mock<ManagedVirtualDevice>()
+        doReturn("testDevice1").whenever(mockManagedDevice).getName()
+        doReturn(29).whenever(mockManagedDevice).apiLevel
+        doReturn("aosp").whenever(mockManagedDevice).systemImageSource
+        doReturn(false).whenever(mockManagedDevice).require64Bit
+        doReturn(FakeGradleProperty(mockManagedDevice)).whenever(task).device
+        doReturn(FakeGradleProperty(false)).whenever(task).enableEmulatorDisplay
+        doReturn(FakeGradleProperty(false)).whenever(task).getAdditionalTestOutputEnabled()
+        doReturn(dependencies).whenever(task).dependencies
 
         doReturn(FakeGradleProperty(true))
-            .`when`(testData).hasTests(any(), any(), any())
+            .whenever(testData).hasTests(any(), any(), any())
         doReturn(FakeGradleProperty("flavor_name"))
-            .`when`(testData).flavorName
+            .whenever(testData).flavorName
 
-        val buddyApks = mock(ConfigurableFileCollection::class.java)
-        `when`(buddyApks.files).thenReturn(setOf())
-        `when`(task.buddyApks).thenReturn(buddyApks)
+        val buddyApks = mock<ConfigurableFileCollection>()
+        whenever(buddyApks.files).thenReturn(setOf())
+        whenever(task.buddyApks).thenReturn(buddyApks)
 
-        `when`(task.installOptions).thenReturn(intallOptions)
-        `when`(intallOptions.getOrElse(any())).thenReturn(listOf())
+        whenever(task.installOptions).thenReturn(intallOptions)
+        whenever(intallOptions.getOrElse(any())).thenReturn(listOf())
 
-        doReturn(mockDirectoryProperty(resultsDirectory)).`when`(task).resultsDir
-        doReturn(mockDirectoryProperty(coverageDirectory)).`when`(task).getCoverageDirectory()
-        doReturn(mockDirectoryProperty(reportsDirectory)).`when`(task).getReportsDir()
+        doReturn(mockDirectoryProperty(resultsDirectory)).whenever(task).resultsDir
+        doReturn(mockDirectoryProperty(coverageDirectory)).whenever(task).getCoverageDirectory()
+        doReturn(mockDirectoryProperty(reportsDirectory)).whenever(task).getReportsDir()
 
-        doReturn(workerExecutor).`when`(task).workerExecutor
+        doReturn(workerExecutor).whenever(task).workerExecutor
 
         return task
     }
 
     @Test
     fun testRunnerFactory_testCreateTestRunner() {
-        val factory = mock(
-            ManagedDeviceInstrumentationTestTask.TestRunnerFactory::class.java,
-            CALLS_REAL_METHODS)
+        val factory = mock<ManagedDeviceInstrumentationTestTask.TestRunnerFactory>(
+            defaultAnswer = CALLS_REAL_METHODS)
 
-        `when`(factory.executionEnum)
+        whenever(factory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
-        `when`(factory.forceCompilation)
+        whenever(factory.forceCompilation)
             .thenReturn(FakeGradleProperty(false))
-        `when`(factory.retentionConfig)
-            .thenReturn(FakeGradleProperty(mock(RetentionConfig::class.java)))
-        `when`(factory.emulatorControlConfig)
-            .thenReturn(FakeGradleProperty(mock(EmulatorControlConfig::class.java)))
-        `when`(factory.compileSdkVersion).thenReturn(FakeGradleProperty("sdkVersion"))
-        `when`(factory.buildToolsRevision)
-            .thenReturn(FakeGradleProperty(mock(Revision::class.java)))
-        `when`(factory.testShardsSize).thenReturn(FakeGradleProperty(null))
-        `when`(factory.sdkBuildService).thenReturn(FakeGradleProperty(sdkService))
-        `when`(factory.avdComponents).thenReturn(FakeGradleProperty(avdService))
-        `when`(factory.utpDependencies).thenReturn(mock(UtpDependencies::class.java))
-        `when`(factory.utpLoggingLevel)
+        whenever(factory.retentionConfig)
+            .thenReturn(FakeGradleProperty(mock<RetentionConfig>()))
+        whenever(factory.emulatorControlConfig)
+            .thenReturn(FakeGradleProperty(mock<EmulatorControlConfig>()))
+        whenever(factory.compileSdkVersion).thenReturn(FakeGradleProperty("sdkVersion"))
+        whenever(factory.buildToolsRevision)
+            .thenReturn(FakeGradleProperty(mock<Revision>()))
+        whenever(factory.testShardsSize).thenReturn(FakeGradleProperty(null))
+        whenever(factory.sdkBuildService).thenReturn(FakeGradleProperty(sdkService))
+        whenever(factory.avdComponents).thenReturn(FakeGradleProperty(avdService))
+        whenever(factory.utpDependencies).thenReturn(mock<UtpDependencies>())
+        whenever(factory.utpLoggingLevel)
             .thenReturn(FakeGradleProperty(Level.OFF))
-        `when`(factory.emulatorGpuFlag).thenReturn(FakeGradleProperty("auto-no-window"))
-        `when`(factory.showEmulatorKernelLoggingFlag).thenReturn(FakeGradleProperty(false))
-        `when`(factory.installApkTimeout).thenReturn(FakeGradleProperty(0))
-        `when`(factory.enableEmulatorDisplay).thenReturn(FakeGradleProperty(false))
-        `when`(factory.getTargetIsSplitApk).thenReturn(FakeGradleProperty(false))
-        `when`(factory.getKeepInstalledApks).thenReturn(FakeGradleProperty(false))
-        doReturn(mockFileProperty(utpJvmFile)).`when`(factory).jvmExecutable
-        doReturn(utpJvm).`when`(utpJvmFile).asFile
+        whenever(factory.emulatorGpuFlag).thenReturn(FakeGradleProperty("auto-no-window"))
+        whenever(factory.showEmulatorKernelLoggingFlag).thenReturn(FakeGradleProperty(false))
+        whenever(factory.installApkTimeout).thenReturn(FakeGradleProperty(0))
+        whenever(factory.enableEmulatorDisplay).thenReturn(FakeGradleProperty(false))
+        whenever(factory.getTargetIsSplitApk).thenReturn(FakeGradleProperty(false))
+        whenever(factory.getKeepInstalledApks).thenReturn(FakeGradleProperty(false))
+        doReturn(mockFileProperty(utpJvmFile)).whenever(factory).jvmExecutable
+        doReturn(utpJvm).whenever(utpJvmFile).asFile
 
         val testRunner = factory.createTestRunner(workerExecutor, null, utpRunProfileManager)
         assertThat(testRunner).isInstanceOf(ManagedDeviceTestRunner::class.java)
@@ -298,25 +275,25 @@ class ManagedDeviceInstrumentationTestTaskTest {
             it.apiLevel = 27
             it.systemImageSource = "aosp"
         }
-        val emulatorControl = mock(EmulatorControl::class.java)
+        val emulatorControl = mock<EmulatorControl>()
         // Needed for cast from api class to internal class
-        val snapshots = mock(EmulatorSnapshots::class.java)
-        `when`(creationConfig.global.androidTestOptions.emulatorSnapshots).thenReturn(snapshots)
-        `when`(creationConfig.global.androidTestOptions.emulatorControl).thenReturn(emulatorControl)
+        val snapshots = mock<EmulatorSnapshots>()
+        whenever(creationConfig.global.androidTestOptions.emulatorSnapshots).thenReturn(snapshots)
+        whenever(creationConfig.global.androidTestOptions.emulatorControl).thenReturn(emulatorControl)
         // Needed to ensure that UTP is active
-        `when`(
+        whenever(
             creationConfig.services
                 .projectOptions[BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM])
             .thenReturn(true)
         // Needed to ensure the ExecutionEnum
-        `when`(creationConfig.global.testOptionExecutionEnum)
+        whenever(creationConfig.global.testOptionExecutionEnum)
             .thenReturn(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR)
-        `when`(creationConfig
+        whenever(creationConfig
                 .services
                 .projectOptions
                 .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)).thenReturn(true)
 
-        `when`(testData.privacySandboxSdkApks)
+        whenever(testData.privacySandboxSdkApks)
                 .thenReturn(project.objects.fileCollection())
         val config = ManagedDeviceInstrumentationTestTask.CreationAction(
             creationConfig,
@@ -329,22 +306,21 @@ class ManagedDeviceInstrumentationTestTaskTest {
             ""
         )
 
-        val task =
-            mock(ManagedDeviceInstrumentationTestTask::class.java, RETURNS_DEEP_STUBS)
+        val task = mock<ManagedDeviceInstrumentationTestTask>(defaultAnswer = RETURNS_DEEP_STUBS)
 
         // We need to create mock properties to verify/capture values in the task as
         // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
         // FakeGradleProperties because they do not support disallowChanges().
 
         val executionEnum = mockEmptyProperty<TestOptions.Execution>()
-        `when`(task.testRunnerFactory.executionEnum).thenReturn(executionEnum)
+        whenever(task.testRunnerFactory.executionEnum).thenReturn(executionEnum)
         val sdkBuildService = mockEmptyProperty<SdkComponentsBuildService>()
-        `when`(task.testRunnerFactory.sdkBuildService).thenReturn(sdkBuildService)
+        whenever(task.testRunnerFactory.sdkBuildService).thenReturn(sdkBuildService)
         val avdComponents = mockEmptyProperty<AvdComponentsBuildService>()
-        `when`(task.testRunnerFactory.avdComponents).thenReturn(avdComponents)
+        whenever(task.testRunnerFactory.avdComponents).thenReturn(avdComponents)
 
         val device = mockEmptyProperty<ManagedVirtualDevice>()
-        `when`(task.device).thenReturn(device)
+        whenever(task.device).thenReturn(device)
 
         config.configure(task)
 
@@ -369,8 +345,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
     fun taskAction_basicTaskPath() {
         val task = basicTaskSetup()
 
-        val testRunner = mock(ManagedDeviceTestRunner::class.java)
-        doReturn(true).`when`(testRunner).runTests(
+        val testRunner = mock<ManagedDeviceTestRunner>()
+        doReturn(true).whenever(testRunner).runTests(
             managedDevice = any(),
             runId = any(),
             outputDirectory = any(),
@@ -386,20 +362,20 @@ class ManagedDeviceInstrumentationTestTaskTest {
         )
         println("TestRunner: $testRunner")
 
-        doReturn(FakeGradleProperty<Int>()).`when`(runnerFactory).testShardsSize
-        doReturn(testRunner).`when`(runnerFactory).createTestRunner(any(), eq(null), any())
-        `when`(runnerFactory.executionEnum)
+        doReturn(FakeGradleProperty<Int>()).whenever(runnerFactory).testShardsSize
+        doReturn(testRunner).whenever(runnerFactory).createTestRunner(any(), eq(null), any())
+        whenever(runnerFactory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
 
         task.doTaskAction()
 
         verify(testRunner).runTests(
             managedDevice = argThat {
-                it.getName() == "testDevice1"
-                        && it is ManagedVirtualDevice
-                        && it.apiLevel == 29
-                        && it.systemImageSource == "aosp"
-                        && it.require64Bit == false
+                getName() == "testDevice1"
+                        && this is ManagedVirtualDevice
+                        && apiLevel == 29
+                        && systemImageSource == "aosp"
+                        && require64Bit == false
             },
             runId = any(),
             outputDirectory = eq(resultsFolder),
@@ -420,8 +396,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
     fun taskAction_testFailuresPath() {
         val task = basicTaskSetup()
 
-        val testRunner = mock(ManagedDeviceTestRunner::class.java)
-        doReturn(false).`when`(testRunner).runTests(
+        val testRunner = mock<ManagedDeviceTestRunner>()
+        doReturn(false).whenever(testRunner).runTests(
             managedDevice = any(),
             runId = any(),
             outputDirectory = any(),
@@ -436,10 +412,10 @@ class ManagedDeviceInstrumentationTestTaskTest {
             dependencyApks = any()
         )
 
-        doReturn(FakeGradleProperty<Int>()).`when`(runnerFactory).testShardsSize
+        doReturn(FakeGradleProperty<Int>()).whenever(runnerFactory).testShardsSize
 
-        doReturn(testRunner).`when`(runnerFactory).createTestRunner(any(), eq(null), any())
-        `when`(runnerFactory.executionEnum)
+        doReturn(testRunner).whenever(runnerFactory).createTestRunner(any(), eq(null), any())
+        whenever(runnerFactory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
 
         task.setIgnoreFailures(false)
@@ -454,11 +430,11 @@ class ManagedDeviceInstrumentationTestTaskTest {
 
         verify(testRunner).runTests(
             managedDevice = argThat {
-                it.getName() == "testDevice1"
-                        && it is ManagedVirtualDevice
-                        && it.apiLevel == 29
-                        && it.systemImageSource == "aosp"
-                        && it.require64Bit == false
+                getName() == "testDevice1"
+                        && this is ManagedVirtualDevice
+                        && apiLevel == 29
+                        && systemImageSource == "aosp"
+                        && require64Bit == false
             },
             runId = any(),
             outputDirectory = eq(resultsFolder),
@@ -479,8 +455,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
     fun taskAction_noTestsPath() {
         val task = basicTaskSetup()
 
-        val testRunner = mock(ManagedDeviceTestRunner::class.java)
-        doReturn(false).`when`(testRunner).runTests(
+        val testRunner = mock<ManagedDeviceTestRunner>()
+        doReturn(false).whenever(testRunner).runTests(
             managedDevice = any(),
             runId = any(),
             outputDirectory = any(),
@@ -495,15 +471,15 @@ class ManagedDeviceInstrumentationTestTaskTest {
             dependencyApks = any()
         )
 
-        doReturn(FakeGradleProperty<Int>()).`when`(runnerFactory).testShardsSize
+        doReturn(FakeGradleProperty<Int>()).whenever(runnerFactory).testShardsSize
 
-        doReturn(testRunner).`when`(runnerFactory).createTestRunner(any(), eq(null), any())
-        `when`(runnerFactory.executionEnum)
+        doReturn(testRunner).whenever(runnerFactory).createTestRunner(any(), eq(null), any())
+        whenever(runnerFactory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
 
         // When the data has no Tests, the testRunner should not be run.
         doReturn(FakeGradleProperty(false))
-            .`when`(testData).hasTests(any(), any(), any())
+            .whenever(testData).hasTests(any(), any(), any())
 
         task.doTaskAction()
 

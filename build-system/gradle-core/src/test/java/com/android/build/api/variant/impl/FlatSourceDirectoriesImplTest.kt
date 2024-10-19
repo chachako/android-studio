@@ -22,10 +22,10 @@ import org.gradle.api.provider.Provider
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import kotlin.test.fail
 
@@ -37,8 +37,7 @@ class FlatSourceDirectoriesImplTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var variantServices: VariantServices
+    private val variantServices: VariantServices = mock()
     @Test
     fun testAddingGeneratedEntryUsingStaticMethod(){
         val testTarget = FlatSourceDirectoriesImpl(
@@ -52,7 +51,7 @@ class FlatSourceDirectoriesImplTest {
             testTarget.addStaticSource(
                 TaskProviderBasedDirectoryEntryImpl(
                     "Generated",
-                    Mockito.mock(Provider::class.java) as Provider<Directory>,
+                    mock<Provider<Directory>>(),
                     isGenerated = true
                 ),
             )

@@ -29,8 +29,8 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoRule
 import org.mockito.junit.MockitoJUnit
 import java.lang.Thread.UncaughtExceptionHandler
@@ -55,15 +55,14 @@ class ManagedVirtualDeviceLockManagerTest {
 
     private val executorService = newCachedThreadPool()
 
-    @Mock
-    private lateinit var androidLocations: AndroidLocationsProvider
+    private val androidLocations: AndroidLocationsProvider = mock()
 
     private lateinit var trackedFile: File
 
     @Before
     fun setup() {
         avdFolder = tmpFolder.newFolder()
-        `when`(androidLocations.gradleAvdLocation).thenReturn(avdFolder.toPath())
+        whenever(androidLocations.gradleAvdLocation).thenReturn(avdFolder.toPath())
 
         trackedFile = avdFolder.resolve("active_gradle_devices")
     }

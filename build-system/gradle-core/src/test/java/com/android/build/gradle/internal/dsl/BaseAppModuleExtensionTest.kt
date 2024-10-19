@@ -36,7 +36,7 @@ import groovy.util.Eval
 import org.gradle.api.NamedDomainObjectContainer
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 
 /**
  * Tests for [BaseAppModuleExtension]
@@ -47,7 +47,7 @@ class BaseAppModuleExtensionTest {
     @Suppress("UNCHECKED_CAST")
     @Before
     fun setUp() {
-        val sdkComponents = Mockito.mock(SdkComponentsBuildService::class.java)
+        val sdkComponents = mock<SdkComponentsBuildService>()
         val dslServices = createDslServices(sdkComponents = FakeGradleProvider(sdkComponents))
         AndroidLocationsBuildService.RegistrationAction(ProjectFactory.project).execute()
         val variantInputModel = LegacyVariantInputManager(
@@ -67,10 +67,10 @@ class BaseAppModuleExtensionTest {
         statsBuilder = GradleBuildProject.newBuilder()
         appExtension = BaseAppModuleExtension(
             dslServices,
-            Mockito.mock(BootClasspathConfig::class.java),
-            Mockito.mock(NamedDomainObjectContainer::class.java) as NamedDomainObjectContainer<BaseVariantOutput>,
+            mock<BootClasspathConfig>(),
+            mock<NamedDomainObjectContainer<BaseVariantOutput>>(),
             variantInputModel.sourceSetManager,
-            Mockito.mock(ExtraModelInfo::class.java),
+            mock<ExtraModelInfo>(),
             extension,
             statsBuilder
         )

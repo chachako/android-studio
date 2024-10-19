@@ -25,8 +25,10 @@ import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,8 +38,7 @@ class AnalyticsEnabledLayeredTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: SourceDirectories.Layered
+    private val delegate: SourceDirectories.Layered = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledLayered by lazy {
@@ -46,9 +47,8 @@ class AnalyticsEnabledLayeredTest {
 
     @Test
     fun getAll() {
-        val provider = Mockito.mock(Provider::class.java)
-        @Suppress("UNCHECKED_CAST")
-        Mockito.`when`(delegate.all).thenReturn(provider as Provider<List<Collection<Directory>>>?)
+        val provider = mock<Provider<List<Collection<Directory>>>>()
+        whenever(delegate.all).thenReturn(provider)
 
         val providerProxy = proxy.all
         Truth.assertThat(providerProxy).isEqualTo(provider)
@@ -56,14 +56,13 @@ class AnalyticsEnabledLayeredTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SOURCES_AND_OVERLAY_DIRECTORIES_GET_ALL_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).all
+        verify(delegate, times(1)).all
     }
 
     @Test
     fun getStatic() {
-        val provider = Mockito.mock(Provider::class.java)
-        @Suppress("UNCHECKED_CAST")
-        Mockito.`when`(delegate.static).thenReturn(provider as Provider<List<Collection<Directory>>>?)
+        val provider = mock<Provider<List<Collection<Directory>>>>()
+        whenever(delegate.static).thenReturn(provider)
 
         val providerProxy = proxy.static
         Truth.assertThat(providerProxy).isEqualTo(provider)
@@ -71,6 +70,6 @@ class AnalyticsEnabledLayeredTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SOURCES_AND_OVERLAY_DIRECTORIES_GET_STATIC_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).static
+        verify(delegate, times(1)).static
     }
 }

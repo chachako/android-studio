@@ -25,9 +25,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import java.io.File
 
 class VersionCheckPluginTest {
@@ -46,10 +46,10 @@ class VersionCheckPluginTest {
 
     @Test
     fun `path in error message is correct`() {
-        val mockGradle = mock(GradleInternal::class.java)
-        `when`(mockGradle.gradleVersion).thenReturn("0.0.0")
+        val mockGradle = mock<GradleInternal>()
+        whenever(mockGradle.gradleVersion).thenReturn("0.0.0")
         val spyProject = spy(project)
-        `when`(spyProject.gradle).thenReturn(mockGradle)
+        whenever(spyProject.gradle).thenReturn(mockGradle)
 
         try {
             plugin.doApply(spyProject)

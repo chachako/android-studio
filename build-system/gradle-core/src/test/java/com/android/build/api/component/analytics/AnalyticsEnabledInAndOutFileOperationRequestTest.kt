@@ -24,21 +24,20 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class AnalyticsEnabledInAndOutFileOperationRequestTest {
 
-    @Mock
-    lateinit var delegate: InAndOutFileOperationRequest
+    private val delegate: InAndOutFileOperationRequest = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private lateinit var proxy: AnalyticsEnabledInAndOutFileOperationRequest
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         proxy = AnalyticsEnabledInAndOutFileOperationRequest(delegate, stats)
     }
 
@@ -50,7 +49,7 @@ class AnalyticsEnabledInAndOutFileOperationRequestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TO_TRANSFORM_FILE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .toTransform(SingleArtifact.MERGED_MANIFEST)
     }
 }

@@ -35,8 +35,10 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -47,8 +49,7 @@ class AnalyticsEnabledAndroidTestTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: AndroidTest
+    private val delegate: AndroidTest = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledAndroidTest by lazy {
@@ -57,21 +58,21 @@ class AnalyticsEnabledAndroidTestTest {
 
     @Test
     fun getApplicationId() {
-        Mockito.`when`(delegate.applicationId).thenReturn(FakeGradleProperty("myApp"))
+        whenever(delegate.applicationId).thenReturn(FakeGradleProperty("myApp"))
         Truth.assertThat(proxy.applicationId.get()).isEqualTo("myApp")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.APPLICATION_ID_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .applicationId
     }
 
     @Test
     fun getAndroidResources() {
-        val androidResources = Mockito.mock(AndroidResources::class.java)
-        Mockito.`when`(delegate.androidResources).thenReturn(androidResources)
+        val androidResources = mock<AndroidResources>()
+        whenever(delegate.androidResources).thenReturn(androidResources)
         val proxiedAndroidResources = proxy.androidResources
         Truth.assertThat(proxiedAndroidResources).isInstanceOf(
             AnalyticsEnabledAndroidResources::class.java
@@ -83,59 +84,59 @@ class AnalyticsEnabledAndroidTestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.AAPT_OPTIONS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .androidResources
     }
 
     @Test
     fun instrumentationRunner() {
-        Mockito.`when`(delegate.instrumentationRunner).thenReturn(FakeGradleProperty("my_runner"))
+        whenever(delegate.instrumentationRunner).thenReturn(FakeGradleProperty("my_runner"))
         Truth.assertThat(proxy.instrumentationRunner.get()).isEqualTo("my_runner")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.INSTRUMENTATION_RUNNER_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .instrumentationRunner
     }
 
     @Test
     fun handleProfiling() {
-        Mockito.`when`(delegate.handleProfiling).thenReturn(FakeGradleProperty(true))
+        whenever(delegate.handleProfiling).thenReturn(FakeGradleProperty(true))
         Truth.assertThat(proxy.handleProfiling.get()).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.HANDLE_PROFILING_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .handleProfiling
     }
 
     @Test
     fun functionalTest() {
-        Mockito.`when`(delegate.functionalTest).thenReturn(FakeGradleProperty(true))
+        whenever(delegate.functionalTest).thenReturn(FakeGradleProperty(true))
         Truth.assertThat(proxy.functionalTest.get()).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.FUNCTIONAL_TEST_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .functionalTest
     }
 
     @Test
     fun testLabel() {
-        Mockito.`when`(delegate.testLabel).thenReturn(FakeGradleProperty("some_label"))
+        whenever(delegate.testLabel).thenReturn(FakeGradleProperty("some_label"))
         Truth.assertThat(proxy.testLabel.get()).isEqualTo("some_label")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TEST_LABEL_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .testLabel
     }
 
@@ -143,16 +144,15 @@ class AnalyticsEnabledAndroidTestTest {
     fun getBuildConfigFields() {
         @Suppress("UNCHECKED_CAST")
         val map: MapProperty<String, BuildConfigField<out Serializable>> =
-            Mockito.mock(MapProperty::class.java)
-                    as MapProperty<String, BuildConfigField<out Serializable>>
-        Mockito.`when`(delegate.buildConfigFields).thenReturn(map)
+            mock<MapProperty<String, BuildConfigField<out Serializable>>>()
+        whenever(delegate.buildConfigFields).thenReturn(map)
         Truth.assertThat(proxy.buildConfigFields).isEqualTo(map)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.BUILD_CONFIG_FIELDS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .buildConfigFields
     }
 
@@ -161,16 +161,15 @@ class AnalyticsEnabledAndroidTestTest {
     fun getResValues() {
         @Suppress("UNCHECKED_CAST")
         val map: MapProperty<ResValue.Key, ResValue> =
-            Mockito.mock(MapProperty::class.java)
-                    as MapProperty<ResValue.Key, ResValue>
-        Mockito.`when`(delegate.resValues).thenReturn(map)
+            mock<MapProperty<ResValue.Key, ResValue>>()
+        whenever(delegate.resValues).thenReturn(map)
         Truth.assertThat(proxy.resValues).isEqualTo(map)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.RES_VALUE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .resValues
     }
 
@@ -178,38 +177,37 @@ class AnalyticsEnabledAndroidTestTest {
     fun getManifestPlaceholders() {
         @Suppress("UNCHECKED_CAST")
         val map: MapProperty<String, String> =
-            Mockito.mock(MapProperty::class.java)
-                    as MapProperty<String, String>
-        Mockito.`when`(delegate.manifestPlaceholders).thenReturn(map)
+            mock<MapProperty<String, String>>()
+        whenever(delegate.manifestPlaceholders).thenReturn(map)
         Truth.assertThat(proxy.manifestPlaceholders).isEqualTo(map)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.MANIFEST_PLACEHOLDERS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .manifestPlaceholders
     }
 
     @Test
     fun getSigningConfig() {
-        val signingConfig = Mockito.mock(SigningConfig::class.java)
-        Mockito.`when`(delegate.signingConfig).thenReturn(signingConfig)
+        val signingConfig = mock<SigningConfig>()
+        whenever(delegate.signingConfig).thenReturn(signingConfig)
         Truth.assertThat(proxy.signingConfig).isEqualTo(signingConfig)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SIGNING_CONFIG_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .signingConfig
     }
 
 
     @Test
     fun getRenderscript() {
-        val renderscript = Mockito.mock(Renderscript::class.java)
-        Mockito.`when`(delegate.renderscript).thenReturn(renderscript)
+        val renderscript = mock<Renderscript>()
+        whenever(delegate.renderscript).thenReturn(renderscript)
         // simulate a user configuring packaging options for jniLibs and resources
         proxy.renderscript
 
@@ -217,17 +215,17 @@ class AnalyticsEnabledAndroidTestTest {
         Truth.assertThat(
                 stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.RENDERSCRIPT_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).renderscript
+        verify(delegate, times(1)).renderscript
     }
 
     @Test
     fun getApkPackaging() {
-        val apkPackaging = Mockito.mock(ApkPackaging::class.java)
-        val jniLibsApkPackagingOptions = Mockito.mock(JniLibsApkPackaging::class.java)
-        val resourcesPackagingOptions = Mockito.mock(ResourcesPackaging::class.java)
-        Mockito.`when`(apkPackaging.jniLibs).thenReturn(jniLibsApkPackagingOptions)
-        Mockito.`when`(apkPackaging.resources).thenReturn(resourcesPackagingOptions)
-        Mockito.`when`(delegate.packaging).thenReturn(apkPackaging)
+        val apkPackaging = mock<ApkPackaging>()
+        val jniLibsApkPackagingOptions = mock<JniLibsApkPackaging>()
+        val resourcesPackagingOptions = mock<ResourcesPackaging>()
+        whenever(apkPackaging.jniLibs).thenReturn(jniLibsApkPackagingOptions)
+        whenever(apkPackaging.resources).thenReturn(resourcesPackagingOptions)
+        whenever(delegate.packaging).thenReturn(apkPackaging)
         // simulate a user configuring packaging options for jniLibs and resources
         proxy.packaging.jniLibs
         proxy.packaging.resources
@@ -243,14 +241,14 @@ class AnalyticsEnabledAndroidTestTest {
                         VariantPropertiesMethodType.RESOURCES_PACKAGING_OPTIONS_VALUE
                 )
         )
-        Mockito.verify(delegate, Mockito.times(1)).packaging
+        verify(delegate, times(1)).packaging
     }
 
     @Test
     fun getProguardFiles() {
         @Suppress("UNCHECKED_CAST")
-        val proguardFiles = Mockito.mock(ListProperty::class.java) as ListProperty<RegularFile>
-        Mockito.`when`(delegate.proguardFiles).thenReturn(proguardFiles)
+        val proguardFiles = mock<ListProperty<RegularFile>>()
+        whenever(delegate.proguardFiles).thenReturn(proguardFiles)
 
         Truth.assertThat(proxy.proguardFiles).isEqualTo(proguardFiles)
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
@@ -261,13 +259,13 @@ class AnalyticsEnabledAndroidTestTest {
 
     @Test
     fun isCodeCoverageEnabled() {
-        Mockito.`when`(delegate.codeCoverageEnabled).thenReturn(true)
+        whenever(delegate.codeCoverageEnabled).thenReturn(true)
         Truth.assertThat(proxy.codeCoverageEnabled).isTrue()
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.DEVICE_TEST_CODE_COVERAGE_ENABLED_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).codeCoverageEnabled
+        verify(delegate, times(1)).codeCoverageEnabled
     }
 }

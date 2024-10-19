@@ -23,8 +23,10 @@ import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -33,8 +35,7 @@ class AnalyticsEnabledCodeTransparencyTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: CodeTransparency
+    private val delegate: CodeTransparency = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledCodeTransparency by lazy {
@@ -43,14 +44,14 @@ class AnalyticsEnabledCodeTransparencyTest {
 
     @Test
     fun testSetSigningConfig() {
-        val signingConfig = Mockito.mock(SigningConfig::class.java)
+        val signingConfig = mock<SigningConfig>()
         proxy.setSigningConfig(signingConfig)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SIGNING_CONFIG_SET_CONFIG_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .setSigningConfig(signingConfig)
     }
 }

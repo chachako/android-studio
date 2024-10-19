@@ -31,9 +31,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -56,12 +55,11 @@ class BundleReportDependenciesTaskTest {
     lateinit var featureDepsFiles : Set<File>
     lateinit var baseDepsFiles : Set<File>
 
-    @Mock private lateinit var featureDeps: FileCollection
+    private val featureDeps: FileCollection = mock()
 
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         dependenciesFile = temporaryFolder.newFile()
         baseDepsFile = temporaryFolder.newFile()
         feature1File = temporaryFolder.newFile()
@@ -69,7 +67,7 @@ class BundleReportDependenciesTaskTest {
         featureDepsFiles = ImmutableSet.of(feature1File, feature2File)
         baseDepsFiles = ImmutableSet.of(baseDepsFile)
 
-        Mockito.`when`(featureDeps.files).thenReturn(featureDepsFiles)
+        whenever(featureDeps.files).thenReturn(featureDepsFiles)
 
         val testDir = temporaryFolder.newFolder()
         project = ProjectBuilder.builder().withProjectDir(testDir).build()

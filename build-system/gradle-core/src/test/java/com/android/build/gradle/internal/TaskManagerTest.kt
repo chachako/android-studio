@@ -14,10 +14,9 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
 import org.mockito.quality.Strictness
 import java.io.File
 
@@ -29,8 +28,7 @@ class TaskManagerTest {
 
     private val project = ProjectBuilder.builder().build()
 
-    @Mock
-    lateinit var globalTaskCreationConfig: GlobalTaskCreationConfig
+    private val globalTaskCreationConfig: GlobalTaskCreationConfig = mock()
 
     class TestTaskManager(project: Project,
         globalConfig: GlobalTaskCreationConfig

@@ -22,8 +22,9 @@ import com.android.build.gradle.internal.fixtures.FakeFileContents
 import com.android.utils.FileUtils.join
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
-import org.mockito.Mockito
-import org.mockito.Mockito.doReturn
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 const val DIFFERENT_MOCK_CMAKE_SETTINGS_CONFIGURATION = "different-mock-cmake-settings-configuration"
 const val NO_ABI_IN_BUILD_ROOT_MOCK_CMAKE_SETTINGS_CONFIGURATION = "no-abi-in-build-root-mock-cmake-settings-configuration"
@@ -44,12 +45,12 @@ class CmakeSettingsMock : BasicModuleModelMock() {
     val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, "x86") }
 
     init {
-//        doReturn(externalNativeCmakeOptions).`when`(coreExternalNativeBuildOptions).externalNativeCmakeOptions
-        doReturn(makeSetProperty(setOf())).`when`(variantExternalNativeBuild).abiFilters
-        doReturn(makeListProperty(listOf("-DCMAKE_ARG=1"))).`when`(variantExternalNativeBuild).arguments
-        doReturn(makeListProperty(listOf("-DC_FLAG_DEFINED"))).`when`(variantExternalNativeBuild).cFlags
-        doReturn(makeListProperty(listOf("-DCPP_FLAG_DEFINED"))).`when`(variantExternalNativeBuild).cppFlags
-        doReturn(makeSetProperty(setOf<String>())).`when`(variantExternalNativeBuild).targets
+//        doReturn(externalNativeCmakeOptions).whenever(coreExternalNativeBuildOptions).externalNativeCmakeOptions
+        doReturn(makeSetProperty(setOf())).whenever(variantExternalNativeBuild).abiFilters
+        doReturn(makeListProperty(listOf("-DCMAKE_ARG=1"))).whenever(variantExternalNativeBuild).arguments
+        doReturn(makeListProperty(listOf("-DC_FLAG_DEFINED"))).whenever(variantExternalNativeBuild).cFlags
+        doReturn(makeListProperty(listOf("-DCPP_FLAG_DEFINED"))).whenever(variantExternalNativeBuild).cppFlags
+        doReturn(makeSetProperty(setOf<String>())).whenever(variantExternalNativeBuild).targets
         val makefile = join(allPlatformsProjectRootDir, "CMakeLists.txt")
         val cmakeSettingsJson = join(allPlatformsProjectRootDir, "CMakeSettings.json")
         cmakeSettingsJson.parentFile.mkdirs()
@@ -91,18 +92,18 @@ class CmakeSettingsMock : BasicModuleModelMock() {
                 } ]
             }""".trimIndent())
         fileContents = FakeFileContents(cmakeSettingsJson)
-        doReturn(makefile).`when`(cmake).path
+        doReturn(makefile).whenever(cmake).path
         projectRootDir.mkdirs()
         makefile.writeText("# written by ${BasicCmakeMock::class}")
     }
 
     private fun makeListProperty(values: List<String>): ListProperty<*> =
-            Mockito.mock(ListProperty::class.java).also {
-                doReturn(values).`when`(it).get()
+            mock<ListProperty<*>>().also {
+                doReturn(values).whenever(it).get()
             }
 
     private fun makeSetProperty(values: Set<String>): SetProperty<*> =
-            Mockito.mock(SetProperty::class.java).also {
-                doReturn(values).`when`(it).get()
+            mock<SetProperty<*>>().also {
+                doReturn(values).whenever(it).get()
             }
 }

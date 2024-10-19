@@ -24,8 +24,8 @@ import com.android.builder.model.TestOptions
 import com.android.builder.testing.api.DeviceConnector
 import com.android.ide.common.process.ProcessExecutor
 import com.android.ide.common.workers.ExecutorServiceAdapter
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
@@ -40,12 +40,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
-import org.mockito.ArgumentMatchers.anyBoolean
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyIterable
-import org.mockito.ArgumentMatchers.nullable
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -57,32 +55,29 @@ import kotlin.io.path.Path
  * Unit tests for [UtpTestRunner].
  */
 class UtpTestRunnerTest {
-    @get:Rule var mockitoJUnitRule: MockitoRule =
-            MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
+    @get:Rule
+    val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
     @get:Rule var temporaryFolderRule = TemporaryFolder()
 
-    @Mock lateinit var mockProcessExecutor: ProcessExecutor
-    @Mock lateinit var mockWorkerExecutor: WorkerExecutor
-    @Mock lateinit var mockWorkQueue: WorkQueue
-    @Mock lateinit var mockExecutorServiceAdapter: ExecutorServiceAdapter
-    @Mock lateinit var mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
-    @Mock lateinit var mockAdbHelper: AdbHelper
-    @Mock lateinit var mockTestData: StaticTestData
-    @Mock lateinit var mockAppApk: File
-    @Mock lateinit var mockPrivacySandboxSdkApk: File
-    @Mock lateinit var mockHelperApk: File
-    @Mock lateinit var mockDevice: DeviceConnector
-    @Mock lateinit var mockLogger: ILogger
-    @Mock lateinit var mockUtpConfigFactory: UtpConfigFactory
-    @Mock lateinit var mockemulatorControlConfig: EmulatorControlConfig
-    @Mock lateinit var mockRetentionConfig: RetentionConfig
-    @Mock lateinit var mockTestResultListener: UtpTestResultListener
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockUtpRunProfileManager: UtpRunProfileManager
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpDependencies: UtpDependencies
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata
+    private val mockProcessExecutor: ProcessExecutor = mock()
+    private val mockWorkerExecutor: WorkerExecutor = mock()
+    private val mockWorkQueue: WorkQueue = mock()
+    private val mockExecutorServiceAdapter: ExecutorServiceAdapter = mock()
+    private val mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader = mock()
+    private val mockAdbHelper: AdbHelper = mock()
+    private val mockTestData: StaticTestData = mock()
+    private val mockAppApk: File = mock()
+    private val mockPrivacySandboxSdkApk: File = mock()
+    private val mockHelperApk: File = mock()
+    private val mockDevice: DeviceConnector = mock()
+    private val mockLogger: ILogger = mock()
+    private val mockUtpConfigFactory: UtpConfigFactory = mock()
+    private val mockemulatorControlConfig: EmulatorControlConfig = mock()
+    private val mockRetentionConfig: RetentionConfig = mock()
+    private val mockTestResultListener: UtpTestResultListener = mock()
+    private val mockUtpRunProfileManager: UtpRunProfileManager = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val mockUtpDependencies: UtpDependencies = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
 
     private lateinit var resultsDirectory: File
     private lateinit var jvmExecutable: File
@@ -92,14 +87,14 @@ class UtpTestRunnerTest {
     fun setupMocks() {
         jvmExecutable = temporaryFolderRule.newFile()
 
-        `when`(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
-        `when`(mockDevice.apiLevel).thenReturn(28)
-        `when`(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
-        `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
+        whenever(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
+        whenever(mockDevice.apiLevel).thenReturn(28)
+        whenever(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
+        whenever(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
 
         val adbHelperProvider: Provider<AdbHelper> = mock()
-        `when`(adbHelperProvider.get()).thenReturn(mockAdbHelper)
-        `when`(mockVersionedSdkLoader.adbHelper).thenReturn(adbHelperProvider)
+        whenever(adbHelperProvider.get()).thenReturn(mockAdbHelper)
+        whenever(mockVersionedSdkLoader.adbHelper).thenReturn(adbHelperProvider)
 
 
     }
@@ -107,14 +102,8 @@ class UtpTestRunnerTest {
     private fun runUtp(result: UtpTestRunResult, expectedToRunTests: Boolean = true): Boolean {
         if (expectedToRunTests) {
             // need to set up additional stubbing here, b/c of strict stubbing mode.
-            `when`(mockDevice.name).thenReturn("mockDeviceName")
-            `when`(mockUtpConfigFactory.createRunnerConfigProtoForLocalDevice(
-                any(),
-                any(),
-                any(),
-                anyIterable(),
-                anyIterable(),
-                anyBoolean(),
+            whenever(mockDevice.name).thenReturn("mockDeviceName")
+            whenever(mockUtpConfigFactory.createRunnerConfigProtoForLocalDevice(
                 any(),
                 any(),
                 any(),
@@ -122,21 +111,27 @@ class UtpTestRunnerTest {
                 any(),
                 any(),
                 any(),
-                anyBoolean(),
-                any(),
-                nullable(File::class.java),
-                anyInt(),
                 any(),
                 any(),
                 any(),
-                nullable(Int::class.java),
                 any(),
                 any(),
-                nullable(ShardConfig::class.java),
+                any(),
+                any(),
+                any(),
+                anyOrNull<File>(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull<Int>(),
+                any(),
+                any(),
+                anyOrNull<ShardConfig>(),
             )).then {
                 RunnerConfigProto.RunnerConfig.getDefaultInstance()
             }
-            `when`(mockUtpConfigFactory.createServerConfigProto())
+            whenever(mockUtpConfigFactory.createServerConfigProto())
                 .thenReturn(ServerConfig.getDefaultInstance())
         }
 
@@ -185,7 +180,7 @@ class UtpTestRunnerTest {
 
     @Test
     fun runUtpAndPassed() {
-        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+        whenever(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
 
         val result = runUtp(UtpTestRunResult(testPassed = true,
                                              TestSuiteResult.getDefaultInstance()))
@@ -202,7 +197,7 @@ class UtpTestRunnerTest {
 
     @Test
     fun runUtpAndFailed() {
-        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+        whenever(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
 
         val result = runUtp(UtpTestRunResult(testPassed = false, null))
 
@@ -217,9 +212,9 @@ class UtpTestRunnerTest {
 
     @Test
     fun runTestsFiltersManagedDevices() {
-        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+        whenever(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
         // Ensure all devices are determined to be managed devices.
-        `when`(mockAdbHelper.isManagedDevice(any(), any())).thenReturn(true)
+        whenever(mockAdbHelper.isManagedDevice(any(), any())).thenReturn(true)
 
         val result = runUtp(UtpTestRunResult(testPassed = true,
             TestSuiteResult.getDefaultInstance()), expectedToRunTests = false)

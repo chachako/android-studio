@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 
 class RetentionConfigTest {
     private lateinit var dslServices: DslServices
@@ -45,7 +45,7 @@ class RetentionConfigTest {
 
     @Before
     fun setUp() {
-        val sdkComponents = Mockito.mock(SdkComponentsBuildService::class.java)
+        val sdkComponents = mock<SdkComponentsBuildService>()
         dslServices = createDslServices(sdkComponents = FakeGradleProvider(sdkComponents))
         emulatorSnapshots = EmulatorSnapshots(dslServices)
     }

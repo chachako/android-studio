@@ -23,11 +23,11 @@ import org.gradle.api.logging.Logger
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.util.Timer
@@ -37,14 +37,9 @@ class TestResultProgressTrackerTest  {
     private var capturedDelay: Long? = null
     private var capturedAction: (() -> Unit)? = null
 
-    @get:Rule
-    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+    private val mockTimer: Timer = mock()
 
-    @Mock
-    lateinit var mockTimer: Timer
-
-    @Mock
-    lateinit var mockLogger: Logger
+    private val mockLogger: Logger = mock()
 
     @Before
     fun setup() {

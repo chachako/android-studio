@@ -28,7 +28,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.MockitoAnnotations
 import java.io.File
 import java.io.IOException
 
@@ -44,7 +43,6 @@ class ProcessManifestForInstantAppTaskTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         val taskProvider = project.tasks.register(
             "testManifestForInstantApp", ProcessManifestForInstantAppTask::class.java)

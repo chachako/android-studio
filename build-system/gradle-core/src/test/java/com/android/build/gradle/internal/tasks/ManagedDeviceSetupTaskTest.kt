@@ -25,16 +25,14 @@ import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 
 /**
@@ -48,11 +46,10 @@ class ManagedDeviceSetupTaskTest {
         : DeviceSetupConfigureAction<TestDevice, TestDeviceSetupInput>
     interface TestDeviceSetupTaskAction : DeviceSetupTaskAction<TestDeviceSetupInput>
 
-    @get:Rule val mockitoRule = MockitoJUnit.rule()
     @get:Rule val tempFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS) lateinit var creationConfig: GlobalTaskCreationConfig
-    @Mock lateinit var device: TestDevice
+    private val creationConfig: GlobalTaskCreationConfig = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    private val device: TestDevice = mock()
 
     @Test
     fun configureTask() {
@@ -64,12 +61,12 @@ class ManagedDeviceSetupTaskTest {
             creationConfig,
         )
         val mockTask =
-            mock<ManagedDeviceSetupTask>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
+            mock<ManagedDeviceSetupTask>(defaultAnswer = RETURNS_DEEP_STUBS)
         val mockConfigAction = mock<TestDeviceSetupConfigAction>()
-        `when`(mockTask.objectFactory.newInstance(eq(TestDeviceSetupConfigAction::class.java)))
+        whenever(mockTask.objectFactory.newInstance(eq(TestDeviceSetupConfigAction::class.java)))
             .thenReturn(mockConfigAction)
         val mockSetupInput = mock<TestDeviceSetupInput>()
-        `when`(mockConfigAction.configureTaskInput(eq(device))).thenReturn(mockSetupInput)
+        whenever(mockConfigAction.configureTaskInput(eq(device))).thenReturn(mockSetupInput)
 
         creationAction.configure(mockTask)
 
@@ -84,19 +81,18 @@ class ManagedDeviceSetupTaskTest {
     }
 
     private fun createTask(): ManagedDeviceSetupTask {
-        return mock<ManagedDeviceSetupTask>(
-            withSettings().defaultAnswer(RETURNS_DEEP_STUBS)).apply {
-            `when`(analyticsService.get()).thenReturn(mock())
-            `when`(projectPath).thenReturn(FakeGradleProperty(":app"))
-            `when`(path).thenReturn(":app:myDeviceSetup")
-            `when`(setupAction.get()).thenReturn(TestDeviceSetupTaskAction::class.java)
+        return mock<ManagedDeviceSetupTask>(defaultAnswer = RETURNS_DEEP_STUBS).apply {
+            whenever(analyticsService.get()).thenReturn(mock())
+            whenever(projectPath).thenReturn(FakeGradleProperty(":app"))
+            whenever(path).thenReturn(":app:myDeviceSetup")
+            whenever(setupAction.get()).thenReturn(TestDeviceSetupTaskAction::class.java)
             val mockSetupTaskAction = mock<TestDeviceSetupTaskAction>()
-            `when`(objectFactory.newInstance(eq(TestDeviceSetupTaskAction::class.java)))
+            whenever(objectFactory.newInstance(eq(TestDeviceSetupTaskAction::class.java)))
                 .thenReturn(mockSetupTaskAction)
-            `when`(deviceInput.get()).thenReturn(mock<TestDeviceSetupInput>())
+            whenever(deviceInput.get()).thenReturn(mock<TestDeviceSetupInput>())
 
             // We call real method for testing.
-            `when`(doTaskAction()).thenCallRealMethod()
+            whenever(doTaskAction()).thenCallRealMethod()
         }
     }
 }

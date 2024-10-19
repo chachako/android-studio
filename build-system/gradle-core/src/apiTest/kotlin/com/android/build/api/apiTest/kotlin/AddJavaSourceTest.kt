@@ -181,7 +181,7 @@ where source files will be generated and added to the compilation task.
                     super.toString().replace(System.getProperty("line.separator"), "\n")
             }
             val ps = PrintStream(byteArrayOutputStream)
-            val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+            val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
             apkAnalyzer.dexCode(apk, "com.foo.Bar", null, null, null)
             Truth.assertThat(byteArrayOutputStream.toString()).contains(".class public Lcom/foo/Bar;")
 
@@ -319,7 +319,7 @@ to use the [SourceDirectories.srcDir] family of methods
                     super.toString().replace(System.getProperty("line.separator"), "\n")
             }
             val ps = PrintStream(byteArrayOutputStream)
-            val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+            val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
             apkAnalyzer.dexCode(apk, "com.foo.Bar", null, null, null)
             Truth.assertThat(byteArrayOutputStream.toString()).contains(".class public Lcom/foo/Bar;")
 

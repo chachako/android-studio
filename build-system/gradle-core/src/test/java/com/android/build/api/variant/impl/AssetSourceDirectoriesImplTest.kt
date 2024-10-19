@@ -30,10 +30,10 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
 internal class AssetSourceDirectoriesImplTest {
@@ -44,8 +44,7 @@ internal class AssetSourceDirectoriesImplTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var variantServices: VariantServices
+    private val variantServices: VariantServices = mock()
 
     @Captor
     lateinit var callableCaptor: ArgumentCaptor<Callable<*>>
@@ -60,9 +59,9 @@ internal class AssetSourceDirectoriesImplTest {
             .withProjectDir(temporaryFolder.newFolder())
             .build()
 
-        Mockito.`when`(variantServices.newListPropertyForInternalUse(DirectoryEntries::class.java))
+        whenever(variantServices.newListPropertyForInternalUse(DirectoryEntries::class.java))
             .thenAnswer { project.objects.listProperty(DirectoryEntries::class.java) }
-        Mockito.`when`(variantServices.newListPropertyForInternalUse(Collection::class.java))
+        whenever(variantServices.newListPropertyForInternalUse(Collection::class.java))
             .thenAnswer { project.objects.listProperty(Collection::class.java) }
 
     }
@@ -81,14 +80,14 @@ internal class AssetSourceDirectoriesImplTest {
 
     @Test
     fun asAssetSetTest() {
-        val projectInfo = Mockito.mock(ProjectInfo::class.java)
-        Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
-        Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
+        val projectInfo = mock<ProjectInfo>()
+        whenever(variantServices.projectInfo).thenReturn(projectInfo)
+        whenever(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
 
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer {
+        whenever(variantServices.provider(capture(callableCaptor))).thenAnswer {
             project.provider(callableCaptor.value)
         }
-        Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java)).also {
+        whenever(variantServices.newListPropertyForInternalUse(Directory::class.java)).also {
             var stub = it
             repeat(5) {
                 stub = stub.thenReturn(project.objects.listProperty(Directory::class.java))

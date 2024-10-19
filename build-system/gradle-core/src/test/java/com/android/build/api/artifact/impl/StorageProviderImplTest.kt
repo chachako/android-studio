@@ -29,27 +29,25 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /**
  * Unit Tests for [StorageProviderImpl]
  */
 class StorageProviderImplTest {
 
-    @Mock lateinit var objects: ObjectFactory
-    @Mock lateinit var stringProperty: Property<String>
-    @Mock lateinit var fileProperty: RegularFileProperty
-    @Mock lateinit var filesProperty: ListProperty<RegularFile>
-    @Mock lateinit var directoryProperty: DirectoryProperty
-    @Mock lateinit var directoriesProperty: ListProperty<Directory>
+    private val objects: ObjectFactory = mock()
+    private val stringProperty: Property<String> = mock()
+    private val fileProperty: RegularFileProperty = mock()
+    private val filesProperty: ListProperty<RegularFile> = mock()
+    private val directoryProperty: DirectoryProperty = mock()
+    private val directoriesProperty: ListProperty<Directory> = mock()
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-    }
+        }
 
     sealed class SingleTestTypes<T: FileSystemLocation>(
         kind: ArtifactKind<T>
@@ -67,21 +65,21 @@ class StorageProviderImplTest {
     @Test
     fun singleFileAllocationTest() {
         addInitMocks()
-        `when`(objects.fileProperty()).thenReturn(fileProperty)
+        whenever(objects.fileProperty()).thenReturn(fileProperty)
         val storage = StorageProviderImpl().getStorage(ArtifactKind.FILE)
         val artifact = storage.getArtifact(objects, SingleTestTypes.SINGLE_FILE)
         Truth.assertThat(artifact.getCurrent().isPresent).isFalse()
     }
 
     private fun addInitMocks(){
-        `when`(objects.property(String::class.java)).thenReturn(stringProperty)
-        `when`(objects.directoryProperty()).thenReturn(directoryProperty)
+        whenever(objects.property(String::class.java)).thenReturn(stringProperty)
+        whenever(objects.directoryProperty()).thenReturn(directoryProperty)
     }
 
     @Test
     fun singleDirectoryAllocationTest() {
         addInitMocks()
-        `when`(objects.directoryProperty()).thenReturn(directoryProperty)
+        whenever(objects.directoryProperty()).thenReturn(directoryProperty)
         val storage = StorageProviderImpl().getStorage(ArtifactKind.DIRECTORY)
         val artifact = storage.getArtifact(objects, SingleTestTypes.SINGLE_DIRECTORY)
         Truth.assertThat(artifact.getCurrent().isPresent).isFalse()
@@ -89,7 +87,7 @@ class StorageProviderImplTest {
 
     @Test
     fun multipleFilesAllocationTest() {
-        `when`(objects.listProperty(ArgumentMatchers.eq(RegularFile::class.java))).thenReturn(filesProperty)
+        whenever(objects.listProperty(eq(RegularFile::class.java))).thenReturn(filesProperty)
         val storage = StorageProviderImpl().getStorage(ArtifactKind.FILE)
         val artifact = storage.getArtifact(objects, MultipleTestTypes.MULTIPLE_FILES)
         Truth.assertThat(artifact.getCurrent().isPresent).isFalse()
@@ -97,7 +95,7 @@ class StorageProviderImplTest {
 
     @Test
     fun multipleDirectoriesAllocationTest() {
-        `when`(objects.listProperty(ArgumentMatchers.eq(Directory::class.java))).thenReturn(directoriesProperty)
+        whenever(objects.listProperty(eq(Directory::class.java))).thenReturn(directoriesProperty)
         val storage = StorageProviderImpl().getStorage(ArtifactKind.DIRECTORY)
         val artifact = storage.getArtifact(objects, MultipleTestTypes.MULTIPLE_DIRECTORIESS)
         Truth.assertThat(artifact.getCurrent().isPresent).isFalse()

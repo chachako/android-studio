@@ -26,31 +26,23 @@ import com.android.ide.common.resources.CompileResourceRequest
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.GsonBuilder
 import org.gradle.api.logging.Logger
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.ArgumentCaptor
-import org.mockito.Mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 class Aapt2ErrorUtilsTest {
 
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var logger: Logger
+    private val logger: Logger = mock()
 
     val gson = GsonBuilder().disableHtmlEscaping()
         .apply { MessageJsonSerializer.registerTypeAdapters(this) }.create()
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-    }
 
     @Test
     fun testMessageRewriting() {

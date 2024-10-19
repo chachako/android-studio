@@ -43,7 +43,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
@@ -81,7 +81,7 @@ class R8Test(private val r8OutputType: R8OutputType) {
         outputDir = tmp.newFolder().toPath()
         featureDexDir = tmp.newFolder()
         featureJavaResourceOutputDir = tmp.newFolder()
-        outputProguard = Mockito.mock(RegularFile::class.java)
+        outputProguard = mock<RegularFile>()
     }
 
     @Test

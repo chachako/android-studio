@@ -53,7 +53,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 import java.io.File
 import java.lang.RuntimeException
 import java.util.Locale
@@ -1275,7 +1275,7 @@ class ArtifactsImplTest {
     fun testAddingSameStaticFileMultipleTimes() {
         val container = MultipleArtifactContainer {
             @Suppress("UNCHECKED_CAST")
-            Mockito.mock(MultiplePropertyAdapter::class.java) as MultiplePropertyAdapter<RegularFile>
+            mock<MultiplePropertyAdapter<RegularFile>>()
         }
 
         artifacts.addStaticProvider(

@@ -62,7 +62,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class ModelBuilderTest {
 
@@ -179,7 +180,7 @@ class ModelBuilderTest {
     private val variantList: MutableList<VariantCreationConfig> = mutableListOf()
     private val testComponentList: MutableList<TestComponentCreationConfig> = mutableListOf()
 
-    private val sdkComponents = Mockito.mock(SdkComponentsBuildService::class.java)
+    private val sdkComponents = mock<SdkComponentsBuildService>()
     private val sdkComponentProvider = FakeGradleProvider(sdkComponents)
     private val dslServices = createDslServices(
         projectServices = projectServices,
@@ -226,8 +227,8 @@ class ModelBuilderTest {
     }
 
     private fun createVariantModel() : VariantModel {
-        val globalConfig = Mockito.mock(GlobalTaskCreationConfigImpl::class.java)
-        Mockito.`when`(globalConfig.services).thenReturn(dslServices)
+        val globalConfig = mock<GlobalTaskCreationConfigImpl>()
+        whenever(globalConfig.services).thenReturn(dslServices)
 
         return VariantModelImpl(
             VariantInputModelBuilder(ComponentTypeImpl.BASE_APK, dslServices).toModel(),
@@ -237,7 +238,7 @@ class ModelBuilderTest {
             {
                 BuildFeatureValuesImpl(
                     dslServices.newInstance(ApplicationBuildFeaturesImpl::class.java),
-                    Mockito.mock(ProjectServices::class.java)
+                    mock<ProjectServices>()
                 )
             },
             AndroidProjectTypes.PROJECT_TYPE_APP,

@@ -24,23 +24,16 @@ import com.google.common.truth.Truth
 import kotlin.test.fail
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /** Unit tests for [LintParallelBuildService] */
 class LintParallelBuildServiceTest {
-
-    @get:Rule
-    val rule: MockitoRule = MockitoJUnit.rule()
-
-    @Mock
-    lateinit var projectOptions: ProjectOptions
+    private val projectOptions: ProjectOptions = mock()
 
     @Test fun testCalculateMaxParallelUsages() {
         // first test in process cases
-        Mockito.`when`(projectOptions.get(BooleanOption.RUN_LINT_IN_PROCESS)).thenReturn(true)
+        whenever(projectOptions.get(BooleanOption.RUN_LINT_IN_PROCESS)).thenReturn(true)
 
         // Check normal case
         Truth.assertThat(
@@ -52,7 +45,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(30)
 
         // Check with specified LINT_RESERVED_MEMORY_PER_TASK
-        Mockito.`when`(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK)).thenReturn("1g")
+        whenever(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK)).thenReturn("1g")
         Truth.assertThat(
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -71,7 +64,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(1)
 
         // Check case when user specifies invalid LINT_RESERVED_MEMORY_PER_TASK
-        Mockito.`when`(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK))
+        whenever(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK))
             .thenReturn("invalid")
         try {
             LintParallelBuildService.calculateMaxParallelUsages(
@@ -88,10 +81,10 @@ class LintParallelBuildServiceTest {
         }
 
         // then test out of process cases
-        Mockito.`when`(projectOptions.get(BooleanOption.RUN_LINT_IN_PROCESS)).thenReturn(false)
+        whenever(projectOptions.get(BooleanOption.RUN_LINT_IN_PROCESS)).thenReturn(false)
 
         // Check no specified lint heap size
-        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn(null)
+        whenever(projectOptions.get(LINT_HEAP_SIZE)).thenReturn(null)
         Truth.assertThat(
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -101,7 +94,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(2)
 
         // Check with specified lint heap size
-        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("2g")
+        whenever(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("2g")
         Truth.assertThat(
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -120,7 +113,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(1)
 
         // Check case when user specifies invalid lint heap size
-        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("invalid")
+        whenever(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("invalid")
         try {
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,

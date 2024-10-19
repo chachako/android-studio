@@ -27,7 +27,8 @@ import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import com.android.testutils.AbstractBuildGivenBuildExpectTest
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class VariantBuilderComputeNameTest :
     AbstractBuildGivenBuildExpectTest<VariantBuilderComputeNameTest.GivenBuilder, VariantBuilderComputeNameTest.ResultBuilder>() {
@@ -211,15 +212,15 @@ class VariantBuilderComputeNameTest :
 
     override fun defaultWhen(given: GivenBuilder): ResultBuilder {
         val varCombo = DimensionCombinationImpl(given.buildType, given.flavors)
-        val mainDslInfo = Mockito.mock(ApplicationVariantDslInfo::class.java)
-        Mockito.`when`(mainDslInfo.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
-        Mockito.`when`(mainDslInfo.buildType).thenReturn(given.buildType)
-        Mockito.`when`(mainDslInfo.productFlavors).thenReturn(given.flavors)
+        val mainDslInfo = mock<ApplicationVariantDslInfo>()
+        whenever(mainDslInfo.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
+        whenever(mainDslInfo.buildType).thenReturn(given.buildType)
+        whenever(mainDslInfo.productFlavors).thenReturn(given.flavors)
 
         val dslInfo = if (given.componentType.isNestedComponent) {
-            Mockito.mock(NestedComponentDslInfo::class.java).also {
-                Mockito.`when`(it.mainVariantDslInfo).thenReturn(mainDslInfo)
-                Mockito.`when`(it.componentType).thenReturn(given.componentType)
+            mock<NestedComponentDslInfo>().also {
+                whenever(it.mainVariantDslInfo).thenReturn(mainDslInfo)
+                whenever(it.componentType).thenReturn(given.componentType)
             }
         } else {
             mainDslInfo

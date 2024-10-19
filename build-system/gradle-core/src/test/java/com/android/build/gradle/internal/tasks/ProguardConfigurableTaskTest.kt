@@ -28,9 +28,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -68,7 +68,7 @@ internal class ProguardConfigurableTaskTest {
     @Test
     fun testEmptyProguardFilesReconciliation() {
         Truth.assertThat(task).isNotNull()
-        val fileCollection = Mockito.mock(FileCollection::class.java)
+        val fileCollection = mock<FileCollection>()
         val folder = temporaryFolder.newFolder("proguard_files")
         task.componentType.set(ComponentTypeImpl.BASE_APK)
         Truth.assertThat(
@@ -82,11 +82,11 @@ internal class ProguardConfigurableTaskTest {
     @Test
     fun testNonBaseModuleProguardFilesReconciliation() {
         Truth.assertThat(task).isNotNull()
-        val fileCollection = Mockito.mock(FileCollection::class.java)
+        val fileCollection = mock<FileCollection>()
         val folder = temporaryFolder.newFolder("proguard_files")
         val file1 = spy(File(folder, "android.txt"))
-        `when`(file1.isFile).thenReturn(true)
-        `when`(fileCollection.files).thenReturn(setOf(
+        whenever(file1.isFile).thenReturn(true)
+        whenever(fileCollection.files).thenReturn(setOf(
             file1
         ))
         task.componentType.set(ComponentTypeImpl.JAVA_LIBRARY)
@@ -103,7 +103,7 @@ internal class ProguardConfigurableTaskTest {
     @Test
     fun testSubstitution() {
         Truth.assertThat(task).isNotNull()
-        val fileCollection = Mockito.mock(FileCollection::class.java)
+        val fileCollection = mock<FileCollection>()
         val srcFolder = temporaryFolder.newFolder("proguard_files")
         val finalDefaultFolder = temporaryFolder.newFolder("default_proguard_files")
 
@@ -112,11 +112,11 @@ internal class ProguardConfigurableTaskTest {
             project.layout.buildDirectory
         )
         val file1 = spy(File(srcFolder, "user1.txt"))
-        `when`(file1.isFile).thenReturn(true)
+        whenever(file1.isFile).thenReturn(true)
         val file2 = spy(File(srcFolder, "user2.txt"))
-        `when`(file2.isFile).thenReturn(true)
+        whenever(file2.isFile).thenReturn(true)
 
-        `when`(fileCollection.files).thenReturn(setOf(
+        whenever(fileCollection.files).thenReturn(setOf(
                 file1,
                 file2,
                 defaultFile
@@ -137,7 +137,7 @@ internal class ProguardConfigurableTaskTest {
     @Test
     fun testFilesWithDefaultFileNameInSourceFoldersAreNotSubstituted() {
         Truth.assertThat(task).isNotNull()
-        val fileCollection = Mockito.mock(FileCollection::class.java)
+        val fileCollection = mock<FileCollection>()
         val srcFolder = temporaryFolder.newFolder("proguard_files")
         val finalDefaultFolder = temporaryFolder.newFolder("default_proguard_files")
 
@@ -146,13 +146,13 @@ internal class ProguardConfigurableTaskTest {
             project.layout.buildDirectory
         )
         val file1 = spy(File(srcFolder, "user1.txt"))
-        `when`(file1.isFile).thenReturn(true)
+        whenever(file1.isFile).thenReturn(true)
         val file2 = spy(File(srcFolder, "user2.txt"))
-        `when`(file2.isFile).thenReturn(true)
+        whenever(file2.isFile).thenReturn(true)
         val file3 = spy(File(srcFolder, defaultFile.name))
-        `when`(file3.isFile).thenReturn(true)
+        whenever(file3.isFile).thenReturn(true)
 
-        `when`(fileCollection.files).thenReturn(setOf(
+        whenever(fileCollection.files).thenReturn(setOf(
                 file1,
                 file2,
                 file3
@@ -173,16 +173,16 @@ internal class ProguardConfigurableTaskTest {
     @Test
     fun `test files which do not exist are filtered out`() {
         Truth.assertThat(task).isNotNull()
-        val fileCollection = Mockito.mock(FileCollection::class.java)
+        val fileCollection = mock<FileCollection>()
         val srcFolder = temporaryFolder.newFolder("proguard_files")
         val finalDefaultFolder = temporaryFolder.newFolder("default_proguard_files")
 
         val file1 = spy(File(srcFolder, "user1.txt"))
-        `when`(file1.isFile).thenReturn(true)
+        whenever(file1.isFile).thenReturn(true)
         val file2 = spy(File(srcFolder, "user2.txt"))
-        `when`(file2.isFile).thenReturn(false)
+        whenever(file2.isFile).thenReturn(false)
 
-        `when`(fileCollection.files).thenReturn(setOf(
+        whenever(fileCollection.files).thenReturn(setOf(
                 file1,
                 file2,
         ))

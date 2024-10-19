@@ -30,40 +30,39 @@ import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class AnalyticsEnabledTestVariantTest {
-    @Mock
-    lateinit var delegate: TestVariant
+    private val delegate: TestVariant = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private lateinit var proxy: AnalyticsEnabledTestVariant
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         proxy = AnalyticsEnabledTestVariant(delegate, stats, FakeObjectFactory.factory)
     }
 
     @Test
     fun getApplicationId() {
-        Mockito.`when`(delegate.applicationId).thenReturn(FakeGradleProperty("myApp"))
+        whenever(delegate.applicationId).thenReturn(FakeGradleProperty("myApp"))
         Truth.assertThat(proxy.applicationId.get()).isEqualTo("myApp")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.APPLICATION_ID_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .applicationId
     }
 
     @Test
     fun getAndroidResources() {
-        val androidResources = Mockito.mock(AndroidResources::class.java)
-        Mockito.`when`(delegate.androidResources).thenReturn(androidResources)
+        val androidResources = mock<AndroidResources>()
+        whenever(delegate.androidResources).thenReturn(androidResources)
         val proxiedAndroidResources = proxy.androidResources
         Truth.assertThat(proxiedAndroidResources).isInstanceOf(
             AnalyticsEnabledAndroidResources::class.java
@@ -75,80 +74,80 @@ class AnalyticsEnabledTestVariantTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.AAPT_OPTIONS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .androidResources
     }
 
     @Test
     fun testedApplicationId() {
-        Mockito.`when`(delegate.testedApplicationId).thenReturn(FakeGradleProvider("myApp"))
+        whenever(delegate.testedApplicationId).thenReturn(FakeGradleProvider("myApp"))
         Truth.assertThat(proxy.testedApplicationId.get()).isEqualTo("myApp")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TESTED_APPLICATION_ID_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .testedApplicationId
     }
 
     @Test
     fun instrumentationRunner() {
-        Mockito.`when`(delegate.instrumentationRunner).thenReturn(FakeGradleProperty("my_runner"))
+        whenever(delegate.instrumentationRunner).thenReturn(FakeGradleProperty("my_runner"))
         Truth.assertThat(proxy.instrumentationRunner.get()).isEqualTo("my_runner")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.INSTRUMENTATION_RUNNER_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .instrumentationRunner
     }
 
     @Test
     fun handleProfiling() {
-        Mockito.`when`(delegate.handleProfiling).thenReturn(FakeGradleProperty(true))
+        whenever(delegate.handleProfiling).thenReturn(FakeGradleProperty(true))
         Truth.assertThat(proxy.handleProfiling.get()).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.HANDLE_PROFILING_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .handleProfiling
     }
 
     @Test
     fun functionalTest() {
-        Mockito.`when`(delegate.functionalTest).thenReturn(FakeGradleProperty(true))
+        whenever(delegate.functionalTest).thenReturn(FakeGradleProperty(true))
         Truth.assertThat(proxy.functionalTest.get()).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.FUNCTIONAL_TEST_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .functionalTest
     }
 
     @Test
     fun testLabel() {
-        Mockito.`when`(delegate.testLabel).thenReturn(FakeGradleProperty("some_label"))
+        whenever(delegate.testLabel).thenReturn(FakeGradleProperty("some_label"))
         Truth.assertThat(proxy.testLabel.get()).isEqualTo("some_label")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TEST_LABEL_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .testLabel
     }
 
 
     @Test
     fun getRenderscript() {
-        val renderscript = Mockito.mock(Renderscript::class.java)
-        Mockito.`when`(delegate.renderscript).thenReturn(renderscript)
+        val renderscript = mock<Renderscript>()
+        whenever(delegate.renderscript).thenReturn(renderscript)
         // simulate a user configuring packaging options for jniLibs and resources
         proxy.renderscript
 
@@ -156,17 +155,17 @@ class AnalyticsEnabledTestVariantTest {
         Truth.assertThat(
                 stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.RENDERSCRIPT_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).renderscript
+        verify(delegate, times(1)).renderscript
     }
 
     @Test
     fun getApkPackaging() {
-        val apkPackaging = Mockito.mock(ApkPackaging::class.java)
-        val jniLibsApkPackagingOptions = Mockito.mock(JniLibsApkPackaging::class.java)
-        val resourcesPackagingOptions = Mockito.mock(ResourcesPackaging::class.java)
-        Mockito.`when`(apkPackaging.jniLibs).thenReturn(jniLibsApkPackagingOptions)
-        Mockito.`when`(apkPackaging.resources).thenReturn(resourcesPackagingOptions)
-        Mockito.`when`(delegate.packaging).thenReturn(apkPackaging)
+        val apkPackaging = mock<ApkPackaging>()
+        val jniLibsApkPackagingOptions = mock<JniLibsApkPackaging>()
+        val resourcesPackagingOptions = mock<ResourcesPackaging>()
+        whenever(apkPackaging.jniLibs).thenReturn(jniLibsApkPackagingOptions)
+        whenever(apkPackaging.resources).thenReturn(resourcesPackagingOptions)
+        whenever(delegate.packaging).thenReturn(apkPackaging)
         // simulate a user configuring packaging options for jniLibs and resources
         proxy.packaging.jniLibs
         proxy.packaging.resources
@@ -182,6 +181,6 @@ class AnalyticsEnabledTestVariantTest {
                         VariantPropertiesMethodType.RESOURCES_PACKAGING_OPTIONS_VALUE
                 )
         )
-        Mockito.verify(delegate, Mockito.times(1)).packaging
+        verify(delegate, times(1)).packaging
     }
 }

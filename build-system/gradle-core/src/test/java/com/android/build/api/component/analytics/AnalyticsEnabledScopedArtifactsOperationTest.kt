@@ -29,8 +29,10 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -46,8 +48,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: ScopedArtifactsOperation<FakeTask>
+    private val delegate: ScopedArtifactsOperation<FakeTask> = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledScopedArtifactsOperation<FakeTask> by lazy {
@@ -71,7 +72,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
                 VariantPropertiesMethodType.SCOPED_ARTIFACTS_TO_GET_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toGet(
+        verify(delegate, times(1)).toGet(
             ScopedArtifact.CLASSES,
             FakeTask::inputJars,
             FakeTask::inputDirectories,
@@ -94,7 +95,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
                 VariantPropertiesMethodType.SCOPED_ARTIFACTS_APPEND_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toAppend(
+        verify(delegate, times(1)).toAppend(
             ScopedArtifact.CLASSES,
             FakeTask::output
         )
@@ -116,7 +117,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
                 VariantPropertiesMethodType.SCOPED_ARTIFACTS_TO_REPLACE_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toReplace(
+        verify(delegate, times(1)).toReplace(
             ScopedArtifact.CLASSES,
             FakeTask::output
         )
@@ -140,7 +141,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
                 VariantPropertiesMethodType.SCOPED_ARTIFACTS_TO_TRANSFORM_VALUE
             )
         )
-        Mockito.verify(delegate, Mockito.times(1)).toTransform(
+        verify(delegate, times(1)).toTransform(
             ScopedArtifact.CLASSES,
             FakeTask::inputJars,
             FakeTask::inputDirectories,

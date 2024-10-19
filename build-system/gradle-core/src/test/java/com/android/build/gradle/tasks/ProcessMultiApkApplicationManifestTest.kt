@@ -37,7 +37,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import kotlin.test.fail
 
@@ -77,8 +78,8 @@ class ProcessMultiApkApplicationManifestTest {
             "main_full_name",
             FakeGradleProperty(value = "output_file_name"),
         )
-        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
-        Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainOutput)))
+        val creationConfig = mock<ApplicationCreationConfig>()
+        whenever(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainOutput)))
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
 
         BuiltArtifactsImpl(
@@ -117,8 +118,8 @@ class ProcessMultiApkApplicationManifestTest {
         x86_64.versionCode.set(22)
 
         val mainOutput = createVariantOutput()
-        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
-        Mockito.`when`(creationConfig.outputs).thenReturn(
+        val creationConfig = mock<ApplicationCreationConfig>()
+        whenever(creationConfig.outputs).thenReturn(
             VariantOutputList(listOf(mainOutput, x86, arm, x86_64))
         )
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
@@ -173,8 +174,8 @@ class ProcessMultiApkApplicationManifestTest {
         val xhdpi = createVariantOutputForDensity("xhdpi")
         val hdpi = createVariantOutputForDensity("hdpi")
 
-        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
-        Mockito.`when`(creationConfig.outputs).thenReturn(
+        val creationConfig = mock<ApplicationCreationConfig>()
+        whenever(creationConfig.outputs).thenReturn(
             VariantOutputList(listOf(xxhpdi, xhdpi, hdpi))
         )
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
@@ -233,8 +234,8 @@ class ProcessMultiApkApplicationManifestTest {
         hdpi.versionCode.set(22)
         hdpi.versionName.set("twentytwo")
 
-        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
-        Mockito.`when`(creationConfig.outputs).thenReturn(
+        val creationConfig = mock<ApplicationCreationConfig>()
+        whenever(creationConfig.outputs).thenReturn(
             VariantOutputList(listOf(xxhdpi, xhdpi, hdpi))
         )
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))

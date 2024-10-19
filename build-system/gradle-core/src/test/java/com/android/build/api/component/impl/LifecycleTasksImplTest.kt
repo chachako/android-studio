@@ -18,7 +18,8 @@ package com.android.build.api.component.impl
 import com.google.common.truth.Truth
 import org.gradle.api.Task
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 class LifecycleTasksImplTest {
 
@@ -31,22 +32,22 @@ class LifecycleTasksImplTest {
     @Test
     fun singleUsage() {
         val anchorTasks = LifecycleTasksImpl()
-        val task = Mockito.mock(Task::class.java)
-        val preBuildTask = Mockito.mock(Task::class.java)
+        val task = mock<Task>()
+        val preBuildTask = mock<Task>()
         anchorTasks.registerPreBuild(task)
 
         Truth.assertThat(anchorTasks.hasPreBuildActions()).isTrue()
         anchorTasks.invokePreBuildActions(preBuildTask)
 
-        Mockito.verify(preBuildTask).dependsOn(task)
+        verify(preBuildTask).dependsOn(task)
     }
 
     @Test
     fun multipleUsage() {
         val anchorTasks = LifecycleTasksImpl()
-        val taskOne = Mockito.mock(Task::class.java)
-        val taskTwo = Mockito.mock(Task::class.java)
-        val preBuildTask = Mockito.mock(Task::class.java)
+        val taskOne = mock<Task>()
+        val taskTwo = mock<Task>()
+        val preBuildTask = mock<Task>()
         anchorTasks.registerPreBuild(taskOne, taskTwo)
 
         Truth.assertThat(anchorTasks.hasPreBuildActions()).isTrue()
@@ -56,15 +57,15 @@ class LifecycleTasksImplTest {
             it.add(taskOne)
             it.add(taskTwo)
         }
-        Mockito.verify(preBuildTask).dependsOn(taskOne, taskTwo)
+        verify(preBuildTask).dependsOn(taskOne, taskTwo)
     }
 
     @Test
     fun multipleSingleUsage() {
         val anchorTasks = LifecycleTasksImpl()
-        val taskOne = Mockito.mock(Task::class.java)
-        val taskTwo = Mockito.mock(Task::class.java)
-        val preBuildTask = Mockito.mock(Task::class.java)
+        val taskOne = mock<Task>()
+        val taskTwo = mock<Task>()
+        val preBuildTask = mock<Task>()
 
         anchorTasks.registerPreBuild(taskOne)
         Truth.assertThat(anchorTasks.hasPreBuildActions()).isTrue()
@@ -74,7 +75,7 @@ class LifecycleTasksImplTest {
 
         anchorTasks.invokePreBuildActions(preBuildTask)
 
-        Mockito.verify(preBuildTask).dependsOn(taskOne, taskTwo)
+        verify(preBuildTask).dependsOn(taskOne, taskTwo)
     }
 }
 

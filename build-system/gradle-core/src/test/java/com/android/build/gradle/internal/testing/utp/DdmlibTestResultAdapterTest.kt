@@ -18,32 +18,24 @@ package com.android.build.gradle.internal.testing.utp
 
 import com.android.ddmlib.testrunner.TestIdentifier
 import com.android.ddmlib.testrunner.XmlTestRunListener
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.TestResultEvent
 import com.google.protobuf.Any
 import com.google.protobuf.TextFormat
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.anyLong
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.never
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.never
 
 /**
  * Unit tests for [DdmlibTestResultAdapter].
  */
 class DdmlibTestResultAdapterTest {
-
-    @get:Rule
-    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
-
-    @Mock
-    lateinit var mockDdmlibListener: XmlTestRunListener
+    private val mockDdmlibListener: XmlTestRunListener = mock()
 
     @Test
     fun testPassed() {
@@ -76,8 +68,8 @@ class DdmlibTestResultAdapterTest {
                             "com.example.application.ExampleInstrumentedTest",
                             "useAppContext")),
                     eq(mapOf()))
-            verify(mockDdmlibListener, never()).testRunFailed(anyString())
-            verify(mockDdmlibListener).testRunEnded(anyLong(), eq(mapOf()))
+            verify(mockDdmlibListener, never()).testRunFailed(any())
+            verify(mockDdmlibListener).testRunEnded(any(), eq(mapOf()))
             verifyNoMoreInteractions()
         }
     }
@@ -121,7 +113,7 @@ class DdmlibTestResultAdapterTest {
                             "useAppContext")),
                     eq(mapOf()))
             verify(mockDdmlibListener).testRunFailed(eq("There was 1 failure(s)."))
-            verify(mockDdmlibListener).testRunEnded(anyLong(), eq(mapOf()))
+            verify(mockDdmlibListener).testRunEnded(any(), eq(mapOf()))
             verifyNoMoreInteractions()
         }
     }
@@ -158,7 +150,7 @@ class DdmlibTestResultAdapterTest {
             verify(mockDdmlibListener).addSystemError(eq(
                 "Failed trying to provide device controller.\n" +
                 "Gradle was unable to attach one or more devices to the adb server.\n\n"))
-            verify(mockDdmlibListener).testRunEnded(anyLong(), eq(mapOf()))
+            verify(mockDdmlibListener).testRunEnded(any(), eq(mapOf()))
             verifyNoMoreInteractions()
         }
     }
@@ -185,7 +177,7 @@ class DdmlibTestResultAdapterTest {
         inOrder(mockDdmlibListener).apply {
             verify(mockDdmlibListener).addSystemError(eq(
                 "Test run failed to complete. Instrumentation run failed due to Process crashed.\n"))
-            verify(mockDdmlibListener).testRunEnded(anyLong(), eq(mapOf()))
+            verify(mockDdmlibListener).testRunEnded(any(), eq(mapOf()))
             verifyNoMoreInteractions()
         }
     }

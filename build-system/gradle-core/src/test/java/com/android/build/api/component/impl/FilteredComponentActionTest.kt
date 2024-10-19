@@ -21,7 +21,8 @@ import com.android.testutils.AbstractReturnGivenReturnExpectTest
 import com.android.testutils.on
 import org.gradle.api.Action
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import kotlin.test.fail
@@ -217,10 +218,10 @@ class FilteredComponentActionTest: AbstractReturnGivenReturnExpectTest<Pair<Filt
         }
 
         val variant = with(given.second) {
-            Mockito.mock(VariantBuilder::class.java).also { variant ->
-                name?.let { Mockito.`when`(variant.name).thenReturn(it) }
-                buildType?.let { Mockito.`when`(variant.buildType).thenReturn(it) }
-                Mockito.`when`(variant.productFlavors).thenReturn(productFlavors)
+            mock<VariantBuilder>().also { variant ->
+                name?.let { whenever(variant.name).thenReturn(it) }
+                buildType?.let { whenever(variant.buildType).thenReturn(it) }
+                whenever(variant.productFlavors).thenReturn(productFlavors)
             }
         }
 

@@ -33,7 +33,8 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 
 internal class FusedLibraryBundleTest {
@@ -57,28 +58,26 @@ internal class FusedLibraryBundleTest {
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         val taskProvider = project.tasks.register("bundle", T::class.java)
 
-        val variantScope = Mockito.mock(FusedLibraryGlobalScopeImpl::class.java)
-        val artifacts = Mockito.mock(ArtifactsImpl::class.java)
-        val incomingConfigurations = Mockito.mock(PluginConfigurations::class.java)
-        val configuration = Mockito.mock(Configuration::class.java)
-        val dependencySet = Mockito.mock(DependencySet::class.java)
-        val fileCollectionDependency = Mockito.mock(FileCollectionDependency::class.java)
+        val variantScope = mock<FusedLibraryGlobalScopeImpl>()
+        val artifacts = mock<ArtifactsImpl>()
+        val incomingConfigurations = mock<PluginConfigurations>()
+        val configuration = mock<Configuration>()
+        val dependencySet = mock<DependencySet>()
+        val fileCollectionDependency = mock<FileCollectionDependency>()
 
-        Mockito.`when`(variantScope.artifacts).thenReturn(artifacts)
-        Mockito.`when`(variantScope.projectLayout).thenReturn(project.layout)
-        Mockito.`when`(variantScope.incomingConfigurations).thenReturn(incomingConfigurations)
-        Mockito.`when`(incomingConfigurations.getByConfigType(
+        whenever(variantScope.artifacts).thenReturn(artifacts)
+        whenever(variantScope.projectLayout).thenReturn(project.layout)
+        whenever(variantScope.incomingConfigurations).thenReturn(incomingConfigurations)
+        whenever(incomingConfigurations.getByConfigType(
             AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH)).thenReturn(configuration)
 
-        Mockito.`when`(configuration.allDependencies).thenReturn(dependencySet)
-        Mockito.`when`(fileCollectionDependency.files).thenReturn(FakeConfigurableFileCollection(File("someJar.jar")))
-        Mockito.`when`(dependencySet.iterator()).thenReturn(mutableSetOf(fileCollectionDependency).iterator())
+        whenever(configuration.allDependencies).thenReturn(dependencySet)
+        whenever(fileCollectionDependency.files).thenReturn(FakeConfigurableFileCollection(File("someJar.jar")))
+        whenever(dependencySet.iterator()).thenReturn(mutableSetOf(fileCollectionDependency).iterator())
 
-        @Suppress("UNCHECKED_CAST")
-        val request = Mockito.mock(SingleInitialProviderRequestImpl::class.java)
-                as SingleInitialProviderRequestImpl<T, RegularFile>
+        val request = mock<SingleInitialProviderRequestImpl<T, RegularFile>>()
 
-        Mockito.`when`(artifacts.setInitialProvider(taskProvider, FusedLibraryBundle::outputFile))
+        whenever(artifacts.setInitialProvider(taskProvider, FusedLibraryBundle::outputFile))
                 .thenReturn(request)
 
         val creationAction = U::class.java.getDeclaredConstructor(FusedLibraryGlobalScope::class.java)

@@ -23,25 +23,24 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.times
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.times
 
 /**
  * Tests for [AnalyticsEnabledComponentBuilder]
  */
 class AnalyticsEnabledComponentBuilderTest {
 
-    @Mock
-    lateinit var delegate: ComponentBuilder
+    private val delegate: ComponentBuilder = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private lateinit var proxy: AnalyticsEnabledComponentBuilder
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         proxy = object: AnalyticsEnabledComponentBuilder(delegate, stats) {}
     }
 
@@ -52,6 +51,6 @@ class AnalyticsEnabledComponentBuilderTest {
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.ENABLED_VALUE)
-        Mockito.verify(delegate, times(1)).enable = false
+        verify(delegate, times(1)).enable = false
     }
 }

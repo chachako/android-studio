@@ -24,8 +24,11 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.model.ObjectFactory
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -35,11 +38,9 @@ class AnalyticsEnabledGeneratesApkTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: GeneratesApk
+    private val delegate: GeneratesApk = mock()
 
-    @Mock
-    lateinit var objectFactory: ObjectFactory
+    private val objectFactory: ObjectFactory = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledGeneratesApk by lazy {
@@ -48,16 +49,16 @@ class AnalyticsEnabledGeneratesApkTest {
 
     @Test
     fun testDexing() {
-        val dexing = Mockito.mock(Dexing::class.java)
-        Mockito.`when`(delegate.dexing).thenReturn(dexing)
+        val dexing = mock<Dexing>()
+        whenever(delegate.dexing).thenReturn(dexing)
         Truth.assertThat(proxy.dexing).isEqualTo(dexing)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.DEXING_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .dexing
-        Mockito.verifyNoMoreInteractions(delegate)
+        verifyNoMoreInteractions(delegate)
     }
 }

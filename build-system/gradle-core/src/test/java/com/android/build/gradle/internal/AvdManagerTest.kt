@@ -38,13 +38,13 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.any
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.junit.MockitoJUnit
 
 @RunWith(JUnit4::class)
@@ -67,11 +67,9 @@ class AvdManagerTest {
     private lateinit var snapshotHandler: AvdSnapshotHandler
     private lateinit var versionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    lateinit var lockManager: ManagedVirtualDeviceLockManager
+    private val lockManager: ManagedVirtualDeviceLockManager = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
-    @Mock
-    lateinit var adbHelper: AdbHelper
+    private val adbHelper: AdbHelper = mock()
 
     @Before
     fun setup() {
@@ -91,7 +89,7 @@ class AvdManagerTest {
         adbExecutable = rootDir.resolve("adb")
         Files.createDirectories(avdFolder)
 
-        snapshotHandler = mock(AvdSnapshotHandler::class.java)
+        snapshotHandler = mock<AvdSnapshotHandler>()
 
         versionedSdkLoader = setupVersionedSdkLoader()
         val sdkHandler = setupSdkHandler()
@@ -213,13 +211,13 @@ class AvdManagerTest {
 
     @Test
     fun testSnapshotCreation() {
-        `when`(
+        whenever(
             snapshotHandler.checkSnapshotLoadable(
-                anyString(),
-                any(File::class.java),
-                anyString(),
-                any(ILogger::class.java),
-                anyString()))
+                any(),
+                any<File>(),
+                any(),
+                any<ILogger>(),
+                any()))
             // first return false to force generation, then return true to assert success.
             .thenReturn(false, true)
 
@@ -233,22 +231,22 @@ class AvdManagerTest {
 
         verify(snapshotHandler)
             .generateSnapshot(
-                anyString(),
-                any(File::class.java),
-                anyString(),
-                any(com.android.sdklib.internal.avd.AvdManager::class.java),
-                any(ILogger::class.java))
+                any(),
+                any<File>(),
+                any(),
+                any<com.android.sdklib.internal.avd.AvdManager>(),
+                any<ILogger>())
     }
 
     @Test
     fun testSnapshotSkippedIfValid() {
-        `when`(
+        whenever(
             snapshotHandler.checkSnapshotLoadable(
-                anyString(),
-                any(File::class.java),
-                anyString(),
-                any(ILogger::class.java),
-                anyString()))
+                any(),
+                any<File>(),
+                any(),
+                any<ILogger>(),
+                any()))
             .thenReturn(true)
 
         manager.createAvd(
@@ -261,11 +259,11 @@ class AvdManagerTest {
 
         verify(snapshotHandler, times(0))
             .generateSnapshot(
-                anyString(),
-                any(File::class.java),
-                anyString(),
-                any(com.android.sdklib.internal.avd.AvdManager::class.java),
-                any(ILogger::class.java))
+                any(),
+                any<File>(),
+                any(),
+                any<com.android.sdklib.internal.avd.AvdManager>(),
+                any<ILogger>())
     }
 
     @Test
@@ -301,14 +299,14 @@ class AvdManagerTest {
     }
 
     private fun setupVersionedSdkLoader(): SdkComponentsBuildService.VersionedSdkLoader =
-        mock(SdkComponentsBuildService.VersionedSdkLoader::class.java).also {
-            `when`(it.sdkDirectoryProvider)
+        mock<SdkComponentsBuildService.VersionedSdkLoader>().also {
+            whenever(it.sdkDirectoryProvider)
                 .thenReturn(FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(sdkFolder))))
-            `when`(it.sdkImageDirectoryProvider(anyString()))
+            whenever(it.sdkImageDirectoryProvider(any()))
                 .thenReturn(FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))))
-            `when`(it.emulatorDirectoryProvider)
+            whenever(it.emulatorDirectoryProvider)
                 .thenReturn(FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(emulatorFolder))))
-            `when`(it.adbExecutableProvider)
+            whenever(it.adbExecutableProvider)
                 .thenReturn(FakeGradleProvider(FakeGradleRegularFile(FileOpUtils.toFile(adbExecutable))))
         }
 

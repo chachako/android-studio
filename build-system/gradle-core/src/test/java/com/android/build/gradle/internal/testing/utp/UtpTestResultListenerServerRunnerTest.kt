@@ -24,11 +24,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.verify
 import java.io.File
 
 /**
@@ -36,19 +34,13 @@ import java.io.File
  */
 @RunWith(JUnit4::class)
 class UtpTestResultListenerServerRunnerTest {
+    private val mockServer: UtpTestResultListenerServer = mock()
 
-    @get:Rule
-    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
-
-    @Mock
-    lateinit var mockServer: UtpTestResultListenerServer
-
-    @Mock
-    lateinit var mockTestResultListener: UtpTestResultListener
+    private val mockTestResultListener: UtpTestResultListener = mock()
 
     @Before
     fun setUp() {
-        `when`(mockServer.port).thenReturn(1234)
+        whenever(mockServer.port).thenReturn(1234)
     }
 
     @Test

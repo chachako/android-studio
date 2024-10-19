@@ -25,8 +25,10 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.jetbrains.kotlin.gradle.utils.`is`
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,8 +38,7 @@ internal class AnalyticsEnabledJavaCompilationTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: JavaCompilation
+    private val delegate: JavaCompilation = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledJavaCompilation by lazy {
@@ -46,8 +47,8 @@ internal class AnalyticsEnabledJavaCompilationTest {
 
     @Test
     fun getAnnotationProcessor() {
-        val annotationProcessor = Mockito.mock(AnnotationProcessor::class.java)
-        Mockito.`when`(delegate.annotationProcessor).thenReturn(annotationProcessor)
+        val annotationProcessor = mock<AnnotationProcessor>()
+        whenever(delegate.annotationProcessor).thenReturn(annotationProcessor)
 
         val annotationProcessorProxy = proxy.annotationProcessor
         Truth.assertThat(annotationProcessorProxy.javaClass)
@@ -58,7 +59,7 @@ internal class AnalyticsEnabledJavaCompilationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .annotationProcessor
     }
 }

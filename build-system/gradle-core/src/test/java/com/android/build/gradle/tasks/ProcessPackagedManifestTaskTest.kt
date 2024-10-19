@@ -28,7 +28,7 @@ import com.android.build.gradle.internal.services.createProjectServices
 import com.android.build.gradle.internal.services.createTaskCreationServices
 import com.android.build.gradle.internal.services.getBuildServiceName
 import com.android.build.gradle.options.BooleanOption
-import com.android.testutils.MockitoKt.whenever
+import org.mockito.kotlin.whenever
 import com.android.utils.toSystemLineSeparator
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
@@ -39,7 +39,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import java.io.File
 import java.io.IOException
 
@@ -56,7 +55,6 @@ class ProcessPackagedManifestTaskTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         project= ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         taskProvider = project.tasks.register(
             "testManifestForPackage", ProcessPackagedManifestTask::class.java

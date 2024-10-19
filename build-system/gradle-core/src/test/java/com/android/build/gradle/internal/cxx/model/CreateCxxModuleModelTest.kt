@@ -23,7 +23,8 @@ import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.utils.FileUtils.join
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.mockito.Mockito.doReturn
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import java.io.File
 
 class CreateCxxModuleModelTest {
@@ -43,7 +44,7 @@ class CreateCxxModuleModelTest {
     @Test
     fun `simplest cmake`() {
         BasicModuleModelMock().let {
-            doReturn(File("./CMakeLists.txt")).`when`(it.cmake).path
+            doReturn(File("./CMakeLists.txt")).whenever(it.cmake).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
@@ -54,7 +55,7 @@ class CreateCxxModuleModelTest {
     @Test
     fun `simplest ndk-build`() {
         BasicModuleModelMock().let {
-            doReturn(File("./Android.mk")).`when`(it.ndkBuild).path
+            doReturn(File("./Android.mk")).whenever(it.ndkBuild).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
@@ -65,7 +66,7 @@ class CreateCxxModuleModelTest {
     @Test
     fun `both cmake and ndk-build`() {
         BasicCmakeMock().let {
-            doReturn(join(it.projectRootDir, "Android.mk")).`when`(it.ndkBuild).path
+            doReturn(join(it.projectRootDir, "Android.mk")).whenever(it.ndkBuild).path
             PassThroughRecordingLoggingEnvironment().use { logEnvironment ->
                 assertThat(
                     tryCreateConfigurationParameters(
@@ -84,7 +85,7 @@ class CreateCxxModuleModelTest {
         BasicCmakeMock().let {
             PassThroughRecordingLoggingEnvironment().use { logEnvironment ->
                 doReturn(File(it.projectInfo.buildDirectory.asFile.get(), "my-build-staging-directory"))
-                    .`when`(it.cmake).buildStagingDirectory
+                    .whenever(it.cmake).buildStagingDirectory
                 val componentModel =
                     tryCreateConfigurationParameters(
                             it.projectOptions,
@@ -106,7 +107,7 @@ class CreateCxxModuleModelTest {
         PassThroughRecordingLoggingEnvironment().use { logEnvironment ->
             BasicCmakeMock().let {
                 doReturn(File(it.projectInfo.buildDirectory.asFile.get(), "my-build-staging-directory"))
-                    .`when`(it.cmake).buildStagingDirectory
+                    .whenever(it.cmake).buildStagingDirectory
                 val configurationParameters = tryCreateConfigurationParameters(
                         it.projectOptions,
                         it.variantImpl,

@@ -24,7 +24,6 @@ import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.testing.StaticTestData
 import com.android.builder.model.TestOptions
 import com.android.prefs.AndroidLocationsProvider
-import com.android.testutils.MockitoKt.any
 import com.android.testutils.SystemPropertyOverrides
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.Environment
@@ -45,11 +44,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
-import org.mockito.ArgumentMatchers.nullable
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
@@ -58,41 +56,35 @@ import kotlin.io.path.Path
  * Unit tests for [ManagedDeviceTestRunner].
  */
 class ManagedDeviceTestRunnerTest {
-    @get:Rule var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
     @get:Rule var temporaryFolderRule = TemporaryFolder()
 
-    @Mock lateinit var mockWorkerExecutor: WorkerExecutor
-    @Mock lateinit var mockWorkQueue: WorkQueue
-    @Mock lateinit var mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockAvdComponents: AvdComponentsBuildService
-    @Mock lateinit var mockTestData: StaticTestData
-    @Mock lateinit var mockAppApk: File
-    @Mock lateinit var mockHelperApk: File
-    @Mock lateinit var mockLogger: Logger
-    @Mock lateinit var mockUtpConfigFactory: UtpConfigFactory
-    @Mock lateinit var mockemulatorControlConfig: EmulatorControlConfig
-    @Mock lateinit var mockRetentionConfig: RetentionConfig
-    @Mock lateinit var mockCoverageOutputDir: File
-    @Mock lateinit var mockAdditionalTestOutputDir: File
-    @Mock lateinit var mockDslDevice: ManagedVirtualDevice
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockManagedDeviceShard0: UtpManagedDevice
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockManagedDeviceShard1: UtpManagedDevice
-    @Mock lateinit var mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner
-    @Mock lateinit var mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpDependencies: UtpDependencies
-    @Mock lateinit var androidLocations: AndroidLocationsProvider
-    @Mock lateinit var lockManager: ManagedVirtualDeviceLockManager
-    @Mock lateinit var deviceLock: ManagedVirtualDeviceLockManager.DeviceLock
-    @Mock private lateinit var emulatorProvider: Provider<Directory>
-    @Mock private lateinit var emulatorDirectory: Directory
-    @Mock private lateinit var avdProvider: Provider<Directory>
-    @Mock private lateinit var avdDirectory: Directory
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var mockUtpRunProfileManager: UtpRunProfileManager
+    private val mockWorkerExecutor: WorkerExecutor = mock()
+    private val mockWorkQueue: WorkQueue = mock()
+    private val mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader = mock()
+    private val mockAvdComponents: AvdComponentsBuildService = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val mockTestData: StaticTestData = mock()
+    private val mockAppApk: File = mock()
+    private val mockHelperApk: File = mock()
+    private val mockLogger: Logger = mock()
+    private val mockUtpConfigFactory: UtpConfigFactory = mock()
+    private val mockemulatorControlConfig: EmulatorControlConfig = mock()
+    private val mockRetentionConfig: RetentionConfig = mock()
+    private val mockCoverageOutputDir: File = mock()
+    private val mockAdditionalTestOutputDir: File = mock()
+    private val mockDslDevice: ManagedVirtualDevice = mock()
+    private val mockManagedDeviceShard0: UtpManagedDevice = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val mockManagedDeviceShard1: UtpManagedDevice = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner = mock()
+    private val mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata = mock()
+    private val mockUtpDependencies: UtpDependencies = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+    private val androidLocations: AndroidLocationsProvider = mock()
+    private val lockManager: ManagedVirtualDeviceLockManager = mock()
+    private val deviceLock: ManagedVirtualDeviceLockManager.DeviceLock = mock()
+    private val emulatorProvider: Provider<Directory> = mock()
+    private val emulatorDirectory: Directory = mock()
+    private val avdProvider: Provider<Directory> = mock()
+    private val avdDirectory: Directory = mock()
+    private val mockUtpRunProfileManager: UtpRunProfileManager = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var emulatorFolder: File
     private lateinit var avdFolder: File
     private lateinit var emulatorFile: File
@@ -110,10 +102,10 @@ class ManagedDeviceTestRunnerTest {
 
         jvmExecutable = temporaryFolderRule.newFile()
 
-        `when`(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
-        `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
-        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { extractedSdkApks }
-        `when`(mockUtpConfigFactory.createRunnerConfigProtoForManagedDevice(
+        whenever(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
+        whenever(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
+        whenever(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { extractedSdkApks }
+        whenever(mockUtpConfigFactory.createRunnerConfigProtoForManagedDevice(
                 any(),
                 any(),
                 any(),
@@ -132,34 +124,34 @@ class ManagedDeviceTestRunnerTest {
                 any(),
                 any(),
                 any(),
-                nullable(Int::class.java),
+                anyOrNull<Int>(),
                 any(),
                 any(),
-                nullable(ShardConfig::class.java),)).then {
+                anyOrNull<ShardConfig>(),)).then {
             RunnerConfigProto.RunnerConfig.getDefaultInstance()
         }
-        `when`(mockUtpConfigFactory.createServerConfigProto())
+        whenever(mockUtpConfigFactory.createServerConfigProto())
                 .thenReturn(ServerConfig.getDefaultInstance())
 
-        `when`(mockAvdComponents.lockManager).thenReturn(lockManager)
-        `when`(lockManager.lock(any())).thenReturn(deviceLock)
+        whenever(mockAvdComponents.lockManager).thenReturn(lockManager)
+        whenever(lockManager.lock(any())).thenReturn(deviceLock)
 
         emulatorFolder = temporaryFolderRule.newFolder("emulator")
-        `when`(emulatorDirectory.asFile).thenReturn(emulatorFolder)
-        `when`(emulatorProvider.get()).thenReturn(emulatorDirectory)
-        `when`(emulatorProvider.isPresent()).thenReturn(true)
-        `when`(mockAvdComponents.emulatorDirectory).thenReturn(emulatorProvider)
+        whenever(emulatorDirectory.asFile).thenReturn(emulatorFolder)
+        whenever(emulatorProvider.get()).thenReturn(emulatorDirectory)
+        whenever(emulatorProvider.isPresent()).thenReturn(true)
+        whenever(mockAvdComponents.emulatorDirectory).thenReturn(emulatorProvider)
 
         avdFolder = temporaryFolderRule.newFolder("avd")
-        `when`(avdDirectory.asFile).thenReturn(avdFolder)
-        `when`(avdProvider.get()).thenReturn(avdDirectory)
-        `when`(mockAvdComponents.avdFolder).thenReturn(avdProvider)
+        whenever(avdDirectory.asFile).thenReturn(avdFolder)
+        whenever(avdProvider.get()).thenReturn(avdDirectory)
+        whenever(mockAvdComponents.avdFolder).thenReturn(avdProvider)
 
-        `when`(mockDslDevice.getName()).thenReturn("testDevice")
-        `when`(mockDslDevice.device).thenReturn("Pixel 2")
-        `when`(mockDslDevice.apiLevel).thenReturn(28)
-        `when`(mockDslDevice.systemImageSource).thenReturn("aosp")
-        `when`(mockDslDevice.require64Bit).thenReturn(true)
+        whenever(mockDslDevice.getName()).thenReturn("testDevice")
+        whenever(mockDslDevice.device).thenReturn("Pixel 2")
+        whenever(mockDslDevice.apiLevel).thenReturn(28)
+        whenever(mockDslDevice.systemImageSource).thenReturn("aosp")
+        whenever(mockDslDevice.require64Bit).thenReturn(true)
     }
 
     private fun <T> runInLinuxEnvironment(function: () -> T): T {
@@ -292,7 +284,7 @@ class ManagedDeviceTestRunnerTest {
 
     @Test
     fun runUtpWithShardsAndPassed() {
-        `when`(deviceLock.lockCount).thenReturn(2)
+        whenever(deviceLock.lockCount).thenReturn(2)
         val result = runUtp(result = true, numShards = 2)
 
         assertThat(capturedRunnerConfigs).hasSize(2)
@@ -313,7 +305,7 @@ class ManagedDeviceTestRunnerTest {
 
     @Test
     fun rerunUtpWhenEmulatorTimeoutExceptionOccurs() {
-        `when`(deviceLock.lockCount).thenReturn(2)
+        whenever(deviceLock.lockCount).thenReturn(2)
         val result = runUtp(
             result = true,
             numShards = 2,
@@ -328,9 +320,9 @@ class ManagedDeviceTestRunnerTest {
     fun runUtpBlocksDevicesCorrectly() {
         // use a real device lock manager to ensure blocking behavior.
         val avdFolder = temporaryFolderRule.newFolder()
-        `when`(androidLocations.gradleAvdLocation).thenReturn(avdFolder.toPath())
+        whenever(androidLocations.gradleAvdLocation).thenReturn(avdFolder.toPath())
         val deviceLockManager = ManagedVirtualDeviceLockManager(androidLocations, 1, 0L)
-        `when`(mockAvdComponents.lockManager).thenReturn(deviceLockManager)
+        whenever(mockAvdComponents.lockManager).thenReturn(deviceLockManager)
 
         // contains the list of blocking actions in order.
         val resultActions = mutableListOf<String>()

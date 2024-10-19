@@ -42,7 +42,6 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.services.getBuildServiceName
 import com.android.build.gradle.internal.tasks.bundle.appDependencies
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.build.libraries.metadata.AppDependencies
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
@@ -58,7 +57,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.FileInputStream
 import java.io.IOException
 import java.net.URI
@@ -201,14 +201,14 @@ class PerModuleReportDependenciesTaskTest {
 
 private fun mavenRepoMock(repoName: String, repoUrl: String): MavenArtifactRepository =
     mock<DefaultMavenArtifactRepository>().apply {
-        Mockito.`when`(name).thenReturn(repoName)
-        Mockito.`when`(url).thenReturn(URI.create(repoUrl))
+        whenever(name).thenReturn(repoName)
+        whenever(url).thenReturn(URI.create(repoUrl))
     }
 
 private fun ivyRepoMock(repoName: String, repoUrl: String): IvyArtifactRepository =
     mock<DefaultIvyArtifactRepository>().apply {
-        Mockito.`when`(name).thenReturn(repoName)
-        Mockito.`when`(url).thenReturn(URI.create(repoUrl))
+        whenever(name).thenReturn(repoName)
+        whenever(url).thenReturn(URI.create(repoUrl))
     }
 
 // TODO: simulate breaking change in internal API?

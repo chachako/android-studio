@@ -110,7 +110,7 @@ class LibraryManifestTest: VariantApiBaseTest(TestType.Script, ScriptingLanguage
                 super.toString().replace(System.getProperty("line.separator"), "\n")
         }
         val ps = PrintStream(byteArrayOutputStream)
-        val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+        val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
         val builtArtifacts = BuiltArtifactsLoaderImpl.loadFromFile(
             File(apkFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
         )

@@ -24,8 +24,11 @@ import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -34,8 +37,7 @@ class AnalyticsEnabledSourcesTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: Sources
+    private val delegate: Sources = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledSources by lazy {
@@ -44,8 +46,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getJava() {
-        testAnalytics(
-            SourceDirectories.Flat::class.java,
+        testAnalytics<SourceDirectories.Flat>(
             Sources::java,
             VariantPropertiesMethodType.SOURCES_JAVA_ACCESS_VALUE
         )
@@ -53,8 +54,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getKotlin() {
-        testAnalytics(
-            SourceDirectories.Flat::class.java,
+        testAnalytics<SourceDirectories.Flat>(
             Sources::kotlin,
             VariantPropertiesMethodType.SOURCES_KOTLIN_ACCESS_VALUE
         )
@@ -62,8 +62,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getRenderscript() {
-        testAnalytics(
-            SourceDirectories.Flat::class.java,
+        testAnalytics<SourceDirectories.Flat>(
             Sources::renderscript,
             VariantPropertiesMethodType.SOURCES_RENDERSCRIPT_ACCESS_VALUE
         )
@@ -71,8 +70,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getMlModels() {
-        testAnalytics(
-            SourceDirectories.Layered::class.java,
+        testAnalytics<SourceDirectories.Layered>(
             Sources::mlModels,
             VariantPropertiesMethodType.SOURCES_ML_MODELS_ACCESS_VALUE
         )
@@ -80,8 +78,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getAidl() {
-        testAnalytics(
-            SourceDirectories.Flat::class.java,
+        testAnalytics<SourceDirectories.Flat>(
             Sources::aidl,
             VariantPropertiesMethodType.SOURCES_AIDL_ACCESS_VALUE
         )
@@ -89,8 +86,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getRes() {
-        testAnalytics(
-            SourceDirectories.Layered::class.java,
+        testAnalytics<SourceDirectories.Layered>(
             Sources::res,
             VariantPropertiesMethodType.SOURCES_RES_ACCESS_VALUE
         )
@@ -98,8 +94,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getJniLibs() {
-        testAnalytics(
-            SourceDirectories.Layered::class.java,
+        testAnalytics<SourceDirectories.Layered>(
             Sources::jniLibs,
             VariantPropertiesMethodType.SOURCES_JNI_ACCESS_VALUE
         )
@@ -107,8 +102,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getShaders() {
-        testAnalytics(
-            SourceDirectories.Layered::class.java,
+        testAnalytics<SourceDirectories.Layered>(
             Sources::shaders,
             VariantPropertiesMethodType.SOURCES_SHADERS_ACCESS_VALUE
         )
@@ -116,8 +110,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getAssets() {
-        testAnalytics(
-            SourceDirectories.Layered::class.java,
+        testAnalytics<SourceDirectories.Layered>(
             Sources::assets,
             VariantPropertiesMethodType.SOURCES_ASSETS_ACCESS_VALUE
         )
@@ -125,8 +118,7 @@ class AnalyticsEnabledSourcesTest {
 
     @Test
     fun getResources() {
-        testAnalytics(
-            SourceDirectories.Flat::class.java,
+        testAnalytics<SourceDirectories.Flat>(
             Sources::resources,
             VariantPropertiesMethodType.SOURCES_RESOURCES_ACCESS_VALUE
         )
@@ -144,13 +136,12 @@ class AnalyticsEnabledSourcesTest {
         Truth.assertThat(proxy.renderscript).isNull()
     }
 
-    private fun <T: SourceDirectories> testAnalytics(
-        type: Class<T>,
+    private inline fun <reified T: SourceDirectories> testAnalytics(
         accessor: (sources: Sources) -> T?,
         analyticsEnumValue: Int,
     ) {
-        val mockedType = Mockito.mock(type)
-        Mockito.`when`(accessor(delegate)).thenReturn(mockedType)
+        val mockedType: T = mock()
+        whenever(accessor(delegate)).thenReturn(mockedType)
 
         val sourcesProxy = accessor(proxy)
         Truth.assertThat(sourcesProxy is AnalyticsEnabledSourceDirectories).isTrue()
@@ -160,7 +151,8 @@ class AnalyticsEnabledSourcesTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(analyticsEnumValue)
-        accessor(Mockito.verify(delegate, Mockito.times(1)))
+        accessor(verify(delegate, times(1)))
+        verifyNoMoreInteractions(delegate)
     }
 
 }

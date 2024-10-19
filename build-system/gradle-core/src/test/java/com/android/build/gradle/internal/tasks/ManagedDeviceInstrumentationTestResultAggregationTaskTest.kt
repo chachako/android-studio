@@ -20,8 +20,8 @@ import com.android.build.gradle.internal.component.InstrumentedTestCreationConfi
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.testutils.MockitoKt
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import java.io.File
@@ -36,41 +36,35 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.Mock
 import org.mockito.Mockito.CALLS_REAL_METHODS
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.UseConstructor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 
 /**
  * Unit tests for [ManagedDeviceInstrumentationTestResultAggregationTask].
  */
 class ManagedDeviceInstrumentationTestResultAggregationTaskTest {
-
-    @get:Rule
-    val mockitoRule = MockitoJUnit.rule()
-
     @get:Rule
     var temporaryFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var creationConfig: InstrumentedTestCreationConfig
+    private val creationConfig: InstrumentedTestCreationConfig = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
     @Before
     fun setUpMocks() {
-        `when`(creationConfig.computeTaskNameInternal(any(), any())).then {
+        whenever(creationConfig.computeTaskNameInternal(any(), any())).then {
             val prefix = it.getArgument<String>(0)
             val suffix = it.getArgument<String>(1)
             "${prefix}AndroidDebugTest${suffix}"
         }
-        `when`(creationConfig.name).thenReturn("AndroidDebugTest")
-        `when`(creationConfig.services.buildServiceRegistry
+        whenever(creationConfig.name).thenReturn("AndroidDebugTest")
+        whenever(creationConfig.services.buildServiceRegistry
                .registrations.getByName(any()))
             .thenReturn(
-                mock(BuildServiceRegistration::class.java, RETURNS_DEEP_STUBS))
+                mock<BuildServiceRegistration<*, *>>(defaultAnswer = RETURNS_DEEP_STUBS))
     }
 
     @Test
@@ -100,11 +94,9 @@ class ManagedDeviceInstrumentationTestResultAggregationTaskTest {
             File(rootResultsDir, TEST_RESULT_PB_FILE_NAME),
             temporaryFolderRule.newFolder("testReportOutputDir"),
         )
-        val task = mock(
-            ManagedDeviceInstrumentationTestResultAggregationTask::class.java,
-            RETURNS_DEEP_STUBS)
+        val task = mock<ManagedDeviceInstrumentationTestResultAggregationTask>(defaultAnswer = RETURNS_DEEP_STUBS)
 
-        `when`(task.project.buildDir).thenReturn(File("buildDir"))
+        whenever(task.project.buildDir).thenReturn(File("buildDir"))
 
         action.configure(task)
 
@@ -113,36 +105,30 @@ class ManagedDeviceInstrumentationTestResultAggregationTaskTest {
 
     @Test
     fun taskAction() {
-        val task = mock(
-            ManagedDeviceInstrumentationTestResultAggregationTask::class.java,
-            CALLS_REAL_METHODS)
-        `when`(task.analyticsService).thenReturn(MockitoKt.mock())
-        doReturn("path").`when`(task).path
-        doReturn(mock(TaskOutputsInternal::class.java, RETURNS_DEEP_STUBS))
-            .`when`(task).outputs
-        doReturn(MockitoKt.mock<Logger>()).`when`(task).logger
+        val task = mock<ManagedDeviceInstrumentationTestResultAggregationTask>(defaultAnswer = CALLS_REAL_METHODS)
+        whenever(task.analyticsService).thenReturn(mock())
+        doReturn("path").whenever(task).path
+        doReturn(mock<TaskOutputsInternal>(defaultAnswer = RETURNS_DEEP_STUBS))
+            .whenever(task).outputs
+        doReturn(mock<Logger>()).whenever(task).logger
 
-        val inputFiles = mock(
-            FakeConfigurableFileCollection::class.java,
-            withSettings()
-                .useConstructor(arrayOf(createResultProto(), createResultProto()))
-                .defaultAnswer(CALLS_REAL_METHODS)
-            )
-        doReturn(inputFiles).`when`(inputFiles).filter(any<Spec<File>>())
-        `when`(inputFiles.isEmpty).thenReturn(false)
-        doReturn(inputFiles).`when`(task).inputTestResultProtos
+        val inputFiles = mock<FakeConfigurableFileCollection>(
+            defaultAnswer = CALLS_REAL_METHODS,
+            useConstructor = UseConstructor.withArguments(arrayOf(createResultProto(), createResultProto())),
+        )
+        doReturn(inputFiles).whenever(inputFiles).filter(any<Spec<File>>())
+        whenever(inputFiles.isEmpty).thenReturn(false)
+        doReturn(inputFiles).whenever(task).inputTestResultProtos
 
         val outputFile = temporaryFolderRule.newFile()
-        val outputFileProperty = mock(
-            RegularFileProperty::class.java, RETURNS_DEEP_STUBS)
-        `when`(outputFileProperty.get().asFile).thenReturn(outputFile)
-        doReturn(outputFileProperty).`when`(task).outputTestResultProto
+        val outputFileProperty = mock<RegularFileProperty>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(outputFileProperty.get().asFile).thenReturn(outputFile)
+        doReturn(outputFileProperty).whenever(task).outputTestResultProto
 
         val testReportOutputDir = temporaryFolderRule.newFolder()
-        val testReportOutputDirProperty = mock(
-            DirectoryProperty::class.java, RETURNS_DEEP_STUBS)
-        `when`(testReportOutputDirProperty.get().asFile).thenReturn(testReportOutputDir)
-        doReturn(testReportOutputDirProperty).`when`(task).outputTestReportHtmlDir
+        val testReportOutputDirProperty = mock<DirectoryProperty>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(testReportOutputDirProperty.get().asFile).thenReturn(testReportOutputDir)
+        doReturn(testReportOutputDirProperty).whenever(task).outputTestReportHtmlDir
 
         task.taskAction()
 

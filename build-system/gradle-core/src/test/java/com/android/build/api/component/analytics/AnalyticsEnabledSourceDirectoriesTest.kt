@@ -28,8 +28,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskProvider
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -38,8 +40,7 @@ class AnalyticsEnabledSourceDirectoriesTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: SourceDirectories
+    private val delegate: SourceDirectories = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledSourceDirectories by lazy {
@@ -55,14 +56,14 @@ class AnalyticsEnabledSourceDirectoriesTest {
             abstract val output: DirectoryProperty
         }
         @Suppress("UNCHECKED_CAST")
-        val taskProvider = Mockito.mock(TaskProvider::class.java) as TaskProvider<CustomTask>
+        val taskProvider = mock<TaskProvider<CustomTask>>()
 
         proxy.addGeneratedSourceDirectory(taskProvider, CustomTask::output)
 
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SOURCES_DIRECTORIES_ADD_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .addGeneratedSourceDirectory(taskProvider, CustomTask::output)
     }
 
@@ -73,7 +74,7 @@ class AnalyticsEnabledSourceDirectoriesTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.SOURCES_DIRECTORIES_SRC_DIR_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .addStaticSourceDirectory("/path/to/directory")
     }
 }

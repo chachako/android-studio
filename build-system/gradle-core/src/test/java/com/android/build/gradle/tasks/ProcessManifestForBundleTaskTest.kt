@@ -34,9 +34,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.io.IOException
 
@@ -45,11 +44,9 @@ class ProcessManifestForBundleTaskTest {
     @Rule
     @JvmField var temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var creationConfig: ApplicationCreationConfig
+    private val creationConfig: ApplicationCreationConfig = mock()
 
-    @Mock
-    lateinit var workers: WorkerExecutor
+    private val workers: WorkerExecutor = mock()
 
     private lateinit var task: ProcessManifestForBundleTask
     private lateinit var sourceManifestFolder: File
@@ -57,7 +54,6 @@ class ProcessManifestForBundleTaskTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         val taskProvider = project.tasks.register("testManifestForBundle", ProcessManifestForBundleTask::class.java)
         task = taskProvider.get()
@@ -72,7 +68,7 @@ class ProcessManifestForBundleTaskTest {
             "split_full_name",
             FakeGradleProperty(value = "output_file_name"),
         )
-        Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainSplit)))
+        whenever(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainSplit)))
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
         task.analyticsService.set(FakeNoOpAnalyticsService())
     }

@@ -20,7 +20,8 @@ import com.google.common.truth.Truth
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class TaskConfigurationActionsTest {
 
@@ -50,10 +51,10 @@ class TaskConfigurationActionsTest {
         val action = createTaskAction()
 
         @Suppress("UNCHECKED_CAST")
-        val taskProvider = Mockito.mock(TaskProvider::class.java) as TaskProvider<Task>
-        Mockito.`when`(taskProvider.name).thenReturn("")
-        val task = Mockito.mock(Task::class.java)
-        Mockito.`when`(task.name).thenReturn("")
+        val taskProvider = mock<TaskProvider<Task>>()
+        whenever(taskProvider.name).thenReturn("")
+        val task = mock<Task>()
+        whenever(task.name).thenReturn("")
 
         // this tests the case where the registration does not trigger the configuration,
         // and therefore postRegisterHook() is called first, and then execute() on the action
@@ -69,10 +70,10 @@ class TaskConfigurationActionsTest {
         val action = createTaskAction()
 
         @Suppress("UNCHECKED_CAST")
-        val taskProvider = Mockito.mock(TaskProvider::class.java) as TaskProvider<Task>
-        Mockito.`when`(taskProvider.name).thenReturn("")
-        val task = Mockito.mock(Task::class.java)
-        Mockito.`when`(task.name).thenReturn("")
+        val taskProvider = mock<TaskProvider<Task>>()
+        whenever(taskProvider.name).thenReturn("")
+        val task = mock<Task>()
+        whenever(task.name).thenReturn("")
 
         // this tests the case where the registration triggers the configuration right away,
         // making postRegisterHook() called after execute()

@@ -34,9 +34,10 @@ import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskProvider
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class AnalyticsEnabledArtifactsTest {
     abstract class FileBasedTask : Task {
@@ -46,59 +47,56 @@ class AnalyticsEnabledArtifactsTest {
         abstract val outputDir: RegularFileProperty
     }
 
-    @Mock
-    lateinit var task: FileBasedTask
+    private val task: FileBasedTask = mock()
 
-    @Mock
-    lateinit var delegate: Artifacts
+    private val delegate: Artifacts = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private lateinit var proxy: AnalyticsEnabledArtifacts
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         proxy = AnalyticsEnabledArtifacts(delegate, stats, FakeObjectFactory.factory)
     }
 
     @Test
     fun testGetBuiltArtifactsLoader() {
         @Suppress("UNCHECKED_CAST")
-        val fakeLoader = Mockito.mock(BuiltArtifactsLoader::class.java)
+        val fakeLoader = mock<BuiltArtifactsLoader>()
 
-        Mockito.`when`(delegate.getBuiltArtifactsLoader()).thenReturn(fakeLoader)
+        whenever(delegate.getBuiltArtifactsLoader()).thenReturn(fakeLoader)
         Truth.assertThat(proxy.getBuiltArtifactsLoader()).isEqualTo(fakeLoader)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.GET_BUILT_ARTIFACTS_LOADER_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .getBuiltArtifactsLoader()
     }
 
     @Test
     fun testGet() {
         @Suppress("UNCHECKED_CAST")
-        val fakeProvider = Mockito.mock(Provider::class.java) as Provider<Directory>
+        val fakeProvider = mock<Provider<Directory>>()
 
-        Mockito.`when`(delegate.get(SingleArtifact.APK)).thenReturn(fakeProvider)
+        whenever(delegate.get(SingleArtifact.APK)).thenReturn(fakeProvider)
         Truth.assertThat(proxy.get(SingleArtifact.APK)).isEqualTo(fakeProvider)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.GET_ARTIFACT_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .get(SingleArtifact.APK)
     }
 
     @Test
     fun testUse() {
-        val taskProvider = Mockito.mock(TaskProvider::class.java)
-        val taskBasedOperation = Mockito.mock(TaskBasedOperation::class.java)
+        val taskProvider = mock<TaskProvider<*>>()
+        val taskBasedOperation = mock<TaskBasedOperation<*>>()
 
-        Mockito.`when`(delegate.use(taskProvider)).thenReturn(taskBasedOperation)
+        whenever(delegate.use(taskProvider)).thenReturn(taskBasedOperation)
         Truth.assertThat(proxy.use(taskProvider)).isInstanceOf(
             TaskBasedOperation::class.java
         )
@@ -107,15 +105,15 @@ class AnalyticsEnabledArtifactsTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.USE_TASK_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .use(taskProvider)
     }
 
     @Test
     fun testForProjectScope() {
-        val scopedArtifacts = Mockito.mock(ScopedArtifacts::class.java)
+        val scopedArtifacts = mock<ScopedArtifacts>()
 
-        Mockito.`when`(delegate.forScope(ScopedArtifacts.Scope.PROJECT)).thenReturn(scopedArtifacts)
+        whenever(delegate.forScope(ScopedArtifacts.Scope.PROJECT)).thenReturn(scopedArtifacts)
         Truth.assertThat(proxy.forScope(ScopedArtifacts.Scope.PROJECT)).isInstanceOf(
             ScopedArtifacts::class.java
         )
@@ -124,7 +122,7 @@ class AnalyticsEnabledArtifactsTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.FOR_SCOPE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .forScope(ScopedArtifacts.Scope.PROJECT)
     }
 }

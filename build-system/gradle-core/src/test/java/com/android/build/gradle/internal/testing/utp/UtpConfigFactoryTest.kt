@@ -38,12 +38,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
-import org.mockito.ArgumentMatchers
-import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -55,29 +52,28 @@ import kotlin.io.path.absolutePathString
  * Unit tests for [UtpConfigFactory].
  */
 class UtpConfigFactoryTest {
-    @get:Rule var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
     @get:Rule var temporaryFolder = TemporaryFolder()
 
-    @Mock private lateinit var versionedSdkLoader: VersionedSdkLoader
-    @Mock private lateinit var mockAppApk: File
-    @Mock private lateinit var mockTestApk: File
-    @Mock private lateinit var mockHelperApk: File
-    @Mock private lateinit var mockDevice: DeviceConnector
-    @Mock private lateinit var mockOutputDir: File
-    @Mock private lateinit var mockCoverageOutputDir: File
-    @Mock private lateinit var mockTmpDir: File
-    @Mock private lateinit var mockSdkDir: File
-    @Mock private lateinit var mockAdb: RegularFile
-    @Mock private lateinit var mockAdbFile: File
-    @Mock private lateinit var mockAdbProvider: Provider<RegularFile>
-    @Mock private lateinit var mockBuildToolInfo: BuildToolInfo
-    @Mock private lateinit var mockBuildToolInfoProvider: Provider<BuildToolInfo>
-    @Mock private lateinit var mockemulatorControlConfig: EmulatorControlConfig
-    @Mock private lateinit var mockRetentionConfig: RetentionConfig
-    @Mock private lateinit var mockResultListenerClientCert: File
-    @Mock private lateinit var mockResultListenerClientPrivateKey: File
-    @Mock private lateinit var mockTrustCertCollection: File
-    @Mock private lateinit var mockDependencyApk: File
+    private val versionedSdkLoader: VersionedSdkLoader = mock()
+    private val mockAppApk: File = mock()
+    private val mockTestApk: File = mock()
+    private val mockHelperApk: File = mock()
+    private val mockDevice: DeviceConnector = mock()
+    private val mockOutputDir: File = mock()
+    private val mockCoverageOutputDir: File = mock()
+    private val mockTmpDir: File = mock()
+    private val mockSdkDir: File = mock()
+    private val mockAdb: RegularFile = mock()
+    private val mockAdbFile: File = mock()
+    private val mockAdbProvider: Provider<RegularFile> = mock()
+    private val mockBuildToolInfo: BuildToolInfo = mock()
+    private val mockBuildToolInfoProvider: Provider<BuildToolInfo> = mock()
+    private val mockemulatorControlConfig: EmulatorControlConfig = mock()
+    private val mockRetentionConfig: RetentionConfig = mock()
+    private val mockResultListenerClientCert: File = mock()
+    private val mockResultListenerClientPrivateKey: File = mock()
+    private val mockTrustCertCollection: File = mock()
+    private val mockDependencyApk: File = mock()
 
     private lateinit var testResultListenerServerMetadata: UtpTestResultListenerServerMetadata
     private lateinit var testExtractedSdkApks: List<List<Path>>
@@ -107,56 +103,56 @@ class UtpConfigFactoryTest {
         }
     )
 
-    private val utpDependencies: UtpDependencies = mock(UtpDependencies::class.java) {
+    private val utpDependencies: UtpDependencies = mock<UtpDependencies>(defaultAnswer = {
         FakeConfigurableFileCollection(
             mockFile("path-to-${it.method.name.removePrefix("get")}.jar"))
-    }
+    })
 
     private val mockDependencyApkPath = mockPath("mockDependencyApkPath")
 
-    private fun mockFile(absolutePath: String): File = mock(File::class.java).also {
-        `when`(it.absolutePath).thenReturn(absolutePath)
+    private fun mockFile(absolutePath: String): File = mock<File>().also {
+        whenever(it.absolutePath).thenReturn(absolutePath)
     }
 
-    private fun mockPath(absolutePath: String): Path = mock(Path::class.java,
-            Answers.RETURNS_DEEP_STUBS).also {
-        `when`(it.absolutePathString()).thenReturn(absolutePath)
-    }
+    private fun mockPath(absolutePath: String): Path =
+        mock<Path>(defaultAnswer = Answers.RETURNS_DEEP_STUBS).also {
+            whenever(it.absolutePathString()).thenReturn(absolutePath)
+        }
 
     @Before
     fun setupMocks() {
-        `when`(mockDevice.apiLevel).thenReturn(30)
-        `when`(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
-        `when`(mockDevice.name).thenReturn("mockDeviceName")
-        `when`(mockOutputDir.absolutePath).thenReturn("mockOutputDirPath")
-        `when`(mockCoverageOutputDir.absolutePath).thenReturn("mockCoverageOutputDir")
-        `when`(mockTmpDir.absolutePath).thenReturn("mockTmpDirPath")
-        `when`(mockAppApk.absolutePath).thenReturn("mockAppApkPath")
-        `when`(mockTestApk.absolutePath).thenReturn("mockTestApkPath")
-        `when`(mockHelperApk.absolutePath).thenReturn("mockHelperApkPath")
-        `when`(versionedSdkLoader.sdkDirectoryProvider).thenReturn(
+        whenever(mockDevice.apiLevel).thenReturn(30)
+        whenever(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
+        whenever(mockDevice.name).thenReturn("mockDeviceName")
+        whenever(mockOutputDir.absolutePath).thenReturn("mockOutputDirPath")
+        whenever(mockCoverageOutputDir.absolutePath).thenReturn("mockCoverageOutputDir")
+        whenever(mockTmpDir.absolutePath).thenReturn("mockTmpDirPath")
+        whenever(mockAppApk.absolutePath).thenReturn("mockAppApkPath")
+        whenever(mockTestApk.absolutePath).thenReturn("mockTestApkPath")
+        whenever(mockHelperApk.absolutePath).thenReturn("mockHelperApkPath")
+        whenever(versionedSdkLoader.sdkDirectoryProvider).thenReturn(
             FakeGradleProvider(
                 FakeGradleDirectory(mockSdkDir)
             )
         )
-        `when`(mockSdkDir.absolutePath).thenReturn("mockSdkDirPath")
-        `when`(versionedSdkLoader.adbExecutableProvider).thenReturn(mockAdbProvider)
-        `when`(mockAdbProvider.get()).thenReturn(mockAdb)
-        `when`(mockAdb.asFile).thenReturn(mockAdbFile)
-        `when`(mockAdbFile.absolutePath).thenReturn("mockAdbPath")
-        `when`(versionedSdkLoader.buildToolInfoProvider).thenReturn(mockBuildToolInfoProvider)
-        `when`(mockBuildToolInfoProvider.get()).thenReturn(mockBuildToolInfo)
-        `when`(mockBuildToolInfo.getPath(ArgumentMatchers.any())).then {
+        whenever(mockSdkDir.absolutePath).thenReturn("mockSdkDirPath")
+        whenever(versionedSdkLoader.adbExecutableProvider).thenReturn(mockAdbProvider)
+        whenever(mockAdbProvider.get()).thenReturn(mockAdb)
+        whenever(mockAdb.asFile).thenReturn(mockAdbFile)
+        whenever(mockAdbFile.absolutePath).thenReturn("mockAdbPath")
+        whenever(versionedSdkLoader.buildToolInfoProvider).thenReturn(mockBuildToolInfoProvider)
+        whenever(mockBuildToolInfoProvider.get()).thenReturn(mockBuildToolInfo)
+        whenever(mockBuildToolInfo.getPath(any())).then {
             when (it.getArgument<BuildToolInfo.PathId>(0)) {
                 BuildToolInfo.PathId.AAPT -> "mockAaptPath"
                 BuildToolInfo.PathId.DEXDUMP -> "mockDexdumpPath"
                 else -> null
             }
         }
-        `when`(mockResultListenerClientCert.absolutePath).thenReturn("mockResultListenerClientCertPath")
-        `when`(mockResultListenerClientPrivateKey.absolutePath).thenReturn("mockResultListenerClientPrivateKeyPath")
-        `when`(mockTrustCertCollection.absolutePath).thenReturn("mockTrustCertCollectionPath")
-        `when`(mockDependencyApk.toPath()).thenReturn(mockDependencyApkPath)
+        whenever(mockResultListenerClientCert.absolutePath).thenReturn("mockResultListenerClientCertPath")
+        whenever(mockResultListenerClientPrivateKey.absolutePath).thenReturn("mockResultListenerClientPrivateKeyPath")
+        whenever(mockTrustCertCollection.absolutePath).thenReturn("mockTrustCertCollectionPath")
+        whenever(mockDependencyApk.toPath()).thenReturn(mockDependencyApkPath)
         testResultListenerServerMetadata = UtpTestResultListenerServerMetadata(
                 serverCert = mockTrustCertCollection,
                 serverPort = 1234,
@@ -335,9 +331,9 @@ class UtpConfigFactoryTest {
         """.trimIndent()
         Files.writeString(filePath, content, StandardCharsets.UTF_8, StandardOpenOption.CREATE)
 
-        `when`(mockemulatorControlConfig.enabled).thenReturn(true)
-        `when`(mockemulatorControlConfig.secondsValid).thenReturn(100)
-        `when`(mockDevice.serialNumber).thenReturn("emulator-mockDeviceSerialNumber")
+        whenever(mockemulatorControlConfig.enabled).thenReturn(true)
+        whenever(mockemulatorControlConfig.secondsValid).thenReturn(100)
+        whenever(mockDevice.serialNumber).thenReturn("emulator-mockDeviceSerialNumber")
 
         assertThat(mockemulatorControlConfig.enabled).isTrue()
 
@@ -374,9 +370,9 @@ class UtpConfigFactoryTest {
     @Test
     fun createRunnerConfigProtoWithEmulatorAccessForManagedDevice() {
         val aud = setOf(*arrayOf("a", "b"))
-        `when`(mockemulatorControlConfig.enabled).thenReturn(true)
-        `when`(mockemulatorControlConfig.secondsValid).thenReturn(100)
-        `when`(mockemulatorControlConfig.allowedEndpoints).thenReturn(aud)
+        whenever(mockemulatorControlConfig.enabled).thenReturn(true)
+        whenever(mockemulatorControlConfig.secondsValid).thenReturn(100)
+        whenever(mockemulatorControlConfig.allowedEndpoints).thenReturn(aud)
         assertThat(mockemulatorControlConfig.enabled).isTrue()
 
         val runnerConfigProto = createForManagedDevice()
@@ -394,8 +390,8 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoWithIcebox() {
-        `when`(mockRetentionConfig.enabled).thenReturn(true)
-        `when`(mockRetentionConfig.retainAll).thenReturn(true)
+        whenever(mockRetentionConfig.enabled).thenReturn(true)
+        whenever(mockRetentionConfig.retainAll).thenReturn(true)
 
         val runnerConfigProto = createForLocalDevice()
 
@@ -412,8 +408,8 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoWithDebugAndIcebox() {
-        `when`(mockRetentionConfig.enabled).thenReturn(true)
-        `when`(mockRetentionConfig.retainAll).thenReturn(true)
+        whenever(mockRetentionConfig.enabled).thenReturn(true)
+        whenever(mockRetentionConfig.retainAll).thenReturn(true)
 
         val runnerConfigProto = createForLocalDevice(
             testData = testData.copy(instrumentationRunnerArguments = mapOf("debug" to "true")))
@@ -423,10 +419,10 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoWithIceboxAndCompression() {
-        `when`(mockRetentionConfig.enabled).thenReturn(true)
-        `when`(mockRetentionConfig.maxSnapshots).thenReturn(2)
-        `when`(mockRetentionConfig.retainAll).thenReturn(false)
-        `when`(mockRetentionConfig.compressSnapshots).thenReturn(true)
+        whenever(mockRetentionConfig.enabled).thenReturn(true)
+        whenever(mockRetentionConfig.maxSnapshots).thenReturn(2)
+        whenever(mockRetentionConfig.retainAll).thenReturn(false)
+        whenever(mockRetentionConfig.compressSnapshots).thenReturn(true)
 
         val runnerConfigProto = createForLocalDevice()
 
@@ -445,8 +441,8 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoWithIceboxAndOrchestrator() {
-        `when`(mockRetentionConfig.enabled).thenReturn(true)
-        `when`(mockRetentionConfig.retainAll).thenReturn(true)
+        whenever(mockRetentionConfig.enabled).thenReturn(true)
+        whenever(mockRetentionConfig.retainAll).thenReturn(true)
 
         val runnerConfigProto = createForLocalDevice(useOrchestrator = true)
 
@@ -513,8 +509,8 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigManagedDeviceWithRetention() {
-        `when`(mockRetentionConfig.enabled).thenReturn(true)
-        `when`(mockRetentionConfig.retainAll).thenReturn(true)
+        whenever(mockRetentionConfig.enabled).thenReturn(true)
+        whenever(mockRetentionConfig.retainAll).thenReturn(true)
 
         val runnerConfigProto = createForManagedDevice()
 
@@ -758,7 +754,7 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoForLocalDeviceWithAdditionalTestOutputNotSupported() {
-        `when`(mockDevice.apiLevel).thenReturn(15)
+        whenever(mockDevice.apiLevel).thenReturn(15)
         val runnerConfigProto = createForLocalDevice(
             additionalTestOutputDir = mockFile("additionalTestOutputDir")
         )

@@ -22,9 +22,9 @@ import com.android.build.gradle.internal.testing.EmulatorVersionMetadata
 import com.android.build.gradle.internal.testing.QemuExecutor
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdManager
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import com.android.utils.FileUtils
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
@@ -39,10 +39,10 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
-import org.mockito.Mockito.anyBoolean
+import org.mockito.kotlin.any
 import org.mockito.Mockito.contains
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import java.io.File
 import java.io.InputStream
@@ -52,45 +52,35 @@ import java.lang.RuntimeException
 class AvdSnapshotHandlerTest {
 
     @get:Rule
-    val mockitoRule = MockitoJUnit.rule()
-
-    @get:Rule
     val tmpFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var mockAdbHelper: AdbHelper
+    private val mockAdbHelper: AdbHelper = mock()
 
-    @Mock
-    lateinit var mockAvdManager: AvdManager
+    private val mockAvdManager: AvdManager = mock()
 
-    @Mock
-    lateinit var mockAvdInfo: AvdInfo
+    private val mockAvdInfo: AvdInfo = mock()
 
-    @Mock
-    lateinit var mockLogger: ILogger
+    private val mockLogger: ILogger = mock()
 
-    @Mock
-    lateinit var emulatorDirectoryProvider: Provider<Directory>
+    private val emulatorDirectoryProvider: Provider<Directory> = mock()
 
-    @Mock
-    lateinit var emulatorDir: Directory
+    private val emulatorDir: Directory = mock()
 
-    @Mock
-    lateinit var qemuExecutor: QemuExecutor
+    private val qemuExecutor: QemuExecutor = mock()
 
     private val emulatorDirectory: File by lazy(LazyThreadSafetyMode.NONE) { tmpFolder.newFolder() }
     private val avdDirectory: File by lazy(LazyThreadSafetyMode.NONE) { tmpFolder.newFolder() }
 
     @Before
     fun setupMocks() {
-        `when`(emulatorDirectoryProvider.orNull).thenReturn(emulatorDir)
-        `when`(emulatorDir.asFile).thenReturn(emulatorDirectory)
-        `when`(mockAdbHelper.findDeviceSerialWithId(any(), any())).thenReturn("myTestDeviceSerial")
-        `when`(mockAdbHelper.isBootCompleted(any(), any())).thenReturn(true)
-        `when`(mockAdbHelper.isPackageManagerStarted(any(), any())).thenReturn(true)
-        `when`(mockAvdManager.getAvd(any(), anyBoolean())).thenReturn(mockAvdInfo)
+        whenever(emulatorDirectoryProvider.orNull).thenReturn(emulatorDir)
+        whenever(emulatorDir.asFile).thenReturn(emulatorDirectory)
+        whenever(mockAdbHelper.findDeviceSerialWithId(any(), any())).thenReturn("myTestDeviceSerial")
+        whenever(mockAdbHelper.isBootCompleted(any(), any())).thenReturn(true)
+        whenever(mockAdbHelper.isPackageManagerStarted(any(), any())).thenReturn(true)
+        whenever(mockAvdManager.getAvd(any(), any())).thenReturn(mockAvdInfo)
         val dataFolder = tmpFolder.newFolder()
-        `when`(mockAvdInfo.dataFolderPath).thenReturn(dataFolder.toPath())
+        whenever(mockAvdInfo.dataFolderPath).thenReturn(dataFolder.toPath())
     }
 
     private fun createMockProcessBuilder(
@@ -98,12 +88,12 @@ class AvdSnapshotHandlerTest {
             env: MutableMap<String, String> = mutableMapOf()): ProcessBuilder {
         val mockProcessBuilder = mock<ProcessBuilder>()
         val mockProcess = mock<Process>()
-        `when`(mockProcessBuilder.start()).thenReturn(mockProcess)
-        `when`(mockProcessBuilder.environment()).thenReturn(env)
-        `when`(mockProcess.inputStream).thenReturn(stdout.byteInputStream())
-        `when`(mockProcess.errorStream).thenReturn(InputStream.nullInputStream())
-        `when`(mockProcess.waitFor(any(), any())).thenReturn(true)
-        `when`(mockProcess.isAlive).thenReturn(true)
+        whenever(mockProcessBuilder.start()).thenReturn(mockProcess)
+        whenever(mockProcessBuilder.environment()).thenReturn(env)
+        whenever(mockProcess.inputStream).thenReturn(stdout.byteInputStream())
+        whenever(mockProcess.errorStream).thenReturn(InputStream.nullInputStream())
+        whenever(mockProcess.waitFor(any(), any())).thenReturn(true)
+        whenever(mockProcess.isAlive).thenReturn(true)
         return mockProcessBuilder
     }
 

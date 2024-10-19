@@ -22,7 +22,7 @@ import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.testutils.MockitoKt
-import com.android.testutils.MockitoKt.any
+import org.mockito.kotlin.any
 import com.android.testutils.SystemPropertyOverrides
 import com.android.utils.Environment
 import org.junit.Before
@@ -40,11 +40,11 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.mockito.Answers.CALLS_REAL_METHODS
 import org.mockito.Answers.RETURNS_DEEP_STUBS
 import org.mockito.Mock
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 
 class ManagedDeviceCleanTaskTest {
@@ -55,11 +55,9 @@ class ManagedDeviceCleanTaskTest {
     @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var globalConfig: GlobalTaskCreationConfigImpl
+    private val globalConfig: GlobalTaskCreationConfigImpl = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
-    @Mock
-    private lateinit var avdService: AvdComponentsBuildService
+    private val avdService: AvdComponentsBuildService = mock()
 
     private lateinit var project: Project
 
@@ -68,8 +66,8 @@ class ManagedDeviceCleanTaskTest {
         Environment.initialize()
 
         // Setup Build Services for configuration.
-        val mockGeneralRegistration = mock(BuildServiceRegistration::class.java, RETURNS_DEEP_STUBS)
-        `when`(globalConfig.services.buildServiceRegistry.registrations.getByName(any()))
+        val mockGeneralRegistration = mock<BuildServiceRegistration<*, *>>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(globalConfig.services.buildServiceRegistry.registrations.getByName(any()))
             .thenReturn(mockGeneralRegistration)
 
         project = ProjectBuilder.builder().withProjectDir(temporaryFolderRule.newFolder()).build()
@@ -97,42 +95,39 @@ class ManagedDeviceCleanTaskTest {
 
     private fun <T> mockEmptyProperty(): Property<T> {
         @Suppress("UNCHECKED_CAST")
-        return mock(Property::class.java) as Property<T>
+        return mock<Property<T>>()
     }
 
     private fun <T> mockEmptyListProperty(): ListProperty<T> {
-        @Suppress("UNCHECKED_CAST")
-        return mock(ListProperty::class.java) as ListProperty<T>
+        return mock<ListProperty<T>>()
     }
 
     /**
      * Returns a clean task that is ready to use for testing.
      */
     private fun basicTaskSetup(): ManagedDeviceCleanTask {
-        val task = mock(
-            ManagedDeviceCleanTask::class.java,
-            CALLS_REAL_METHODS)
+        val task = mock<ManagedDeviceCleanTask>(defaultAnswer = CALLS_REAL_METHODS)
 
         // Need to use a real property for all variables passed into the ManagedDeviceCleanRunnable
         // Because internal to Gradle's implementation of ProfileAwareWorkAction
         // a forced cast occurs to cast Provider to ProviderInternal which we
         // do not have access to directly.
-        doReturn(realPropertyFor(mock(AnalyticsService::class.java)))
-            .`when`(task).analyticsService
-        doReturn(realPropertyFor("project_path")).`when`(task).projectPath
+        doReturn(realPropertyFor(mock<AnalyticsService>()))
+            .whenever(task).analyticsService
+        doReturn(realPropertyFor("project_path")).whenever(task).projectPath
 
-        doReturn("path").`when`(task).path
-        doReturn(mock(TaskOutputsInternal::class.java, RETURNS_DEEP_STUBS))
-            .`when`(task).outputs
-        doReturn(MockitoKt.mock<Logger>()).`when`(task).logger
+        doReturn("path").whenever(task).path
+        doReturn(mock<TaskOutputsInternal>(defaultAnswer = RETURNS_DEEP_STUBS))
+            .whenever(task).outputs
+        doReturn(mock<Logger>()).whenever(task).logger
 
-        doReturn(realPropertyFor(avdService)).`when`(task).avdService
-        doReturn(realListPropertyFor<String>()).`when`(task).dslDevices
-        doReturn(realPropertyFor(false)).`when`(task).preserveDefined
-        doReturn(listOf<String>()).`when`(avdService).allAvds()
+        doReturn(realPropertyFor(avdService)).whenever(task).avdService
+        doReturn(realListPropertyFor<String>()).whenever(task).dslDevices
+        doReturn(realPropertyFor(false)).whenever(task).preserveDefined
+        doReturn(listOf<String>()).whenever(avdService).allAvds()
 
         doReturn(FakeGradleWorkExecutor(project.objects, temporaryFolderRule.newFolder()))
-            .`when`(task).workerExecutor
+            .whenever(task).workerExecutor
         return task
     }
 
@@ -145,8 +140,8 @@ class ManagedDeviceCleanTaskTest {
             "another_avd",
             "one_more_avd"
         )
-        doReturn(avdList).`when`(avdService).allAvds()
-        doReturn(realListPropertyFor("an_avd")).`when`(task).dslDevices
+        doReturn(avdList).whenever(avdService).allAvds()
+        doReturn(realListPropertyFor("an_avd")).whenever(task).dslDevices
 
         task.doTaskAction()
 
@@ -166,9 +161,9 @@ class ManagedDeviceCleanTaskTest {
             "another_avd",
             "one_more_avd"
         )
-        doReturn(avdList).`when`(avdService).allAvds()
-        doReturn(realListPropertyFor("an_avd")).`when`(task).dslDevices
-        doReturn(realPropertyFor(true)).`when`(task).preserveDefined
+        doReturn(avdList).whenever(avdService).allAvds()
+        doReturn(realListPropertyFor("an_avd")).whenever(task).dslDevices
+        doReturn(realPropertyFor(true)).whenever(task).preserveDefined
 
         task.doTaskAction()
         verify(avdService).allAvds()
@@ -211,7 +206,7 @@ class ManagedDeviceCleanTaskTest {
                     )
                 )
 
-                val task = mock(ManagedDeviceCleanTask::class.java, RETURNS_DEEP_STUBS)
+                val task = mock<ManagedDeviceCleanTask>(defaultAnswer = RETURNS_DEEP_STUBS)
 
                 // We need to create mock properties to verify/capture values in the task as
                 // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
@@ -220,9 +215,9 @@ class ManagedDeviceCleanTaskTest {
                 val dslDevicesProperty = mockEmptyListProperty<String>()
                 val preserveDefinedProperty = mockEmptyProperty<Boolean>()
 
-                `when`(task.avdService).thenReturn(avdProperty)
-                `when`(task.dslDevices).thenReturn(dslDevicesProperty)
-                `when`(task.preserveDefined).thenReturn(preserveDefinedProperty)
+                whenever(task.avdService).thenReturn(avdProperty)
+                whenever(task.dslDevices).thenReturn(dslDevicesProperty)
+                whenever(task.preserveDefined).thenReturn(preserveDefinedProperty)
 
                 config.configure(task)
 

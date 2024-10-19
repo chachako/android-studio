@@ -67,9 +67,11 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
-import org.mockito.Mockito
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import java.io.BufferedReader
@@ -159,75 +161,32 @@ open class BasicModuleModelMock {
     val home = join(tempFolder, "home")
     val projects = join(tempFolder, "projects")
     val throwUnmocked = RuntimeExceptionAnswer()
-    private val globalConfig: GlobalTaskCreationConfig = mock(
-        GlobalTaskCreationConfig::class.java,
-        throwUnmocked
-    )
-    val projectInfo: ProjectInfo = mock(
-        ProjectInfo::class.java,
-        throwUnmocked
-    )
+    private val globalConfig: GlobalTaskCreationConfig = mock(defaultAnswer = throwUnmocked)
+    val projectInfo: ProjectInfo = mock(defaultAnswer = throwUnmocked)
 
-    val variantExperimentalPropertiesMapProperty: MapProperty<*, *> = mock(
-        MapProperty::class.java,
-        throwUnmocked
-    )
+    val variantExperimentalPropertiesMapProperty: MapProperty<*, *> = mock(defaultAnswer = throwUnmocked)
 
-    val variantImpl: VariantImpl<*> = mock(
-        VariantImpl::class.java,
-        throwUnmocked
-    )
+    val variantImpl: VariantImpl<*> = mock(defaultAnswer = throwUnmocked)
 
-    val taskCreationServices: TaskCreationServices = mock(
-        TaskCreationServices::class.java,
-        throwUnmocked
-    )
+    val taskCreationServices: TaskCreationServices = mock(defaultAnswer = throwUnmocked)
 
-    val issueReporter: IssueReporter = mock(IssueReporter::class.java)
+    val issueReporter: IssueReporter = mock()
 
-    val externalNativeBuild: ExternalNativeBuild = mock(
-        ExternalNativeBuild::class.java,
-        throwUnmocked
-    )
-    val cmake: CmakeOptions = mock(
-        CmakeOptions::class.java,
-        throwUnmocked
-    )
-    val ndkBuild: NdkBuildOptions = mock(
-        NdkBuildOptions::class.java,
-        throwUnmocked
-    )
+    val externalNativeBuild: ExternalNativeBuild = mock(defaultAnswer = throwUnmocked)
+    val cmake: CmakeOptions = mock(defaultAnswer = throwUnmocked)
+    val ndkBuild: NdkBuildOptions = mock(defaultAnswer = throwUnmocked)
     val ndkInstallStatus = NdkInstallStatus.Valid(
-        mock(
-            NdkPlatform::class.java,
-            throwUnmocked
-    ))
-    val coreExternalNativeBuildOptions = mock(
-        ExternalNativeBuildOptions::class.java,
-        throwUnmocked
-    )
-    val variantExternalNativeBuild = mock(
-        com.android.build.api.variant.ExternalNativeBuild::class.java
-    )
+        mock<NdkPlatform>(defaultAnswer = throwUnmocked))
+    val coreExternalNativeBuildOptions = mock<ExternalNativeBuildOptions>(defaultAnswer = throwUnmocked)
+    val variantExternalNativeBuild = mock<com.android.build.api.variant.ExternalNativeBuild>()
 
-    val mergedNdkConfig = mock(
-        MergedNdkConfig::class.java,
-        throwUnmocked
-    )
+    val mergedNdkConfig = mock<MergedNdkConfig>(defaultAnswer = throwUnmocked)
 
-    val androidLocationProvider = mock(
-        AndroidLocationsProvider::class.java
-    )
+    val androidLocationProvider = mock<AndroidLocationsProvider>()
 
-    val nativeLocationsBuildService = mock(
-        NativeLocationsBuildService::class.java,
-        throwUnmocked
-    )
+    val nativeLocationsBuildService = mock<NativeLocationsBuildService>(defaultAnswer = throwUnmocked)
 
-    val sdkComponents = mock(
-        SdkComponentsBuildService::class.java,
-        throwUnmocked
-    )
+    val sdkComponents = mock<SdkComponentsBuildService>(defaultAnswer = throwUnmocked)
 
     val versionExecutor : (File) -> String = { exe ->
         val processBuilder = ProcessBuilder(exe.absolutePath, "--version")
@@ -247,39 +206,22 @@ open class BasicModuleModelMock {
             inputStreamReader?.close()
         }
     }
-    val projectOptions = mock(
-        ProjectOptions::class.java,
-        throwUnmocked
-    )
-    private val project = mock(
-        Project::class.java,
-        throwUnmocked
-    )
+    val projectOptions = mock<ProjectOptions>(defaultAnswer = throwUnmocked)
+    private val project = mock<Project>(defaultAnswer = throwUnmocked)
 
     val allPlatformsProjectRootDir = join(projects, "MyProject")
     val projectRootDir = join(allPlatformsProjectRootDir,  "Source", "Android")
     val sdkDir = join(home, "Library", "Android", "sdk")
     val cmakeDir = join(sdkDir, "cmake", CMakeVersion.DEFAULT.version, "bin")
-    val ndkHandler = mock(
-        SdkComponentsBuildService.VersionedNdkHandler::class.java,
-        throwUnmocked
-    )
+    val ndkHandler = mock<SdkComponentsBuildService.VersionedNdkHandler>(defaultAnswer = throwUnmocked)
 
     val minSdkVersion = AndroidVersionImpl(19)
-    val cmakeFinder = mock(
-        CmakeLocator::class.java,
-        throwUnmocked
-    )
-    val ninjaFinder = mock(
-        NinjaLocator::class.java,
-        throwUnmocked
-    )
+    val cmakeFinder = mock<CmakeLocator>(defaultAnswer = throwUnmocked)
+    val ninjaFinder = mock<NinjaLocator>(defaultAnswer = throwUnmocked)
 
-    val buildFeatures = mock(BuildFeatureValues::class.java, throwUnmocked)
+    val buildFeatures = mock<BuildFeatureValues>(defaultAnswer = throwUnmocked)
 
-    val gradle = mock(
-        Gradle::class.java
-    )
+    val gradle = mock<Gradle>()
 
     val providers = FakeProviderFactory(FakeProviderFactory.factory, emptyMap())
 
@@ -296,93 +238,77 @@ open class BasicModuleModelMock {
 
     private val variantExperimentalProperties : MutableMap<String, Any> = mutableMapOf()
 
-    private fun <T> any(): T {
-        Mockito.any<T>()
-        return uninitialized()
-    }
-
-    private fun <T> uninitialized(): T = null as T
-
     fun mockModule(appName : String) : File {
         val appFolder = join(projectRootDir, appName)
 
-        val appFolderDirectory = mock(
-            Directory::class.java,
-            throwUnmocked
-        )
-        doReturn(appFolder).`when`(appFolderDirectory).asFile
+        val appFolderDirectory = mock<Directory>(defaultAnswer = throwUnmocked)
+        doReturn(appFolder).whenever(appFolderDirectory).asFile
 
         val buildDir = File(appFolder, "build")
-        val buildDirProperty = mock(DirectoryProperty::class.java, throwUnmocked)
-        val buildDirProvider = mock(Provider::class.java, throwUnmocked) as Provider<File>
-        doReturn(buildDirProperty).`when`(projectInfo).buildDirectory
-        doReturn(buildDirProvider).`when`(buildDirProperty).asFile
-        doReturn(buildDir).`when`(buildDirProvider).get()
+        val buildDirProperty = mock<DirectoryProperty>(defaultAnswer = throwUnmocked)
+        val buildDirProvider = mock<Provider<File>>(defaultAnswer = throwUnmocked)
+        doReturn(buildDirProperty).whenever(projectInfo).buildDirectory
+        doReturn(buildDirProvider).whenever(buildDirProperty).asFile
+        doReturn(buildDir).whenever(buildDirProvider).get()
 
 
         val intermediates = File(buildDir, "intermediates")
-        val intermediatesDir = mock(Directory::class.java, throwUnmocked)
-        val intermediatesProvider = mock(Provider::class.java, throwUnmocked) as Provider<Directory>
-        doReturn(intermediatesProvider).`when`(projectInfo).intermediatesDirectory
-        doReturn(intermediatesDir).`when`(intermediatesProvider).get()
-        doReturn(intermediates).`when`(intermediatesDir).asFile
+        val intermediatesDir = mock<Directory>(defaultAnswer = throwUnmocked)
+        val intermediatesProvider = mock<Provider<Directory>>(defaultAnswer = throwUnmocked)
+        doReturn(intermediatesProvider).whenever(projectInfo).intermediatesDirectory
+        doReturn(intermediatesDir).whenever(intermediatesProvider).get()
+        doReturn(intermediates).whenever(intermediatesDir).asFile
 
-        val abiSplitOptions = mock(
-            AbiSplitOptions::class.java,
-            throwUnmocked
-        )
-        val splits = mock(
-            Splits::class.java,
-            throwUnmocked
-        )
+        val abiSplitOptions = mock<AbiSplitOptions>(defaultAnswer = throwUnmocked)
+        val splits = mock<Splits>(defaultAnswer = throwUnmocked)
 
-        val prefabArtifactCollection = mock(ArtifactCollection::class.java, throwUnmocked)
-        val prefabFileCollection = mock(FileCollection::class.java, throwUnmocked)
+        val prefabArtifactCollection = mock<ArtifactCollection>(defaultAnswer = throwUnmocked)
+        val prefabFileCollection = mock<FileCollection>(defaultAnswer = throwUnmocked)
 
 
-        doReturn(join(buildDir, "build.gradle")).`when`(projectInfo).buildFile
-        doReturn(projectRootDir).`when`(projectInfo).rootDir
-        doReturn(appName).`when`(projectInfo).path
+        doReturn(join(buildDir, "build.gradle")).whenever(projectInfo).buildFile
+        doReturn(projectRootDir).whenever(projectInfo).rootDir
+        doReturn(appName).whenever(projectInfo).path
 
-        doReturn(appFolderDirectory).`when`(projectInfo).projectDirectory
+        doReturn(appFolderDirectory).whenever(projectInfo).projectDirectory
 
-        doReturn(externalNativeBuild).`when`(globalConfig).externalNativeBuild
-        doReturn("12.3.4").`when`(globalConfig).compileSdkHashString
-        doReturn("29.3.4").`when`(globalConfig).ndkVersion
-        doReturn("/path/to/nowhere").`when`(globalConfig).ndkPath
+        doReturn(externalNativeBuild).whenever(globalConfig).externalNativeBuild
+        doReturn("12.3.4").whenever(globalConfig).compileSdkHashString
+        doReturn("29.3.4").whenever(globalConfig).ndkVersion
+        doReturn("/path/to/nowhere").whenever(globalConfig).ndkPath
 
-        doReturn(splits).`when`(globalConfig).splits
+        doReturn(splits).whenever(globalConfig).splits
 
-        doReturn(globalConfig).`when`(this.variantImpl).global
-        doReturn(variantExperimentalPropertiesMapProperty).`when`(this.variantImpl).experimentalProperties
-        doReturn(variantExperimentalProperties).`when`(this.variantExperimentalPropertiesMapProperty).get()
-        doReturn(taskCreationServices).`when`(this.variantImpl).services
-        doReturn(issueReporter).`when`(this.taskCreationServices).issueReporter
-        doReturn(projectInfo).`when`(this.taskCreationServices).projectInfo
+        doReturn(globalConfig).whenever(this.variantImpl).global
+        doReturn(variantExperimentalPropertiesMapProperty).whenever(this.variantImpl).experimentalProperties
+        doReturn(variantExperimentalProperties).whenever(this.variantExperimentalPropertiesMapProperty).get()
+        doReturn(taskCreationServices).whenever(this.variantImpl).services
+        doReturn(issueReporter).whenever(this.taskCreationServices).issueReporter
+        doReturn(projectInfo).whenever(this.taskCreationServices).projectInfo
 
-        val variantDependencies = Mockito.mock(VariantDependencies::class.java)
-        doReturn(prefabArtifactCollection).`when`(variantDependencies).getArtifactCollection(
+        val variantDependencies = mock<VariantDependencies>()
+        doReturn(prefabArtifactCollection).whenever(variantDependencies).getArtifactCollection(
             AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
             AndroidArtifacts.ArtifactScope.ALL,
             AndroidArtifacts.ArtifactType.PREFAB_PACKAGE
         )
-        doReturn(variantDependencies).`when`(this.variantImpl).variantDependencies
-        doReturn(minSdkVersion).`when`(this.variantImpl).minSdkVersion
-        doReturn(minSdkVersion).`when`(this.variantImpl).minSdk
-        doReturn(prefabFileCollection).`when`(prefabArtifactCollection).artifactFiles
-        doReturn(emptyList<File>().iterator()).`when`(prefabFileCollection).iterator()
+        doReturn(variantDependencies).whenever(this.variantImpl).variantDependencies
+        doReturn(minSdkVersion).whenever(this.variantImpl).minSdkVersion
+        doReturn(minSdkVersion).whenever(this.variantImpl).minSdk
+        doReturn(prefabFileCollection).whenever(prefabArtifactCollection).artifactFiles
+        doReturn(emptyList<File>().iterator()).whenever(prefabFileCollection).iterator()
 
-        doReturn(variantExternalNativeBuild).`when`(this.variantImpl).externalNativeBuild
+        doReturn(variantExternalNativeBuild).whenever(this.variantImpl).externalNativeBuild
 
-        val nativeBuildCreationConfig = mock(NativeBuildCreationConfig::class.java)
+        val nativeBuildCreationConfig = mock<NativeBuildCreationConfig>()
 
-        doReturn(mergedNdkConfig).`when`(nativeBuildCreationConfig).ndkConfig
-        doReturn(variantExperimentalProperties).`when`(nativeBuildCreationConfig).externalNativeExperimentalProperties
-        doReturn(nativeBuildCreationConfig).`when`(this.variantImpl).nativeBuildCreationConfig
-        doReturn(abiSplitOptions).`when`(splits).abi
-        doReturn(setOf<String>()).`when`(splits).abiFilters
-        doReturn(false).`when`(abiSplitOptions).isUniversalApk
-        doReturn(":$appName").`when`(project).path
+        doReturn(mergedNdkConfig).whenever(nativeBuildCreationConfig).ndkConfig
+        doReturn(variantExperimentalProperties).whenever(nativeBuildCreationConfig).externalNativeExperimentalProperties
+        doReturn(nativeBuildCreationConfig).whenever(this.variantImpl).nativeBuildCreationConfig
+        doReturn(abiSplitOptions).whenever(splits).abi
+        doReturn(setOf<String>()).whenever(splits).abiFilters
+        doReturn(false).whenever(abiSplitOptions).isUniversalApk
+        doReturn(":$appName").whenever(project).path
 
         return appFolder
     }
@@ -415,73 +341,73 @@ open class BasicModuleModelMock {
             .onEach { it.parentFile.mkdirs() }
             .onEach { it.writeText("fake STL generated by BasicModuleModelMock") }
 
-        doReturn(cmake).`when`(externalNativeBuild).cmake
-        doReturn(ndkBuild).`when`(externalNativeBuild).ndkBuild
-        doReturn(null).`when`(cmake).path
-        doReturn(null).`when`(ndkBuild).path
-        doReturn(null).`when`(cmake).buildStagingDirectory
-        doReturn(null).`when`(ndkBuild).buildStagingDirectory
-        doReturn(Mockito.mock(SetProperty::class.java)).`when`(variantExternalNativeBuild).abiFilters
-        doReturn(Mockito.mock(ListProperty::class.java)).`when`(variantExternalNativeBuild).arguments
-        doReturn(Mockito.mock(ListProperty::class.java)).`when`(variantExternalNativeBuild).cFlags
-        doReturn(Mockito.mock(ListProperty::class.java)).`when`(variantExternalNativeBuild).cppFlags
-        doReturn(Mockito.mock(SetProperty::class.java)).`when`(variantExternalNativeBuild).targets
-        doReturn(setOf<String>()).`when`(mergedNdkConfig).abiFilters
-        doReturn("debug").`when`(variantImpl).name
-        doReturn(buildFeatures).`when`(variantImpl).buildFeatures
+        doReturn(cmake).whenever(externalNativeBuild).cmake
+        doReturn(ndkBuild).whenever(externalNativeBuild).ndkBuild
+        doReturn(null).whenever(cmake).path
+        doReturn(null).whenever(ndkBuild).path
+        doReturn(null).whenever(cmake).buildStagingDirectory
+        doReturn(null).whenever(ndkBuild).buildStagingDirectory
+        doReturn(mock<SetProperty<*>>()).whenever(variantExternalNativeBuild).abiFilters
+        doReturn(mock<ListProperty<*>>()).whenever(variantExternalNativeBuild).arguments
+        doReturn(mock<ListProperty<*>>()).whenever(variantExternalNativeBuild).cFlags
+        doReturn(mock<ListProperty<*>>()).whenever(variantExternalNativeBuild).cppFlags
+        doReturn(mock<SetProperty<*>>()).whenever(variantExternalNativeBuild).targets
+        doReturn(setOf<String>()).whenever(mergedNdkConfig).abiFilters
+        doReturn("debug").whenever(variantImpl).name
+        doReturn(buildFeatures).whenever(variantImpl).buildFeatures
 
         projectRootDir.mkdirs()
         sdkDir.mkdirs()
 
-        doReturn(projectOptions).`when`(taskCreationServices).projectOptions
+        doReturn(projectOptions).whenever(taskCreationServices).projectOptions
 
-        doReturn(FakeGradleProvider(FakeGradleDirectory(sdkDir))).`when`(sdkComponents).sdkDirectoryProvider
-        doReturn(null).`when`(sdkComponents).ndkSymlinkDirFromProperties
-        doReturn(null).`when`(sdkComponents).cmakeDirFromProperties
-        doReturn("").`when`(projectOptions)
+        doReturn(FakeGradleProvider(FakeGradleDirectory(sdkDir))).whenever(sdkComponents).sdkDirectoryProvider
+        doReturn(null).whenever(sdkComponents).ndkSymlinkDirFromProperties
+        doReturn(null).whenever(sdkComponents).cmakeDirFromProperties
+        doReturn("").whenever(projectOptions)
             .get(StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR)
-        doReturn(false).`when`(projectOptions)
+        doReturn(false).whenever(projectOptions)
             .get(BooleanOption.ENABLE_PROFILE_JSON)
-        doReturn(BooleanOption.ENABLE_CMAKE_BUILD_COHABITATION.defaultValue).`when`(projectOptions)
+        doReturn(BooleanOption.ENABLE_CMAKE_BUILD_COHABITATION.defaultValue).whenever(projectOptions)
             .get(BooleanOption.ENABLE_CMAKE_BUILD_COHABITATION)
         doReturn(true)
-            .`when`(projectOptions).get(BooleanOption.BUILD_ONLY_TARGET_ABI)
-        doReturn(false).`when`(buildFeatures).prefab
+            .whenever(projectOptions).get(BooleanOption.BUILD_ONLY_TARGET_ABI)
+        doReturn(false).whenever(buildFeatures).prefab
         doReturn(true)
-            .`when`(projectOptions).get(BooleanOption.ENABLE_SIDE_BY_SIDE_CMAKE)
+            .whenever(projectOptions).get(BooleanOption.ENABLE_SIDE_BY_SIDE_CMAKE)
         doReturn(null)
-            .`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
+            .whenever(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
         doReturn("verbose")
-            .`when`(projectOptions).get(StringOption.NATIVE_BUILD_OUTPUT_LEVEL)
+            .whenever(projectOptions).get(StringOption.NATIVE_BUILD_OUTPUT_LEVEL)
 
-        doReturn(defaultCmakeVersion.toString()).`when`(cmake).version
-        doReturn(listOf(Abi.X86.tag, Abi.X86_64.tag, Abi.ARMEABI_V7A.tag, Abi.ARM64_V8A.tag)).`when`(ndkInstallStatus.getOrThrow()).supportedAbis
-        doReturn(listOf(Abi.X86.tag)).`when`(ndkInstallStatus.getOrThrow()).defaultAbis
+        doReturn(defaultCmakeVersion.toString()).whenever(cmake).version
+        doReturn(listOf(Abi.X86.tag, Abi.X86_64.tag, Abi.ARMEABI_V7A.tag, Abi.ARM64_V8A.tag)).whenever(ndkInstallStatus.getOrThrow()).supportedAbis
+        doReturn(listOf(Abi.X86.tag)).whenever(ndkInstallStatus.getOrThrow()).defaultAbis
 
-        doReturn(ndkHandler).`when`(sdkComponents).versionedNdkHandler(
-            Mockito.anyString(), Mockito.anyString()
+        doReturn(ndkHandler).whenever(sdkComponents).versionedNdkHandler(
+            any(), any()
         )
-        doReturn(ndkHandler).`when`(globalConfig).versionedNdkHandler
-        doReturn(ndkInstallStatus).`when`(ndkHandler).ndkPlatform
-        doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true)
-        doReturn(true).`when`(variantImpl).debuggable
+        doReturn(ndkHandler).whenever(globalConfig).versionedNdkHandler
+        doReturn(ndkInstallStatus).whenever(ndkHandler).ndkPlatform
+        doReturn(ndkInstallStatus).whenever(ndkHandler).getNdkPlatform(true)
+        doReturn(true).whenever(variantImpl).debuggable
 
         val ndkInfo = NdkR25Info(ndkFolder)
-        doReturn(ndkInfo).`when`(ndkInstallStatus.getOrThrow()).ndkInfo
-        doReturn(ndkFolder).`when`(ndkInstallStatus.getOrThrow()).ndkDirectory
-        doReturn(Revision.parseRevision(NDK_DEFAULT_VERSION)).`when`(ndkInstallStatus.getOrThrow()).revision
-        doReturn(cmakeDir.parentFile).`when`(cmakeFinder)
-            .findCmakePath(any(), any(), any(), any(), any(), any())
+        doReturn(ndkInfo).whenever(ndkInstallStatus.getOrThrow()).ndkInfo
+        doReturn(ndkFolder).whenever(ndkInstallStatus.getOrThrow()).ndkDirectory
+        doReturn(Revision.parseRevision(NDK_DEFAULT_VERSION)).whenever(ndkInstallStatus.getOrThrow()).revision
+        doReturn(cmakeDir.parentFile).whenever(cmakeFinder)
+            .findCmakePath(anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
 
-        doReturn(cmakeDir.parentFile.resolve("ninja.exe")).`when`(ninjaFinder)
-            .findNinjaPath(any(), any())
+        doReturn(cmakeDir.parentFile.resolve("ninja.exe")).whenever(ninjaFinder)
+            .findNinjaPath(anyOrNull(), anyOrNull())
 
 
-        doReturn(null).`when`(gradle).parent
+        doReturn(null).whenever(gradle).parent
 
-        doReturn(setOf< Prefab>()).`when`(globalConfig).prefabOrEmpty
-        doReturn(cmakeDir.resolve("cmake")).`when`(nativeLocationsBuildService).locateCMake(any(), any())
-        doReturn(cmakeDir.resolve("ninja")).`when`(nativeLocationsBuildService).locateNinja(any())
+        doReturn(setOf< Prefab>()).whenever(globalConfig).prefabOrEmpty
+        doReturn(cmakeDir.resolve("cmake")).whenever(nativeLocationsBuildService).locateCMake(anyOrNull(), anyOrNull())
+        doReturn(cmakeDir.resolve("ninja")).whenever(nativeLocationsBuildService).locateNinja(anyOrNull())
 
         mockModule("app1")
     }

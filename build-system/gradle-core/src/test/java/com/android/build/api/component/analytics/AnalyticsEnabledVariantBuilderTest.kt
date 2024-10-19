@@ -21,10 +21,9 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -33,8 +32,7 @@ class AnalyticsEnabledVariantBuilderTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: AnalyticsEnabledVariantBuilder
+    private val delegate: AnalyticsEnabledVariantBuilder = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledVariantBuilder by lazy {

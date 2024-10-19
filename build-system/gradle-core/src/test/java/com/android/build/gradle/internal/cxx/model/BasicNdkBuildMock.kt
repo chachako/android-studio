@@ -19,7 +19,9 @@ package com.android.build.gradle.internal.cxx.model
 import com.android.utils.FileUtils
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
-import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /**
  * Set up a basic environment that will result in an ndk-build [CxxModuleModel]
@@ -37,25 +39,25 @@ open class BasicNdkBuildMock : BasicModuleModelMock() {
     val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, "x86") }
 
     init {
-        Mockito.doReturn(makeSetProperty(setOf())).`when`(variantExternalNativeBuild).abiFilters
-        Mockito.doReturn(makeListProperty(listOf("APP_STL=c++_shared"))).`when`(variantExternalNativeBuild).arguments
-        Mockito.doReturn(makeListProperty(listOf("-DC_FLAG_DEFINED"))).`when`(variantExternalNativeBuild).cFlags
-        Mockito.doReturn(makeListProperty(listOf("-DCPP_FLAG_DEFINED"))).`when`(variantExternalNativeBuild).cppFlags
-        Mockito.doReturn(makeSetProperty(setOf())).`when`(variantExternalNativeBuild).targets
+        doReturn(makeSetProperty(setOf())).whenever(variantExternalNativeBuild).abiFilters
+        doReturn(makeListProperty(listOf("APP_STL=c++_shared"))).whenever(variantExternalNativeBuild).arguments
+        doReturn(makeListProperty(listOf("-DC_FLAG_DEFINED"))).whenever(variantExternalNativeBuild).cFlags
+        doReturn(makeListProperty(listOf("-DCPP_FLAG_DEFINED"))).whenever(variantExternalNativeBuild).cppFlags
+        doReturn(makeSetProperty(setOf())).whenever(variantExternalNativeBuild).targets
         val makefile = FileUtils.join(allPlatformsProjectRootDir, "Android.mk")
-        Mockito.doReturn(makefile).`when`(ndkBuild).path
+        doReturn(makefile).whenever(ndkBuild).path
         projectRootDir.mkdirs()
         makefile.writeText("# written by ${BasicNdkBuildMock::class}")
     }
 
     private fun makeListProperty(values: List<String>): ListProperty<*> =
-        Mockito.mock(ListProperty::class.java).also {
-            Mockito.doReturn(values).`when`(it).get()
+        mock<ListProperty<*>>().also {
+            doReturn(values).whenever(it).get()
         }
 
     private fun makeSetProperty(values: Set<String>): SetProperty<*> =
-            Mockito.mock(SetProperty::class.java).also {
-                Mockito.doReturn(values).`when`(it).get()
+            mock<SetProperty<*>>().also {
+                doReturn(values).whenever(it).get()
             }
 
 }

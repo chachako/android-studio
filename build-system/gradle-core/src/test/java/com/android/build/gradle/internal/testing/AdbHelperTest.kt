@@ -20,7 +20,7 @@ import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.fixtures.FakeGradleRegularFile
 import com.android.repository.io.FileOpUtils
-import com.android.testutils.MockitoKt.mock
+import org.mockito.kotlin.mock
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
 import java.io.ByteArrayInputStream
@@ -33,8 +33,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Answers
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 
@@ -50,11 +50,9 @@ class AdbHelperTest {
     private lateinit var adbExecutable: Path
     private lateinit var adbFilePath: String
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var versionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
+    private val versionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
 
-    @Mock
-    private lateinit var logger: ILogger
+    private val logger: ILogger = mock()
 
     private lateinit var adbHelper: AdbHelper
     private val processCalls = mutableListOf<List<String>>()
@@ -66,7 +64,7 @@ class AdbHelperTest {
         adbExecutable = rootDir.resolve("adb")
         adbFilePath = FileOpUtils.toFile(adbExecutable).absolutePath
 
-        `when`(versionedSdkLoader.adbExecutableProvider)
+        whenever(versionedSdkLoader.adbExecutableProvider)
             .thenReturn(
                 FakeGradleProvider(FakeGradleRegularFile(FileOpUtils.toFile(adbExecutable)))
             )
@@ -204,13 +202,13 @@ class AdbHelperTest {
     private fun createAdbHelper(processOutputFunc: (args: List<String>) -> String) {
         adbHelper = AdbHelper(FakeGradleProvider(versionedSdkLoader)) { argList ->
             mock<ProcessBuilder>().apply {
-                `when`(start()).then {
+                whenever(start()).then {
                     processCalls.add(argList)
-                    mock<Process>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+                    mock<Process>(defaultAnswer = Answers.RETURNS_DEEP_STUBS).apply {
                         val processOutput = processOutputFunc(argList)
-                        `when`(inputStream)
+                        whenever(inputStream)
                             .thenReturn(ByteArrayInputStream(processOutput.toByteArray()))
-                        `when`(errorStream)
+                        whenever(errorStream)
                             .thenReturn(ByteArrayInputStream("".toByteArray()))
                     }
                 }

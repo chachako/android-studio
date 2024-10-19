@@ -17,8 +17,9 @@
 package com.android.build.gradle.tasks
 
 import com.google.common.truth.Truth.assertThat
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import com.android.builder.core.BuilderConstants
 import com.android.ide.common.resources.AssetSet
 import com.google.common.collect.Lists
@@ -222,7 +223,7 @@ class MergeSourceSetFoldersTest {
     }
 
     private fun setupLibraryDependencies(vararg objects: Any): List<AssetSet> {
-        val libraries = mock(ArtifactCollection::class.java)
+        val libraries = mock<ArtifactCollection>()
 
         val artifacts = LinkedHashSet<ResolvedArtifactResult>()
         val files = HashSet<File>()
@@ -239,16 +240,16 @@ class MergeSourceSetFoldersTest {
 
             files.add(file)
 
-            val artifact = mock(ResolvedArtifactResult::class.java)
+            val artifact = mock<ResolvedArtifactResult>()
             artifacts.add(artifact)
 
-            val artifactId = mock(ComponentArtifactIdentifier::class.java)
-            val id = mock(ProjectComponentIdentifier::class.java)
+            val artifactId = mock<ComponentArtifactIdentifier>()
+            val id = mock<ProjectComponentIdentifier>()
 
-            `when`(id.buildTreePath).thenReturn(path)
-            `when`<ComponentIdentifier>(artifactId.componentIdentifier).thenReturn(id)
-            `when`(artifact.file).thenReturn(file)
-            `when`(artifact.id).thenReturn(artifactId)
+            whenever(id.buildTreePath).thenReturn(path)
+            doReturn(id).whenever(artifactId).getComponentIdentifier()
+            whenever(artifact.file).thenReturn(file)
+            whenever(artifact.id).thenReturn(artifactId)
 
             // create a resource set that must match the one returned by the computation
             val set = AssetSet(path, null)
@@ -257,8 +258,8 @@ class MergeSourceSetFoldersTest {
             i += 2
         }
 
-        `when`(libraries.artifacts).thenReturn(artifacts)
-        `when`(libraries.artifactFiles).thenReturn(task.libraries)
+        whenever(libraries.artifacts).thenReturn(artifacts)
+        whenever(libraries.artifactFiles).thenReturn(task.libraries)
 
         task.libraryCollection = libraries
         task.libraries.from(files)

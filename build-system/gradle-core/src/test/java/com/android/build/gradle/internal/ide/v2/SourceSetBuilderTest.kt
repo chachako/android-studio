@@ -53,13 +53,14 @@ import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.options.SyncOptions
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.model.v2.ide.ProjectType
-import com.android.testutils.MockitoKt
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginManager
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class SourceSetBuilderTest {
 
@@ -76,7 +77,7 @@ class SourceSetBuilderTest {
 
     private val dslServices = createDslServices(
         projectServices = projectServices,
-        sdkComponents = FakeGradleProvider(Mockito.mock(SdkComponentsBuildService::class.java))
+        sdkComponents = FakeGradleProvider(mock<SdkComponentsBuildService>())
     )
 
     @Before
@@ -244,9 +245,9 @@ class SourceSetBuilderTest {
         buildType: String,
         flavors: List<Pair<String, String>> = listOf()
     ): DeviceTestCreationConfig {
-        val testComponentConfig = Mockito.mock(DeviceTestCreationConfig::class.java)
-        Mockito.`when`(testComponentConfig.buildType).thenReturn(buildType)
-        Mockito.`when`(testComponentConfig.productFlavors).thenReturn(flavors)
+        val testComponentConfig = mock<DeviceTestCreationConfig>()
+        whenever(testComponentConfig.buildType).thenReturn(buildType)
+        whenever(testComponentConfig.productFlavors).thenReturn(flavors)
         return testComponentConfig
     }
 
@@ -254,10 +255,10 @@ class SourceSetBuilderTest {
         buildType: String,
         flavors: List<Pair<String, String>> = listOf()
     ): TestComponentCreationConfig {
-        val testComponentConfig = Mockito.mock(TestComponentCreationConfig::class.java)
-        Mockito.`when`(testComponentConfig.componentType).thenReturn(ComponentTypeImpl.UNIT_TEST)
-        Mockito.`when`(testComponentConfig.buildType).thenReturn(buildType)
-        Mockito.`when`(testComponentConfig.productFlavors).thenReturn(flavors)
+        val testComponentConfig = mock<TestComponentCreationConfig>()
+        whenever(testComponentConfig.componentType).thenReturn(ComponentTypeImpl.UNIT_TEST)
+        whenever(testComponentConfig.buildType).thenReturn(buildType)
+        whenever(testComponentConfig.productFlavors).thenReturn(flavors)
         return testComponentConfig
     }
 
@@ -265,10 +266,10 @@ class SourceSetBuilderTest {
         buildType: String,
         flavors: List<Pair<String, String>> = listOf()
     ): TestComponentCreationConfig {
-        val testComponentConfig = Mockito.mock(TestComponentCreationConfig::class.java)
-        Mockito.`when`(testComponentConfig.componentType).thenReturn(ComponentTypeImpl.SCREENSHOT_TEST)
-        Mockito.`when`(testComponentConfig.buildType).thenReturn(buildType)
-        Mockito.`when`(testComponentConfig.productFlavors).thenReturn(flavors)
+        val testComponentConfig = mock<TestComponentCreationConfig>()
+        whenever(testComponentConfig.componentType).thenReturn(ComponentTypeImpl.SCREENSHOT_TEST)
+        whenever(testComponentConfig.buildType).thenReturn(buildType)
+        whenever(testComponentConfig.productFlavors).thenReturn(flavors)
         return testComponentConfig
     }
 
@@ -276,11 +277,11 @@ class SourceSetBuilderTest {
         buildType: String,
         flavors: List<Pair<String, String>> = listOf()
     ): VariantCreationConfig {
-        val variant = Mockito.mock(ApplicationVariantImpl::class.java)
-        val testFixtures = Mockito.mock(TestFixturesImpl::class.java)
-        Mockito.`when`(variant.testFixtures).thenReturn(testFixtures)
-        Mockito.`when`(testFixtures.buildType).thenReturn(buildType)
-        Mockito.`when`(testFixtures.productFlavors).thenReturn(flavors)
+        val variant = mock<ApplicationVariantImpl>()
+        val testFixtures = mock<TestFixturesImpl>()
+        whenever(variant.testFixtures).thenReturn(testFixtures)
+        whenever(testFixtures.buildType).thenReturn(buildType)
+        whenever(testFixtures.productFlavors).thenReturn(flavors)
         return variant
     }
 
@@ -324,16 +325,16 @@ class SourceSetBuilderTest {
     }
 
     private fun createVariantModel() : VariantModel {
-        val globalConfig = Mockito.mock(GlobalTaskCreationConfigImpl::class.java)
-        Mockito.`when`(globalConfig.services).thenReturn(dslServices)
-        val projectServices = Mockito.mock(ProjectServices::class.java)
-        val projectOptions = Mockito.mock(ProjectOptions::class.java)
-        val pluginManager = Mockito.mock(PluginManager::class.java)
+        val globalConfig = mock<GlobalTaskCreationConfigImpl>()
+        whenever(globalConfig.services).thenReturn(dslServices)
+        val projectServices = mock<ProjectServices>()
+        val projectOptions = mock<ProjectOptions>()
+        val pluginManager = mock<PluginManager>()
 
-        Mockito.`when`(projectServices.plugins).thenReturn(pluginManager)
-        Mockito.`when`(projectServices.projectOptions).thenReturn(projectOptions)
-        Mockito.`when`(pluginManager.hasPlugin(MockitoKt.any())).thenReturn(false)
-        Mockito.`when`(projectOptions.get(MockitoKt.any<BooleanOption>())).thenReturn(false)
+        whenever(projectServices.plugins).thenReturn(pluginManager)
+        whenever(projectServices.projectOptions).thenReturn(projectOptions)
+        whenever(pluginManager.hasPlugin(any())).thenReturn(false)
+        whenever(projectOptions.get(any<BooleanOption>())).thenReturn(false)
 
         val inputBuilder = VariantInputModelBuilder(ComponentTypeImpl.BASE_APK, dslServices)
         inputBuilder.buildTypes { create("debug") }

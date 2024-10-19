@@ -63,7 +63,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -82,7 +84,7 @@ class TaskBasedOperationsImplTest {
     private lateinit var project: Project
     private lateinit var artifacts: ArtifactsImpl
     private val taskInitialized = AtomicBoolean(false)
-    private val component = Mockito.mock(VariantImpl::class.java)
+    private val component = mock<VariantImpl<*>>()
     private lateinit var profileDir: File
 
     @Before
@@ -101,11 +103,11 @@ class TaskBasedOperationsImplTest {
 
         artifacts.getArtifactContainer(InternalArtifactType.COMPATIBLE_SCREEN_MANIFEST)
             .initArtifactContainer(
-                Mockito.mock(TaskProvider::class.java),
+                mock<TaskProvider<*>>(),
                 inputFolderProperty,
-                Mockito.mock(ArtifactNamingContext::class.java)
+                mock<ArtifactNamingContext>()
             )
-        Mockito.`when`(component.artifacts).thenReturn(artifacts)
+        whenever(component.artifacts).thenReturn(artifacts)
         profileDir = tmpDir.newFolder("profile_proto")
     }
 
@@ -277,18 +279,18 @@ class TaskBasedOperationsImplTest {
 
         val projectPath = project.path
         val taskPath = ":replace"
-        val finishEvent: TaskFinishEvent = Mockito.mock(TaskFinishEvent::class.java)
-        val operationDescriptor: TaskOperationDescriptor = Mockito.mock(TaskOperationDescriptor::class.java)
-        val finishResult: TaskSuccessResult = Mockito.mock(TaskSuccessResult::class.java)
+        val finishEvent: TaskFinishEvent = mock()
+        val operationDescriptor: TaskOperationDescriptor = mock()
+        val finishResult: TaskSuccessResult = mock()
         val startTime = 1L
         val endTime = 2L
 
-        Mockito.doReturn(operationDescriptor).`when`(finishEvent).descriptor
-        Mockito.doReturn(taskPath).`when`(operationDescriptor).taskPath
-        Mockito.doReturn(finishResult).`when`(finishEvent).result
-        Mockito.doReturn(false).`when`(finishResult).isUpToDate
-        Mockito.doReturn(startTime).`when`(finishResult).startTime
-        Mockito.doReturn(endTime).`when`(finishResult).endTime
+        doReturn(operationDescriptor).whenever(finishEvent).descriptor
+        doReturn(taskPath).whenever(operationDescriptor).taskPath
+        doReturn(finishResult).whenever(finishEvent).result
+        doReturn(false).whenever(finishResult).isUpToDate
+        doReturn(startTime).whenever(finishResult).startTime
+        doReturn(endTime).whenever(finishResult).endTime
 
         project.gradle.sharedServices.registerIfAbsent(getBuildServiceName(AnalyticsService::class.java), AnalyticsService::class.java) {
             it.parameters.enableProfileJson.set(true)

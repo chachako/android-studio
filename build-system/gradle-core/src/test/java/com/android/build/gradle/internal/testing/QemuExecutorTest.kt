@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.testing
 
-import com.android.testutils.MockitoKt.any
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.android.utils.ILogger
@@ -27,34 +26,24 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 
 class QemuExecutorTest {
-
-    @get:Rule
-    val mockitoRule: MockitoRule = MockitoJUnit.rule()
-
     @get:Rule
     val tmpFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var logger: ILogger
+    private val logger: ILogger = mock()
 
-    @Mock
-    lateinit var processBuilder: ProcessBuilder
+    private val processBuilder: ProcessBuilder = mock()
 
-    @Mock
-    lateinit var process: Process
+    private val process: Process = mock()
 
-    @Mock
-    lateinit var emulatorDirectoryProvider: Provider<Directory>
+    private val emulatorDirectoryProvider: Provider<Directory> = mock()
 
-    @Mock
-    lateinit var emulatorDirectory: Directory
+    private val emulatorDirectory: Directory = mock()
 
     lateinit var qcowFile: File
     lateinit var emulatorFolder: File
@@ -64,8 +53,8 @@ class QemuExecutorTest {
 
     @Before
     fun setup() {
-        `when`(processBuilder.start()).thenReturn(process)
-        `when`(process.waitFor(any(), any())).thenReturn(true)
+        whenever(processBuilder.start()).thenReturn(process)
+        whenever(process.waitFor(any(), any())).thenReturn(true)
 
         deviceDirectory = tmpFolder.newFolder()
         qcowFile = deviceDirectory.resolve("test.qcow2").also {
@@ -77,8 +66,8 @@ class QemuExecutorTest {
         emulatorFolder = tmpFolder.newFolder()
         qemuImageExecutable = emulatorFolder.resolve("qemu-img")
 
-        `when`(emulatorDirectoryProvider.get()).thenReturn(emulatorDirectory)
-        `when`(emulatorDirectory.asFile).thenReturn(emulatorFolder)
+        whenever(emulatorDirectoryProvider.get()).thenReturn(emulatorDirectory)
+        whenever(emulatorDirectory.asFile).thenReturn(emulatorFolder)
     }
 
     @Test

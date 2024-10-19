@@ -32,9 +32,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -44,11 +43,9 @@ class ProcessManifestForMetadataFeatureTaskTest {
     @Rule
     @JvmField var temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var mainSplit: VariantOutputImpl
+    private val mainSplit: VariantOutputImpl = mock()
 
-    @Mock
-    lateinit var variantOutputConfiguration: VariantOutputConfigurationImpl
+    private val variantOutputConfiguration: VariantOutputConfigurationImpl = mock()
 
     private lateinit var task: ProcessManifestForMetadataFeatureTask
     private lateinit var sourceManifestFolder: File
@@ -63,7 +60,6 @@ class ProcessManifestForMetadataFeatureTaskTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         task = project.tasks.register(
             "testManifestForMetadataFeature",
@@ -72,10 +68,10 @@ class ProcessManifestForMetadataFeatureTaskTest {
         ).get()
         task.analyticsService.set(FakeNoOpAnalyticsService())
         sourceManifestFolder = temporaryFolder.newFolder("source_manifest")
-        Mockito.`when`(mainSplit.variantOutputConfiguration).thenReturn(variantOutputConfiguration)
-        Mockito.`when`(variantOutputConfiguration.outputType).thenReturn(
+        whenever(mainSplit.variantOutputConfiguration).thenReturn(variantOutputConfiguration)
+        whenever(variantOutputConfiguration.outputType).thenReturn(
             VariantOutputConfiguration.OutputType.SINGLE)
-        Mockito.`when`(variantOutputConfiguration.filters).thenReturn(listOf())
+        whenever(variantOutputConfiguration.filters).thenReturn(listOf())
     }
 
     @Test

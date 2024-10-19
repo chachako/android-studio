@@ -27,10 +27,6 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.builder.model.TestOptions
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
-import com.android.testutils.MockitoKt.same
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -44,11 +40,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
-import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.same
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import javax.inject.Inject
 
 /**
@@ -61,12 +58,11 @@ class ManagedDeviceTestTaskTest {
     interface TestRunConfigAction : DeviceTestRunConfigureAction<TestDevice, TestRunInput>
     interface TestRunTaskAction : DeviceTestRunTaskAction<TestRunInput>
 
-    @get:Rule val mockitoRule = MockitoJUnit.rule()
     @get:Rule val tempFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS) lateinit var creationConfig: InstrumentedTestCreationConfig
-    @Mock lateinit var device: TestDevice
-    @Mock lateinit var testData: AbstractTestDataImpl
+    private val creationConfig: InstrumentedTestCreationConfig = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    private val device: TestDevice = mock()
+    private val testData: AbstractTestDataImpl = mock()
 
     private lateinit var project: Project
 
@@ -99,11 +95,11 @@ class ManagedDeviceTestTaskTest {
     fun setupMocks() {
         project = ProjectBuilder.builder().withProjectDir(tempFolderRule.root).build()
 
-        `when`(device.name).thenReturn("testDeviceName")
-        `when`(creationConfig.name).thenReturn("variantName")
-        `when`(testData.hasTests(any(), any(), any())).thenReturn(realPropertyFor(true))
-        `when`(testData.flavorName).thenReturn(realPropertyFor(""))
-        `when`(testData.getAsStaticData()).thenReturn(mock())
+        whenever(device.name).thenReturn("testDeviceName")
+        whenever(creationConfig.name).thenReturn("variantName")
+        whenever(testData.hasTests(any(), any(), any())).thenReturn(realPropertyFor(true))
+        whenever(testData.flavorName).thenReturn(realPropertyFor(""))
+        whenever(testData.getAsStaticData()).thenReturn(mock())
 
         FakeTestAction.shouldSucceed = false
     }
@@ -123,12 +119,12 @@ class ManagedDeviceTestTaskTest {
             null,
         )
 
-        val mockTask = mock<ManagedDeviceTestTask>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
+        val mockTask = mock<ManagedDeviceTestTask>(defaultAnswer = RETURNS_DEEP_STUBS)
         val mockConfigAction = mock<TestRunConfigAction>()
-        `when`(mockTask.objectFactory.newInstance(eq(TestRunConfigAction::class.java)))
+        whenever(mockTask.objectFactory.newInstance(eq(TestRunConfigAction::class.java)))
             .thenReturn(mockConfigAction)
         val mockTestRunInput = mock<TestRunInput>()
-        `when`(mockConfigAction.configureTaskInput(eq(device))).thenReturn(mockTestRunInput)
+        whenever(mockConfigAction.configureTaskInput(eq(device))).thenReturn(mockTestRunInput)
 
         creationAction.configure(mockTask)
 
@@ -178,7 +174,7 @@ class ManagedDeviceTestTaskTest {
             analyticsService.set(mock<AnalyticsService>())
             testData.set(this@ManagedDeviceTestTaskTest.testData)
             setDependenciesForTest(
-                mock<ArtifactCollection>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS)))
+                mock<ArtifactCollection>(defaultAnswer = RETURNS_DEEP_STUBS))
             executionEnum.set(TestOptions.Execution.HOST)
             deviceInput.set(mock<DeviceTestRunInput>())
             deviceDslName.set("myDevice")

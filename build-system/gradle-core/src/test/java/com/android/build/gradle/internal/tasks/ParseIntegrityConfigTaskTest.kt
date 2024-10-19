@@ -51,7 +51,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.FileInputStream
 
 class ParseIntegrityConfigTaskTest {
@@ -197,19 +198,19 @@ class ParseIntegrityConfigTaskTest {
     }
 
     private fun createScopeFromBundleOptions(bundleOptions: BundleOptions): VariantCreationConfig {
-        val componentProperties = Mockito.mock(VariantCreationConfig::class.java)
-        val componentType = Mockito.mock(ComponentType::class.java)
-        val globalConfig = Mockito.mock(GlobalTaskCreationConfig::class.java)
-        val taskContainer = Mockito.mock(MutableTaskContainer::class.java)
-        val preBuildTask = Mockito.mock(TaskProvider::class.java)
+        val componentProperties = mock<VariantCreationConfig>()
+        val componentType = mock<ComponentType>()
+        val globalConfig = mock<GlobalTaskCreationConfig>()
+        val taskContainer = mock<MutableTaskContainer>()
+        val preBuildTask = mock<TaskProvider<*>>()
 
-        Mockito.`when`(componentProperties.services).thenReturn(taskCreationServices)
-        Mockito.`when`(componentProperties.componentType).thenReturn(componentType)
-        Mockito.`when`(componentProperties.name).thenReturn("variant")
-        Mockito.`when`(componentProperties.taskContainer).thenReturn(taskContainer)
-        Mockito.`when`(componentProperties.global).thenReturn(globalConfig)
-        Mockito.`when`(globalConfig.bundleOptions).thenReturn(bundleOptions)
-        Mockito.`when`(taskContainer.preBuildTask).thenReturn(preBuildTask)
+        whenever(componentProperties.services).thenReturn(taskCreationServices)
+        whenever(componentProperties.componentType).thenReturn(componentType)
+        whenever(componentProperties.name).thenReturn("variant")
+        whenever(componentProperties.taskContainer).thenReturn(taskContainer)
+        whenever(componentProperties.global).thenReturn(globalConfig)
+        whenever(globalConfig.bundleOptions).thenReturn(bundleOptions)
+        whenever(taskContainer.preBuildTask).thenReturn(preBuildTask)
 
         return componentProperties
     }

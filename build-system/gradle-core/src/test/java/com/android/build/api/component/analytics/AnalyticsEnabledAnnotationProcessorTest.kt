@@ -25,8 +25,10 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.process.CommandLineArgumentProvider
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,8 +38,7 @@ internal class AnalyticsEnabledAnnotationProcessorTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: AnnotationProcessor
+    private val delegate: AnnotationProcessor = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledAnnotationProcessor by lazy {
@@ -47,32 +48,32 @@ internal class AnalyticsEnabledAnnotationProcessorTest {
     @Test
     fun getClassNames() {
         @Suppress("UNCHECKED_CAST")
-        val list = Mockito.mock(ListProperty::class.java) as ListProperty<String>
+        val list = mock<ListProperty<String>>()
 
-        Mockito.`when`(delegate.classNames).thenReturn(list)
+        whenever(delegate.classNames).thenReturn(list)
         Truth.assertThat(proxy.classNames).isEqualTo(list)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_CLASS_NAMES_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .classNames
     }
 
     @Test
     fun getArguments() {
         @Suppress("UNCHECKED_CAST")
-        val map = Mockito.mock(MapProperty::class.java) as MapProperty<String, String>
+        val map = mock<MapProperty<String, String>>()
 
-        Mockito.`when`(delegate.arguments).thenReturn(map)
+        whenever(delegate.arguments).thenReturn(map)
         Truth.assertThat(proxy.arguments).isEqualTo(map)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_ARGUMENTS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .arguments
     }
 
@@ -81,14 +82,14 @@ internal class AnalyticsEnabledAnnotationProcessorTest {
         @Suppress("UNCHECKED_CAST")
         val list = mutableListOf<CommandLineArgumentProvider>()
 
-        Mockito.`when`(delegate.argumentProviders).thenReturn(list)
+        whenever(delegate.argumentProviders).thenReturn(list)
         Truth.assertThat(proxy.argumentProviders).isEqualTo(list)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_ARGUMENT_PROVIDERS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .argumentProviders
     }
 }

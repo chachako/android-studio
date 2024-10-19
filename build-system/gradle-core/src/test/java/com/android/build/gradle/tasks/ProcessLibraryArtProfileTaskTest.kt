@@ -28,7 +28,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.MockitoAnnotations
 import java.io.IOException
 
 internal class ProcessLibraryArtProfileTaskTest {
@@ -44,7 +43,6 @@ internal class ProcessLibraryArtProfileTaskTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
         project= ProjectBuilder.builder().withProjectDir(projectFolder.root).build()
         val taskProvider = project.tasks.register(
                 "processLibraryArtProfile", ProcessLibraryArtProfileTask::class.java

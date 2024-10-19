@@ -22,15 +22,15 @@ import com.android.build.gradle.internal.dsl.decorator.annotation.NonNullableSet
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.build.gradle.internal.services.DslServices
-import com.android.testutils.MockitoKt.any
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import groovy.util.Eval
 import org.gradle.api.Action
 import org.gradle.api.provider.Property
 import org.junit.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.lang.reflect.Modifier
 import javax.inject.Inject
 import kotlin.test.assertFailsWith
@@ -599,11 +599,11 @@ class DslDecoratorUnitTest {
         assertThat(withNonNullableValue.value).isEqualTo("new value")
     }
 
-    private val dslServices: DslServices = mock(DslServices::class.java)
+    private val dslServices: DslServices = mock()
 
     private fun registerTestDecorator(decorator: DslDecorator) {
-        Mockito.`when`(
-            dslServices.newDecoratedInstance(any(Class::class.java), any(DslServices::class.java))
+        whenever(
+            dslServices.newDecoratedInstance(any<Class<*>>(), any<DslServices>())
         ).then { invocation ->
             val toDecorate = invocation.getArgument<Class<*>>(0)
             val dslServices = invocation.getArgument<DslServices>(1)

@@ -32,25 +32,20 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
 
 internal class VariantBuilderImplTest {
-
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var variantDslInfo: VariantDslInfo
-    @Mock
-    lateinit var componentIdentity: ComponentIdentity
-    @Mock
-    lateinit var variantBuilderServices: VariantBuilderServices
-    @Mock
-    lateinit var globalVariantBuilderConfig: GlobalVariantBuilderConfig
+    private val variantDslInfo: VariantDslInfo = mock()
+    private val componentIdentity: ComponentIdentity = mock()
+    private val variantBuilderServices: VariantBuilderServices = mock()
+    private val globalVariantBuilderConfig: GlobalVariantBuilderConfig = mock()
 
     val builder: VariantBuilder by lazy {
         object : VariantBuilderImpl(
@@ -72,16 +67,16 @@ internal class VariantBuilderImplTest {
 
     @Before
     fun setup() {
-//        Mockito.`when`(variantBuilderServices.projectOptions).thenReturn(
+//        whenever(variantBuilderServices.projectOptions).thenReturn(
 //            ProjectOptions(ImmutableMap.of(), FakeProviderFactory.factory)
 //        )
-        val optimizationDslInfo = Mockito.mock(OptimizationDslInfo::class.java)
-        val postProcessingOptions = Mockito.mock(PostProcessingOptions::class.java)
-        Mockito.`when`(optimizationDslInfo.postProcessingOptions).thenReturn(postProcessingOptions)
-        Mockito.`when`(postProcessingOptions.hasPostProcessingConfiguration()).thenReturn(false)
-        Mockito.`when`(variantDslInfo.optimizationDslInfo).thenReturn(optimizationDslInfo)
-        Mockito.`when`(variantDslInfo.minSdkVersion).thenReturn(MutableAndroidVersion(12, null))
-        Mockito.`when`(variantDslInfo.targetSdkVersion).thenReturn(null)
+        val optimizationDslInfo = mock<OptimizationDslInfo>()
+        val postProcessingOptions = mock<PostProcessingOptions>()
+        whenever(optimizationDslInfo.postProcessingOptions).thenReturn(postProcessingOptions)
+        whenever(postProcessingOptions.hasPostProcessingConfiguration()).thenReturn(false)
+        whenever(variantDslInfo.optimizationDslInfo).thenReturn(optimizationDslInfo)
+        whenever(variantDslInfo.minSdkVersion).thenReturn(MutableAndroidVersion(12, null))
+        whenever(variantDslInfo.targetSdkVersion).thenReturn(null)
     }
 
     @Test

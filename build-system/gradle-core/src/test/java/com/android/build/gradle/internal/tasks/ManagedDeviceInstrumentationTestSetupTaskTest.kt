@@ -27,9 +27,9 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigI
 import com.android.build.gradle.options.StringOption
 import com.android.repository.Revision
 import com.android.testutils.MockitoKt
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import com.android.testutils.SystemPropertyOverrides
 import com.android.utils.Environment
 import com.google.common.truth.Truth.assertThat
@@ -49,12 +49,12 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.mockito.Answers.CALLS_REAL_METHODS
 import org.mockito.Answers.RETURNS_DEEP_STUBS
 import org.mockito.Mock
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 
 class ManagedDeviceInstrumentationTestSetupTaskTest {
@@ -66,17 +66,13 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
     @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var globalConfig: GlobalTaskCreationConfigImpl
+    private val globalConfig: GlobalTaskCreationConfigImpl = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
-    @Mock
-    private lateinit var avdService: AvdComponentsBuildService
+    private val avdService: AvdComponentsBuildService = mock()
 
-    @Mock
-    private lateinit var sdkService: SdkComponentsBuildService
+    private val sdkService: SdkComponentsBuildService = mock()
 
-    @Mock
-    private lateinit var emulatorProvider: Provider<Directory>
+    private val emulatorProvider: Provider<Directory> = mock()
 
     private lateinit var project: Project
 
@@ -84,55 +80,51 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
     fun setup() {
         Environment.initialize()
 
-        mockVersionedSdkLoader = mock(
-            VersionedSdkLoader::class.java,
-            RETURNS_DEEP_STUBS)
-        `when`(mockVersionedSdkLoader.emulatorDirectoryProvider).thenReturn(emulatorProvider)
-        `when`(mockVersionedSdkLoader.offlineMode).thenReturn(false)
+        mockVersionedSdkLoader = mock<VersionedSdkLoader>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(mockVersionedSdkLoader.emulatorDirectoryProvider).thenReturn(emulatorProvider)
+        whenever(mockVersionedSdkLoader.offlineMode).thenReturn(false)
 
         project = ProjectBuilder.builder().withProjectDir(temporaryFolderRule.newFolder()).build()
-        `when`(sdkService.sdkLoader(any(), any())).thenReturn(mockVersionedSdkLoader)
+        whenever(sdkService.sdkLoader(any(), any())).thenReturn(mockVersionedSdkLoader)
 
         // Setup Build Services for configuration.
-        val mockGeneralRegistration = mock(BuildServiceRegistration::class.java, RETURNS_DEEP_STUBS)
-        `when`(globalConfig.services.buildServiceRegistry.registrations.getByName(any()))
+        val mockGeneralRegistration = mock<BuildServiceRegistration<*, *>>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(globalConfig.services.buildServiceRegistry.registrations.getByName(any()))
             .thenReturn(mockGeneralRegistration)
     }
 
     private fun basicTaskSetup(): ManagedDeviceInstrumentationTestSetupTask {
-        val task = mock(
-            ManagedDeviceInstrumentationTestSetupTask::class.java,
-            CALLS_REAL_METHODS)
+        val task = mock<ManagedDeviceInstrumentationTestSetupTask>(defaultAnswer = CALLS_REAL_METHODS)
 
         // Need to use a real property for all variables passed into the ManagedDeviceSetupRunnable
         // Because internal to Gradle's implementation of ProfileAwareWorkAction
         // a forced cast occurs to cast Provider to ProviderInternal which we
         // do not have access to directly.
-        doReturn(realPropertyFor(mock(AnalyticsService::class.java)))
-            .`when`(task).analyticsService
-        doReturn(realPropertyFor("project_path")).`when`(task).projectPath
+        doReturn(realPropertyFor(mock<AnalyticsService>()))
+            .whenever(task).analyticsService
+        doReturn(realPropertyFor("project_path")).whenever(task).projectPath
 
-        doReturn("path").`when`(task).path
-        doReturn(mock(TaskOutputsInternal::class.java, RETURNS_DEEP_STUBS))
-            .`when`(task).outputs
-        doReturn(MockitoKt.mock<Logger>()).`when`(task).logger
+        doReturn("path").whenever(task).path
+        doReturn(mock<TaskOutputsInternal>(defaultAnswer = RETURNS_DEEP_STUBS))
+            .whenever(task).outputs
+        doReturn(mock<Logger>()).whenever(task).logger
 
-        doReturn(realPropertyFor(sdkService)).`when`(task).sdkService
-        doReturn(realPropertyFor(avdService)).`when`(task).avdService
-        doReturn(realPropertyFor("sdkVersion")).`when`(task).compileSdkVersion
-        doReturn(realPropertyFor(mock(Revision::class.java)))
-            .`when`(task).buildToolsRevision
-        doReturn(realPropertyFor("x86_64")).`when`(task).abi
-        doReturn(realPropertyFor(29)).`when`(task).apiLevel
-        doReturn(realPropertyFor("aosp")).`when`(task).systemImageVendor
-        doReturn(realPropertyFor("Pixel 2")).`when`(task).hardwareProfile
-        doReturn(realPropertyFor("auto-no-window")).`when`(task).emulatorGpuFlag
-        doReturn(realPropertyFor("someDeviceName")).`when`(task).managedDeviceName
-        doReturn(realPropertyFor(true)).`when`(task).require64Bit
+        doReturn(realPropertyFor(sdkService)).whenever(task).sdkService
+        doReturn(realPropertyFor(avdService)).whenever(task).avdService
+        doReturn(realPropertyFor("sdkVersion")).whenever(task).compileSdkVersion
+        doReturn(realPropertyFor(mock<Revision>()))
+            .whenever(task).buildToolsRevision
+        doReturn(realPropertyFor("x86_64")).whenever(task).abi
+        doReturn(realPropertyFor(29)).whenever(task).apiLevel
+        doReturn(realPropertyFor("aosp")).whenever(task).systemImageVendor
+        doReturn(realPropertyFor("Pixel 2")).whenever(task).hardwareProfile
+        doReturn(realPropertyFor("auto-no-window")).whenever(task).emulatorGpuFlag
+        doReturn(realPropertyFor("someDeviceName")).whenever(task).managedDeviceName
+        doReturn(realPropertyFor(true)).whenever(task).require64Bit
 
 
         doReturn(FakeGradleWorkExecutor(project.objects, temporaryFolderRule.newFolder()))
-            .`when`(task).workerExecutor
+            .whenever(task).workerExecutor
         return task
     }
 
@@ -146,18 +138,18 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
 
     private fun <T> mockEmptyProperty(): Property<T> {
         @Suppress("UNCHECKED_CAST")
-        return mock(Property::class.java) as Property<T>
+        return mock<Property<T>>()
     }
 
     @Test
     fun taskAction_basicSetupPath() {
         val task = basicTaskSetup()
 
-        val imageDirectory = mock(Directory::class.java)
-        `when`(mockVersionedSdkLoader.sdkImageDirectoryProvider(any()))
+        val imageDirectory = mock<Directory>()
+        whenever(mockVersionedSdkLoader.sdkImageDirectoryProvider(any()))
             .thenReturn(FakeGradleProperty(imageDirectory))
-        `when`(avdService.avdProvider(any(), any(), any(), any()))
-            .thenReturn(FakeGradleProperty(mock(Directory::class.java)))
+        whenever(avdService.avdProvider(any(), any(), any(), any()))
+            .thenReturn(FakeGradleProperty(mock<Directory>()))
 
         task.taskAction()
 
@@ -170,7 +162,7 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
         verify(avdService)
             .avdProvider(
                 argThat {
-                    it is FakeGradleProperty && it.get() == imageDirectory
+                    this is FakeGradleProperty && this.get() == imageDirectory
                 },
                 eq("system-images;android-29;default;x86_64"),
                 eq("dev29_default_x86_64_Pixel_2"),
@@ -188,8 +180,8 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
     fun testTaskAction_missingImage() {
         val task = basicTaskSetup()
 
-        `when`(mockVersionedSdkLoader.offlineMode).thenReturn(true)
-        `when`(mockVersionedSdkLoader.sdkImageDirectoryProvider(any()))
+        whenever(mockVersionedSdkLoader.offlineMode).thenReturn(true)
+        whenever(mockVersionedSdkLoader.sdkImageDirectoryProvider(any()))
             .thenReturn(FakeGradleProperty(null))
 
         val error = assertThrows(IllegalStateException::class.java) {
@@ -214,7 +206,7 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
     fun testTaskAction_errorOnAutoProfile() {
         val task = basicTaskSetup()
         doReturn(realPropertyFor("Automotive (1024p landscape)"))
-            .`when`(task).hardwareProfile
+            .whenever(task).hardwareProfile
 
         val error = assertThrows(IllegalStateException::class.java) {
             task.taskAction()
@@ -251,16 +243,16 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
                     globalConfig
                 )
 
-                val task = mock(ManagedDeviceInstrumentationTestSetupTask::class.java, RETURNS_DEEP_STUBS)
+                val task = mock<ManagedDeviceInstrumentationTestSetupTask>(defaultAnswer = RETURNS_DEEP_STUBS)
 
                 // default path for emulator mode ("auto-no-window")
-                `when`(
+                whenever(
                     globalConfig.services.projectOptions[
                             StringOption.GRADLE_MANAGED_DEVICE_EMULATOR_GPU_MODE])
                     .thenReturn(null)
 
-                `when`(globalConfig.compileSdkHashString).thenReturn("some_version")
-                `when`(globalConfig.buildToolsRevision).thenReturn(Revision.parseRevision("5.1"))
+                whenever(globalConfig.compileSdkHashString).thenReturn("some_version")
+                whenever(globalConfig.buildToolsRevision).thenReturn(Revision.parseRevision("5.1"))
 
                 // We need to create mock properties to verify/capture values in the task as
                 // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
@@ -277,17 +269,17 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
                 val managedDeviceName = mockEmptyProperty<String>()
                 val require64Bit = mockEmptyProperty<Boolean>()
 
-                `when`(task.sdkService).thenReturn(sdkProperty)
-                `when`(task.avdService).thenReturn(avdProperty)
-                `when`(task.compileSdkVersion).thenReturn(compileSdkVersion)
-                `when`(task.buildToolsRevision).thenReturn(buildToolsRevision)
-                `when`(task.abi).thenReturn(abiProperty)
-                `when`(task.apiLevel).thenReturn(apiLevel)
-                `when`(task.systemImageVendor).thenReturn(systemImageVendor)
-                `when`(task.hardwareProfile).thenReturn(hardwareProfile)
-                `when`(task.emulatorGpuFlag).thenReturn(emulatorGpuFlag)
-                `when`(task.managedDeviceName).thenReturn(managedDeviceName)
-                `when`(task.require64Bit).thenReturn(require64Bit)
+                whenever(task.sdkService).thenReturn(sdkProperty)
+                whenever(task.avdService).thenReturn(avdProperty)
+                whenever(task.compileSdkVersion).thenReturn(compileSdkVersion)
+                whenever(task.buildToolsRevision).thenReturn(buildToolsRevision)
+                whenever(task.abi).thenReturn(abiProperty)
+                whenever(task.apiLevel).thenReturn(apiLevel)
+                whenever(task.systemImageVendor).thenReturn(systemImageVendor)
+                whenever(task.hardwareProfile).thenReturn(hardwareProfile)
+                whenever(task.emulatorGpuFlag).thenReturn(emulatorGpuFlag)
+                whenever(task.managedDeviceName).thenReturn(managedDeviceName)
+                whenever(task.require64Bit).thenReturn(require64Bit)
 
                 config.configure(task)
 
@@ -364,16 +356,16 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
                     globalConfig
                 )
 
-                val task = mock(ManagedDeviceInstrumentationTestSetupTask::class.java, RETURNS_DEEP_STUBS)
+                val task = mock<ManagedDeviceInstrumentationTestSetupTask>(defaultAnswer = RETURNS_DEEP_STUBS)
 
                 // default path for emulator mode ("auto-no-window")
-                `when`(
+                whenever(
                     globalConfig.services.projectOptions[
                             StringOption.GRADLE_MANAGED_DEVICE_EMULATOR_GPU_MODE])
                     .thenReturn(null)
 
-                `when`(globalConfig.compileSdkHashString).thenReturn("some_version")
-                `when`(globalConfig.buildToolsRevision).thenReturn(Revision.parseRevision("5.1"))
+                whenever(globalConfig.compileSdkHashString).thenReturn("some_version")
+                whenever(globalConfig.buildToolsRevision).thenReturn(Revision.parseRevision("5.1"))
 
                 // We need to create mock properties to verify/capture values in the task as
                 // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
@@ -390,17 +382,17 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
                 val managedDeviceName = mockEmptyProperty<String>()
                 val require64Bit = mockEmptyProperty<Boolean>()
 
-                `when`(task.sdkService).thenReturn(sdkProperty)
-                `when`(task.avdService).thenReturn(avdProperty)
-                `when`(task.compileSdkVersion).thenReturn(compileSdkVersion)
-                `when`(task.buildToolsRevision).thenReturn(buildToolsRevision)
-                `when`(task.abi).thenReturn(abiProperty)
-                `when`(task.apiLevel).thenReturn(apiLevel)
-                `when`(task.systemImageVendor).thenReturn(systemImageVendor)
-                `when`(task.hardwareProfile).thenReturn(hardwareProfile)
-                `when`(task.emulatorGpuFlag).thenReturn(emulatorGpuFlag)
-                `when`(task.managedDeviceName).thenReturn(managedDeviceName)
-                `when`(task.require64Bit).thenReturn(require64Bit)
+                whenever(task.sdkService).thenReturn(sdkProperty)
+                whenever(task.avdService).thenReturn(avdProperty)
+                whenever(task.compileSdkVersion).thenReturn(compileSdkVersion)
+                whenever(task.buildToolsRevision).thenReturn(buildToolsRevision)
+                whenever(task.abi).thenReturn(abiProperty)
+                whenever(task.apiLevel).thenReturn(apiLevel)
+                whenever(task.systemImageVendor).thenReturn(systemImageVendor)
+                whenever(task.hardwareProfile).thenReturn(hardwareProfile)
+                whenever(task.emulatorGpuFlag).thenReturn(emulatorGpuFlag)
+                whenever(task.managedDeviceName).thenReturn(managedDeviceName)
+                whenever(task.require64Bit).thenReturn(require64Bit)
 
                 config.configure(task)
 
@@ -455,7 +447,7 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
 
     @Test
     fun generateSystemErrorMessage_offlineMode() {
-        `when`(mockVersionedSdkLoader.offlineMode).thenReturn(true)
+        whenever(mockVersionedSdkLoader.offlineMode).thenReturn(true)
 
         val result = ManagedDeviceInstrumentationTestSetupTask.generateSystemImageErrorMessage(
             "test_device_name",
@@ -475,8 +467,8 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
 
     @Test
     fun generateSystemErrorMessage_onlineMode() {
-        `when`(mockVersionedSdkLoader.offlineMode).thenReturn(false)
-        `when`(mockVersionedSdkLoader.allSystemImageHashes()).thenReturn(listOf())
+        whenever(mockVersionedSdkLoader.offlineMode).thenReturn(false)
+        whenever(mockVersionedSdkLoader.allSystemImageHashes()).thenReturn(listOf())
 
         val result = ManagedDeviceInstrumentationTestSetupTask.generateSystemImageErrorMessage(
             "some_test_device",

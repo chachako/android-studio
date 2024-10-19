@@ -36,7 +36,10 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.OutputFiles
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class AnalyticsEnabledTaskBaseOperationTest {
 
@@ -51,13 +54,13 @@ class AnalyticsEnabledTaskBaseOperationTest {
     fun testWiredWith() {
         @Suppress("UNCHECKED_CAST")
         val delegate: TaskBasedOperation<FileBasedTask> =
-            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<FileBasedTask>
+            mock<TaskBasedOperation<FileBasedTask>>()
         @Suppress("UNCHECKED_CAST")
         val fakeOutputRequest: OutOperationRequest<RegularFile> =
-            Mockito.mock(OutOperationRequest::class.java) as OutOperationRequest<RegularFile>
+            mock<OutOperationRequest<RegularFile>>()
         val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
 
-        Mockito.`when`(delegate.wiredWith(FileBasedTask::outputFile)).thenReturn(fakeOutputRequest)
+        whenever(delegate.wiredWith(FileBasedTask::outputFile)).thenReturn(fakeOutputRequest)
         Truth.assertThat(proxy.wiredWith(FileBasedTask::outputFile)).isInstanceOf(
             OutOperationRequest::class.java
         )
@@ -66,7 +69,7 @@ class AnalyticsEnabledTaskBaseOperationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .wiredWith(FileBasedTask::outputFile)
     }
 
@@ -74,13 +77,13 @@ class AnalyticsEnabledTaskBaseOperationTest {
     fun testWiredWithFiles() {
         @Suppress("UNCHECKED_CAST")
         val delegate: TaskBasedOperation<FileBasedTask> =
-            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<FileBasedTask>
+            mock<TaskBasedOperation<FileBasedTask>>()
         @Suppress("UNCHECKED_CAST")
         val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
         val fakeOutputRequest: InAndOutFileOperationRequest =
-            Mockito.mock(InAndOutFileOperationRequest::class.java)
+            mock<InAndOutFileOperationRequest>()
 
-        Mockito.`when`(delegate.wiredWithFiles(
+        whenever(delegate.wiredWithFiles(
             FileBasedTask::inputFile,
             FileBasedTask::outputFile
         )).thenReturn(fakeOutputRequest)
@@ -92,7 +95,7 @@ class AnalyticsEnabledTaskBaseOperationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_FILES_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .wiredWithFiles(
                 FileBasedTask::inputFile,
                 FileBasedTask::outputFile)
@@ -107,14 +110,13 @@ class AnalyticsEnabledTaskBaseOperationTest {
 
         @Suppress("UNCHECKED_CAST")
         val delegate: TaskBasedOperation<DirectoryBasedTask> =
-            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<DirectoryBasedTask>
+            mock<TaskBasedOperation<DirectoryBasedTask>>()
         @Suppress("UNCHECKED_CAST")
         val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
         @Suppress("UNCHECKED_CAST")
-        val fakeOutputRequest = Mockito.mock(InAndOutDirectoryOperationRequest::class.java)
-                as InAndOutDirectoryOperationRequest<DirectoryBasedTask>
+        val fakeOutputRequest = mock<InAndOutDirectoryOperationRequest<DirectoryBasedTask>>()
 
-        Mockito.`when`(delegate.wiredWithDirectories(
+        whenever(delegate.wiredWithDirectories(
             DirectoryBasedTask::inputDir,
             DirectoryBasedTask::outputDir
         )).thenReturn(fakeOutputRequest)
@@ -129,7 +131,7 @@ class AnalyticsEnabledTaskBaseOperationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_DIRECTORIES_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .wiredWithDirectories(
                 DirectoryBasedTask::inputDir,
                 DirectoryBasedTask::outputDir)
@@ -143,14 +145,13 @@ class AnalyticsEnabledTaskBaseOperationTest {
         }
         @Suppress("UNCHECKED_CAST")
         val delegate: TaskBasedOperation<DirectoryBasedTask> =
-            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<DirectoryBasedTask>
+            mock<TaskBasedOperation<DirectoryBasedTask>>()
         @Suppress("UNCHECKED_CAST")
         val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
         @Suppress("UNCHECKED_CAST")
-        val fakeOutputRequest = Mockito.mock(CombiningOperationRequest::class.java)
-                as CombiningOperationRequest<RegularFile>
+        val fakeOutputRequest = mock<CombiningOperationRequest<RegularFile>>()
 
-        Mockito.`when`(delegate.wiredWith(
+        whenever(delegate.wiredWith(
             DirectoryBasedTask::inputFiles,
             DirectoryBasedTask::outputFile
         )).thenReturn(fakeOutputRequest)
@@ -165,7 +166,7 @@ class AnalyticsEnabledTaskBaseOperationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_LIST_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .wiredWith(
                 DirectoryBasedTask::inputFiles,
                 DirectoryBasedTask::outputFile)
@@ -178,14 +179,13 @@ class AnalyticsEnabledTaskBaseOperationTest {
         }
         @Suppress("UNCHECKED_CAST")
         val delegate: TaskBasedOperation<MultipleRegularFilesBasedTask> =
-            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<MultipleRegularFilesBasedTask>
+            mock<TaskBasedOperation<MultipleRegularFilesBasedTask>>()
         @Suppress("UNCHECKED_CAST")
         val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
         @Suppress("UNCHECKED_CAST")
-        val fakeOutputRequest = Mockito.mock(MultipleArtifactTypeOutOperationRequest::class.java)
-                as MultipleArtifactTypeOutOperationRequest<RegularFile>
+        val fakeOutputRequest = mock<MultipleArtifactTypeOutOperationRequest<RegularFile>>()
 
-        Mockito.`when`(delegate.wiredWithMultiple(
+        whenever(delegate.wiredWithMultiple(
             MultipleRegularFilesBasedTask::inputFiles,
         )).thenReturn(fakeOutputRequest)
         Truth.assertThat(proxy.wiredWithMultiple(
@@ -198,7 +198,7 @@ class AnalyticsEnabledTaskBaseOperationTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_MULTIPLE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .wiredWithMultiple(
                 MultipleRegularFilesBasedTask::inputFiles)
     }

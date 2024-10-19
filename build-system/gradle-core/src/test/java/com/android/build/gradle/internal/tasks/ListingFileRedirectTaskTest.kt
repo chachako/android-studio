@@ -39,7 +39,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.file.Path
 import org.gradle.api.file.RegularFileProperty
@@ -93,29 +96,29 @@ internal class ListingFileRedirectTaskTest {
 
     @Test
     fun testDifferentRootTestCase() {
-        val spyTask = Mockito.spy(task)
+        val spyTask = spy(task)
 
         val folder1 = temporaryFolder.newFolder("folder1")
         val folder2 = temporaryFolder.newFolder("folder2")
         val redirectFile = File(folder2, "redirectFile")
-        val spyRedirectFile = Mockito.spy(redirectFile)
+        val spyRedirectFile = spy(redirectFile)
         val listingFile = File(folder1.path,"listingFile")
 
         //need to mock file.parent.toPath.relativize for ListingFileRedirect.writeRedirect
-        val mockPath = Mockito.mock(Path::class.java)
-        val mockParent = Mockito.mock(File::class.java)
-        Mockito.`when`(spyRedirectFile.parentFile).thenReturn(mockParent)
-        Mockito.`when`(mockParent.toPath()).thenReturn(mockPath)
-        Mockito.`when`(mockPath.relativize(listingFile.toPath()))
+        val mockPath = mock<Path>()
+        val mockParent = mock<File>()
+        whenever(spyRedirectFile.parentFile).thenReturn(mockParent)
+        whenever(mockParent.toPath()).thenReturn(mockPath)
+        whenever(mockPath.relativize(listingFile.toPath()))
             .thenThrow(IllegalArgumentException("Different roots"))
 
         //need to mock task.redirectFile.asFile.get()
-        val mockFileProperty = Mockito.mock(RegularFileProperty::class.java)
+        val mockFileProperty = mock<RegularFileProperty>()
         @Suppress("UNCHECKED_CAST")
-        val mockProvider = Mockito.mock(Provider::class.java) as Provider<File>
-        Mockito.`when`(spyTask.redirectFile).thenReturn(mockFileProperty)
-        Mockito.`when`(mockFileProperty.getAsFile()).thenReturn(mockProvider)
-        Mockito.`when`(mockProvider.get()).thenReturn(spyRedirectFile)
+        val mockProvider = mock<Provider<File>>()
+        whenever(spyTask.redirectFile).thenReturn(mockFileProperty)
+        whenever(mockFileProperty.getAsFile()).thenReturn(mockProvider)
+        whenever(mockProvider.get()).thenReturn(spyRedirectFile)
 
         spyTask.listingFile.set(project.objects.fileProperty().also {
             it.set(listingFile)
@@ -130,10 +133,10 @@ internal class ListingFileRedirectTaskTest {
 
     @Test
     fun testTaskConfiguration() {
-        val artifacts = Mockito.mock(ArtifactsImpl::class.java)
-        val creationConfig = Mockito.mock(ComponentCreationConfig::class.java)
-        Mockito.`when`(creationConfig.artifacts).thenReturn(artifacts)
-        Mockito.`when`(creationConfig.services).thenReturn(taskCreationServices)
+        val artifacts = mock<ArtifactsImpl>()
+        val creationConfig = mock<ComponentCreationConfig>()
+        whenever(creationConfig.artifacts).thenReturn(artifacts)
+        whenever(creationConfig.services).thenReturn(taskCreationServices)
         val artifactType = object : Artifact.Single<RegularFile>(
             ArtifactKind.FILE,
             Category.INTERMEDIATES) {}
@@ -145,24 +148,23 @@ internal class ListingFileRedirectTaskTest {
         )
 
         @Suppress("UNCHECKED_CAST")
-        val request = Mockito.mock(SingleInitialProviderRequestImpl::class.java)
-                as SingleInitialProviderRequestImpl<ListingFileRedirectTask, RegularFile>
-        Mockito.`when`(artifacts.setInitialProvider(
+        val request = mock<SingleInitialProviderRequestImpl<ListingFileRedirectTask, RegularFile>>()
+        whenever(artifacts.setInitialProvider(
             taskProvider,
             ListingFileRedirectTask::redirectFile)
         ).thenReturn(request)
-        Mockito.`when`(request.withName(ListingFileRedirect.REDIRECT_FILE_NAME)).thenReturn(request)
+        whenever(request.withName(ListingFileRedirect.REDIRECT_FILE_NAME)).thenReturn(request)
         creationAction.handleProvider(taskProvider)
-        Mockito.verify(request).on(artifactType)
+        verify(request).on(artifactType)
 
         val listingFile = temporaryFolder.newFile("listingFile_file")
-        Mockito.`when`(artifacts.get(InternalArtifactType.APK_IDE_MODEL)).thenReturn(
+        whenever(artifacts.get(InternalArtifactType.APK_IDE_MODEL)).thenReturn(
             project.objects.fileProperty().also {
                 it.set(listingFile)
             }
         )
         creationAction.configure(task)
-        Mockito.verify(artifacts).get(InternalArtifactType.APK_IDE_MODEL)
+        verify(artifacts).get(InternalArtifactType.APK_IDE_MODEL)
 
         Truth.assertThat(task.listingFile.isPresent).isTrue()
         Truth.assertThat(task.listingFile.get().asFile).isEqualTo(listingFile)

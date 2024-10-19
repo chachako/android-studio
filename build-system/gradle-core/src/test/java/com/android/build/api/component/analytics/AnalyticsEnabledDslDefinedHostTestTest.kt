@@ -22,8 +22,11 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.model.ObjectFactory
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -34,11 +37,9 @@ class AnalyticsEnabledDslDefinedHostTestTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: HostTest
+    private val delegate: HostTest = mock()
 
-    @Mock
-    lateinit var objectFactory: ObjectFactory
+    private val objectFactory: ObjectFactory = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledHostTest by lazy {
@@ -49,7 +50,7 @@ class AnalyticsEnabledDslDefinedHostTestTest {
     fun configureTestTask() {
         val lambdaCalled = AtomicBoolean(false)
         val function: (org.gradle.api.tasks.testing.Test) -> Unit = { }
-        Mockito.doAnswer { lambdaCalled.set(true) }.`when`(delegate).configureTestTask(function)
+        doAnswer { lambdaCalled.set(true) }.whenever(delegate).configureTestTask(function)
 
         proxy.configureTestTask(function)
         Truth.assertThat(lambdaCalled.get()).isTrue()
@@ -58,20 +59,20 @@ class AnalyticsEnabledDslDefinedHostTestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.CONFIGURE_TEST_TASK_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .configureTestTask(function)
     }
 
     @Test
     fun codeCoverageEnabled() {
-        Mockito.`when`(delegate.codeCoverageEnabled).thenReturn(true)
+        whenever(delegate.codeCoverageEnabled).thenReturn(true)
         Truth.assertThat(proxy.codeCoverageEnabled).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.HOST_TEST_CODE_COVERAGE_ENABLED_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .codeCoverageEnabled
     }
 }

@@ -319,7 +319,7 @@ expected result : a list of classes and jar files.
                     super.toString().replace(System.getProperty("line.separator"), "\n")
             }
             val ps = PrintStream(byteArrayOutputStream)
-            val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+            val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
             apkAnalyzer.dexCode(apk, "com.android.api.tests.SomeInterface", null, null, null)
             Truth.assertThat(byteArrayOutputStream.toString()).contains("SomeInterface")
         }
@@ -459,7 +459,7 @@ expected result : a list of classes and jar files.
                     super.toString().replace(System.getProperty("line.separator"), "\n")
             }
             val ps = PrintStream(byteArrayOutputStream)
-            val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+            val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
             apkAnalyzer.dexCode(apk, "com.android.api.tests.SomeInterface", null, null, null)
             Truth.assertThat(byteArrayOutputStream.toString()).contains("SomeInterface")
             Truth.assertThat(byteArrayOutputStream.toString()).doesNotContain("SourceSource")
@@ -591,7 +591,7 @@ expected result : an APK with added types in its dex files.
                     super.toString().replace(System.getProperty("line.separator"), "\n")
             }
             val ps = PrintStream(byteArrayOutputStream)
-            val apkAnalyzer = ApkAnalyzerImpl(ps, Mockito.mock(AaptInvoker::class.java))
+            val apkAnalyzer = ApkAnalyzerImpl(ps, mock<AaptInvoker>())
             apkAnalyzer.dexCode(apk, "com.android.api.tests.SomeInterface", null, null, null)
             Truth.assertThat(byteArrayOutputStream.toString()).contains("SomeInterface")
         }

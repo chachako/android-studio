@@ -51,7 +51,9 @@ import com.android.build.gradle.tasks.NativeBuildSystem
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 
 class SettingsConfigurationRewriterKtTest {
@@ -299,8 +301,8 @@ class SettingsConfigurationRewriterKtTest {
     fun `configuration type build name does contribute to hash`() {
         val (abi1, abi2) = abisOf { mock, abi ->
             when (abi) {
-                1 -> Mockito.doReturn("debug").`when`(mock.variantImpl).name
-                2 -> Mockito.doReturn("release").`when`(mock.variantImpl).name
+                1 -> doReturn("debug").whenever(mock.variantImpl).name
+                2 -> doReturn("release").whenever(mock.variantImpl).name
             }
         }
 
@@ -374,7 +376,7 @@ class SettingsConfigurationRewriterKtTest {
     ) : Pair<CxxAbiModel, CxxAbiModel> {
         CmakeSettingsMock().apply {
             val moduleFolder = mockModule("app")
-            Mockito.doReturn(FileUtils.join(moduleFolder, "CMakeLists.txt")).`when`(cmake).path
+            doReturn(FileUtils.join(moduleFolder, "CMakeLists.txt")).whenever(cmake).path
             val settings = FileUtils.join(moduleFolder, "CMakeSettings.json")
             settings.parentFile.mkdirs()
             settings.writeText(
@@ -398,7 +400,7 @@ class SettingsConfigurationRewriterKtTest {
             setup(this, 1)
 
             val configurationModel1 = tryCreateConfigurationParameters(
-                    Mockito.mock(ProjectOptions::class.java),
+                    mock<ProjectOptions>(),
                     variantImpl,
             )!!
             val variant1 = createCxxVariantModel(configurationModel1, module)
@@ -409,7 +411,7 @@ class SettingsConfigurationRewriterKtTest {
 
             setup(this, 2)
             val configurationModel2 = tryCreateConfigurationParameters(
-                Mockito.mock(ProjectOptions::class.java),
+                mock<ProjectOptions>(),
                 variantImpl,
             )!!
             val variant2 = createCxxVariantModel(configurationModel2, module)

@@ -35,9 +35,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.doThrow
-import org.mockito.Mockito.mock as mock
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 
 class NdkLocatorKtTest {
@@ -358,11 +359,11 @@ class NdkLocatorKtTest {
             "/my/sdk/folder/ndk/$existingNdk".toSlash() to
                     SdkSourceProperties(mapOf(SDK_PKG_REVISION.key to existingNdk))
         )
-        val sdkHandler = mock(SdkHandler::class.java)
-        val pkg = mock(RemotePackage::class.java)
+        val sdkHandler = mock<SdkHandler>()
+        val pkg = mock<RemotePackage>()
         doThrow(RuntimeException(
             LicenceNotAcceptedException(sdkFolder.toSlashFile()!!.toPath(), listOf(pkg))))
-            .`when`(sdkHandler)
+            .whenever(sdkHandler)
             .installNdk(Revision.parseRevision(NDK_DEFAULT_VERSION))
 
         try {
@@ -394,11 +395,11 @@ class NdkLocatorKtTest {
             "/my/sdk/folder/ndk/$existingNdk".toSlash() to
                     SdkSourceProperties(mapOf(SDK_PKG_REVISION.key to existingNdk))
         )
-        val sdkHandler = mock(SdkHandler::class.java)
-        val pkg = mock(RemotePackage::class.java)
+        val sdkHandler = mock<SdkHandler>()
+        val pkg = mock<RemotePackage>()
         doThrow(RuntimeException(
             InstallFailedException(sdkFolder.toSlashFile()!!.toPath(), listOf(pkg))))
-            .`when`(sdkHandler)
+            .whenever(sdkHandler)
             .installNdk(Revision.parseRevision(NDK_DEFAULT_VERSION))
 
         try {
@@ -430,9 +431,9 @@ class NdkLocatorKtTest {
             "/my/sdk/folder/ndk/$existingNdk".toSlash() to
                     SdkSourceProperties(mapOf(SDK_PKG_REVISION.key to existingNdk))
         )
-        val sdkHandler = mock(SdkHandler::class.java)
+        val sdkHandler = mock<SdkHandler>()
         doReturn(null)
-            .`when`(sdkHandler)
+            .whenever(sdkHandler)
             .installNdk(Revision.parseRevision(NDK_DEFAULT_VERSION))
 
         try {
@@ -460,10 +461,10 @@ class NdkLocatorKtTest {
             "/my/sdk/folder/ndk/$existingNdk".toSlash() to
                     SdkSourceProperties(mapOf(SDK_PKG_REVISION.key to existingNdk))
         )
-        val sdkHandler = mock(SdkHandler::class.java)
+        val sdkHandler = mock<SdkHandler>()
         doReturn(
             "/my/sdk/folder/ndk/$NDK_DEFAULT_VERSION".toSlashFile())
-            .`when`(sdkHandler)
+            .whenever(sdkHandler)
             .installNdk(Revision.parseRevision(NDK_DEFAULT_VERSION))
 
         val ndk =

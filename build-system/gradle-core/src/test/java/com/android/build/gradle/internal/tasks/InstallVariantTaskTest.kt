@@ -26,7 +26,6 @@ import com.android.build.gradle.internal.utils.DefaultDeviceApkOutput
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.sdklib.AndroidVersion
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
@@ -36,9 +35,10 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mockito.Mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.BufferedOutputStream
@@ -62,16 +62,11 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @JvmField
     @Rule
-    var rule: MockitoRule = MockitoJUnit.rule()
-
-    @JvmField
-    @Rule
     var temporaryFolder = TemporaryFolder()
 
     lateinit var logger: FakeLogger
 
-    @Mock
-    private lateinit var deviceConnector: DeviceConnector
+    private val deviceConnector: DeviceConnector = mock()
     private lateinit var mainOutputFileApk: File
 
     private var sandboxSupported: Boolean = false

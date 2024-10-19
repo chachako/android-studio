@@ -28,12 +28,12 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.ProjectOptions
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import kotlin.test.assertFailsWith
 
 class EmulatorControlConfigTest {
@@ -49,7 +49,7 @@ class EmulatorControlConfigTest {
 
     @Before
     fun setUp() {
-        val sdkComponents = Mockito.mock(SdkComponentsBuildService::class.java)
+        val sdkComponents = mock<SdkComponentsBuildService>()
         dslServices = createDslServices(sdkComponents = FakeGradleProvider(sdkComponents))
         emulatorControl = dslServices.newDecoratedInstance(EmulatorControl::class.java, dslServices)
     }
@@ -67,7 +67,7 @@ class EmulatorControlConfigTest {
 
     @Test
     fun emulatorEnableEmulatorControlWithGradleProperty() {
-        val fakeProjectOptions = Mockito.mock(ProjectOptions::class.java)
+        val fakeProjectOptions = mock<ProjectOptions>()
         whenever(fakeProjectOptions.get(BooleanOption.ENABLE_EMULATOR_CONTROL)).thenReturn(true)
 
         emulatorControl.enable = true

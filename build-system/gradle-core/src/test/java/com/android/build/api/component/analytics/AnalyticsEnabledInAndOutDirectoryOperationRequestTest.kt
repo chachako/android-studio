@@ -25,20 +25,19 @@ import org.gradle.api.Task
 
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class AnalyticsEnabledInAndOutDirectoryOperationRequestTest {
-    @Mock
-    lateinit var delegate: InAndOutDirectoryOperationRequest<Task>
+    private val delegate: InAndOutDirectoryOperationRequest<Task> = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private lateinit var proxy: AnalyticsEnabledInAndOutDirectoryOperationRequest<Task>
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         proxy = AnalyticsEnabledInAndOutDirectoryOperationRequest(delegate, stats)
     }
 
@@ -50,7 +49,7 @@ class AnalyticsEnabledInAndOutDirectoryOperationRequestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TO_TRANSFORM_DIRECTORY_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .toTransform(SingleArtifact.APK)
     }
 
@@ -62,7 +61,7 @@ class AnalyticsEnabledInAndOutDirectoryOperationRequestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.TO_TRANSFORM_MANY_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .toTransformMany(SingleArtifact.APK)
     }
 }

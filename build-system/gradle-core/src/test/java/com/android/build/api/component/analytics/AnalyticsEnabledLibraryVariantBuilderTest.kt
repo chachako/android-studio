@@ -24,8 +24,10 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,18 +38,14 @@ class AnalyticsEnabledLibraryVariantBuilderTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: LibraryVariantBuilder
+    private val delegate: LibraryVariantBuilder = mock()
 
-    @Mock
-    lateinit var unitTest: HostTestBuilder
+    private val unitTest: HostTestBuilder = mock()
 
-    @Mock
-    lateinit var screenshotTest: HostTestBuilder
+    private val screenshotTest: HostTestBuilder = mock()
 
     @Suppress("DEPRECATION")
-    @Mock
-    lateinit var androidTestBuilder: com.android.build.api.variant.AndroidTestBuilder
+    private val androidTestBuilder: com.android.build.api.variant.AndroidTestBuilder = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledLibraryVariantBuilder by lazy {
@@ -57,13 +55,13 @@ class AnalyticsEnabledLibraryVariantBuilderTest {
     @Before
     fun setup() {
         @Suppress("DEPRECATION")
-        Mockito.`when`(delegate.androidTest).thenReturn(androidTestBuilder)
+        whenever(delegate.androidTest).thenReturn(androidTestBuilder)
     }
 
     @Test
     fun getDeviceTests() {
-        val deviceTest = Mockito.mock(DeviceTestBuilder::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
+        val deviceTest = mock<DeviceTestBuilder>()
+        whenever(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
@@ -74,15 +72,15 @@ class AnalyticsEnabledLibraryVariantBuilderTest {
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.DEVICE_TESTS_BUILDER_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .deviceTests
     }
 
     @Suppress("DEPRECATION")
     @Test
     fun getDeviceTests_for_android_test() {
-        val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTestBuilder::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
+        val deviceTest = mock<com.android.build.api.variant.AndroidTestBuilder>()
+        whenever(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
@@ -101,9 +99,9 @@ class AnalyticsEnabledLibraryVariantBuilderTest {
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.last().type
         ).isEqualTo(VariantMethodType.ANDROID_TEST_BUILDER_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .deviceTests
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .androidTest
     }
 

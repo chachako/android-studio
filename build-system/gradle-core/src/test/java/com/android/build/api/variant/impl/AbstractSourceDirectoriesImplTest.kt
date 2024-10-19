@@ -29,7 +29,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 
 internal class AbstractSourceDirectoriesImplTest {
@@ -117,9 +118,9 @@ internal class AbstractSourceDirectoriesImplTest {
 
     @Test
     fun testFiltering() {
-        val pattern = Mockito.mock(PatternFilterable::class.java)
-        Mockito.`when`(pattern.includes).thenReturn(setOf("*.java", "*.kt"))
-        Mockito.`when`(pattern.excludes).thenReturn(setOf("*.bak"))
+        val pattern = mock<PatternFilterable>()
+        whenever(pattern.includes).thenReturn(setOf("*.java", "*.kt"))
+        whenever(pattern.excludes).thenReturn(setOf("*.bak"))
         val testTarget = createTestTarget(pattern)
         val addedSource = temporaryFolder.newFolder("somewhere/safe")
         testTarget.addStaticSourceDirectory(
@@ -134,12 +135,12 @@ internal class AbstractSourceDirectoriesImplTest {
     }
 
     private fun createTestTarget(patternFilterable: PatternFilterable? = null): SourceDirectoriesImpl {
-        val variantServices = Mockito.mock(VariantServices::class.java)
-        val projectInfo = Mockito.mock(ProjectInfo::class.java)
-        Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
-        Mockito.`when`(variantServices.fileCollection()).then { project.files() }
-        Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
-        Mockito.`when`(projectInfo.buildDirectory).thenReturn(project.layout.buildDirectory)
+        val variantServices = mock<VariantServices>()
+        val projectInfo = mock<ProjectInfo>()
+        whenever(variantServices.projectInfo).thenReturn(projectInfo)
+        whenever(variantServices.fileCollection()).then { project.files() }
+        whenever(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
+        whenever(projectInfo.buildDirectory).thenReturn(project.layout.buildDirectory)
 
         return object : SourceDirectoriesImpl(
             "_for_test",

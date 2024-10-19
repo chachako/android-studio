@@ -21,8 +21,10 @@ import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -32,8 +34,7 @@ class AnalyticsEnabledLifecycleTasksTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: LifecycleTasks
+    private val delegate: LifecycleTasks = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: LifecycleTasks by lazy {
@@ -51,6 +52,6 @@ class AnalyticsEnabledLifecycleTasksTest {
         ).isEqualTo(
                 VariantPropertiesMethodType.REGISTER_PRE_BUILD_VALUE,
         )
-        Mockito.verify(delegate, Mockito.times(1)).registerPreBuild()
+        verify(delegate, times(1)).registerPreBuild()
     }
 }

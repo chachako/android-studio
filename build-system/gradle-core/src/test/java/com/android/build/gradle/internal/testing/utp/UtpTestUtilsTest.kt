@@ -18,9 +18,10 @@ package com.android.build.gradle.internal.testing.utp
 
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkAction
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkParameters
-import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.argThat
-import com.android.testutils.MockitoKt.eq
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.TestResultEvent
 import com.android.utils.ILogger
@@ -38,12 +39,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.Mock
+import org.mockito.kotlin.mock
 import org.mockito.Mockito.contains
-import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.nullable
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.File
@@ -53,27 +53,16 @@ import java.io.File
  */
 class UtpTestUtilsTest {
     @get:Rule
-    val mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
-
-    @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpDependencies: UtpDependencies
-    @Mock
-    private lateinit var mockWorkerExecutor: WorkerExecutor
-    @Mock
-    private lateinit var mockWorkQueue: WorkQueue
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var mockRunUtpWorkParameters: RunUtpWorkParameters
-    @Mock
-    private lateinit var mockLogger: ILogger
-    @Mock
-    private lateinit var mockUtpTestResultListener: UtpTestResultListener
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private lateinit var mockUtpRunProfile: UtpRunProfile
+    private val mockUtpDependencies: UtpDependencies = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    private val mockWorkerExecutor: WorkerExecutor = mock()
+    private val mockWorkQueue: WorkQueue = mock()
+    private val mockRunUtpWorkParameters: RunUtpWorkParameters = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    private val mockLogger: ILogger = mock()
+    private val mockUtpTestResultListener: UtpTestResultListener = mock()
+    private val mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    private val mockUtpRunProfile: UtpRunProfile = mock(defaultAnswer = RETURNS_DEEP_STUBS)
 
     lateinit var utpResultDir: File
     lateinit var jvmExecutable: File
@@ -81,7 +70,7 @@ class UtpTestUtilsTest {
     @Before
     fun setupMocks() {
         jvmExecutable = temporaryFolderRule.newFile()
-        `when`(mockWorkerExecutor.noIsolation()).thenReturn(mockWorkQueue)
+        whenever(mockWorkerExecutor.noIsolation()).thenReturn(mockWorkQueue)
     }
 
     private fun runUtp(
@@ -102,7 +91,7 @@ class UtpTestUtilsTest {
         )
 
         var capturedUtpTestResultListener: UtpTestResultListener? = null
-        `when`(mockWorkQueue.submit(eq(RunUtpWorkAction::class.java), any())).then {
+        whenever(mockWorkQueue.submit(eq(RunUtpWorkAction::class.java), any())).then {
             requireNotNull(capturedUtpTestResultListener).stubUtpAction()
         }
 
@@ -238,7 +227,7 @@ class UtpTestUtilsTest {
         verify(mockWorkQueue).submit(
             eq(RunUtpWorkAction::class.java),
             argThat {
-                setRunUtpWorkParametersAction = it
+                setRunUtpWorkParametersAction = this
                 true
             })
 
@@ -248,13 +237,13 @@ class UtpTestUtilsTest {
             verify(launcherJar).setFrom(mockUtpDependencies.launcher.files)
             verify(coreJar).setFrom(mockUtpDependencies.core.files)
             verify(runnerConfig).set(argThat<File> {
-                it.exists()
+                exists()
             })
             verify(serverConfig).set(argThat<File> {
-                it.exists()
+                exists()
             })
             verify(loggingProperties).set(argThat<File> {
-                it.exists()
+                exists()
             })
         }
     }
@@ -265,7 +254,7 @@ class UtpTestUtilsTest {
 
         assertThat(results).containsExactly(UtpTestRunResult(false, null))
         verify(mockLogger).error(
-            nullable(Throwable::class.java),
+            anyOrNull<Throwable>(),
             contains("Failed to receive the UTP test results"))
     }
 

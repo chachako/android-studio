@@ -36,9 +36,10 @@ import org.gradle.api.file.FileCollection
 import org.jetbrains.kotlin.gradle.utils.`is`
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.times
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -48,8 +49,7 @@ class AnalyticsEnabledComponentTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: Component
+    private val delegate: Component = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledComponent by lazy {
@@ -60,19 +60,19 @@ class AnalyticsEnabledComponentTest {
 
     @Test
     fun isDebug() {
-        Mockito.`when`(delegate.debuggable).thenReturn(true)
+        whenever(delegate.debuggable).thenReturn(true)
         Truth.assertThat(proxy.debuggable).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessList.first().type)
                 .isEqualTo(VariantPropertiesMethodType.DEBUGGABLE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).debuggable
+        verify(delegate, times(1)).debuggable
     }
 
     @Test
     fun transformClasspathWith() {
-        Mockito.`when`(delegate.instrumentation)
-            .thenReturn(Mockito.mock(Instrumentation::class.java))
+        whenever(delegate.instrumentation)
+            .thenReturn(mock<Instrumentation>())
         val block = { _ : InstrumentationParameters  -> }
         proxy.instrumentation.transformClassesWith(
             MockedVisitor::class.java,
@@ -111,16 +111,16 @@ class AnalyticsEnabledComponentTest {
 
         val instrumentationDelegate = (proxy.instrumentation as AnalyticsEnabledInstrumentation)
             .delegate
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .transformClassesWith(MockedVisitor::class.java, InstrumentationScope.PROJECT, block)
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .transformClassesWith(MockedVisitor::class.java, InstrumentationScope.ALL, block)
     }
 
     @Test
     fun setAsmFramesComputationNode() {
-        Mockito.`when`(delegate.instrumentation)
-            .thenReturn(Mockito.mock(Instrumentation::class.java))
+        whenever(delegate.instrumentation)
+            .thenReturn(mock<Instrumentation>())
         proxy.instrumentation.setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
         proxy.instrumentation.setAsmFramesComputationMode(
             FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
@@ -161,24 +161,24 @@ class AnalyticsEnabledComponentTest {
         val instrumentationDelegate = (proxy.instrumentation as AnalyticsEnabledInstrumentation)
             .delegate
 
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .setAsmFramesComputationMode(
                 FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
             )
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .setAsmFramesComputationMode(
                 FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES
             )
-        Mockito.verify(instrumentationDelegate, times(1))
+        verify(instrumentationDelegate, times(1))
             .setAsmFramesComputationMode(FramesComputationMode.COMPUTE_FRAMES_FOR_ALL_CLASSES)
     }
 
     @Test
     fun instrumentationExcludes() {
-        Mockito.`when`(delegate.instrumentation)
-            .thenReturn(Mockito.mock(Instrumentation::class.java))
+        whenever(delegate.instrumentation)
+            .thenReturn(mock<Instrumentation>())
         proxy.instrumentation.excludes
         proxy.instrumentation.excludes
 
@@ -197,47 +197,47 @@ class AnalyticsEnabledComponentTest {
 
     @Test
     fun getBuildType() {
-        Mockito.`when`(delegate.buildType).thenReturn("BuildTypeFoo")
+        whenever(delegate.buildType).thenReturn("BuildTypeFoo")
         Truth.assertThat(proxy.buildType).isEqualTo("BuildTypeFoo")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.BUILD_TYPE_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .buildType
     }
 
     @Test
     fun getProductFlavors() {
-        Mockito.`when`(delegate.productFlavors).thenReturn(listOf("foo" to "bar"))
+        whenever(delegate.productFlavors).thenReturn(listOf("foo" to "bar"))
         Truth.assertThat(proxy.productFlavors).isEqualTo(listOf("foo" to "bar"))
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.PRODUCT_FLAVORS_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .productFlavors
     }
 
     @Test
     fun getFlavorName() {
-        Mockito.`when`(delegate.flavorName).thenReturn("flavorName")
+        whenever(delegate.flavorName).thenReturn("flavorName")
         Truth.assertThat(proxy.flavorName).isEqualTo("flavorName")
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.FLAVOR_NAME_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .flavorName
     }
 
     @Test
     fun getJavaCompilation() {
-        val javaCompilation = Mockito.mock(JavaCompilation::class.java)
-        Mockito.`when`(delegate.javaCompilation).thenReturn(javaCompilation)
+        val javaCompilation = mock<JavaCompilation>()
+        whenever(delegate.javaCompilation).thenReturn(javaCompilation)
 
         val javaCompilationProxy = proxy.javaCompilation
         Truth.assertThat(javaCompilationProxy.javaClass).`is`(AnalyticsEnabledJavaCompilation::class.java)
@@ -247,14 +247,14 @@ class AnalyticsEnabledComponentTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.JAVA_COMPILATION_OPTIONS_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .javaCompilation
     }
 
     @Test
     fun getSources() {
-        val sources = Mockito.mock(Sources::class.java)
-        Mockito.`when`(delegate.sources).thenReturn(sources)
+        val sources = mock<Sources>()
+        whenever(delegate.sources).thenReturn(sources)
 
         val sourcesProxy = proxy.sources
         Truth.assertThat(sources.javaClass).`is`(AnalyticsEnabledSources::class.java)
@@ -264,53 +264,53 @@ class AnalyticsEnabledComponentTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.COMPONENT_SOURCES_ACCESS_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .sources
     }
 
     @Test
     fun getCompileClasspath() {
-        val compileClasspath = Mockito.mock(FileCollection::class.java)
-        Mockito.`when`(delegate.compileClasspath).thenReturn(compileClasspath)
+        val compileClasspath = mock<FileCollection>()
+        whenever(delegate.compileClasspath).thenReturn(compileClasspath)
         Truth.assertThat(proxy.compileClasspath).isEqualTo(compileClasspath)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.COMPILE_CLASSPATH_VALUE)
-        Mockito.verify(delegate, times(1)).compileClasspath
+        verify(delegate, times(1)).compileClasspath
     }
 
     @Test
     fun getCompileConfiguration() {
-        val compileConfiguration = Mockito.mock(Configuration::class.java)
-        Mockito.`when`(delegate.compileConfiguration).thenReturn(compileConfiguration)
+        val compileConfiguration = mock<Configuration>()
+        whenever(delegate.compileConfiguration).thenReturn(compileConfiguration)
         Truth.assertThat(proxy.compileConfiguration).isEqualTo(compileConfiguration)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.COMPILE_CONFIGURATION_VALUE)
-        Mockito.verify(delegate, times(1)).compileConfiguration
+        verify(delegate, times(1)).compileConfiguration
     }
 
     @Test
     fun getRuntimeConfiguration() {
-        val runtimeConfiguration = Mockito.mock(Configuration::class.java)
-        Mockito.`when`(delegate.runtimeConfiguration).thenReturn(runtimeConfiguration)
+        val runtimeConfiguration = mock<Configuration>()
+        whenever(delegate.runtimeConfiguration).thenReturn(runtimeConfiguration)
         Truth.assertThat(proxy.runtimeConfiguration).isEqualTo(runtimeConfiguration)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.RUNTIME_CONFIGURATION_VALUE)
-        Mockito.verify(delegate, times(1)).runtimeConfiguration
+        verify(delegate, times(1)).runtimeConfiguration
     }
 
     @Test
     fun getAnnotationProcessorConfiguration() {
-        val annotationProcessorConfiguration = Mockito.mock(Configuration::class.java)
-        Mockito.`when`(delegate.annotationProcessorConfiguration)
+        val annotationProcessorConfiguration = mock<Configuration>()
+        whenever(delegate.annotationProcessorConfiguration)
             .thenReturn(annotationProcessorConfiguration)
         Truth.assertThat(proxy.annotationProcessorConfiguration)
             .isEqualTo(annotationProcessorConfiguration)
@@ -319,13 +319,13 @@ class AnalyticsEnabledComponentTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_CONFIGURATION_VALUE)
-        Mockito.verify(delegate, times(1)).annotationProcessorConfiguration
+        verify(delegate, times(1)).annotationProcessorConfiguration
     }
 
     @Test
     fun getLifecycleTasks() {
-        val lifecycleTasks = Mockito.mock(LifecycleTasks::class.java)
-        Mockito.`when`(delegate.lifecycleTasks).thenReturn(lifecycleTasks)
+        val lifecycleTasks = mock<LifecycleTasks>()
+        whenever(delegate.lifecycleTasks).thenReturn(lifecycleTasks)
         val anchorTasksProxy = proxy.lifecycleTasks
         Truth.assertThat(anchorTasksProxy).isInstanceOf(AnalyticsEnabledLifecycleTasks::class.java)
         Truth.assertThat(lifecycleTasks).isEqualTo(
@@ -336,7 +336,7 @@ class AnalyticsEnabledComponentTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.LIFECYCLE_TASKS_VALUE)
-        Mockito.verify(delegate, times(1))
+        verify(delegate, times(1))
             .lifecycleTasks
     }
 }

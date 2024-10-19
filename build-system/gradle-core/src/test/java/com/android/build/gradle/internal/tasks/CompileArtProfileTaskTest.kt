@@ -37,7 +37,8 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import javax.inject.Inject
 
 @RunWith(Parameterized::class)
@@ -77,21 +78,21 @@ class CompileArtProfileTaskTest(private val r8Rewriting: Boolean) {
         ) {}
 
 
-        val creationConfig = Mockito.mock(TestCreationConfig::class.java)
-        val taskContainer = Mockito.mock(MutableTaskContainer::class.java)
-        Mockito.`when`(creationConfig.taskContainer).thenReturn(taskContainer)
-        Mockito.`when`(taskContainer.preBuildTask).thenReturn(
+        val creationConfig = mock<TestCreationConfig>()
+        val taskContainer = mock<MutableTaskContainer>()
+        whenever(creationConfig.taskContainer).thenReturn(taskContainer)
+        whenever(taskContainer.preBuildTask).thenReturn(
             project.tasks.register("preBuild")
         )
-        Mockito.`when`(creationConfig.name).thenReturn("test")
-        Mockito.`when`(creationConfig.services).thenReturn(taskCreationServices)
+        whenever(creationConfig.name).thenReturn("test")
+        whenever(creationConfig.services).thenReturn(taskCreationServices)
 
-        val artifacts = Mockito.mock(ArtifactsImpl::class.java)
-        Mockito.`when`(creationConfig.artifacts).thenReturn(artifacts)
+        val artifacts = mock<ArtifactsImpl>()
+        whenever(creationConfig.artifacts).thenReturn(artifacts)
 
         val experimentalProperties = objects.mapProperty(String::class.java, Any::class.java)
         experimentalProperties.put(ModulePropertyKey.BooleanWithDefault.ART_PROFILE_R8_REWRITING.key, r8Rewriting)
-        Mockito.`when`(creationConfig.experimentalProperties).thenReturn(experimentalProperties)
+        whenever(creationConfig.experimentalProperties).thenReturn(experimentalProperties)
 
         val mergedFile = temporaryFolder.newFile("merged_file.txt")
         val workerExecutor = FakeGradleWorkExecutor(
@@ -109,7 +110,7 @@ class CompileArtProfileTaskTest(private val r8Rewriting: Boolean) {
         // the mapping file is always provided to the task so create it and make it available
         // through the artifact APIs.
         val mappingFile = temporaryFolder.newFile("mapping_file")
-        Mockito.`when`(artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)).thenReturn(
+        whenever(artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)).thenReturn(
             objects.fileProperty().also { it.set(mappingFile) }
         )
 

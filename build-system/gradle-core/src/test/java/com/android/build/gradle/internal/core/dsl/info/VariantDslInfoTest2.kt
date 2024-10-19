@@ -54,7 +54,8 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @RunWith(Parameterized::class)
 class VariantDslInfoTest2(
@@ -654,7 +655,7 @@ class VariantDslInfoTest2(
     private val projectServices = createProjectServices()
     private val services = createVariantPropertiesApiServices(projectServices)
     private val dslServices: DslServices = createDslServices(projectServices)
-    private val buildDirectory: DirectoryProperty = Mockito.mock(DirectoryProperty::class.java)
+    private val buildDirectory: DirectoryProperty = mock()
 
     override fun instantiateGiven() = GivenData(componentType, dslServices)
     override fun instantiateResult() = ResultData()
@@ -663,27 +664,27 @@ class VariantDslInfoTest2(
         extension: InternalTestedExtension<*, *, *, *, *, *>,
         given: GivenData
     ) {
-        Mockito.`when`(extension.namespace).thenReturn(given.namespace)
+        whenever(extension.namespace).thenReturn(given.namespace)
         if (given.componentType.isTestComponent) {
-            Mockito.`when`(extension.testNamespace).thenReturn(given.testNamespace)
+            whenever(extension.testNamespace).thenReturn(given.testNamespace)
         }
     }
 
     override fun defaultWhen(given: GivenData): ResultData {
-        val componentIdentity = Mockito.mock(ComponentIdentity::class.java)
-        Mockito.`when`(componentIdentity.name).thenReturn("compIdName")
+        val componentIdentity = mock<ComponentIdentity>()
+        whenever(componentIdentity.name).thenReturn("compIdName")
 
         val extension = when (given.mainComponentType) {
             ComponentTypeImpl.BASE_APK ->
-                Mockito.mock(InternalApplicationExtension::class.java).also {
+                mock<InternalApplicationExtension>().also {
                     configureExtension(it, given)
                 }
             ComponentTypeImpl.LIBRARY ->
-                Mockito.mock(InternalLibraryExtension::class.java).also {
+                mock<InternalLibraryExtension>().also {
                     configureExtension(it, given)
                 }
             ComponentTypeImpl.OPTIONAL_APK ->
-                Mockito.mock(InternalDynamicFeatureExtension::class.java).also {
+                mock<InternalDynamicFeatureExtension>().also {
                     configureExtension(it, given)
                 }
             else -> {

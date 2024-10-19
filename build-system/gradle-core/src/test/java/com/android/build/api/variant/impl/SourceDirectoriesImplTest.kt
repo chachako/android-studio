@@ -34,10 +34,10 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import org.mockito.stubbing.Answer
 
@@ -49,8 +49,7 @@ internal class SourceDirectoriesImplTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var variantServices: VariantServices
+    private val variantServices: VariantServices = mock()
 
     @Captor
     lateinit var callableCaptor: ArgumentCaptor<Callable<*>>
@@ -63,20 +62,20 @@ internal class SourceDirectoriesImplTest {
             .withProjectDir(temporaryFolder.newFolder())
             .build()
 
-        val projectInfo = Mockito.mock(ProjectInfo::class.java)
-        Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
-        Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
-        Mockito.`when`(projectInfo.buildDirectory).thenReturn(project.layout.buildDirectory)
+        val projectInfo = mock<ProjectInfo>()
+        whenever(variantServices.projectInfo).thenReturn(projectInfo)
+        whenever(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
+        whenever(projectInfo.buildDirectory).thenReturn(project.layout.buildDirectory)
 
-        Mockito.`when`(variantServices.newListPropertyForInternalUse(DirectoryEntry::class.java))
+        whenever(variantServices.newListPropertyForInternalUse(DirectoryEntry::class.java))
             .thenReturn(project.objects.listProperty(DirectoryEntry::class.java))
-        Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java))
+        whenever(variantServices.newListPropertyForInternalUse(Directory::class.java))
             .thenReturn(project.objects.listProperty(Directory::class.java))
     }
 
     @Test
     fun testAsFileTree() {
-        Mockito.`when`(variantServices.fileTreeFactory()).thenReturn(
+        whenever(variantServices.fileTreeFactory()).thenReturn(
             { project.objects.fileTree() },
             { project.objects.fileTree() },
         )
@@ -93,7 +92,7 @@ internal class SourceDirectoriesImplTest {
 
     @Test
     fun testVariantSourcesForModel() {
-        Mockito.`when`(variantServices.fileCollection())
+        whenever(variantServices.fileCollection())
             .thenReturn(project.objects.fileCollection())
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
@@ -108,7 +107,7 @@ internal class SourceDirectoriesImplTest {
 
     @Test
     fun testVariantSourcesWithFilteringForModel() {
-        Mockito.`when`(variantServices.fileCollection())
+        whenever(variantServices.fileCollection())
             .thenReturn(project.objects.fileCollection())
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
@@ -140,7 +139,7 @@ internal class SourceDirectoriesImplTest {
         }
 
         val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
+        whenever(variantServices.provider(capture(callableCaptor))).thenAnswer(
             Answer() {
                 project.provider(callableCaptor.value)
             }

@@ -33,7 +33,8 @@ import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 
 internal class FullDependencyGraphBuilderTest {
@@ -266,14 +267,14 @@ private fun buildModelGraph(
 private fun getResolutionResultProvider(
     compileResultsResults: Set<DependencyResult>
 ): ResolutionResultProvider {
-    val result = Mockito.mock(ResolutionResult::class.java)
-    val root = Mockito.mock(ResolvedComponentResult::class.java)
-    val additionalArtifacts = Mockito.mock(ArtifactCollection::class.java)
-    val iterator = Mockito.mock(MutableIterator::class.java)
-    Mockito.`when`(result.root).thenReturn(root)
-    Mockito.`when`(root.dependencies).thenReturn(compileResultsResults)
-    Mockito.`when`(additionalArtifacts.iterator()).thenReturn(iterator as MutableIterator<ResolvedArtifactResult>)
-    Mockito.`when`(iterator.hasNext()).thenReturn(false)
+    val result = mock<ResolutionResult>()
+    val root = mock<ResolvedComponentResult>()
+    val additionalArtifacts = mock<ArtifactCollection>()
+    val iterator = mock<MutableIterator<ResolvedArtifactResult>>()
+    whenever(result.root).thenReturn(root)
+    whenever(root.dependencies).thenReturn(compileResultsResults)
+    whenever(additionalArtifacts.iterator()).thenReturn(iterator)
+    whenever(iterator.hasNext()).thenReturn(false)
 
     return ResolutionResultProviderImpl(result, result, additionalArtifacts)
 }

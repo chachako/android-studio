@@ -32,17 +32,11 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.doReturn
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
-import org.mockito.quality.Strictness
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.doReturn
 
 internal class VariantPathHelperTest {
-
-    @get:Rule
-    val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT)
 
     val project: Project = ProjectBuilder.builder().build()
 
@@ -50,21 +44,18 @@ internal class VariantPathHelperTest {
         project.layout.buildDirectory
     }
 
-    @Mock
-    lateinit var variantDslInfo: MultiVariantComponentDslInfo
+    private val variantDslInfo: MultiVariantComponentDslInfo = mock(lenient = true)
 
-    @Mock
-    lateinit var dslServices: DslServices
+    private val dslServices: DslServices = mock(lenient = true)
 
-    @Mock
-    lateinit var projectOptions: ProjectOptions
+    private val projectOptions: ProjectOptions = mock(lenient = true)
 
     @Before
     fun setup() {
-        `when`(dslServices.projectOptions).thenReturn(projectOptions)
-        `when`(variantDslInfo.componentType).thenReturn(ComponentTypeImpl.LIBRARY)
-        `when`(variantDslInfo.productFlavorList).thenReturn(emptyList())
-        `when`(variantDslInfo.buildType).thenReturn("apk_location")
+        whenever(dslServices.projectOptions).thenReturn(projectOptions)
+        whenever(variantDslInfo.componentType).thenReturn(ComponentTypeImpl.LIBRARY)
+        whenever(variantDslInfo.productFlavorList).thenReturn(emptyList())
+        whenever(variantDslInfo.buildType).thenReturn("apk_location")
     }
 
     @Test
@@ -74,7 +65,7 @@ internal class VariantPathHelperTest {
             variantDslInfo,
             dslServices
         )
-        doReturn("x86").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
+        doReturn("x86").whenever(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
         Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("intermediates")
     }
 
@@ -85,8 +76,8 @@ internal class VariantPathHelperTest {
                 variantDslInfo,
                 dslServices
         )
-        doReturn("x86,armeabi-v7a").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
-        doReturn("hdpi").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_DENSITY)
+        doReturn("x86,armeabi-v7a").whenever(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
+        doReturn("hdpi").whenever(projectOptions).get(StringOption.IDE_BUILD_TARGET_DENSITY)
         Truth.assertThat(variantPathHelper.targetFilterConfigurations)
                 .containsExactly(
                         FilterConfigurationImpl(FilterConfiguration.FilterType.ABI, "x86,armeabi-v7a"),
@@ -100,7 +91,7 @@ internal class VariantPathHelperTest {
             variantDslInfo,
             dslServices
         )
-        doReturn(21).`when`(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
+        doReturn(21).whenever(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
         Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("intermediates")
     }
 
@@ -112,8 +103,8 @@ internal class VariantPathHelperTest {
             dslServices
         )
         // necessary, otherwise mockito will return 0.
-        doReturn(null).`when`(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
-        doReturn(true).`when`(projectOptions).get(BooleanOption.IDE_INVOKED_FROM_IDE)
+        doReturn(null).whenever(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
+        doReturn(true).whenever(projectOptions).get(BooleanOption.IDE_INVOKED_FROM_IDE)
         Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("outputs")
     }
 
@@ -125,7 +116,7 @@ internal class VariantPathHelperTest {
             dslServices
         )
         // necessary, otherwise mockito will return 0.
-        doReturn(null).`when`(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
+        doReturn(null).whenever(projectOptions).get(IntegerOption.IDE_TARGET_DEVICE_API)
         Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("outputs")
     }
 }

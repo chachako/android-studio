@@ -24,8 +24,10 @@ import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -35,8 +37,7 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: KotlinMultiplatformAndroidVariant
+    private val delegate: KotlinMultiplatformAndroidVariant = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledKotlinMultiplatformAndroidVariant by lazy {
@@ -45,8 +46,8 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
 
     @Test
     fun getDeviceTests() {
-        val deviceTest = Mockito.mock(DeviceTest::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
+        val deviceTest = mock<DeviceTest>()
+        whenever(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
@@ -57,16 +58,16 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .deviceTests
     }
 
     @Test
     fun getDeviceTests_for_android_test() {
         @Suppress("DEPRECATION")
-        val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTest::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
-        Mockito.`when`(delegate.androidTest).thenReturn(deviceTest)
+        val deviceTest = mock<com.android.build.api.variant.AndroidTest>()
+        whenever(delegate.deviceTests).thenReturn(mapOf(DeviceTestBuilder.ANDROID_TEST_TYPE to deviceTest))
+        whenever(delegate.androidTest).thenReturn(deviceTest)
         val deviceTestsProxy = proxy.deviceTests
 
         Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
@@ -85,9 +86,9 @@ class AnalyticsEnabledKotlinMultiplatformAndroidVariantTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.last().type
         ).isEqualTo(VariantPropertiesMethodType.ANDROID_TEST_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .deviceTests
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .androidTest
     }
 }

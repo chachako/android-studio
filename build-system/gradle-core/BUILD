@@ -248,6 +248,7 @@ kotlin_test(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-test",
         "@maven//:org.jsoup.jsoup",
+        "@maven//:org.mockito.kotlin.mockito-kotlin",
         "@maven//:org.mockito.mockito-core",
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-commons",

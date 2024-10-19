@@ -32,7 +32,7 @@ import com.android.builder.core.BuilderConstants
 import com.android.builder.core.ComponentType
 import com.google.common.collect.ImmutableList
 import org.gradle.api.Named
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
 
 /**
  * Basic DSL entry point for simulating a [VariantInputModel]
@@ -88,11 +88,11 @@ class VariantInputModelBuilder(
 
     fun toModel() : TestVariantInputModel {
         val buildTypes = buildTypes.values.map {
-            val mainSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val screenshotTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val mainSourceSet = mock<DefaultAndroidSourceSet>()
+            val testFixturesSourceSet = mock<LazyAndroidSourceSet>()
+            val androidTestSourceSet = mock<LazyAndroidSourceSet>()
+            val unitTestSourceSet = mock<LazyAndroidSourceSet>()
+            val screenshotTestSourceSet = mock<LazyAndroidSourceSet>()
 
             BuildTypeData(
                it,
@@ -106,11 +106,11 @@ class VariantInputModelBuilder(
         }.associateBy { it.buildType.name }
 
         val flavors = productFlavors.values.map {
-            val mainSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
-            val screenshotTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val mainSourceSet = mock<DefaultAndroidSourceSet>()
+            val testFixturesSourceSet = mock<LazyAndroidSourceSet>()
+            val androidTestSourceSet = mock<LazyAndroidSourceSet>()
+            val unitTestSourceSet = mock<LazyAndroidSourceSet>()
+            val screenshotTestSourceSet = mock<LazyAndroidSourceSet>()
 
             ProductFlavorData(
                 it,
@@ -126,11 +126,11 @@ class VariantInputModelBuilder(
         // the default Config
         val defaultConfig = DefaultConfigData(
             defaultConfig,
-            Mockito.mock(DefaultAndroidSourceSet::class.java),
-            Mockito.mock(LazyAndroidSourceSet::class.java),
-            Mockito.mock(LazyAndroidSourceSet::class.java),
-            Mockito.mock(LazyAndroidSourceSet::class.java),
-            Mockito.mock(LazyAndroidSourceSet::class.java),
+            mock<DefaultAndroidSourceSet>(),
+            mock<LazyAndroidSourceSet>(),
+            mock<LazyAndroidSourceSet>(),
+            mock<LazyAndroidSourceSet>(),
+            mock<LazyAndroidSourceSet>(),
             lazySourceSetCreation = false
         )
 
@@ -197,6 +197,6 @@ class TestVariantInputModel(
      * This allows not having to declare them during tests to simplify the fake DSL.
      */
     val implicitFlavorDimensions: List<String>,
-    override val sourceSetManager: SourceSetManager = Mockito.mock(SourceSetManager::class.java)
+    override val sourceSetManager: SourceSetManager = mock()
 ): VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
 

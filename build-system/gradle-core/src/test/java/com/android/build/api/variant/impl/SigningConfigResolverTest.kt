@@ -25,14 +25,15 @@ import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.createDslServices
 import com.android.builder.core.ComponentTypeImpl
-import com.android.testutils.MockitoKt.any
 import com.google.common.truth.Truth
 import org.gradle.api.NamedDomainObjectContainer
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
 class SigningConfigResolverTest {
@@ -41,12 +42,11 @@ class SigningConfigResolverTest {
     private val dslServices: DslServices by lazy { createDslServices() }
 
     private fun extension(): ApplicationExtension {
-        val extension = Mockito.mock(ApplicationExtension::class.java)
+        val extension = mock<ApplicationExtension>()
 
         @Suppress("UNCHECKED_CAST")
-        val domainObject = Mockito.mock(NamedDomainObjectContainer::class.java)
-                as NamedDomainObjectContainer<ApkSigningConfig>
-        Mockito.`when`(extension.signingConfigs)
+        val domainObject = mock<NamedDomainObjectContainer<ApkSigningConfig>>()
+        whenever(extension.signingConfigs)
             .thenReturn(domainObject)
         return extension
     }
@@ -62,7 +62,7 @@ class SigningConfigResolverTest {
         val buildType = buildType("Test")
         val dslSigningConfig = signingConfig("Test")
         buildType.setSigningConfig(dslSigningConfig)
-        val mergedMock = Mockito.mock(MergedFlavor::class.java)
+        val mergedMock = mock<MergedFlavor>()
 
         val resolver = SigningConfigResolver.create(buildType, mergedMock, null, extension(), dslServices)
 
@@ -75,7 +75,7 @@ class SigningConfigResolverTest {
     fun createWithOverrideOnly() {
         val buildType = buildType("Test")
         val override = signingConfig("Test")
-        val mergedMock = Mockito.mock(MergedFlavor::class.java)
+        val mergedMock = mock<MergedFlavor>()
 
         val resolver = SigningConfigResolver.create(buildType, mergedMock, override, extension(), dslServices)
 
@@ -97,7 +97,7 @@ class SigningConfigResolverTest {
 
         val override = signingConfig("Override")
 
-        val mergedMock = Mockito.mock(MergedFlavor::class.java)
+        val mergedMock = mock<MergedFlavor>()
 
         val resolver = SigningConfigResolver.create(buildType, mergedMock, override, extension(), dslServices)
 
@@ -114,9 +114,9 @@ class SigningConfigResolverTest {
     fun createWithDebugConfigFallback() {
         val buildType = buildType("Test")
         val debugConfig = signingConfig("debug")
-        val mergedMock = Mockito.mock(MergedFlavor::class.java)
+        val mergedMock = mock<MergedFlavor>()
         val extension = extension()
-        Mockito.`when`(extension.signingConfigs.findByName(any())).thenReturn(debugConfig)
+        whenever(extension.signingConfigs.findByName(any())).thenReturn(debugConfig)
         val resolver = SigningConfigResolver.create(buildType, mergedMock, null, extension, dslServices)
 
         Truth.assertThat(resolver.dslSigningConfig).isNull()

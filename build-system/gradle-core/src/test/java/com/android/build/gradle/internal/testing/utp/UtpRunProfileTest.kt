@@ -27,38 +27,29 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.Clock
 import java.time.Instant
 
 class UtpRunProfileTest {
-
-    @get:Rule
-    val mockitoRule: MockitoRule = MockitoJUnit.rule()
-
     @get:Rule
     var temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var mockClock: Clock
+    private val mockClock: Clock = mock()
 
-    @Mock
-    lateinit var testRunResult: UtpTestRunResult
+    private val testRunResult: UtpTestRunResult = mock()
 
-    @Mock
-    lateinit var resultsProto: TestSuiteResultProto.TestSuiteResult
+    private val resultsProto: TestSuiteResultProto.TestSuiteResult = mock()
 
     @Before
     fun setup() {
-        `when`(testRunResult.resultsProto).thenReturn(resultsProto)
+        whenever(testRunResult.resultsProto).thenReturn(resultsProto)
     }
 
     private fun setupClock(vararg time: Long) {
         val iterator = time.toList().iterator()
-        `when`(mockClock.instant()).thenAnswer {
+        whenever(mockClock.instant()).thenAnswer {
             Instant.ofEpochMilli(iterator.next())
         }
     }

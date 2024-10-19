@@ -36,8 +36,9 @@ import com.android.builder.model.SyncIssue
 import com.android.builder.model.v2.ide.ProjectType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import kotlin.test.assertFailsWith
 
 /** Tests for the default variant DSL settings */
@@ -466,9 +467,9 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
 
     @Test
     fun `check task name generation`(){
-        val component = Mockito.mock(VariantImpl::class.java)
-        Mockito.`when`(component.name).thenReturn("debug")
-        Mockito.`when`(component.computeTaskName(anyString(), anyString())).thenCallRealMethod()
+        val component = mock<VariantImpl<*>>()
+        whenever(component.name).thenReturn("debug")
+        whenever(component.computeTaskName(any(), any())).thenCallRealMethod()
 
         assertThat(component.computeTaskName("produce", "ManifestReport")).isEqualTo("produceDebugManifestReport")
         assertThat(component.computeTaskName("Produce", "manifestReport")).isEqualTo("produceDebugManifestReport")
@@ -507,8 +508,8 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
 
         val components = mutableListOf<VariantCreationConfig>()
 
-        val globalTaskCreationConfig = Mockito.mock(GlobalTaskCreationConfig::class.java)
-        Mockito.`when`(globalTaskCreationConfig.services).thenReturn(dslServices)
+        val globalTaskCreationConfig = mock<GlobalTaskCreationConfig>()
+        whenever(globalTaskCreationConfig.services).thenReturn(dslServices)
 
         for (variant in variantComputer.computeVariants()) {
             val name = computeName(variant, componentType)
@@ -534,14 +535,14 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
 
             // FIXME this should be simpler when we remove VariantData|Scope to use newer objects only.
             if (!ignore) {
-                val component = Mockito.mock(VariantImpl::class.java)
+                val component = mock<VariantImpl<*>>()
                 components.add(component)
 
-                Mockito.`when`(component.name).thenReturn(name)
-                Mockito.`when`(component.componentType).thenReturn(componentType)
-                Mockito.`when`(component.buildType).thenReturn(variant.buildType)
-                Mockito.`when`(component.productFlavors).thenReturn(variant.productFlavors)
-                Mockito.`when`(component.productFlavorList).thenReturn(flavors.map {
+                whenever(component.name).thenReturn(name)
+                whenever(component.componentType).thenReturn(componentType)
+                whenever(component.buildType).thenReturn(variant.buildType)
+                whenever(component.productFlavors).thenReturn(variant.productFlavors)
+                whenever(component.productFlavorList).thenReturn(flavors.map {
                     com.android.build.gradle.internal.core.ProductFlavor(it)
                 })
             }
@@ -556,7 +557,7 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
             {
                 BuildFeatureValuesImpl(
                     dslServices.newInstance(ApplicationBuildFeaturesImpl::class.java),
-                    Mockito.mock(ProjectServices::class.java)
+                    mock<ProjectServices>()
                 )
             },
             AndroidProjectTypes.PROJECT_TYPE_APP,

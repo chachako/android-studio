@@ -23,15 +23,15 @@ import com.android.builder.internal.aapt.AaptPackageConfig
 import com.android.builder.internal.aapt.v2.Aapt2
 import com.android.builder.internal.aapt.v2.Aapt2RenamingConventions
 import com.android.ide.common.resources.CompileResourceRequest
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.testutils.NoErrorsOrWarningsLogger
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
-import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 class PartialInProcessResourceProcessorTest {
 
@@ -73,7 +73,7 @@ class PartialInProcessResourceProcessorTest {
         val logger = NoErrorsOrWarningsLogger()
         val request = CompileResourceRequest(inputFile = from, outputDirectory = to, isPngCrunching = true)
         processor.compile(request, logger)
-        Mockito.verify(aapt2).compile(eq(request), eq(logger))
+        verify(aapt2).compile(eq(request), eq(logger))
     }
 
 
@@ -93,7 +93,7 @@ class PartialInProcessResourceProcessorTest {
             componentType = ComponentTypeImpl.BASE_APK
         )
         processor.link(request, logger)
-        Mockito.verify(aapt2).link(eq(request), eq(logger))
+        verify(aapt2).link(eq(request), eq(logger))
     }
 
     @Test
@@ -106,6 +106,6 @@ class PartialInProcessResourceProcessorTest {
         val logger = NoErrorsOrWarningsLogger()
         val request = AaptConvertConfig(inputFile = temporaryFolder.newFile("in.ap_"), outputFile = temporaryFolder.newFolder().resolve("out.ap_"))
         processor.convert(request, logger)
-        Mockito.verify(aapt2).convert(eq(request), eq(logger))
+        verify(aapt2).convert(eq(request), eq(logger))
     }
 }

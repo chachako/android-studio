@@ -34,12 +34,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.Mockito.eq
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 private interface TestDeviceSetupInput: DeviceSetupInput
 private interface TestDeviceSetupTaskAction: DeviceSetupTaskAction<TestDeviceSetupInput>
@@ -69,20 +67,15 @@ private val testDeviceImplProxy: TestDeviceImpl = Proxy.newProxyInstance(
 
 @RunWith(JUnit4::class)
 class ManagedDeviceRegistryTest {
-    @get:Rule
-    val mockitoRule: MockitoRule = MockitoJUnit.rule()
-
     private lateinit var registry: ManagedDeviceRegistry
 
-    @Mock
-    private lateinit var testOptions: DeviceTestOptionsDslInfo
+    private val testOptions: DeviceTestOptionsDslInfo = mock()
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var managedDevicesBlock: ManagedDevices
+    private val managedDevicesBlock: ManagedDevices = mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
 
     @Before
     fun setup() {
-        `when`(testOptions.managedDevices).thenReturn(managedDevicesBlock)
+        whenever(testOptions.managedDevices).thenReturn(managedDevicesBlock)
         registry = ManagedDeviceRegistry(testOptions)
     }
 

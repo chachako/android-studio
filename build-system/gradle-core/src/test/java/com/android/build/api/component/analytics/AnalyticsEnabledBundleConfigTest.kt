@@ -26,8 +26,10 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,8 +38,7 @@ class AnalyticsEnabledBundleConfigTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var delegate: BundleConfig
+    private val delegate: BundleConfig = mock()
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledBundleConfig by lazy {
@@ -46,8 +47,8 @@ class AnalyticsEnabledBundleConfigTest {
 
     @Test
     fun testCodeTransparency() {
-        val codeTransparency = Mockito.mock(CodeTransparency::class.java)
-        Mockito.`when`(delegate.codeTransparency).thenReturn(codeTransparency)
+        val codeTransparency = mock<CodeTransparency>()
+        whenever(delegate.codeTransparency).thenReturn(codeTransparency)
 
         Truth.assertThat((proxy.codeTransparency as AnalyticsEnabledCodeTransparency).delegate)
             .isEqualTo(codeTransparency)
@@ -56,13 +57,13 @@ class AnalyticsEnabledBundleConfigTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.GET_CODE_TRANSPARENCY_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .codeTransparency
     }
 
     @Test
     fun testAddMetadataFile() {
-        val provider = Mockito.mock(Provider::class.java) as Provider<RegularFile>
+        val provider = mock<Provider<RegularFile>>()
         proxy.addMetadataFile(
             "com.android.build",
             provider,
@@ -72,7 +73,7 @@ class AnalyticsEnabledBundleConfigTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.BUNDLE_CONFIG_ADD_METADATA_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
+        verify(delegate, times(1))
             .addMetadataFile("com.android.build", provider )
     }
 }

@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.testing.utp
 
-import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.RecordTestResultEventResponse
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.TestResultEvent
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.TestResultEvent.TestSuiteStarted
@@ -28,10 +27,9 @@ import io.grpc.stub.StreamObserver
 import io.grpc.testing.GrpcCleanupRule
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.inOrder
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.inOrder
 import java.io.File
 import java.io.IOException
 
@@ -43,17 +41,10 @@ class UtpTestResultListenerServerTest {
     @get:Rule
     val grpcCleanup = GrpcCleanupRule()
 
-    @get:Rule
-    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
-
-    @Mock
-    lateinit var mockResultListenerClientCert: File
-    @Mock
-    lateinit var mockResultListenerClientPrivateKey: File
-    @Mock
-    lateinit var mockTrustCertCollection: File
-    @Mock
-    lateinit var mockTestResultListener: UtpTestResultListener
+    private val mockResultListenerClientCert: File = mock()
+    private val mockResultListenerClientPrivateKey: File = mock()
+    private val mockTrustCertCollection: File = mock()
+    private val mockTestResultListener: UtpTestResultListener = mock()
 
     @Test
     fun startServer() {

@@ -30,7 +30,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.MockitoAnnotations
 import java.nio.file.Path
 import java.util.function.Predicate
 import java.util.zip.Deflater
@@ -51,8 +50,6 @@ class CompressAssetsTaskTest {
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         workQueue = FakeGradleWorkExecutor(project.objects, temporaryFolder.newFolder()).noIsolation()
 

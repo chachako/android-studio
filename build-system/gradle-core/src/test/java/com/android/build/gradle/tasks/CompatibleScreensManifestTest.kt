@@ -45,9 +45,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -59,9 +58,9 @@ class CompatibleScreensManifestTest {
     @get:Rule var projectFolder = TemporaryFolder()
     @get:Rule var temporaryFolder = TemporaryFolder()
 
-    @Mock private lateinit var artifacts: ArtifactsImpl
-    @Mock private lateinit var taskContainer: MutableTaskContainer
-    @Mock private lateinit var appVariant: ApplicationVariantImpl
+    private val artifacts: ArtifactsImpl = mock()
+    private val taskContainer: MutableTaskContainer = mock()
+    private val appVariant: ApplicationVariantImpl = mock()
 
     private lateinit var task: CompatibleScreensManifest
 
@@ -88,20 +87,19 @@ class CompatibleScreensManifestTest {
             createProjectServices(project)
         )
 
-        MockitoAnnotations.initMocks(this)
-        `when`(appVariant.name).thenReturn("fullVariantName")
-        `when`(appVariant.baseName).thenReturn("baseName")
-        `when`(appVariant.artifacts).thenReturn(artifacts)
-        `when`(appVariant.taskContainer).thenReturn(taskContainer)
-        `when`(appVariant.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
-        `when`(appVariant.services).thenReturn(services)
-        `when`(appVariant.minSdk).thenReturn(AndroidVersionImpl(21))
+        whenever(appVariant.name).thenReturn("fullVariantName")
+        whenever(appVariant.baseName).thenReturn("baseName")
+        whenever(appVariant.artifacts).thenReturn(artifacts)
+        whenever(appVariant.taskContainer).thenReturn(taskContainer)
+        whenever(appVariant.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
+        whenever(appVariant.services).thenReturn(services)
+        whenever(appVariant.minSdk).thenReturn(AndroidVersionImpl(21))
 
 
-        `when`(taskContainer.preBuildTask).thenReturn(project.tasks.register("preBuildTask"))
+        whenever(taskContainer.preBuildTask).thenReturn(project.tasks.register("preBuildTask"))
         task.outputFolder.set(temporaryFolder.root)
-        `when`(appVariant.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
-        `when`(appVariant.componentIdentity).thenReturn(
+        whenever(appVariant.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
+        whenever(appVariant.componentIdentity).thenReturn(
             ComponentIdentityImpl(
                 "fullVariantName",
                 "flavorName",
@@ -110,7 +108,7 @@ class CompatibleScreensManifestTest {
         )
         val applicationId = project.objects.property(String::class.java)
         applicationId.set("com.foo")
-        `when`(appVariant.applicationId).thenReturn(applicationId)
+        whenever(appVariant.applicationId).thenReturn(applicationId)
     }
 
     @Test
@@ -119,7 +117,7 @@ class CompatibleScreensManifestTest {
                 appVariant, setOf("xxhpi", "xxxhdpi")
         )
         val variantOutputList = VariantOutputList(listOf(fakeVariantOutput()))
-        `when`(appVariant.outputs).thenReturn(variantOutputList)
+        whenever(appVariant.outputs).thenReturn(variantOutputList)
 
         configAction.configure(task)
 

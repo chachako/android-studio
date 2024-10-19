@@ -35,7 +35,8 @@ import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.file.Files
 import java.security.KeyStore
@@ -81,13 +82,13 @@ class ValidateSigningTaskTest {
         task.dummyOutputDirectory.set(outputDirectory)
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
-        val signingConfig = Mockito.mock(SigningConfigImpl::class.java)
-        Mockito.`when`(signingConfig.name).thenReturn("release")
-        Mockito.`when`(signingConfig.storeFile).thenReturn(FakeGradleProvider(null))
-        Mockito.`when`(signingConfig.storePassword).thenReturn(FakeGradleProvider("store password"))
-        Mockito.`when`(signingConfig.keyAlias).thenReturn(FakeGradleProvider("key alias"))
-        Mockito.`when`(signingConfig.keyPassword).thenReturn(FakeGradleProvider("key password"))
-        Mockito.`when`(signingConfig.storeType).thenReturn(FakeGradleProvider(null))
+        val signingConfig = mock<SigningConfigImpl>()
+        whenever(signingConfig.name).thenReturn("release")
+        whenever(signingConfig.storeFile).thenReturn(FakeGradleProvider(null))
+        whenever(signingConfig.storePassword).thenReturn(FakeGradleProvider("store password"))
+        whenever(signingConfig.keyAlias).thenReturn(FakeGradleProvider("key alias"))
+        whenever(signingConfig.keyPassword).thenReturn(FakeGradleProvider("key password"))
+        whenever(signingConfig.storeType).thenReturn(FakeGradleProvider(null))
         task.signingConfigData.set(SigningConfigData.fromSigningConfig(signingConfig))
 
         assertThat(task.forceRerun()).named("forceRerun").isTrue()
@@ -105,14 +106,14 @@ class ValidateSigningTaskTest {
     fun testErrorIfCustomKeystoreFileDoesNotExist() {
         val task = project!!.tasks.create("validateGreenSigning", ValidateSigningTask::class.java)
 
-        val signingConfig = Mockito.mock(SigningConfigImpl::class.java)
-        Mockito.`when`(signingConfig.name).thenReturn("release")
-        Mockito.`when`(signingConfig.storeFile).thenReturn(FakeGradleProvider(
+        val signingConfig = mock<SigningConfigImpl>()
+        whenever(signingConfig.name).thenReturn("release")
+        whenever(signingConfig.storeFile).thenReturn(FakeGradleProvider(
             File(temporaryFolder.newFolder(), "does_not_exist")))
-        Mockito.`when`(signingConfig.storePassword).thenReturn(FakeGradleProvider("store password"))
-        Mockito.`when`(signingConfig.keyAlias).thenReturn(FakeGradleProvider("key alias"))
-        Mockito.`when`(signingConfig.keyPassword).thenReturn(FakeGradleProvider("key password"))
-        Mockito.`when`(signingConfig.storeType).thenReturn(FakeGradleProvider(null))
+        whenever(signingConfig.storePassword).thenReturn(FakeGradleProvider("store password"))
+        whenever(signingConfig.keyAlias).thenReturn(FakeGradleProvider("key alias"))
+        whenever(signingConfig.keyPassword).thenReturn(FakeGradleProvider("key password"))
+        whenever(signingConfig.storeType).thenReturn(FakeGradleProvider(null))
         task.signingConfigData.set(SigningConfigData.fromSigningConfig(signingConfig))
 
         task.dummyOutputDirectory.set(outputDirectory)
@@ -132,22 +133,22 @@ class ValidateSigningTaskTest {
     @Test
     fun testDefaultDebugKeystoreIsCreatedAutomatically() {
         val task = project!!.tasks.create("validateRedSigning", ValidateSigningTask::class.java)
-        val signingConfig = Mockito.mock(SigningConfigImpl::class.java)
-        Mockito.`when`(signingConfig.name).thenReturn("debug")
-        Mockito.`when`(signingConfig.storeFile).thenReturn(FakeGradleProvider(defaultDebugKeystore))
-        Mockito.`when`(signingConfig.storePassword).thenReturn(
+        val signingConfig = mock<SigningConfigImpl>()
+        whenever(signingConfig.name).thenReturn("debug")
+        whenever(signingConfig.storeFile).thenReturn(FakeGradleProvider(defaultDebugKeystore))
+        whenever(signingConfig.storePassword).thenReturn(
             FakeGradleProvider(DefaultSigningConfig.DEFAULT_PASSWORD)
         )
-        Mockito.`when`(signingConfig.keyAlias).thenReturn(
+        whenever(signingConfig.keyAlias).thenReturn(
             FakeGradleProvider(DefaultSigningConfig.DEFAULT_ALIAS)
         )
-        Mockito.`when`(signingConfig.keyPassword).thenReturn(
+        whenever(signingConfig.keyPassword).thenReturn(
             FakeGradleProvider(DefaultSigningConfig.DEFAULT_PASSWORD)
         )
-        Mockito.`when`(signingConfig.storeType).thenReturn(
+        whenever(signingConfig.storeType).thenReturn(
             FakeGradleProvider(KeyStore.getDefaultType())
         )
-        Mockito.`when`(signingConfig.isSigningReady()).thenReturn(true)
+        whenever(signingConfig.isSigningReady()).thenReturn(true)
 
         task.signingConfigData.set(SigningConfigData.fromSigningConfig(signingConfig))
         task.dummyOutputDirectory.set(outputDirectory)

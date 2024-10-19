@@ -25,8 +25,8 @@ import com.google.common.truth.Truth
 import org.gradle.process.CommandLineArgumentProvider
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -36,23 +36,21 @@ internal class AnnotationProcessorImplTest {
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
-    @Mock
-    lateinit var annotationProcessorOptions: AnnotationProcessorOptions
+    private val annotationProcessorOptions: AnnotationProcessorOptions = mock()
 
-    @Mock
-    lateinit var internalServices: VariantServices
+    private val internalServices: VariantServices = mock()
 
     private fun initMocks(
         classNames: List<String> = listOf(),
         arguments: Map<String, String> = mapOf(),
         providers: List<CommandLineArgumentProvider> = listOf()) {
-        `when`(annotationProcessorOptions.classNames).thenReturn(classNames)
-        `when`(internalServices.listPropertyOf(String::class.java, classNames, false))
+        whenever(annotationProcessorOptions.classNames).thenReturn(classNames)
+        whenever(internalServices.listPropertyOf(String::class.java, classNames, false))
             .thenReturn(FakeListProperty(classNames.toMutableList()))
-        `when`(annotationProcessorOptions.arguments).thenReturn(arguments)
-        `when`(internalServices.mapPropertyOf(String::class.java, String::class.java, arguments, false))
+        whenever(annotationProcessorOptions.arguments).thenReturn(arguments)
+        whenever(internalServices.mapPropertyOf(String::class.java, String::class.java, arguments, false))
             .thenReturn(FakeMapProperty(arguments.toMutableMap()))
-        `when`(annotationProcessorOptions.compilerArgumentProviders).thenReturn(providers)
+        whenever(annotationProcessorOptions.compilerArgumentProviders).thenReturn(providers)
     }
 
     @Test
