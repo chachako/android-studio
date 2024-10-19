@@ -182,7 +182,6 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
       method.name == "when" &&
         isKotlin(node.lang) &&
         (context.evaluator.isMemberInClass(method, "org.mockito.Mockito") ||
-          context.evaluator.isMemberInClass(method, "org.mockito.MockedStatic") ||
           context.evaluator.isMemberInClass(method, "org.mockito.stubbing.Stubber"))
     ) {
       val fix =
@@ -192,13 +191,13 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
           .range(context.getCallLocation(node, includeReceiver = true, includeArguments = false))
           .all()
           .with("whenever")
-          .imports("com.android.testutils.MockitoKt.whenever")
+          .imports("org.mockito.kotlin.whenever")
           .build()
       context.report(
         MOCKITO_WHEN,
         node,
         context.getCallLocation(node, includeReceiver = false, includeArguments = true),
-        "Do not use `Mockito.when` from Kotlin; use `MocktioKt.whenever` instead",
+        "Do not use `Mockito.when` from Kotlin; use `org.mockito.kotlin.whenever` instead",
         fix,
       )
     }

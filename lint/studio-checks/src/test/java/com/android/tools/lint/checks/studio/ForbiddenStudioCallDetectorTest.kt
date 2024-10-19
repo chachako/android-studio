@@ -164,7 +164,7 @@ class ForbiddenStudioCallDetectorTest {
       .run()
       .expect(
         """
-                src/test/pkg/test.kt:7: Error: Do not use Mockito.when from Kotlin; use MocktioKt.whenever instead [MockitoWhen]
+                src/test/pkg/test.kt:7: Error: Do not use Mockito.when from Kotlin; use org.mockito.kotlin.whenever instead [MockitoWhen]
                     Mockito.`when`(args) // WARN
                             ~~~~~~~~~~~~
                 1 errors, 0 warnings
@@ -174,7 +174,7 @@ class ForbiddenStudioCallDetectorTest {
         """
                 Fix for src/test/pkg/test.kt line 7: Use `whenever`:
                 @@ -2 +2
-                + import com.android.testutils.MockitoKt.whenever
+                + import org.mockito.kotlin.whenever
                 @@ -7 +8
                 -     Mockito.`when`(args) // WARN
                 +     whenever(args) // WARN
