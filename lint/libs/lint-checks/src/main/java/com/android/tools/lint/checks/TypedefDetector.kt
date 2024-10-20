@@ -56,6 +56,7 @@ import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UField
 import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULiteralExpression
@@ -183,27 +184,18 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     } else if (argument is UParenthesizedExpression) {
       val expression = argument.expression
       checkTypeDefConstant(context, annotation, expression, errorNode, flag, usageInfo)
-    } else if (argument is UIfExpression) {
+    } else if (argument is UExpressionList) {
       // If it's ?: then check both the if and else clauses
-      if (argument.thenExpression != null) {
-        checkTypeDefConstant(
-          context,
-          annotation,
-          argument.thenExpression,
-          errorNode,
-          flag,
-          usageInfo,
-        )
+      for (exp in argument.expressions) {
+        checkTypeDefConstant(context, annotation, exp, exp, flag, usageInfo)
       }
-      if (argument.elseExpression != null) {
-        checkTypeDefConstant(
-          context,
-          annotation,
-          argument.elseExpression,
-          errorNode,
-          flag,
-          usageInfo,
-        )
+    } else if (argument is UIfExpression) {
+      // Check both the if and else clauses
+      argument.thenExpression?.let { thenExpression ->
+        checkTypeDefConstant(context, annotation, thenExpression, thenExpression, flag, usageInfo)
+      }
+      argument.elseExpression?.let { elseExpression ->
+        checkTypeDefConstant(context, annotation, elseExpression, elseExpression, flag, usageInfo)
       }
     } else if (argument is UPolyadicExpression) {
       if (flag) {
@@ -220,7 +212,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         }
 
         for (operand in argument.operands) {
-          checkTypeDefConstant(context, annotation, operand, errorNode, true, usageInfo)
+          checkTypeDefConstant(context, annotation, operand, operand, true, usageInfo)
         }
       } else {
         val operator = argument.operator

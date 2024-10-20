@@ -828,9 +828,10 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "        Object error1 = context.bindService(intent,\n" +
             "                Context.BIND_ABOVE_CLIENT | /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_ALLOW_ACTIVITY_STARTS, Context.BIND_INCLUDE_CAPABILITIES, Context.BIND_SHARED_ISOLATED_PROCESS, Context.BIND_EXTERNAL_SERVICE*/Context.CONTEXT_IGNORE_SECURITY/**/,\n" +
             "                executor, connection);\n" +
-            "        int flags2 = Context.BIND_ABOVE_CLIENT | Context.CONTEXT_IGNORE_SECURITY;\n" +
-            "             Object error2 = context.bindService(intent, context.bindService(intent, /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_ALLOW_ACTIVITY_STARTS, Context.BIND_INCLUDE_CAPABILITIES, Context.BIND_SHARED_ISOLATED_PROCESS, Context.BIND_EXTERNAL_SERVICE*/flags2/**/,\n" +
-            "             executor, connection);\n" +
+            "        int flags2 = Context.BIND_ABOVE_CLIENT | /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_ALLOW_ACTIVITY_STARTS, Context.BIND_INCLUDE_CAPABILITIES, Context.BIND_SHARED_ISOLATED_PROCESS, Context.BIND_EXTERNAL_SERVICE*/Context.CONTEXT_IGNORE_SECURITY/**/;\n" +
+            "        Object error2 = context.bindService(intent,\n" +
+            "                flags2,\n" +
+            "                executor, connection);\n" +
             "    }\n" +
             "}\n"
         ),
@@ -2268,18 +2269,37 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 @Thing const val ONE = 1
                 @Thing const val ANSWER = 42
                 @Thing const val HUNDRED = 100
+
+                fun thingConsumer(@Thing t: Int) {
+                }
+
+                fun test(b: Boolean, i: Int?) {
+                  thingConsumer(if (b) 200 else 300)
+                  thingConsumer(i ?: 3_000)
+                }
                 """
           )
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
+      // Intended to test if/else expressions
+      .skipTestModes(TestMode.BODY_REMOVAL, TestMode.IF_TO_WHEN, TestMode.JVM_OVERLOADS)
       .run()
       .expect(
         """
             src/Thing.kt:11: Error: Must be one of: 1, 0, -1, 42 [WrongConstant]
             @Thing const val HUNDRED = 100
                                        ~~~
-            1 errors, 0 warnings
+            src/Thing.kt:17: Error: Must be one of: 1, 0, -1, 42 [WrongConstant]
+              thingConsumer(if (b) 200 else 300)
+                                   ~~~
+            src/Thing.kt:17: Error: Must be one of: 1, 0, -1, 42 [WrongConstant]
+              thingConsumer(if (b) 200 else 300)
+                                            ~~~
+            src/Thing.kt:18: Error: Must be one of: 1, 0, -1, 42 [WrongConstant]
+              thingConsumer(i ?: 3_000)
+                                 ~~~~~
+            4 errors, 0 warnings
             """
       )
   }
@@ -2742,7 +2762,7 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
               flags = flags.and(MyIntent.UNRELATED.inv()) // ERROR 2
             }
 
-            fun test(i : MyIntent) {
+            fun test(i: MyIntent, j: MyIntent?) {
               i.flags = MyIntent.FLAG_1 or i.flags // OK
               i.flags = MyIntent.UNRELATED.or(i.flags) // ERROR 3
               i.flags = i.flags.and(MyIntent.FLAG_2) // OK
@@ -2750,6 +2770,8 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
               i.flags = i.flags.xor(MyIntent.UNRELATED) // ERROR 5
               i.flags = MyIntent.UNRELATED or MyIntent.UNRELATED // ERROR 6
               i.flags = MyIntent.UNRELATED.or(MyIntent.UNRELATED) // ERROR 7
+              j?.flags = j?.flags?.or(MyIntent.FLAG_1 or MyIntent.FLAG_2) // OK
+              j?.flags = j?.flags?.or(MyIntent.UNRELATED or MyIntent.UNRELATED) // ERROR 8
             }
           """
         ),
@@ -2786,7 +2808,13 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
         src/test.kt:16: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
                       i.flags = MyIntent.UNRELATED.or(MyIntent.UNRELATED) // ERROR 7
                                                       ~~~~~~~~~~~~~~~~~~
-        9 errors, 0 warnings
+        src/test.kt:18: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      j?.flags = j?.flags?.or(MyIntent.UNRELATED or MyIntent.UNRELATED) // ERROR 8
+                                              ~~~~~~~~~~~~~~~~~~
+        src/test.kt:18: Error: Must be one or more of: MyIntent.FLAG_1, FLAG_2 [WrongConstant]
+                      j?.flags = j?.flags?.or(MyIntent.UNRELATED or MyIntent.UNRELATED) // ERROR 8
+                                                                    ~~~~~~~~~~~~~~~~~~
+        11 errors, 0 warnings
         """
       )
   }
