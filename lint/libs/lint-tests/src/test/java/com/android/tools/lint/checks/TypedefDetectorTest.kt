@@ -2818,4 +2818,110 @@ src/DetailInfoTab.kt:17: Error: Must be one of: CONST_1.toLong(), CONST_2.toLong
         """
       )
   }
+
+  fun testConstructorDelegation_differentConstants() {
+    // b/373506497
+    lint()
+      .files(
+        java(
+            """
+            import androidx.annotation.IntDef;
+            public class Autocomplete {
+              public abstract static class SelectionOption<T> {
+                @IntDef(
+                  flag = true,
+                  value = {Hint.NONE, Hint.GENERATED, Hint.INSECURE_FORM}
+                )
+                public @interface SelectOptionHint {}
+
+                public static class Hint {
+                  public static final int NONE = 0;
+                  public static final int GENERATED = 1 << 0;
+                  public static final int INSECURE_FORM = 1 << 1;
+                }
+
+                public SelectionOption(final T value, final @SelectOptionHint int hint) {
+                }
+              }
+
+              public static class CreditCardSelectOption extends SelectionOption<String> {
+                @IntDef(
+                  flag = true,
+                  value = {Hint.NONE, Hint.INSECURE_FORM}
+                )
+                public @interface CreditCardSelectHint {}
+
+                public static class Hint {
+                  public static final int NONE = 0;
+                  public static final int INSECURE_FORM = 1 << 1;
+                }
+
+                CreditCardSelectOption(
+                    final String value, final @CreditCardSelectHint int hint) {
+                  super(value, hint); // ERROR
+                }
+              }
+            }
+          """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+src/Autocomplete.java:34: Error: Must be one or more of: Hint.NONE, Hint.GENERATED, Hint.INSECURE_FORM, but could be Hint.NONE, Hint.INSECURE_FORM [WrongConstant]
+      super(value, hint); // ERROR
+                   ~~~~
+1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testConstructorDelegation_sharedConstant() {
+    // b/373506497
+    lint()
+      .files(
+        java(
+            """
+            import androidx.annotation.IntDef;
+            public class Autocomplete {
+              public static class Hint {
+                public static final int NONE = 0;
+                public static final int GENERATED = 1 << 0;
+                public static final int INSECURE_FORM = 1 << 1;
+              }
+
+              public abstract static class SelectionOption<T> {
+                @IntDef(
+                  flag = true,
+                  value = {Hint.NONE, Hint.GENERATED, Hint.INSECURE_FORM}
+                )
+                public @interface SelectOptionHint {}
+
+                public SelectionOption(final T value, final @SelectOptionHint int hint) {
+                }
+              }
+
+              public static class CreditCardSelectOption extends SelectionOption<String> {
+                @IntDef(
+                  flag = true,
+                  value = {Hint.NONE, Hint.INSECURE_FORM}
+                )
+                public @interface CreditCardSelectHint {}
+
+                CreditCardSelectOption(
+                    final String value, final @CreditCardSelectHint int hint) {
+                  super(value, hint);
+                }
+              }
+            }
+          """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
 }
