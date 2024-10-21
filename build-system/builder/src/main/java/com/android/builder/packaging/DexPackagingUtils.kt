@@ -16,30 +16,26 @@
 
 package com.android.builder.packaging
 
-import com.android.SdkConstants
+import com.android.SdkConstants.FN_APK_CLASSES_DEX
+import com.android.builder.files.RelativeFile
 import java.io.File
 
-fun sortDexFiles(files: Collection<File>) =
-    files.sortedWith(DexFileComparator())
+/** Comparator that compares dex file paths, placing classes.dex always in front. */
+object DexFileComparator : Comparator<File> {
+
+    override fun compare(file1: File, file2: File): Int {
+        return when {
+            file1.name == FN_APK_CLASSES_DEX && file2.name != FN_APK_CLASSES_DEX -> -1
+            file1.name != FN_APK_CLASSES_DEX && file2.name == FN_APK_CLASSES_DEX -> 1
+            else -> file1.absolutePath.compareTo(file2.absolutePath)
+        }
+    }
+}
 
 /** Comparator that compares dex file paths, placing classes.dex always in front. */
-class DexFileComparator : Comparator<File> {
+object DexRelativeFileComparator : Comparator<RelativeFile> {
 
-    override fun compare(f1: File, f2: File): Int {
-        return if (f1.name.endsWith(SdkConstants.FN_APK_CLASSES_DEX)) {
-            if (f2.name.endsWith(SdkConstants.FN_APK_CLASSES_DEX)) {
-                f1.absolutePath.compareTo(f2.absolutePath)
-            } else {
-                -1
-            }
-        } else {
-            if (f2.name.endsWith(SdkConstants.FN_APK_CLASSES_DEX)) {
-                1
-            } else {
-                return f1
-                    .absolutePath
-                    .compareTo(f2.absolutePath)
-            }
-        }
+    override fun compare(file1: RelativeFile, file2: RelativeFile): Int {
+        return DexFileComparator.compare(file1.getFile(), file2.getFile());
     }
 }

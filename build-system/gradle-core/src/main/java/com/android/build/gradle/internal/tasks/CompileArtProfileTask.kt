@@ -32,7 +32,6 @@ import com.android.build.gradle.tasks.PackageAndroidArtifact
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.packaging.DexFileComparator
 import com.android.builder.packaging.DexFileNameSupplier
-import com.android.builder.packaging.sortDexFiles
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile
@@ -133,10 +132,11 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
                 ObfuscationMap.Empty
             }
             val supplier = DexFileNameSupplier()
-            // need to rename dex files with sequential numbers the same way [DexIncrementalRenameManager] does
-            val dexFiles = sortDexFiles(parameters.dexFolders.asFileTree.files).map {
-                    DexFile(it.inputStream(), supplier.get())
-                }
+            // Sort and rename the dex files in the same way that they are packaged in the APK
+            // (DexIncrementalRenameManager) and the bundle (PerModuleBundleTask) (b/346268213)
+            val dexFiles = parameters.dexFolders.asFileTree.files.sortedWith(DexFileComparator).map {
+                DexFile(it.inputStream(), supplier.get())
+            }
 
             val artProfile = if (parameters.dexMetadataDirectory.isPresent) {
                 val artProfileWithDexMetadata = buildArtProfileWithDexMetadata(

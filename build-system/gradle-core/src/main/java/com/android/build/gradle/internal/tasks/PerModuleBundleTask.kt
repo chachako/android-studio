@@ -40,8 +40,8 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
 import com.android.builder.files.NativeLibraryAbiPredicate
+import com.android.builder.packaging.DexFileComparator
 import com.android.builder.packaging.JarFlinger
-import com.android.builder.packaging.sortDexFiles
 import com.android.bundle.RuntimeEnabledSdkConfigProto
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -170,8 +170,9 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
 
             jarCreator.addJar(resFiles.get().asFile.toPath(), excludeJarManifest, ResRelocator())
 
-            // Sort the dex files the same way as CompileArtProfileTask (b/346268213)
-            val sortedDexFiles = sortDexFiles(dexDirectoriesToPackage().asFileTree.files)
+            // Sort and rename the dex files similarly to how they are packaged in the APK
+            // (see DexIncrementalRenameManager)
+            val sortedDexFiles = dexDirectoriesToPackage().asFileTree.files.sortedWith(DexFileComparator)
             addHybridFolder(
                 jarCreator,
                 sortedDexFiles,
