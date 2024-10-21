@@ -58,6 +58,7 @@ import com.android.build.gradle.internal.utils.ViaBundleDeviceApkOutput
 import com.android.build.gradle.internal.utils.toImmutableMap
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.errors.IssueReporter
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
@@ -335,8 +336,13 @@ open class ApplicationVariantImpl @Inject constructor(
                 taskProvider: TaskProvider<TaskT>,
                 taskInput: (TaskT) -> Property<ApkOutput>,
                 deviceSpec: DeviceSpec) {
+                val skipApksViaBundleIfPossible = services.projectOptions.get(BooleanOption.SKIP_APKS_VIA_BUNDLE_IF_POSSIBLE)
                 taskProvider.configure { task ->
+                    if (skipApksViaBundleIfPossible && !global.hasDynamicFeatures) {
+                        provideApkOutputToTask(task, taskInput, deviceSpec)
+                    } else {
                         provideApkOutputToTaskViaBundle(task, taskInput, deviceSpec)
+                    }
                 }
             }
         }

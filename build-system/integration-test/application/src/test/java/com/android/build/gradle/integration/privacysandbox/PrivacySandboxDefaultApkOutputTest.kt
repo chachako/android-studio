@@ -78,6 +78,29 @@ class PrivacySandboxDefaultApkOutputTest {
                     assert apkInstall[0].apks.any { it.getAsFile().absolutePath.contains("comexampleprivacysandboxsdk-master.apk") }
                     assert apkInstall[0].apks.any { it.getAsFile().absolutePath.contains("comexampleprivacysandboxsdkb-master.apk") }
         """.trimIndent()
+
+        val skipApkViaBundleVerificationString = """
+                    def apkInstall = getPrivacySandboxEnabledApkOutput().get().apkInstallGroups
+                    if (apkInstall.size() != 3 || apkInstall[0].apks.size() != 1 || apkInstall[1].apks.size() != 1 || apkInstall[2].apks.size() != 2) {
+                        throw new GradleException("Unexpected number of apks")
+                    }
+                    assert apkInstall[0].apks.first().getAsFile().name.contains("extracted-apk.apk")
+                    assert apkInstall[0].description.contains("Source Sdk: privacy-sandbox-sdk.apks")
+
+                    assert apkInstall[1].apks.first().getAsFile().name.contains("extracted-apk.apk")
+                    assert apkInstall[1].description.contains("Source Sdk: privacy-sandbox-sdk-b.apks")
+
+                    assert apkInstall[2].apks.any { it.getAsFile().name.contains("example-app-debug.apk") }
+                    assert apkInstall[2].apks.any { it.getAsFile().name.contains("example-app-debug-injected-privacy-sandbox.apk") }
+                    apkInstall = getPrivacySandboxDisabledApkOutput().get().apkInstallGroups
+                    if (apkInstall.size() != 1 || apkInstall[0].apks.size() != 4) {
+                        throw new GradleException("Unexpected number of apks")
+                    }
+                    assert apkInstall[0].apks.any { it.getAsFile().name.contains("example-app-debug.apk") }
+                    assert apkInstall[0].apks.any { it.getAsFile().absolutePath.contains("splits" + File.separator + "comexampleprivacysandboxsdk-master.apk") }
+                    assert apkInstall[0].apks.any { it.getAsFile().absolutePath.contains("splits" + File.separator + "comexampleprivacysandboxsdkb-master.apk") }
+                    assert apkInstall[0].apks.any { it.getAsFile().absolutePath.contains("splits" + File.separator + "example-app-debug-injected-privacy-sandbox-compat.apk") }
+        """.trimIndent()
     }
 
     @JvmField
@@ -92,6 +115,15 @@ class PrivacySandboxDefaultApkOutputTest {
         .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
         .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
 
+    @Test
+    fun getApkOutput() {
+        project.getSubproject("example-app").buildFile.appendText(
+            getBuildFileContentWithFetchTask(skipApkViaBundleVerificationString))
+
+        executor()
+            .with(BooleanOption.SKIP_APKS_VIA_BUNDLE_IF_POSSIBLE, true)
+            .run(":example-app:fetchApks")
+    }
 
     @Test
     fun getViaBundleApkOutput() {
