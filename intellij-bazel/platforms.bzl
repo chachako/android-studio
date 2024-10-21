@@ -1,3 +1,16 @@
+"""
+This file is used to add new intellij platforms to the bazel build.
+Here's how to add support:
+The URLs can be retrieved from the following webpages:
+EAP releases: https://www.jetbrains.com/intellij-repository/snapshots
+Stable releases: https://www.jetbrains.com/intellij-repository/releases/
+Copying ideaIC.zip in the links that are there for the latest release
+Eg: Searching for "com.jetbrains.intellij.idea" in the link above and
+i) copying the latest snapshot link for ideaIC.zip
+ii) copying the sha256 for the same by running the command after downloading the zip file locally
+     $ sha256sum <path to zip file>
+"""
+
 load("//tools/base/intellij-bazel:intellij.bzl", "local_platform", "remote_platform", "setup_platforms")
 
 def setup_intellij_platforms():
@@ -24,7 +37,7 @@ def setup_intellij_platforms():
         ),
         remote_platform(
             name = "intellij_ce_2024_3",
-            url = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/243.12818.47-EAP-SNAPSHOT/ideaIC-243.12818.47-EAP-SNAPSHOT.zip",
-            sha256 = "0efaffacac39b30718f5125a9cf3a95c4cb253822c264f3bc34e2784924925b0",
+            url = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/243.20847-EAP-CANDIDATE-SNAPSHOT/ideaIC-243.20847-EAP-CANDIDATE-SNAPSHOT.zip",
+            sha256 = "4e88b8a3a14ded16edd9f25e86054d1a2300bee75908ab6e3ac5924f0de9981a",
         ),
     ])
