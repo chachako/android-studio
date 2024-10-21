@@ -16,26 +16,24 @@
 
 package com.android.manifmerger
 
-import com.android.testutils.MockitoKt.whenever
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.util.Optional
 
 class SelectorTest {
 
-    private val xmlElement = mock<XmlElement>()
-    private val xmlDocument = mock<XmlDocument>()
     private val xmlAttribute = mock<XmlAttribute>()
-    private val keyResolver = mock<KeyResolver<String>>()
-
-    @Before
-    fun setUpMocks() {
-        whenever(xmlElement.document).thenReturn(xmlDocument)
-        whenever(xmlDocument.`package`).thenReturn(Optional.of(xmlAttribute))
+    private val xmlDocument = mock<XmlDocument> {
+        on { getPackage() } doReturn Optional.of(xmlAttribute)
     }
+    private val xmlElement = mock<XmlElement> {
+        on { document } doReturn xmlDocument
+    }
+    private val keyResolver = mock<KeyResolver<String>>()
 
     @Test
     fun missingXmlAttribute_appliesTo() {

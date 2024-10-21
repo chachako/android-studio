@@ -20,32 +20,26 @@ import com.android.ide.common.blame.SourceFile.UNKNOWN
 import com.android.ide.common.blame.SourceFilePosition
 import com.android.ide.common.blame.SourcePosition
 import com.android.manifmerger.NavGraphExpander.expandNavGraphs
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.atLeast
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeast
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 /** Tests for [NavGraphExpander]  */
 class NavGraphExpanderTest {
 
     private val model = ManifestModel()
     private val fakeSourceFilePosition = SourceFilePosition(UNKNOWN, SourcePosition(0, 0, 0))
-    @Mock private lateinit var mergingReportBuilder: MergingReport.Builder
-    @Mock private lateinit var actionRecorder: ActionRecorder
-
-    @Before
-    fun setUp(){
-        MockitoAnnotations.initMocks(this)
-        whenever(mergingReportBuilder.actionRecorder).thenReturn(actionRecorder)
+    private val actionRecorder: ActionRecorder = mock()
+    private val mergingReportBuilder: MergingReport.Builder = mock {
+        on { actionRecorder } doReturn actionRecorder
     }
 
     @Test
@@ -166,8 +160,8 @@ class NavGraphExpanderTest {
             }
         }
         // then check that the recorded NodeKeys match the final NodeKeys.
-        val nodeRecordCaptor = ArgumentCaptor.forClass(Actions.NodeRecord::class.java)
-        val attributeRecordCaptor = ArgumentCaptor.forClass(Actions.AttributeRecord::class.java)
+        val nodeRecordCaptor = argumentCaptor<Actions.NodeRecord>()
+        val attributeRecordCaptor = argumentCaptor<Actions.AttributeRecord>()
         verify(actionRecorder, atLeast(1)).recordNodeAction(any(), nodeRecordCaptor.capture())
         verify(actionRecorder, atLeast(1))
                 .recordAttributeAction(any(), attributeRecordCaptor.capture())
@@ -222,9 +216,9 @@ class NavGraphExpanderTest {
 
         // verify the error was recorded.
         verify(mergingReportBuilder).addMessage(
-                Mockito.any<SourceFilePosition>(),
-                Mockito.eq(MergingReport.Record.Severity.ERROR),
-                Mockito.eq(
+            any<SourceFilePosition>(),
+            eq(MergingReport.Record.Severity.ERROR),
+            eq(
                     "Illegal circular reference among navigation files when traversing " +
                             "navigation file references: nav1 > nav2 > nav1."
                 )
@@ -288,9 +282,9 @@ class NavGraphExpanderTest {
 
         // verify the warning was recorded.
         verify(mergingReportBuilder).addMessage(
-            Mockito.any<SourceFilePosition>(),
-            Mockito.eq(MergingReport.Record.Severity.WARNING),
-            Mockito.eq(
+            any<SourceFilePosition>(),
+            eq(MergingReport.Record.Severity.WARNING),
+            eq(
                 "The navigation file with ID \"nav3\" is included multiple times in " +
                         "the navigation graph, but only deep links on the first instance will be " +
                         "triggered at runtime. Consider consolidating these instances into a " +
@@ -403,9 +397,9 @@ class NavGraphExpanderTest {
 
         // verify the error was recorded.
         verify(mergingReportBuilder).addMessage(
-                Mockito.any<SourceFilePosition>(),
-                Mockito.eq(MergingReport.Record.Severity.ERROR),
-                Mockito.eq(
+            any<SourceFilePosition>(),
+            eq(MergingReport.Record.Severity.ERROR),
+            eq(
                         "Multiple destinations found with a deep link containing " +
                                 "uri:http://www.example.com/, " +
                                 "action:android.intent.action.APP_ACTION, " +
@@ -499,10 +493,10 @@ class NavGraphExpanderTest {
         expandNavGraphs(xmlDocument, loadedNavigationMap, mergingReportBuilder)
 
         // verify the error was recorded.
-        Mockito.verify(mergingReportBuilder).addMessage(
-            Mockito.any<SourceFilePosition>(),
-            Mockito.eq(MergingReport.Record.Severity.ERROR),
-            Mockito.eq(
+        verify(mergingReportBuilder).addMessage(
+            any<SourceFilePosition>(),
+            eq(MergingReport.Record.Severity.ERROR),
+            eq(
                 "Multiple destinations found with a deep link containing " +
                         "uri:http://www.example.com/?foo=.*, action:android.intent.action.VIEW."))
     }
@@ -682,8 +676,8 @@ class NavGraphExpanderTest {
 
         // verify no error was recorded.
         verify(mergingReportBuilder, never()).addMessage(
-            Mockito.any<SourceFilePosition>(),
-            Mockito.eq(MergingReport.Record.Severity.ERROR),
-            Mockito.any())
+            any<SourceFilePosition>(),
+            eq(MergingReport.Record.Severity.ERROR),
+            any())
     }
 }

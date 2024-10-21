@@ -16,23 +16,21 @@
 
 package com.android.manifmerger
 
-import com.android.testutils.MockitoKt.whenever
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.util.Optional
 
 class OverrideLibrarySelectorTest {
-    private val xmlElement = Mockito.mock<XmlElement>()
-    private val xmlDocument = Mockito.mock<XmlDocument>()
-    private val xmlAttribute = Mockito.mock<XmlAttribute>()
-
-    @Before
-    fun setUpMocks() {
-        whenever(xmlElement.document).thenReturn(xmlDocument)
-        whenever(xmlDocument.`package`).thenReturn(Optional.of(xmlAttribute))
+    private val xmlAttribute = mock<XmlAttribute>()
+    private val xmlDocument = mock<XmlDocument> {
+        on { getPackage() } doReturn Optional.of(xmlAttribute)
+    }
+    private val xmlElement = mock<XmlElement> {
+        on { document } doReturn xmlDocument
     }
 
     @Test

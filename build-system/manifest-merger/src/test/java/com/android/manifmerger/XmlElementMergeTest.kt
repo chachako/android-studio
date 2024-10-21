@@ -17,20 +17,21 @@
 package com.android.manifmerger
 
 import com.android.manifmerger.ManifestMerger2.ProcessCancellationChecker
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.any
-import org.mockito.Mockito.argThat
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.util.Optional
 
 class XmlElementMergeTest {
-    private val processCancellationChecker = mock(ProcessCancellationChecker::class.java)
-    private val mergingReport = mock(MergingReport.Builder::class.java)
+    private val processCancellationChecker = mock<ProcessCancellationChecker>()
+    private val mergingReport = mock<MergingReport.Builder>()
 
     @Test
     fun testUnMatchedKeys() {
@@ -208,13 +209,13 @@ class XmlElementMergeTest {
             }
         }.toElement()
         val pairs = mapMergingElements(lowPriorityNode, highPriorityNode, processCancellationChecker, mergingReport)
-        val addMessageFirstArgumentCaptor = ArgumentCaptor.forClass(XmlElement::class.java)
+        val addMessageFirstArgumentCaptor = argumentCaptor<XmlElement>()
         assertThat(pairs).isEmpty()
         verify(mergingReport, times(3))
             .addMessage(
                 addMessageFirstArgumentCaptor.capture(),
-                argThat { it == MergingReport.Record.Severity.ERROR },
-                argThat { it.contains("Cannot merge element") })
+                eq(MergingReport.Record.Severity.ERROR ),
+                argThat { contains("Cannot merge element") })
         assertThat(addMessageFirstArgumentCaptor.allValues.distinct()).containsExactly(highPriorityNode.mergeableElements[0])
     }
 
@@ -283,8 +284,7 @@ class XmlElementMergeTest {
                 featureFlag = "experiment2"
             }
         }.toElement()
-        val clonedLowPriorityNodes = listOf(mock(XmlElement::class.java), mock(XmlElement::class.java),
-            mock(XmlElement::class.java), mock(XmlElement::class.java))
+        val clonedLowPriorityNodes: List<XmlElement> = listOf(mock(), mock(), mock(), mock())
         var index = 0
         for (i in 0..1) {
             val node = lowPriorityNode.mergeableElements[i]
