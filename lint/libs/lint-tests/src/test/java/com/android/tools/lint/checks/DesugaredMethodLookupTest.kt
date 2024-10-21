@@ -15,7 +15,6 @@
  */
 package com.android.tools.lint.checks
 
-import com.android.testutils.MockitoKt.whenever
 import com.android.tools.lint.checks.infrastructure.TestFiles
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.SourceSetType
@@ -31,7 +30,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class DesugaredMethodLookupTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
@@ -559,12 +560,11 @@ class DesugaredMethodLookupTest {
 
     val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     val file2 = temporaryFolder.newFile().apply { writeText(desc2) }
-    val project = mock(Project::class.java)
-    val variant = mock(LintModelVariant::class.java)
-    val mainArtifact = mock(LintModelAndroidArtifact::class.java)
-    whenever(project.buildVariant).thenReturn(variant)
-    whenever(variant.mainArtifact).thenReturn(mainArtifact)
-    whenever(mainArtifact.desugaredMethodsFiles).thenReturn(listOf(file2, file1))
+    val mainArtifact: LintModelAndroidArtifact = mock {
+      on { desugaredMethodsFiles } doReturn listOf(file2, file1)
+    }
+    val variant: LintModelVariant = mock { on { this.mainArtifact } doReturn mainArtifact }
+    val project: Project = mock { on { buildVariant } doReturn variant }
 
     assertFalse(
       DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
@@ -609,10 +609,8 @@ class DesugaredMethodLookupTest {
 
     // Make sure we handle missing desugared-metadata gracefully
     whenever(variant.desugaredMethodsFiles).thenReturn(null)
-    val project2 = mock(Project::class.java)
-    val variant2 = mock(LintModelVariant::class.java)
-    whenever(project2.buildVariant).thenReturn(variant2)
-    whenever(variant2.desugaredMethodsFiles).thenReturn(emptyList())
+    val variant2: LintModelVariant = mock { on { desugaredMethodsFiles } doReturn emptyList() }
+    val project2: Project = mock { on { buildVariant } doReturn variant2 }
     assertFalse(
       DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project2)
     )
@@ -644,13 +642,14 @@ class DesugaredMethodLookupTest {
 
     val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     val file2 = temporaryFolder.newFile().apply { writeText(desc2) }
-    val project = mock(Project::class.java)
-    val variant = mock(LintModelVariant::class.java)
-    val mainArtifact = mock(LintModelAndroidArtifact::class.java)
-    whenever(project.buildVariant).thenReturn(variant)
-    whenever(variant.mainArtifact).thenReturn(mainArtifact)
-    whenever(mainArtifact.desugaredMethodsFiles).thenReturn(listOf(file2, file1))
-    whenever(variant.desugaredMethodsFiles).thenReturn(null)
+    val mainArtifact: LintModelAndroidArtifact = mock {
+      on { desugaredMethodsFiles } doReturn listOf(file2, file1)
+    }
+    val variant: LintModelVariant = mock {
+      on { this.mainArtifact } doReturn mainArtifact
+      doReturn(null).whenever(it).desugaredMethodsFiles
+    }
+    val project: Project = mock { on { buildVariant } doReturn variant }
 
     assertFalse(
       DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
