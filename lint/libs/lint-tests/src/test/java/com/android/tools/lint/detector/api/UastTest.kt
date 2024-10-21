@@ -91,6 +91,7 @@ import org.jetbrains.uast.UThisExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastCallKind
 import org.jetbrains.uast.analysis.KotlinExtensionConstants
+import org.jetbrains.uast.getParameterForArgument
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
@@ -4582,6 +4583,147 @@ class UastTest : TestCase() {
         }
       )
     }
+  }
+
+  fun testAmbiguousExtensionWithSuspend() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import my.http.*
+
+            suspend fun bar(client: HttpClient) {
+              client.webSocket("http://localhost/abc") {}
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+            """
+              package my.http
+
+              interface HttpClient
+
+              interface HttpRequestBuilder
+
+              interface DefaultClientWebSocketSession
+
+              public suspend fun HttpClient.webSocket(
+                  request: HttpRequestBuilder.() -> Unit,
+                  block: suspend DefaultClientWebSocketSession.() -> Unit
+              ) {}
+
+              public suspend fun HttpClient.webSocket(
+                  urlString: String,
+                  request: HttpRequestBuilder.() -> Unit = {},
+                  block: suspend DefaultClientWebSocketSession.() -> Unit
+              ) {}
+            """
+          ),
+          0x83cdc0e0,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S7hEudiz63Uyygp
+                KRDi8QCSzjmZqXlACSUGLQYAc+lpKD0AAAA=
+                """,
+          """
+                my/http/DefaultClientWebSocketSession.class:
+                H4sIAAAAAAAA/41OTU/CQBB9s1UKVbSoJPgDjDcLxJsnozE2wZhIogdOCyy6
+                tGyNOyV643d5MJz9Ucap/AFnkjdvPt98/3x+AThHm3Cy+EhemF+TazPTZc5X
+                uTWOn8x4WEwyw0PjvS1cCCLEc73USa7dc3I/npsJhwgIrUFWcG5dcmdYTzXr
+                C4JaLAMRoAoaFYBAmdTfbZV1hU17hPZ6VY9UR0UqFjbrrFd91aWq2SecDv71
+                majJ8eatDG4GzjImRMOifJuYG5sbwvFD6dguzKP1dpybS+cK1iy7viZa2MLG
+                FA7/8ABHEntydVu8NkKQIkxRT9FAJBQ7KXbRHIE89rA/gvKIPVq/zvWZR1YB
+                AAA=
+                """,
+          """
+                my/http/HttpClient.class:
+                H4sIAAAAAAAA/2WOT0vDQBDF32y0f6LVtLZQv4TbFm+eRBADFUHBS07bdtVt
+                Nhsx06K3fi4P0rMfSpzowYMz8ObNG/gxn1/vHwBOMSD0ijf9xPysr0QuvLOB
+                myBCsjRro70Jj/pmtrRzSSNCd5qX7F3Q15bNwrA5I6hiHQmNamnXAgLlkr+6
+                ehuJW4wJg+2mFauhilUi7mG43UzUiOrjhNCf/n9D0ELq/AUnORPiu3L1MreX
+                zlvC8e0qsCvsvavczNvzEEo27MpQNQSMHfyWwtGP9tCXORbqrnQjQ5SimaKV
+                oo1YLPZS7KOTgSoc4DCDqpBU6H4DrRvzVjABAAA=
+                """,
+          """
+                my/http/HttpClientKt＄webSocket＄3.class:
+                H4sIAAAAAAAA/41UXXPbVBA9V3b8oSjko19JKG1pTeskUDlpaQGbtqlJiMAY
+                pm4zw+TpWr51FMtXRboy7Vt+S9+ZoTBDGZhhMn3sj+qwVzaOM3UTHrx3tXf3
+                nF3vkV6/+esfADfxDcOl7jN7V6kn9haZqu8Jqb5VhZ9FsxG4HaEKN7JgDO1a
+                J1C+J+29Xtf2pBKh5L5d491mi5dH7x7H0lVeICN7c+CtVmqjFA/ET7GI1P3Y
+                81siHNY+kp4q3ykzLL6bKIs0w4XjybLIMGQqHsHdYUgVl7YZ0kVnadtCDqaJ
+                CUxSQO16EcPl2kmzUz8ZT/aCjmC4WDxuDs1zpRaEbXtPqGbIPWqKSxko3m+w
+                Hqh67PsEaBY0e0HSUw5zRwcaDuxIFRKE50ZZnGY44+4KtzPA+IGHvCsokeFa
+                sbbHe9z2uWzb3zf3hKvKI5GGBmmX9fBncc7EGcwznD9uDIarYyCX3g7Rot4N
+                k8V5C9OYMWHgAsPkyI6zuMSQc+qNh+v16gbD1BEBWLiMK3l8iAKD8WSVYW4c
+                c67i+smC9U7zmmRJF76XJ2+FYfY/yO+E4i2uOJUY3V6KFM+0yWsDBtbRToou
+                n3raK5HXIs7Cwb5lHuybxoxhGvMGuTMH+4tGiS0bJWPLfPU8Y+R0VWuNRqtw
+                Gchn3SCOSG4EenqcpLKgFmYPddUSj3nsK4ZfimMkOGaDJ7xhJ9yvDe/dIAxi
+                5UkR2dVAkhMn8iw7/2vnFr4ETTl12Or1Dg2RrgYtoVcVuNzf5qHHm754qA3D
+                dI3I6nG3KcJBpPAgJuKucGTPizwKDeW8fvi6MFiOlCKs+jyKBD1Ob0jXDyL6
+                L2ipu0GLId/w2pKrOCRMsxHEoSs2PU2wMCDY7sOPoKJEApmgJdEnDQtaMbT1
+                NP1IRRRZJ69AGbRHZJbTL2G9SHRyn6zVj2IqqZnV4qZMXVGm06AzuzJ36k8s
+                6BID1SSZPh6UqsvP9lMG5dqbwyLdf6V9UiKlYWadUN8f9HFvgGotrxzggz9w
+                8Td89OsRaByBtobQFq7iGt3nUBxOdS7JASb/hvHjSyz/jo9fJIEJbJA1Ka2f
+                MI/N5C+p4C6+TuhS2ErOe3DovE2Zn1DV9R2kHNgOSg5WsebgBm46+BS3dsAi
+                yvpsB+kIn0f4IsJihOl/ATDfZ7xxBgAA
+                """,
+          """
+                my/http/HttpClientKt.class:
+                H4sIAAAAAAAA/+VVzU8bRxT/zXr9CRhjSLGdNNDglgTi2Dj0E0pDTKJYNbSK
+                KTlwGtsTsrDepbuzNLlUqIeq/0J77L1SlVPUQ4XIrX9U1TdrYww2uKoitVIP
+                ++a9eR/ze2/e2/njz99+B7CINYaJ5ov8Myn384+IlExDWPJzGQZjSOzyA543
+                ubWT/6K2K+q0G2CIfiNqVbu+JyTDDzcrvd5LlT1bmoaV3z1o5p96Vl0atuXm
+                H7a5hQH6Ykdftx3bk4Yl3HzJtojxuDJYulU5D2yJseI/gbKcO+P0WHztCVfe
+                9wyzIZyO81eWIZdWBsHuirUmnnLPlC0MT07KVRWuq+DnBuS3nDt38HxvviuD
+                itQTpF/RkK3Yzk5+V8iaww1KhluWLXkrsQ3PNHnNFGQ2c5mZLZUlWQ11HRhG
+                jCFS3qhurm6UHjCMnEEzjGGMRDGEOMNoVj4z3GxXU030u0iGsNO6HYbpQQ3G
+                EKyZFG2gaVHBztbt5r4plNzlcFHzMfzUv9NOy1uVjmHt/DtjsPZmwP3fByPq
+                OWarUgzJ3uoxjHUaNttoJcXwy3+kMcq9GfVNcrrfn/90ErN3w7jOcKNPUmfN
+                /HmejmIK7zBcvzy5MGaGEUQqBg3vUhlPclkXkje45ARLax4E6HFiikQVAQPb
+                U4xGyueG4grENRYYix8dLsaODmNaQotpKa3Fxv0lpXW+c6KWUBsRLcOJyWgF
+                NqcVtGIoESBeL6YjWiKYGU/qSa0Q9ikrhI5/DmmRSHE2Ec3MRJi/O5SMJSNt
+                /XAylNRTrDBSiLUsHx1/f+/1K3Z0qMREPPOk+6TJNx1/9Pg7TaeM0qoqRaYK
+                ljwpbPdf8dplQ01Xd+Lz4LkUlhrJE+fNF/vqHegJqv6fs39zuukROG2gO3s0
+                L3rJbgh6ASrUwhtesyacTfXgqHPsOje3uGMoub0ZrRo7FpeeQ/zVxx71e1OU
+                rQPDNUi9evoi0at2Xvsld3hTSOGcMRupSl7fW+f77QOGy5YlnJLJXVeQOla1
+                PacuHhpKl26H3Oo5DgvUybrqUgSQptYOkfQJSRW6BbWvv8Tor6p5sUQ0RLvA
+                CJaJzrX0SGDM99eRxLiv1zGBK+ShuLcwSZE/9SOEsdKOEaH1M/rSOglRf0bO
+                UwUm1QazRXvBC8CM+2AWW/ouMBlcbYNRsLQOrEAHlt6Gle6BNRW8EJZPE1Fc
+                w9vEK3CrdHSY1tSVYPDbHxF7iRtHyK7Pzd/OpfVXeK8F+J5fYRb3kcd9FKPk
+                Nkb8KEmrJMco4JSPPoX7vtPHKNG6TfuzdMjNbQTKuFXGXBnzuF1GDnfKyKNA
+                Buoii9tIuAi6uOtizEXGZ5IuFl287+IDFxMuPnTxkYtJX5VyEfoLiu6pgksL
+                AAA=
+                """,
+          """
+                my/http/HttpRequestBuilder.class:
+                H4sIAAAAAAAA/3VOwUrDQBB9s9GmjVZTtVDFbzBt6c2TCmKgIlTwktO2WXWb
+                7Ua7m6K3fpcH6dmPEid6dgbevJkH783X98cngBG6hJPFe/Ls/UtywzBRr5Vy
+                /rLSJlfLEESI53IlEyPtU3I3nauZDxEQOuOi9Ebb5FZ5mUsvzwlisQrYlWpo
+                1QACFXx/0/XWZ5YPCN3NuhmJnohEzOyxt1kPRZ9qcUg4Hf//DkewY7sWroxW
+                1p8VnhDdl9Vypq61UYTjSWW9XqgH7fTUqAtrSy+9Lq1rcAC28FcCh794gCOe
+                A3bd5m5kCFKEKZopWoiYYifFLtoZyGEP+xmEQ+zQ+QE2dI8XQAEAAA==
+                """,
+        ),
+      )
+    var encountered = false
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val arg = node.getArgumentForParameter(1)
+            assertNotNull(arg)
+            val psiParam = node.getParameterForArgument(arg!!)
+            assertNotNull(psiParam)
+            assertEquals("urlString", psiParam!!.name)
+            encountered = true
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+    assertTrue(encountered)
   }
 
   fun testResolutionToExtensionInCompanion() {

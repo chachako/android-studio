@@ -18,6 +18,7 @@ package com.android.tools.lint.uast
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypes
 import com.intellij.psi.impl.source.PsiClassReferenceType
@@ -33,17 +34,27 @@ import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
 internal object PsiDeclarationAndKtSymbolEqualityChecker {
   fun KaSession.representsTheSameDeclaration(psi: PsiMethod, symbol: KaCallableSymbol): Boolean {
     // TODO: receiver type comparison?
-    if (!returnTypesMatch(psi, symbol)) return false
+    val isSuspend = (symbol as? KaNamedFunctionSymbol)?.isSuspend == true
+    if (!returnTypesMatch(psi, symbol, isSuspend)) return false
     if (!typeParametersMatch(psi, symbol)) return false
-    if (symbol is KaFunctionSymbol && !valueParametersMatch(psi, symbol)) return false
+    if (symbol is KaFunctionSymbol && !valueParametersMatch(psi, symbol, isSuspend)) return false
     return true
   }
 
-  private fun KaSession.returnTypesMatch(psi: PsiMethod, symbol: KaCallableSymbol): Boolean {
+  private fun KaSession.returnTypesMatch(
+    psi: PsiMethod,
+    symbol: KaCallableSymbol,
+    isSuspend: Boolean = false,
+  ): Boolean {
     if (symbol is KaConstructorSymbol) return psi.isConstructor
-    return psi.returnType?.let {
-      isTheSameTypes(psi, it, symbol.returnType, KaTypeMappingMode.RETURN_TYPE)
-    } ?: false
+    val psiReturnType = psi.returnType ?: return false
+    return isTheSameTypes(
+      psi,
+      psiReturnType,
+      symbol.returnType,
+      KaTypeMappingMode.RETURN_TYPE,
+      isSuspend = isSuspend,
+    )
   }
 
   private fun typeParametersMatch(psi: PsiMethod, symbol: KaCallableSymbol): Boolean {
@@ -61,7 +72,11 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     return true
   }
 
-  private fun KaSession.valueParametersMatch(psi: PsiMethod, symbol: KaFunctionSymbol): Boolean {
+  private fun KaSession.valueParametersMatch(
+    psi: PsiMethod,
+    symbol: KaFunctionSymbol,
+    isSuspend: Boolean = false,
+  ): Boolean {
     val isExtension =
       when (symbol) {
         is KaPropertyAccessorSymbol -> symbol.receiverParameter != null
@@ -69,15 +84,20 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
       }
     val valueParameterCount =
       if (isExtension) symbol.valueParameters.size + 1 else symbol.valueParameters.size
-    if (psi.parameterList.parametersCount != valueParameterCount) return false
+    var psiParameters: List<PsiParameter> = psi.parameterList.parameters.toList()
+    if (isSuspend) {
+      // Drop the Continuation added by the compiler
+      psiParameters = psiParameters.dropLast(1)
+    }
+    if (psiParameters.size != valueParameterCount) return false
     if (isExtension) {
-      val psiParameter = psi.parameterList.parameters[0]
+      val psiParameter = psiParameters[0]
       if (symbol.receiverType?.let { isTheSameTypes(psi, psiParameter.type, it) } != true)
         return false
     }
     val offset = if (isExtension) 1 else 0
     symbol.valueParameters.forEachIndexed { index, valueParameterSymbol ->
-      val psiParameter = psi.parameterList.parameters[index + offset]
+      val psiParameter = psiParameters[index + offset]
       // The type of `vararg` value param at last v.s. non-last is mapped differently:
       //   * last -> ellipsis type
       //   * non-last -> array type
@@ -110,15 +130,22 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     mode: KaTypeMappingMode = KaTypeMappingMode.DEFAULT,
     isVararg: Boolean = false,
     isVarargs: Boolean = false, // isVarargs == isVararg && last param
+    isSuspend: Boolean = false,
   ): Boolean {
     // Shortcut: primitive void == Unit as a function return type
     if (psi == PsiTypes.voidType() && kaType.isUnitType) return true
-    // Without type substitution (from resolved call info), we can't
-    // tell their equality: assume they are matched conservatively,
-    // when the counterpart [PsiType] is Object, as if it's converted
-    // from a type parameter.
-    if (kaType is KaTypeParameterType && psi.isObject) {
-      return true
+    if (psi.isObject) {
+      // Without type substitution (from resolved call info), we can't
+      // tell their equality: assume they are matched conservatively,
+      // when the counterpart [PsiType] is Object, as if it's converted
+      // from a type parameter.
+      if (kaType is KaTypeParameterType) {
+        return true
+      }
+      // The return type of compiled `suspend` function is [Object].
+      if (isSuspend && mode == KaTypeMappingMode.RETURN_TYPE) {
+        return true
+      }
     }
     val ktTypeRendered = kaType.asPsiType(context, allowErrorTypes = true, mode) ?: return false
     return if (isVararg) {
