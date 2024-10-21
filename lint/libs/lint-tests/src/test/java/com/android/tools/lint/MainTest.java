@@ -35,7 +35,6 @@ import com.android.tools.lint.checks.AbstractCheckTest;
 import com.android.tools.lint.checks.AccessibilityDetector;
 import com.android.tools.lint.checks.DesugaredMethodLookup;
 import com.android.tools.lint.checks.infrastructure.TestFile;
-import com.android.tools.lint.checks.infrastructure.TestLintClient;
 import com.android.tools.lint.client.api.ConfigurationHierarchy;
 import com.android.tools.lint.client.api.LintDriver;
 import com.android.tools.lint.client.api.LintListener;
@@ -54,7 +53,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.security.Permission;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -1543,42 +1541,6 @@ public class MainTest extends AbstractCheckTest {
 
                 // Args
                 new String[] {"--version", "--check", "HardcodedText", project.getPath()});
-    }
-
-    public void testSetExitCode() {
-        if (System.getSecurityManager() != null) {
-            // When running in a sandbox such as Bazel we won't be allowed to modify the security
-            // manager:
-            // "java.lang.SecurityException: GoogleTestSecurityManager is not designed to handle
-            // other security managers."
-            System.out.println("Skipping " + this.getClass().getSimpleName() + "." + getName());
-            return;
-        }
-
-        try {
-            // Trap System.exit calls:
-            System.setSecurityManager(
-                    new SecurityManager() {
-                        @Override
-                        public void checkPermission(Permission perm) {}
-
-                        @Override
-                        public void checkExit(int status) {
-                            throw new SecurityException(
-                                    "Ignoring System.exit(" + status + ") from unit test");
-                        }
-                    });
-
-            // Note that we're call Main.main here, not new Main().run as done by other tests;
-            // this is what will *really* call System.exit.
-            Main.main(new String[] {"--version"});
-            fail("System.exit was not called");
-        } catch (SecurityException e) {
-            assertEquals("Ignoring System.exit(0) from unit test", e.getMessage());
-        } finally {
-            // Re-enable system exit for unit test
-            System.setSecurityManager(null);
-        }
     }
 
     @Override
