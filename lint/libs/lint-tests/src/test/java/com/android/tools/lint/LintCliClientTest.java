@@ -33,7 +33,6 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask;
 import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.Detector;
 import com.intellij.codeInsight.CustomExceptionHandler;
-import com.intellij.openapi.extensions.Extensions;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -93,7 +92,7 @@ public class LintCliClientTest extends AbstractCheckTest {
     public void testMissingExtensionPoints() {
         // Regression test for 37817771
         UastEnvironment env = UastEnvironment.create(UastEnvironment.Configuration.create());
-        Extensions.getExtensions(CustomExceptionHandler.KEY);
+        CustomExceptionHandler.KEY.getExtensionList();
         env.dispose();
     }
 
