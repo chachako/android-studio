@@ -19,12 +19,12 @@ package com.android.ide.common.util
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.sdklib.AndroidVersion
-import com.android.testutils.MockitoKt.whenever
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import java.time.Duration
 
