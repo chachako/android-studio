@@ -1025,7 +1025,7 @@ fun SubProjectBuilder.buildExampleSdkSandboxSdk() {
     dependencies {
         implementation("androidx.activity:activity-ktx:1.8.2")
         ksp("androidx.annotation:annotation:1.8.1")
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0-Beta1")
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION_FOR_TESTS")
         implementation("androidx.lifecycle:lifecycle-common:2.7.0")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
