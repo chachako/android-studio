@@ -1540,7 +1540,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         explanation =
           """
                     You should never compare two PSI elements for equality with `equals`; \
-                    use `isEquivalentTo(PsiElement)` instead.
+                    use `PsiEquivalenceUtil.areElementsEquivalent(PsiElement, PsiElement)` instead.
                     """,
         category = CUSTOM_LINT_CHECKS,
         priority = 4,
