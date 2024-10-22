@@ -129,9 +129,9 @@ class FilterShrinkerRulesTransformTest {
 
     @Test
     fun testConfigDirMatchesVersion() {
-        val r8Ver1_5_5 = ShrinkerVersion.parse("1.5.5")!!
-        val pgVer6_1_5 = ShrinkerVersion.parse("6.1.5")!!
-        val r8Ver1_5_0_alpha = ShrinkerVersion.parse("1.5.0-alpha")!!
+        val r8Ver1_5_5 = ShrinkerVersion.parse("1.5.5")
+        val pgVer6_1_5 = ShrinkerVersion.parse("6.1.5")
+        val r8Ver1_5_0_alpha = ShrinkerVersion.parse("1.5.0-alpha")
 
         assertThat(configDirMatchesVersion("r8", r8Ver1_5_5)).isTrue()
         assertThat(configDirMatchesVersion("r8", r8Ver1_5_0_alpha)).isTrue()

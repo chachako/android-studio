@@ -29,9 +29,10 @@ class ShrinkerVersionTest {
             "ProGuard, version 6.0.1 FOO" to "6.0.1",
             "ProGuard, version 6.0.1 FOO" to "6.0.1",
             "1.6.51 (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))" to "1.6.51",
-            "1.6.51-dev (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))" to "1.6.51-dev"
+            "1.6.51-dev (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))" to "1.6.51-dev",
+            "main (build 1234567)" to "9999.0.0-dev" // Special value representing R8 "main" version (b/374032642)
         ).onEach { (input, output) ->
-            assertThat(ShrinkerVersion.parse(input)!!.asString()).isEqualTo(output)
+            assertThat(ShrinkerVersion.parse(input).asString()).isEqualTo(output)
         }
     }
 }
