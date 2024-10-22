@@ -24,6 +24,7 @@ kotlin_library(
     # exclude these from coverage by marking them as testonly
     testonly = True,
     srcs = glob(["resources/src/**/*.kt"]),
+    kotlinc_opts = ["-Xsam-conversions=class"],
     tags = tags,
     deps = [
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
