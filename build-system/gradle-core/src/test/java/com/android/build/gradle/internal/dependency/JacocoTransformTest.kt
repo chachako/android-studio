@@ -47,6 +47,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.ClassNode
 import java.io.File
 import java.net.URLClassLoader
 import kotlin.reflect.KClass
@@ -65,7 +68,8 @@ class JacocoTransformTest {
     @Before
     fun setup() {
         testClassDir = temporaryFolder.newFolder("instrumented_classes")
-        val testClasses = listOf(ClassWithStaticField::class.java, SomeOtherClass::class.java)
+        val testClasses = listOf(
+            ClassWithStaticField::class.java, SomeOtherClass::class.java, R::class.java, R.color::class.java)
         TestInputsGenerator.pathWithClasses(testClassDir.toPath(), testClasses)
         testJar = File(temporaryFolder.newFolder(), "test.jar").apply {
             writeBytes(TestInputsGenerator.jarWithClasses(testClasses))
@@ -91,12 +95,17 @@ class JacocoTransformTest {
         val instrumentedClasses = instrumentedClassesDir
             ?.walkTopDown()?.filter { it.isFile && it.extension == "class" }?.toList()
         assertThat(instrumentedClasses?.map(getFileName)).containsExactlyElementsIn(
-            listOf("ClassWithStaticField.class", "SomeOtherClass.class")
+            listOf("ClassWithStaticField.class", "SomeOtherClass.class", "R\$color.class", "R.class")
         )
         val urls = instrumentedClasses !!.map { it.toURI().toURL() }.toTypedArray()
         URLClassLoader.newInstance(urls).use { urlClassLoader ->
             urlClassLoader.loadClass(ClassWithStaticField::class.java.canonicalName)
         }
+
+        isInstrumented(instrumentedClasses.find { it.name == "ClassWithStaticField.class" }!!)
+        isInstrumented(instrumentedClasses.find { it.name == "SomeOtherClass.class" }!!)
+        isNotInstrumented(instrumentedClasses.find { it.name == "R.class" }!!)
+        isNotInstrumented(instrumentedClasses.find { it.name == "R\$color.class" }!!)
     }
 
     @Test
@@ -304,6 +313,37 @@ class JacocoTransformTest {
             .filter(File::isFile)
             .map { FakeFileChange(it, ChangeType.ADDED, FileType.FILE, it.toRelativeString(directory)) }
             .toList()
+    }
+
+    private fun isInstrumented(instrumentedClassFile: File) =
+        assertInstrumentation(instrumentedClassFile, true)
+
+    private fun isNotInstrumented(instrumentedClassFile: File) =
+        assertInstrumentation(instrumentedClassFile, false)
+
+    private fun assertInstrumentation(instrumentedClass: File, expectInstrumentation: Boolean) {
+        val classReader = ClassReader(instrumentedClass.readBytes())
+        val classNode = ClassNode(Opcodes.ASM7)
+        classReader.accept(classNode, 0)
+        val methodNames = classNode.methods.map { it.name }
+        if (expectInstrumentation) {
+            assertThat(methodNames).contains("\$jacocoInit")
+        } else {
+            assertThat(methodNames).doesNotContain("\$jacocoInit")
+        }
+    }
+}
+
+private class R() {
+    inner class color() {
+        val color1: Int = id
+    }
+
+    companion object {
+        var id: Int
+        init {
+            id = 0
+        }
     }
 }
 

@@ -241,7 +241,7 @@ class JacocoScopedArtifactsTest {
         validateDirectoryClass(jacocoPresent = true, dirFile)
 
         val jarFile = FileUtils.join(classesFolder, "jars/0.jar")
-        validateJarClass(jacocoPresent = true, jarFile)
+        validateJarClass(jarFile, "com/example/app/R.class", expectJacoco = false)
     }
 
     private fun validateScopedClassesAreNotInstrumented(buildResult: GradleBuildResult) {
@@ -258,7 +258,7 @@ class JacocoScopedArtifactsTest {
         val artifactPaths = artifacts.split(File.pathSeparator)
         artifactPaths.forEach { path ->
             if (path.endsWith("R.jar")) {
-                validateJarClass(jacocoPresent = false, File(path))
+                validateJarClass(File(path), "com/example/app/R.class", expectJacoco = false)
             } else if (path.endsWith("classes")) {
                 val dirFile = FileUtils.join(File(path), "com/example/app/Example.class")
                 validateDirectoryClass(jacocoPresent = false, dirFile)
@@ -277,15 +277,15 @@ class JacocoScopedArtifactsTest {
         }
     }
 
-    private fun validateJarClass(jacocoPresent: Boolean, classFile: File) {
+    private fun validateJarClass(classFile: File, clazz: String, expectJacoco: Boolean) {
         val zipFile = ZipFile(classFile)
         try {
-            val entry: ZipEntry = zipFile.getEntry("com/example/app/R.class")
+            val entry: ZipEntry = zipFile.getEntry(clazz)
             TruthHelper.assertThat(entry).named("R.class entry").isNotNull()
             val classReader = ClassReader(zipFile.getInputStream(entry))
             val classNode = ClassNode(Opcodes.ASM7)
             classReader.accept(classNode, 0)
-            if (jacocoPresent) {
+            if (expectJacoco) {
                 Truth.assertThat(classNode.fields[0].name).isEqualTo("\$jacocoData")
             } else {
                 Truth.assertThat(classNode.fields).isEmpty()
