@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.application.privacysandbox
 
+import com.android.build.gradle.integration.common.fixture.deviceSupportsPrivacySandbox
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSdkAppLargeSampleProjectWithTestModule
 import com.android.build.gradle.integration.connected.application.privacysandbox.PrivacySandboxSdkTestBase.Companion.packageExists
 import com.android.build.gradle.integration.connected.application.privacysandbox.PrivacySandboxSdkTestBase.Companion.setupDevice
@@ -45,16 +46,20 @@ class PrivacySandboxSdkDynamicFeatureConnectedTest: PrivacySandboxSdkTestBase {
 
     @Test
     fun `install and uninstall works for both SDK and APK for application with dynamic feature`() {
+        val deviceSupportsPrivacySandbox = deviceSupportsPrivacySandbox()
+
         executor()
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
             .run(":client-app:installDebug")
         Truth.assertThat(packageExists(APP_PACKAGE_NAME)).isTrue()
-        Truth.assertThat(
-            packageExists(
-                SDK_PACKAGE_NAME,
-                isLibrary = true
-            )
-        ).isTrue()
+        if (deviceSupportsPrivacySandbox) {
+            Truth.assertThat(
+                packageExists(
+                    SDK_PACKAGE_NAME,
+                    isLibrary = true
+                )
+            ).isTrue()
+        }
 
         // project.execute(":app-with-dynamic-feature:uninstallAll")
         // TODO: uninstall not supported yet, verify both APKs are deleted here
