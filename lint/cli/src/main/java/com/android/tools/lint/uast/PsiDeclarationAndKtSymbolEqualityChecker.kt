@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.api.types.KaTypeMappingMode
 import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
+import org.jetbrains.kotlin.name.ClassId
 
 // TODO replace with structural type comparison?
 @OptIn(KaExperimentalApi::class)
@@ -37,7 +38,9 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     val isSuspend = (symbol as? KaNamedFunctionSymbol)?.isSuspend == true
     if (!returnTypesMatch(psi, symbol, isSuspend)) return false
     if (!typeParametersMatch(psi, symbol)) return false
-    if (symbol is KaFunctionSymbol && !valueParametersMatch(psi, symbol, isSuspend)) return false
+    val isCompose = COMPOSABLE_CLASSID in symbol.annotations
+    if (symbol is KaFunctionSymbol && !valueParametersMatch(psi, symbol, isSuspend, isCompose))
+      return false
     return true
   }
 
@@ -76,6 +79,7 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     psi: PsiMethod,
     symbol: KaFunctionSymbol,
     isSuspend: Boolean = false,
+    isCompose: Boolean = false,
   ): Boolean {
     val isExtension =
       when (symbol) {
@@ -88,6 +92,10 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     if (isSuspend) {
       // Drop the Continuation added by the compiler
       psiParameters = psiParameters.dropLast(1)
+    }
+    if (isCompose) {
+      // Drop the last two parameters added by Compose compiler plugin
+      psiParameters = psiParameters.dropLast(2)
     }
     if (psiParameters.size != valueParameterCount) return false
     if (isExtension) {
@@ -167,4 +175,6 @@ internal object PsiDeclarationAndKtSymbolEqualityChecker {
     get() {
       return this is PsiClassReferenceType && canonicalText == OBJECT_TYPE
     }
+
+  private val COMPOSABLE_CLASSID = ClassId.fromString("androidx/compose/runtime/Composable")
 }
