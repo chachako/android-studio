@@ -205,28 +205,31 @@ cc_toolchain_config(
         "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
         "/usr/include",
     ],
-    cxx_flags = ["-std=c++17"],
+    cxx_flags = [
+        "-std=c++17",
+        "-stdlib=libc++",
+    ],
     dbg_compile_flags = ["-g"],
     host_system_name = "local",
     link_flags = [
         "-lc++",
         "-framework",
         "CoreFoundation",
-        # Needed since we're still using /usr/bin/ld
-        "-B",
-        "/usr/bin/",
         "-headerpad_max_install_names",
         "-no-canonical-prefixes",
         "-undefined",
         "dynamic_lookup",
-        # Force using the old arguments when calling linker (/usr/bin/ld)
-        # Needed as BYOB uses old system (10.13) with old commandline tools (9.2)
-        "-mlinker-version=405",
-        "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib",
-        "-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
     ] + select({
-        "@platforms//cpu:arm64": ["--target=arm64-apple-macos11"],
-        "@platforms//cpu:x86_64": ["--target=x86_64-apple-macos11"],
+        "@platforms//cpu:arm64": [
+            "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
+            "-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks",
+            "--target=arm64-apple-macos11",
+        ],
+        "@platforms//cpu:x86_64": [
+            "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib",
+            "-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
+            "--target=x86_64-apple-macos11",
+        ],
     }),
     link_libs = [],  # ?
     opt_compile_flags = [
@@ -242,12 +245,11 @@ cc_toolchain_config(
     target_system_name = "local",
     tool_paths = {
         "ar": clang_latest_darwin + "/bin/llvm-ar",
-        "compat-ld": "/usr/bin/ld/",
         "cpp": clang_latest_darwin + "/bin/clang++",
         "dwp": "/bin/false",
         "gcc": clang_latest_darwin + "/bin/clang",
         "gcov": clang_latest_darwin + "/bin/llvm-cov",
-        "ld": "/usr/bin/ld",
+        "ld": clang_latest_darwin + "/bin/ld64.lld",
         "nm": clang_latest_darwin + "/bin/llvm-nm",
         "objcopy": clang_latest_darwin + "/bin/llvm-objcopy",
         "objdump": clang_latest_darwin + "/bin/llvm-objdump",
