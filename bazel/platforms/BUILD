@@ -86,6 +86,24 @@ platform(
 )
 
 platform(
+    name = "mac-arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+        "@bazel_tools//tools/cpp:clang",
+    ],
+)
+
+platform(
+    name = "mac-x86_64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+        "@bazel_tools//tools/cpp:clang",
+    ],
+)
+
+platform(
     name = "macos",
     constraint_values = [
         "@platforms//os:macos",
