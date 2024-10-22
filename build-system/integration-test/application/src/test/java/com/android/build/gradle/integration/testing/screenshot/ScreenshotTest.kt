@@ -705,9 +705,13 @@ class ScreenshotTest {
             // cannot set filter using the conventional command ./gradlew validateDebugScreenshotTest --tests "Pattern". https://github.com/gradle/gradle/issues/1228
             appProject.buildFile,
             """
+            import com.android.compose.screenshot.tasks.PreviewScreenshotUpdateTask
             afterEvaluate {
                 tasks.named('validateDebugScreenshotTest', Test) {
                     setTestNameIncludePatterns(['*simpleComposableTest*'])
+                }
+                tasks.named("updateDebugScreenshotTest", PreviewScreenshotUpdateTask) {
+                    setUpdateFilter(["*simpleComposableTest*"])
                 }
             }
             """.trimIndent()
@@ -715,6 +719,15 @@ class ScreenshotTest {
 
         // Generate screenshots to be tested against
         getExecutor().run(":app:updateDebugScreenshotTest")
+        val exampleTestReferenceScreenshotDir = appProject.projectDir.resolve("src/debug/screenshotTest/reference/pkg/name/ExampleTest").toPath()
+        val topLevelTestReferenceScreenshotDir = appProject.projectDir.resolve("src/debug/screenshotTest/reference/pkg/name/TopLevelPreviewTestKt").toPath()
+        assertThat(exampleTestReferenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
+            "simpleComposableTest_simpleComposable_c5877f71_0.png",
+            "simpleComposableTest2_simpleComposable_7362dd6b_0.png",
+        )
+        assertThat(topLevelTestReferenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
+            "simpleComposableTest_3_748aa731_0.png"
+        )
 
         // Validate previews matches screenshots
         getExecutor().run(":app:validateDebugScreenshotTest")
