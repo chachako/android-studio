@@ -39,8 +39,14 @@ import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ReadAndWriteScope
+import com.intellij.openapi.application.ReadConstraint
+import com.intellij.openapi.application.ReadResult
+import com.intellij.openapi.application.ReadWriteActionSupport
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.ThrowableComputable
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
@@ -93,6 +99,35 @@ class Renderer(
 
         IJFramework.registerService(
             ModuleClassLoaderManager::class.java, moduleClassLoaderManager, project)
+
+        IJFramework.registerService(
+            ReadWriteActionSupport::class.java, object: ReadWriteActionSupport {
+                override fun committedDocumentsConstraint(project: Project): ReadConstraint =
+                    ReadConstraint.withDocumentsCommitted(project)
+
+                override fun <X, E : Throwable> computeCancellable(action: ThrowableComputable<X, E>): X = ReadAction.compute(action)
+
+                override suspend fun <X> executeReadAction(
+                    constraints: List<ReadConstraint>,
+                    undispatched: Boolean,
+                    blocking: Boolean,
+                    action: () -> X
+                ): X {
+                    throw UnsupportedOperationException()
+                }
+
+                override suspend fun <X> executeReadAndWriteAction(
+                    constraints: Array<out ReadConstraint>,
+                    action: ReadAndWriteScope.() -> ReadResult<X>
+                ): X {
+                    throw UnsupportedOperationException()
+                }
+
+                override fun smartModeConstraint(project: Project): ReadConstraint =
+                    ReadConstraint.inSmartMode(project)
+
+            }, project
+        )
 
         val environment =
             StandaloneEnvironmentContext(
