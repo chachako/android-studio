@@ -130,7 +130,7 @@ open class GradleTestProject @JvmOverloads constructor(
     private val openConnections: MutableList<ProjectConnection>? = mutableListOf(),
     /** root project if one exist. This is null for the actual root */
     private val _rootProject: GradleTestProject? = null
-) : GradleTestInfo, TestRule {
+) : GradleTestInfo, TemporaryProjectModification.FileProvider, TestRule {
     companion object {
         const val ENV_CUSTOM_REPO = "CUSTOM_REPO"
 
@@ -1470,7 +1470,7 @@ allprojects { proj ->
      *
      * @param path Full path of the file. May be a relative path.
      */
-    fun file(path: String): File {
+    override fun file(path: String): File {
         val result = File(FileUtils.toSystemDependentPath(path))
         return if (result.isAbsolute) {
             result

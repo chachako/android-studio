@@ -19,16 +19,21 @@ package com.android.build.gradle.integration.common.fixture;
 import static org.junit.Assert.assertTrue;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.testutils.TestUtils;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+
+import org.junit.runners.model.InitializationError;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
-import org.junit.runners.model.InitializationError;
 
 /**
  * Allows project files to be modified, but stores their original content, so it can be restored for
@@ -41,6 +46,11 @@ public class TemporaryProjectModification {
      */
     enum FileChangeType {
         CHANGED, ADDED, REMOVED
+    }
+
+    public interface FileProvider {
+        /** Creates a File object from a relative path. */
+        File file(String path);
     }
 
     /**
@@ -91,29 +101,44 @@ public class TemporaryProjectModification {
         }
     }
 
-    private final GradleTestProject mTestProject;
-
     /**
-     * Map of file change event. Key is relative path, value is the change event data
+     * An optional file provider that converts from string path to {@link File}. This is required to
+     * run file events.
      */
-    private final Map<String, FileEvent> mFileEvents = Maps.newHashMap();
+    @Nullable private final FileProvider fileProvider;
 
-    private TemporaryProjectModification(GradleTestProject testProject) {
-        mTestProject = testProject;
+    /** Map of file change event. Key is relative path, value is the change event data */
+    private final Map<String, FileEvent> mFileEvents;
+
+    private TemporaryProjectModification(@Nullable FileProvider fileProvider) {
+        this.fileProvider = fileProvider;
+        mFileEvents = Maps.newHashMap();
+    }
+
+    private TemporaryProjectModification(
+            @Nullable FileProvider fileProvider, Map<String, FileEvent> parentMap) {
+        this.fileProvider = fileProvider;
+        mFileEvents = parentMap;
+    }
+
+    /** Creates a delegate with a new file provider that uses the same map as the parent. */
+    public TemporaryProjectModification delegate(@NonNull FileProvider fileProvider) {
+        return new TemporaryProjectModification(fileProvider, mFileEvents);
     }
 
     /**
      * Runs a test that mutates the project in a reversible way, and returns the project to its
      * original state after the callback has been run.
      *
-     * @param project The project to modify.
-     * @param test    The test to run.
+     * @param fileProvider the object that will convert the relative path to absolute
+     * @param test The test to run.
      * @throws InitializationError if the project modification infrastructure fails.
      * @throws Exception passed through if the test throws an exception.
      */
-    public static void doTest(GradleTestProject project, ModifiedProjectTest test) throws
-            Exception {
-        TemporaryProjectModification modifiedProject = new TemporaryProjectModification(project);
+    public static void doTest(@NonNull FileProvider fileProvider, @NonNull ModifiedProjectTest test)
+            throws Exception {
+        TemporaryProjectModification modifiedProject =
+                new TemporaryProjectModification(fileProvider);
         try {
             test.runTest(modifiedProject);
         } finally {
@@ -223,7 +248,7 @@ public class TemporaryProjectModification {
                     break;
                 case ADDED:
                     // it's fine if the file was already removed somehow.
-                    FileUtils.deleteIfExists(mTestProject.file(entry.getKey()));
+                    FileUtils.deleteIfExists(fileProvider.file(entry.getKey()));
             }
         }
 
@@ -232,6 +257,7 @@ public class TemporaryProjectModification {
     }
 
     private File getFile(@NonNull String relativePath) {
-        return mTestProject.file(relativePath.replace('/', File.separatorChar));
+        Preconditions.checkNotNull(fileProvider, "Cannot do file changes without a FileProvider");
+        return fileProvider.file(relativePath.replace('/', File.separatorChar));
     }
 }
