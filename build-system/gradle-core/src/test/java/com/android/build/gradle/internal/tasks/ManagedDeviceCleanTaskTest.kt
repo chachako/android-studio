@@ -21,7 +21,6 @@ import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
-import com.android.testutils.MockitoKt
 import org.mockito.kotlin.any
 import com.android.testutils.SystemPropertyOverrides
 import com.android.utils.Environment

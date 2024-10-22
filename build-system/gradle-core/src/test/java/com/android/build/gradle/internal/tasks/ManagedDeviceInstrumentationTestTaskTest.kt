@@ -39,7 +39,6 @@ import com.android.build.gradle.internal.testing.utp.UtpRunProfileManager
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.TestOptions
 import com.android.repository.Revision
-import com.android.testutils.MockitoKt
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.GradleException
 import org.gradle.api.Project

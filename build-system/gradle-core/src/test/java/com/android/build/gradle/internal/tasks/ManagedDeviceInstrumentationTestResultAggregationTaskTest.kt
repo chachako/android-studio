@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
-import com.android.testutils.MockitoKt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import com.google.common.truth.Truth.assertThat

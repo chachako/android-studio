@@ -26,7 +26,6 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.options.StringOption
 import com.android.repository.Revision
-import com.android.testutils.MockitoKt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
