@@ -45,7 +45,6 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
-import com.android.sdklib.AndroidVersion
 import com.android.sdklib.AndroidVersion.VersionCodes
 import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_ADVANCED_GLOB
 import com.android.tools.lint.checks.AndroidPatternMatcher.PATTERN_LITERAL
@@ -984,8 +983,9 @@ class AppLinksValidDetector : Detector(), XmlScanner {
               "App link matching does not support query parameters or fragments, " +
                 "unless using `<uri-relative-filter-group>` (introduced in Android 15)",
               if (
-                (context.project.targetSdkVersion ?: AndroidVersion.DEFAULT) <
-                  AndroidVersion(VersionCodes.VANILLA_ICE_CREAM) || fixText == null
+                (context.project.buildSdk < VersionCodes.VANILLA_ICE_CREAM) ||
+                  (context.project.targetSdk < VersionCodes.VANILLA_ICE_CREAM) ||
+                  fixText == null
               ) {
                 null
               } else {
