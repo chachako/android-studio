@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AndroidDebugBridge {
 
+    private static volatile boolean delegateIsUsed = false;
     private static volatile AndroidDebugBridgeDelegate delegate = new AndroidDebugBridgeImpl();
 
     /**
@@ -114,7 +115,7 @@ public class AndroidDebugBridge {
         void deviceConnected(@NonNull IDevice device);
 
         /**
-         * Sent when the a device is connected to the {@link AndroidDebugBridge}.
+         * Sent when a device is connected to the {@link AndroidDebugBridge}.
          *
          * <p>This is sent from a non UI thread.
          *
@@ -156,6 +157,22 @@ public class AndroidDebugBridge {
     }
 
     /**
+     * Call this method if the default implementation needs to be overridden. This method is
+     * introduced to enable a full migration of functionality in this class to from ddmlib to
+     * adblib.
+     */
+    public static void preInit(AndroidDebugBridgeDelegate delegate) {
+        if (delegateIsUsed) {
+            Log.w("ddmlib", "AndroidDebugBridgeDelegate assignment after its use");
+        }
+        if (AndroidDebugBridge.delegate.getBridge() != null) {
+            throw new IllegalStateException(
+                    "preInit() called after `AndroidDebugBridge` instance was created");
+        }
+        AndroidDebugBridge.delegate = delegate;
+    }
+
+    /**
      * Initialized the library only if needed; deprecated for non-test usages.
      *
      * @param clientSupport Indicates whether the library should enable the monitoring and
@@ -164,6 +181,7 @@ public class AndroidDebugBridge {
      */
     @Deprecated
     public static void initIfNeeded(boolean clientSupport) {
+        delegateIsUsed = true;
         delegate.initIfNeeded(clientSupport);
     }
 
@@ -183,7 +201,8 @@ public class AndroidDebugBridge {
      * @see DdmPreferences
      */
     public static void init(boolean clientSupport) {
-        delegate.init(clientSupport, false, ImmutableMap.of());
+        delegateIsUsed = true;
+        delegate.init(clientSupport);
     }
 
     /**
@@ -192,6 +211,7 @@ public class AndroidDebugBridge {
      */
     public static void init(
             boolean clientSupport, boolean useLibusb, @NonNull Map<String, String> env) {
+        delegateIsUsed = true;
         delegate.init(
                 AdbInitOptions.builder()
                         .withEnv(env)
@@ -202,6 +222,7 @@ public class AndroidDebugBridge {
 
     /** Similar to {@link #init(boolean)}, with ability to pass a custom set of env. variables. */
     public static void init(AdbInitOptions options) {
+        delegateIsUsed = true;
         delegate.init(options);
     }
 
@@ -221,22 +242,26 @@ public class AndroidDebugBridge {
             long terminateTimeout,
             long initTimeout,
             @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.optionsChanged(
                 options, osLocation, forceNewBridge, terminateTimeout, initTimeout, unit);
     }
 
     @VisibleForTesting
     public static void enableFakeAdbServerMode(int port) {
+        delegateIsUsed = true;
         delegate.enableFakeAdbServerMode(port);
     }
 
     @VisibleForTesting
     public static void disableFakeAdbServerMode() {
+        delegateIsUsed = true;
         delegate.disableFakeAdbServerMode();
     }
 
     /** Terminates the ddm library. This must be called upon application termination. */
     public static void terminate() {
+        delegateIsUsed = true;
         delegate.terminate();
     }
 
@@ -245,6 +270,7 @@ public class AndroidDebugBridge {
      * ClientImpl}s running on the {@link IDevice}s.
      */
     public static boolean getClientSupport() {
+        delegateIsUsed = true;
         return delegate.getClientSupport();
     }
 
@@ -255,6 +281,7 @@ public class AndroidDebugBridge {
      */
     @Nullable
     public ClientManager getClientManager() {
+        delegateIsUsed = true;
         return delegate.getClientManager();
     }
 
@@ -277,6 +304,7 @@ public class AndroidDebugBridge {
      */
     @Deprecated
     public static InetSocketAddress getSocketAddress() {
+        delegateIsUsed = true;
         return delegate.getSocketAddress();
     }
 
@@ -287,6 +315,7 @@ public class AndroidDebugBridge {
      * @throws IOException should errors occur when opening the connection
      */
     public static SocketChannel openConnection() throws IOException {
+        delegateIsUsed = true;
         return delegate.openConnection();
     }
 
@@ -306,7 +335,8 @@ public class AndroidDebugBridge {
     @Deprecated
     @Nullable
     public static AndroidDebugBridge createBridge() {
-        return createBridge(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        delegateIsUsed = true;
+        return delegate.createBridge();
     }
 
     /**
@@ -322,6 +352,7 @@ public class AndroidDebugBridge {
      */
     @Nullable
     public static AndroidDebugBridge createBridge(long timeout, @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.createBridge(timeout, unit);
     }
 
@@ -343,6 +374,7 @@ public class AndroidDebugBridge {
     @Nullable
     public static AndroidDebugBridge createBridge(
             @NonNull String osLocation, boolean forceNewBridge) {
+        delegateIsUsed = true;
         return delegate.createBridge(osLocation, forceNewBridge);
     }
 
@@ -366,6 +398,7 @@ public class AndroidDebugBridge {
             boolean forceNewBridge,
             long timeout,
             @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.createBridge(osLocation, forceNewBridge, timeout, unit);
     }
 
@@ -374,6 +407,7 @@ public class AndroidDebugBridge {
      */
     @Nullable
     public static AndroidDebugBridge getBridge() {
+        delegateIsUsed = true;
         return delegate.getBridge();
     }
 
@@ -388,6 +422,7 @@ public class AndroidDebugBridge {
      */
     @Deprecated
     public static void disconnectBridge() {
+        delegateIsUsed = true;
         delegate.disconnectBridge();
     }
 
@@ -400,6 +435,7 @@ public class AndroidDebugBridge {
      * @return {@code true} if the method succeeds within the specified timeout.
      */
     public static boolean disconnectBridge(long timeout, @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.disconnectBridge(timeout, unit);
     }
 
@@ -410,6 +446,7 @@ public class AndroidDebugBridge {
      * @param listener The listener which should be notified.
      */
     public static void addDebugBridgeChangeListener(@NonNull IDebugBridgeChangeListener listener) {
+        delegateIsUsed = true;
         delegate.addDebugBridgeChangeListener(listener);
     }
 
@@ -419,11 +456,13 @@ public class AndroidDebugBridge {
      * @param listener The listener which should no longer be notified.
      */
     public static void removeDebugBridgeChangeListener(IDebugBridgeChangeListener listener) {
+        delegateIsUsed = true;
         delegate.removeDebugBridgeChangeListener(listener);
     }
 
     @VisibleForTesting
     public static int getDebugBridgeChangeListenerCount() {
+        delegateIsUsed = true;
         return delegate.getDebugBridgeChangeListenerCount();
     }
 
@@ -435,6 +474,8 @@ public class AndroidDebugBridge {
      * @param listener The listener which should be notified.
      */
     public static void addDeviceChangeListener(@NonNull IDeviceChangeListener listener) {
+        // Ok to use this delegate even before preInit, since it just stores a listener in a
+        // static list.
         delegate.addDeviceChangeListener(listener);
     }
 
@@ -446,11 +487,14 @@ public class AndroidDebugBridge {
      * @param listener The listener which should no longer be notified.
      */
     public static void removeDeviceChangeListener(IDeviceChangeListener listener) {
+        // Ok to use this delegate even before preInit, since it just stores a listener in a
+        // static list.
         delegate.removeDeviceChangeListener(listener);
     }
 
     @VisibleForTesting
     public static int getDeviceChangeListenerCount() {
+        delegateIsUsed = true;
         return delegate.getDeviceChangeListenerCount();
     }
 
@@ -462,6 +506,8 @@ public class AndroidDebugBridge {
      * @param listener The listener which should be notified.
      */
     public static void addClientChangeListener(IClientChangeListener listener) {
+        // Ok to use this delegate even before preInit, since it just stores a listener in a
+        // static list.
         delegate.addClientChangeListener(listener);
     }
 
@@ -472,6 +518,8 @@ public class AndroidDebugBridge {
      * @param listener The listener which should no longer be notified.
      */
     public static void removeClientChangeListener(IClientChangeListener listener) {
+        // Ok to use this delegate even before preInit, since it just stores a listener in a
+        // static list.
         delegate.removeClientChangeListener(listener);
     }
 
@@ -480,6 +528,7 @@ public class AndroidDebugBridge {
      *     otherwise.
      */
     public @Nullable AdbVersion getCurrentAdbVersion() {
+        delegateIsUsed = true;
         return delegate.getCurrentAdbVersion();
     }
 
@@ -490,6 +539,7 @@ public class AndroidDebugBridge {
      */
     @NonNull
     public IDevice[] getDevices() {
+        delegateIsUsed = true;
         return delegate.getDevices();
     }
 
@@ -505,6 +555,7 @@ public class AndroidDebugBridge {
      * IDeviceChangeListener} object.
      */
     public boolean hasInitialDeviceList() {
+        delegateIsUsed = true;
         return delegate.hasInitialDeviceList();
     }
 
@@ -512,11 +563,13 @@ public class AndroidDebugBridge {
      * Returns whether the {@link AndroidDebugBridge} object is still connected to the adb daemon.
      */
     public boolean isConnected() {
+        delegateIsUsed = true;
         return delegate.isConnected();
     }
 
     @Nullable
     public IDeviceUsageTracker getiDeviceUsageTracker() {
+        delegateIsUsed = true;
         return delegate.getiDeviceUsageTracker();
     }
 
@@ -528,12 +581,14 @@ public class AndroidDebugBridge {
     }
 
     public static ListenableFuture<AdbVersion> getAdbVersion(@NonNull final File adb) {
+        delegateIsUsed = true;
         return delegate.getAdbVersion(adb);
     }
 
     @NonNull
     public static ListenableFuture<String> getVirtualDeviceId(
             @NonNull ListeningExecutorService service, @NonNull File adb, @NonNull IDevice device) {
+        delegateIsUsed = true;
         return delegate.getVirtualDeviceId(service, adb, device);
     }
 
@@ -544,6 +599,7 @@ public class AndroidDebugBridge {
      * should call {@link #getDevices()} instead.
      */
     public ListenableFuture<List<AdbDevice>> getRawDeviceList() {
+        delegateIsUsed = true;
         return delegate.getRawDeviceList();
     }
 
@@ -556,6 +612,7 @@ public class AndroidDebugBridge {
      */
     @Deprecated
     public boolean restart() {
+        delegateIsUsed = true;
         return delegate.restart();
     }
 
@@ -565,6 +622,7 @@ public class AndroidDebugBridge {
      * @return true if success.
      */
     public boolean restart(long timeout, @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.restart(timeout, unit);
     }
 
@@ -578,6 +636,7 @@ public class AndroidDebugBridge {
      * @param device the new <code>IDevice</code>.
      */
     public static void deviceConnected(@NonNull IDevice device) {
+        delegateIsUsed = true;
         delegate.deviceConnected(device);
     }
 
@@ -591,6 +650,7 @@ public class AndroidDebugBridge {
      * @param device the disconnected <code>IDevice</code>.
      */
     public static void deviceDisconnected(@NonNull IDevice device) {
+        delegateIsUsed = true;
         delegate.deviceDisconnected(device);
     }
 
@@ -604,6 +664,7 @@ public class AndroidDebugBridge {
      * @param device the modified <code>IDevice</code>.
      */
     public static void deviceChanged(@NonNull IDevice device, int changeMask) {
+        delegateIsUsed = true;
         delegate.deviceChanged(device, changeMask);
     }
 
@@ -618,6 +679,7 @@ public class AndroidDebugBridge {
      * @param changeMask the mask indicating what changed in the <code>Client</code>
      */
     public static void clientChanged(@NonNull Client client, int changeMask) {
+        delegateIsUsed = true;
         delegate.clientChanged(client, changeMask);
     }
 
@@ -625,6 +687,7 @@ public class AndroidDebugBridge {
      * @return If operating in user managed ADB mode where ddmlib will and should not manage the ADB server.
      */
     public static boolean isUserManagedAdbMode() {
+        delegateIsUsed = true;
         return delegate.isUserManagedAdbMode();
     }
 
@@ -635,6 +698,7 @@ public class AndroidDebugBridge {
      * @return true if success
      */
     public boolean startAdb(long timeout, @NonNull TimeUnit unit) {
+        delegateIsUsed = true;
         return delegate.startAdb(timeout, unit);
     }
 

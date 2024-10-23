@@ -51,6 +51,9 @@ public interface AndroidDebugBridgeDelegate {
             @NonNull TimeUnit unit);
 
     @Nullable
+    AndroidDebugBridge createBridge();
+
+    @Nullable
     AndroidDebugBridge createBridge(long timeout, @NonNull TimeUnit unit);
 
     @Nullable

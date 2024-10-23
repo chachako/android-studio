@@ -387,6 +387,22 @@ class AndroidDebugBridgeImpl extends AndroidDebugBridgeBase {
      *     bridge
      */
     @Nullable
+    public AndroidDebugBridge createBridge() {
+        return createBridge(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Creates a {@link AndroidDebugBridge} that is not linked to any particular executable.
+     *
+     * <p>This bridge will expect adb to be running. It will not be able to start/stop/restart adb.
+     *
+     * <p>If a bridge has already been started, it is directly returned with no changes (similar to
+     * calling {@link #getBridge()}).
+     *
+     * @return a connected bridge, or null if there were errors while creating or connecting to the
+     *     bridge
+     */
+    @Nullable
     public AndroidDebugBridge createBridge(long timeout, @NonNull TimeUnit unit) {
         AndroidDebugBridge localThis;
         synchronized (sLock) {
