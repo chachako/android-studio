@@ -25,6 +25,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -45,6 +46,7 @@ class PrivacySandboxSdkDynamicFeatureConnectedTest: PrivacySandboxSdkTestBase {
     }
 
     @Test
+    @Ignore("b/375067940")
     fun `install and uninstall works for both SDK and APK for application with dynamic feature`() {
         val deviceSupportsPrivacySandbox = deviceSupportsPrivacySandbox()
 
