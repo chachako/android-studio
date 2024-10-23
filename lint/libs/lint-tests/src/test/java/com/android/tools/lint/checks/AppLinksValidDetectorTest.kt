@@ -2938,6 +2938,83 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun test_queryParamAndFragment_customAndroidNs() {
+    lint()
+      .files(
+        gradle(
+          """
+          apply plugin: 'com.android.application'
+
+          android {
+              compileSdkVersion 35
+
+              defaultConfig {
+                  minSdkVersion 30
+                  targetSdkVersion 35
+              }
+          }"""
+        ),
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android-ns="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android-ns:minSdkVersion="31" android-ns:targetSdkVersion="35" />
+
+                    <application>
+                        <activity android-ns:name=".FullscreenActivity" android-ns:exported="true">
+
+                            <intent-filter android-ns:autoVerify="true">
+                                <action android-ns:name="android.intent.action.VIEW" />
+                                <category android-ns:name="android.intent.category.DEFAULT" />
+                                <category android-ns:name="android.intent.category.BROWSABLE" />
+
+                                <data android-ns:scheme="http" />
+                                <data android-ns:host="example.com" />
+                                <data android-ns:path="/gizmos?queryParam#fragment" />
+                                <data android-ns:path="/gizmos#fragment?queryParam" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+                </manifest>
+                """,
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
+        src/main/AndroidManifest.xml:15: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android-ns:path="/gizmos?queryParam#fragment" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/main/AndroidManifest.xml:16: Error: App link matching does not support query parameters or fragments, unless using <uri-relative-filter-group> (introduced in Android 15) [AppLinkUrlError]
+                        <data android-ns:path="/gizmos#fragment?queryParam" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for src/main/AndroidManifest.xml line 15: Replace with <uri-relative-filter-group>...:
+        @@ -15 +15
+        -                 <data android-ns:path="/gizmos?queryParam#fragment" />
+        +                 <uri-relative-filter-group>
+        +                     <data android-ns:path="/gizmos" />
+        +                     <data android-ns:query="queryParam" />
+        +                     <data android-ns:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+        Fix for src/main/AndroidManifest.xml line 16: Replace with <uri-relative-filter-group>...:
+        @@ -16 +16
+        -                 <data android-ns:path="/gizmos#fragment?queryParam" />
+        +                 <uri-relative-filter-group>
+        +                     <data android-ns:path="/gizmos" />
+        +                     <data android-ns:query="queryParam" />
+        +                     <data android-ns:fragment="fragment" />
+        +                 </uri-relative-filter-group>
+        """
+      )
+  }
+
   fun test_queryParameter_andFragment_compileSdkVersionBelowAndroidV() {
     lint()
       .files(
@@ -3120,6 +3197,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                             <data android:path="@string/path" />
                             <data android:path="/&lt;&amp;&apos;'" />
                             <data android:path='/single"quote' />
+                            <data android:path="" />
                             <!-- Test having tags underneath the host elements as well -->
                             <action android:name="android.intent.action.SEND"/>
                             <uri-relative-filter-group>
@@ -3143,6 +3221,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
           )
           .indented(),
       )
+      .issues(APP_LINK_SPLIT_TO_WEB_AND_CUSTOM)
       .run()
       .expect(
         """
@@ -3167,6 +3246,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       -                 <data android:path="@string/path" />
       @@ -20 +23
       -                 <data android:path='/single"quote' />
+      -                 <data android:path="" />
       -                 <!-- Test having tags underneath the host elements as well -->
       -                 <action android:name="android.intent.action.SEND"/>
       +                 <data android:path="/single"quote" />
@@ -3176,7 +3256,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       +                 <action android:name="android.intent.action.VIEW" />
       +                 <category android:name="android.intent.category.DEFAULT" />
       +                 <category android:name="android.intent.category.BROWSABLE" />
-      @@ -27 +34
+      @@ -28 +34
       +                 <action android:name="android.intent.action.SEND" />
       +                 <uri-relative-filter-group>
       +                     <data android:path="/path" />
@@ -3188,6 +3268,56 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       +                 <data android:path="/single"quote" />
       +                 <data android:path="@string/path" />
       """
+      )
+  }
+
+  fun test_splitToWebAndCustomSchemes_customAndroidNs() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+            <manifest xmlns:android-ns="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <uses-sdk android-ns:minSdkVersion="31" android-ns:targetSdkVersion="34" />
+
+                <application>
+                    <activity android-ns:name=".SplitWebAndCustomActivity" android-ns:exported="true">
+                        <intent-filter android-ns:autoVerify="true" android-ns:order="-1" android-ns:priority="-1">
+                            <action android-ns:name="android.intent.action.VIEW" />
+                            <category android-ns:name="android.intent.category.DEFAULT" />
+                            <category android-ns:name="android.intent.category.BROWSABLE" />
+                            <data android-ns:scheme="http" />
+                            <data android-ns:scheme="custom" />
+                            <data android-ns:host="library.com" />
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+          """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:7: Error: Split your http(s) and custom schemes into separate intent filters [AppLinkSplitToWebAndCustom]
+                    <intent-filter android-ns:autoVerify="true" android-ns:order="-1" android-ns:priority="-1">
+                    ^
+        1 errors, 0 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for AndroidManifest.xml line 7: Replace with <intent-filter android-ns:autoVerify="true" android-ns:order="-1" android-ns:priority="-1">...:
+        @@ -12 +12
+        +                 <data android-ns:host="library.com" />
+        +             </intent-filter>
+        +             <intent-filter android-ns:order="-1" android-ns:priority="-1">
+        +                 <action android-ns:name="android.intent.action.VIEW" />
+        +                 <category android-ns:name="android.intent.category.DEFAULT" />
+        +                 <category android-ns:name="android.intent.category.BROWSABLE" />
+        """
       )
   }*/
 }
