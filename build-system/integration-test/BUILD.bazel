@@ -134,7 +134,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
         "@maven//:org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
         "@maven//:org.jetbrains.kotlin.plugin.compose.org.jetbrains.kotlin.plugin.compose.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
     ],
     visibility = ["//visibility:public"],
