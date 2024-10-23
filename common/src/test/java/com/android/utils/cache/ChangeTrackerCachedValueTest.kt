@@ -55,7 +55,7 @@ class ChangeTrackerCachedValueTest {
     val counter = AtomicInteger(0)
     val value = ChangeTrackerCachedValue.strongReference<String>()
     val provider = suspend {
-      delay(350) // Simulate a low provider
+      delay(350) // Simulate a slow provider
       counter.getAndIncrement().toString()
     }
     assertEquals("0", ChangeTrackerCachedValue.get(value, provider, ChangeTracker.EVER_CHANGING))
