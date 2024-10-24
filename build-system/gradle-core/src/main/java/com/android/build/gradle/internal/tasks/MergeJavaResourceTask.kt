@@ -186,7 +186,7 @@ abstract class MergeJavaResourceTask
 
     private fun doFullTaskAction() {
         workerExecutor.noIsolation().submit(MergeJavaResWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.projectJavaRes.from(projectJavaRes)
             it.subProjectJavaRes.set(subProjectJavaRes.toSourcedInputs())
             it.externalLibJavaRes.set(externalLibJavaRes.toSourcedInputs() + localDepsJavaRes.toSourcedInputs())
@@ -210,7 +210,7 @@ abstract class MergeJavaResourceTask
             return
         }
         workerExecutor.noIsolation().submit(MergeJavaResWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.projectJavaRes.from(projectJavaRes)
             it.subProjectJavaRes.set(subProjectJavaRes.toSourcedInputs())
             it.externalLibJavaRes.set(externalLibJavaRes.toSourcedInputs() + localDepsJavaRes.toSourcedInputs())
@@ -350,9 +350,8 @@ abstract class MergeJavaResourceTask
         }
     }
 
-    class FusedLibraryCreationAction(
-            val creationConfig: FusedLibraryGlobalScope
-    ) : AndroidVariantTaskCreationAction<MergeJavaResourceTask>() {
+    class FusedLibraryCreationAction(private val creationConfig: FusedLibraryGlobalScope) :
+        AndroidVariantTaskCreationAction<MergeJavaResourceTask>() {
 
         override val name: String
             get() = "mergeLibraryJavaResources"

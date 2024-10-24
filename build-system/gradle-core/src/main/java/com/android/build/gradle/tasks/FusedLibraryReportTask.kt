@@ -23,7 +23,7 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifa
 import com.android.build.gradle.internal.fusedlibrary.getFusedLibraryDependencyModuleVersionIdentifiers
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
-import com.android.build.gradle.internal.tasks.factory.FusedLibraryTaskGlobalCreationAction
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.google.gson.Gson
@@ -69,8 +69,8 @@ abstract class FusedLibraryReportTask : NonIncrementalGlobalTask() {
         fusedLibReport.writeToFile(report.get().asFile)
     }
 
-    class CreationAction(creationConfig: FusedLibraryGlobalScope) :
-        FusedLibraryTaskGlobalCreationAction<FusedLibraryReportTask>(creationConfig) {
+    class CreationAction(private val creationConfig: FusedLibraryGlobalScope) :
+        GlobalTaskCreationAction<FusedLibraryReportTask>() {
 
         override val name: String
             get() = "report"

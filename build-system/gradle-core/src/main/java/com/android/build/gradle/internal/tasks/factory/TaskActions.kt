@@ -17,8 +17,7 @@
 package com.android.build.gradle.internal.tasks.factory
 
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
-import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
+import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkConstants
 import com.android.build.gradle.internal.tasks.AndroidVariantTask
 import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.GlobalTask
@@ -101,44 +100,22 @@ abstract class AndroidVariantTaskCreationAction<TaskT: AndroidVariantTask>(
     }
 }
 
-/** [TaskCreationAction] for a [GlobalTask]. */
-abstract class GlobalTaskCreationAction<TaskT>(
-    @JvmField protected val creationConfig: GlobalTaskCreationConfig
-) : TaskCreationAction<TaskT>() where TaskT: Task, TaskT: GlobalTask {
-
-    override fun configure(task: TaskT) {
-        super.configure(task)
-
-        if (task is BaseTask) {
-            BaseTask.ConfigureAction.configure(task)
-        }
-
-        GlobalTask.ConfigureAction.configure(task)
-    }
-}
-
 /** [TaskCreationAction] for a PrivacySandboxSdkTask. */
-abstract class PrivacySandboxSdkTaskCreationAction<TaskT>(
-    @JvmField protected val variantScope: PrivacySandboxSdkVariantScope
-) : TaskCreationAction<TaskT>() where TaskT : AndroidVariantTask {
+abstract class PrivacySandboxSdkVariantTaskCreationAction<TaskT>
+    : AndroidVariantTaskCreationAction<TaskT>(PrivacySandboxSdkConstants.DEFAULT_VARIANT_NAME)
+        where TaskT: AndroidVariantTask
+
+/** [TaskCreationAction] for a [GlobalTask]. */
+abstract class GlobalTaskCreationAction<TaskT>
+    : TaskCreationAction<TaskT>() where TaskT: Task, TaskT: GlobalTask {
 
     override fun configure(task: TaskT) {
         super.configure(task)
-        task.variantName = variantScope.name
-        BaseTask.ConfigureAction.configure(task)
-    }
-}
 
-/** [TaskCreationAction] for a tasks created with FusedLibraryGlobalScope. */
-abstract class FusedLibraryTaskGlobalCreationAction<TaskT>(
-    protected val creationConfig: FusedLibraryGlobalScope
-) : TaskCreationAction<TaskT>() where TaskT: Task, TaskT: GlobalTask {
-
-    override fun configure(task: TaskT) {
-        super.configure(task)
         if (task is BaseTask) {
             BaseTask.ConfigureAction.configure(task)
         }
+
         GlobalTask.ConfigureAction.configure(task)
     }
 }

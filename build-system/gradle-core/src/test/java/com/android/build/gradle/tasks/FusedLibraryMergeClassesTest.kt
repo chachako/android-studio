@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.tasks
 
+import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicateFileCopyingException
@@ -81,6 +82,7 @@ internal class FusedLibraryMergeClassesTest {
 
         task.incoming.from(jar1, jar2)
         task.outputDirectory.set(build)
+        task.analyticsService.set(FakeNoOpAnalyticsService())
 
         action(jar1, jar2, task)
     }

@@ -37,7 +37,6 @@ import com.google.common.io.Files
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.InputFiles
@@ -100,7 +99,7 @@ abstract class LibraryJniLibsTask : NonIncrementalTask() {
             val inputFiles = listOf(projectNativeLibs) + localJarsNativeLibs.toList()
             for (inputFile in inputFiles) {
                 workers.noIsolation().submit(LibraryJniLibsRunnable::class.java) {
-                    it.initializeFromAndroidVariantTask(instantiator)
+                    it.initializeFromBaseTask(instantiator)
                     it.inputFile.set(inputFile)
                     it.outputDirectory.set(outputDirectory)
 

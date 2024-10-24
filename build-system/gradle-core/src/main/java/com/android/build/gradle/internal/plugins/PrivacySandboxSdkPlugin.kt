@@ -44,6 +44,7 @@ import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.AppMetadataTask
+import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.GeneratePrivacySandboxProguardRulesTask
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.internal.tasks.PerModuleBundleTask
@@ -51,6 +52,7 @@ import com.android.build.gradle.internal.tasks.R8Task
 import com.android.build.gradle.internal.tasks.SignAsbTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
+import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.TaskFactoryImpl
 import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.build.gradle.options.BooleanOption
@@ -318,7 +320,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                 project,
                 variantScope.artifacts,
                 PrivacySandboxSdkInternalArtifactType.ASAR,
-                listOf(
+                listOf<TaskCreationAction<out BaseTask>>(
                         AppMetadataTask.PrivacySandboxSdkCreationAction(variantScope),
                         SignAsbTask.CreationActionPrivacySandboxSdk(variantScope),
                         FusedLibraryMergeClasses.PrivacySandboxSdkCreationAction(variantScope),

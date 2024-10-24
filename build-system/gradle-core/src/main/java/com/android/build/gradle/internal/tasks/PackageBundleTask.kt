@@ -186,7 +186,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
 
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(BundleToolWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.bundleType.set(bundleType)
             if (baseModuleZip.isPresent) {
                 it.baseModuleFile.set(baseModuleZip.get().asFileTree.singleFile)

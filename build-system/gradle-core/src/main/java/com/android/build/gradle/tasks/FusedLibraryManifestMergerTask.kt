@@ -24,7 +24,7 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifa
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.manifest.ManifestProviderImpl
 import com.android.build.gradle.internal.tasks.manifest.mergeManifests
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -90,7 +90,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
     }
 
     protected fun configureParameters(parameters: FusedLibraryManifestMergerParams) {
-        parameters.initializeFromAndroidVariantTask(this)
+        parameters.initializeFromBaseTask(this)
 
         val identifierToManifestDependencyFile = libraryManifests.get().associate { getArtifactName(it) to it.file }
         parameters.dependencies.set(identifierToManifestDependencyFile)
@@ -146,7 +146,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
     }
 
     class CreationAction(private val creationConfig: FusedLibraryGlobalScope) :
-            AndroidVariantTaskCreationAction<FusedLibraryManifestMergerTask>() {
+        PrivacySandboxSdkVariantTaskCreationAction<FusedLibraryManifestMergerTask>() {
 
         override val name: String
             get() = "mergeManifest"

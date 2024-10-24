@@ -31,7 +31,6 @@ import com.android.build.gradle.internal.tasks.manifest.mergeManifests
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.manifmerger.ManifestMerger2
-import org.gradle.api.attributes.Usage
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -106,7 +105,7 @@ abstract class PrivacySandboxSdkManifestMergerTask: FusedLibraryManifestMergerTa
 
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(PrivacySandboxManifestMergerWorkAction::class.java) { params ->
-            params.initializeFromAndroidVariantTask(this)
+            params.initializeFromBaseTask(this)
             val identifierToManifestDependencyFile = libraryManifests.get().associate { result ->
                 ProcessApplicationManifest.getArtifactName(result) to result.file
             }

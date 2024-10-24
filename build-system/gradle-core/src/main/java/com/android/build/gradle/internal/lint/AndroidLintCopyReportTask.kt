@@ -25,7 +25,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.UnsafeOutputsTask
-import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
@@ -111,7 +111,8 @@ abstract class AndroidLintCopyReportTask : UnsafeOutputsTask("The lintOptions DS
         }
     }
 
-    class PrivacySandboxCreationAction(variantScope: PrivacySandboxSdkVariantScope) : PrivacySandboxSdkTaskCreationAction<AndroidLintCopyReportTask>(variantScope) {
+    class PrivacySandboxCreationAction(private val variantScope: PrivacySandboxSdkVariantScope)
+        : PrivacySandboxSdkVariantTaskCreationAction<AndroidLintCopyReportTask>() {
         override val name: String = "copyLintReports"
         override val type: Class<AndroidLintCopyReportTask> get() = AndroidLintCopyReportTask::class.java
         override fun configure(task: AndroidLintCopyReportTask) {

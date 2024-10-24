@@ -232,7 +232,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
         }
 
         workerExecutor.noIsolation().submit(DexMergingTaskDelegate::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.initialize(
                 sharedParams, numberOfBuckets.get(), dexDirsOrJars, globalSynthetics, outputDir,
                 inputChanges.isIncremental, fileChanges?.toSerializable(),

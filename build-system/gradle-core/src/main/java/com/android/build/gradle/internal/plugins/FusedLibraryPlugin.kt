@@ -37,6 +37,7 @@ import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
+import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.FusedLibraryBundleAar
 import com.android.build.gradle.tasks.FusedLibraryBundleClasses
@@ -50,6 +51,7 @@ import com.android.build.gradle.tasks.FusedLibraryReportTask
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import groovy.namespace.QName
 import groovy.util.Node
+import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -225,7 +227,7 @@ class FusedLibraryPlugin @Inject constructor(
                 project,
                 variantScope.artifacts,
                 FusedLibraryInternalArtifactType.BUNDLED_LIBRARY,
-                listOf(
+            listOf<TaskCreationAction<out DefaultTask>>(
                         FusedLibraryClassesRewriteTask.CreationAction(variantScope),
                         FusedLibraryManifestMergerTask.CreationAction(variantScope),
                         FusedLibraryMergeResourcesTask.CreationAction(variantScope),

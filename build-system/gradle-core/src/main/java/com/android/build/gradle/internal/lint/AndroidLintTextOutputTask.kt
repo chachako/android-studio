@@ -30,8 +30,7 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
-import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -151,8 +150,9 @@ abstract class AndroidLintTextOutputTask : NonIncrementalTask() {
         override val fatalOnly = false
     }
 
-    class PrivacySandboxSdkLintTextOutputTaskCreationAction(variantScope: PrivacySandboxSdkVariantScope) :
-        PrivacySandboxSdkTaskCreationAction<AndroidLintTextOutputTask>(variantScope) {
+    class PrivacySandboxSdkLintTextOutputTaskCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope) :
+        PrivacySandboxSdkVariantTaskCreationAction<AndroidLintTextOutputTask>() {
         override val name: String = "lint"
         override val type: Class<AndroidLintTextOutputTask>
             get() = AndroidLintTextOutputTask::class.java
@@ -178,8 +178,9 @@ abstract class AndroidLintTextOutputTask : NonIncrementalTask() {
         }
     }
 
-    class PrivacySandboxSdkLintVitalCreationAction(variantScope: PrivacySandboxSdkVariantScope) :
-        PrivacySandboxSdkTaskCreationAction<AndroidLintTextOutputTask>(variantScope) {
+    class PrivacySandboxSdkLintVitalCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope) :
+        PrivacySandboxSdkVariantTaskCreationAction<AndroidLintTextOutputTask>() {
         override val name: String = "lintVital"
         override val type: Class<AndroidLintTextOutputTask>
             get() = AndroidLintTextOutputTask::class.java

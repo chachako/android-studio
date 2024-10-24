@@ -23,8 +23,8 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
+import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
@@ -45,7 +45,7 @@ import org.gradle.api.tasks.TaskProvider
 
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ANDROID_RESOURCES, [TaskCategory.MERGING])
 @CacheableTask
-abstract class FusedLibraryMergeResourceCompileSymbolsTask : NonIncrementalTask() {
+abstract class FusedLibraryMergeResourceCompileSymbolsTask : NonIncrementalGlobalTask() {
 
     @get:Input
     abstract val namespace: Property<String>
@@ -74,8 +74,8 @@ abstract class FusedLibraryMergeResourceCompileSymbolsTask : NonIncrementalTask(
         )
     }
 
-    class CreationAction(val creationConfig: FusedLibraryGlobalScope) :
-        AndroidVariantTaskCreationAction<FusedLibraryMergeResourceCompileSymbolsTask>() {
+    class CreationAction(private val creationConfig: FusedLibraryGlobalScope) :
+        GlobalTaskCreationAction<FusedLibraryMergeResourceCompileSymbolsTask>() {
 
         override val name: String
             get() = "fusedLibraryMergeResourceCompileSymbols"

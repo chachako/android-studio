@@ -41,7 +41,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.getDesugaredMethods
@@ -268,9 +268,9 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
     }
 
     abstract class PrivacySandboxSdkAnalysisTaskCreationAction(
-        variantScope: PrivacySandboxSdkVariantScope,
+        private val variantScope: PrivacySandboxSdkVariantScope,
         private val projectOptions: ProjectOptions)
-        : PrivacySandboxSdkTaskCreationAction<AndroidLintAnalysisTask>(variantScope) {
+        : PrivacySandboxSdkVariantTaskCreationAction<AndroidLintAnalysisTask>() {
         final override val type: Class<AndroidLintAnalysisTask>
             get() = AndroidLintAnalysisTask::class.java
         abstract val fatalOnly: Boolean

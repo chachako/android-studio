@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.tasks.DexArchiveBuilderTask
 import com.android.build.gradle.internal.tasks.DexArchiveBuilderTaskDelegate
 import com.android.build.gradle.internal.tasks.DexParameterInputs
 import com.android.build.gradle.internal.tasks.NewIncrementalTask
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.SyncOptions
@@ -109,7 +110,7 @@ abstract class PrivacySandboxSdkDexTask: NewIncrementalTask() {
     }
 
     class CreationAction(val creationConfig: PrivacySandboxSdkVariantScope)
-        : AndroidVariantTaskCreationAction<PrivacySandboxSdkDexTask>() {
+        : PrivacySandboxSdkVariantTaskCreationAction<PrivacySandboxSdkDexTask>() {
 
         override val name: String
             get() = "dexClasses"

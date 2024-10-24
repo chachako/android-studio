@@ -45,7 +45,7 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.ProjectOptions
@@ -224,10 +224,10 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
     }
 
     class PrivacySandboxCreationAction(
-        variantScope: PrivacySandboxSdkVariantScope,
+        private val variantScope: PrivacySandboxSdkVariantScope,
         private val fatalOnly: Boolean,
         private val projectOptions: ProjectOptions,
-    ) : PrivacySandboxSdkTaskCreationAction<LintModelWriterTask>(variantScope) {
+    ) : PrivacySandboxSdkVariantTaskCreationAction<LintModelWriterTask>() {
         private val vitalOrBlank = if (fatalOnly) "Vital" else ""
         override val name: String
             get() = "generateLint${vitalOrBlank}ReportModel"

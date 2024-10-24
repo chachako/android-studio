@@ -329,7 +329,7 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
 
     private fun doFullTaskAction(inputStableIdsFile: File?) {
         workerExecutor.noIsolation().submit(TaskAction::class.java) { parameters ->
-            parameters.initializeFromAndroidVariantTask(this)
+            parameters.initializeFromBaseTask(this)
 
             parameters.mainDexListProguardOutputFile.set(mainDexListProguardOutputFile)
             parameters.outputStableIdsFile.set(stableIdsOutputFileProperty)

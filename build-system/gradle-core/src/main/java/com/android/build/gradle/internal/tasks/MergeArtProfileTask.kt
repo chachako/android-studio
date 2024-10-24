@@ -75,7 +75,7 @@ abstract class MergeArtProfileTask: MergeFileTask() {
 
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(MergeFilesWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.inputFiles.from(inputFiles)
 
             it.inputFiles.from(

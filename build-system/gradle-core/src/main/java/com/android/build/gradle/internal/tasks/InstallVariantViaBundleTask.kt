@@ -86,7 +86,7 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
     override fun doTaskAction() {
 
         workerExecutor.noIsolation().submit(InstallRunnable::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.adbExe.set(buildTools.adbExecutable())
             it.apkBundle.set(apkBundle.get().asFile)
             it.timeOutInMs.set(timeOutInMs)

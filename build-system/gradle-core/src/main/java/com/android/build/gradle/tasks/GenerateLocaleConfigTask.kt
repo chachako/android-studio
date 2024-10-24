@@ -141,7 +141,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
     public override fun doTaskAction() {
 
         workerExecutor.noIsolation().submit(GenerateLocaleWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.appLocales.set(appLocales)
             it.dependencyLocales.setFrom(dependencyLocales)
             it.localeConfig.set(localeConfig)

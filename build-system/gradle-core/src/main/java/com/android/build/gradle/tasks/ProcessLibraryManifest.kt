@@ -97,7 +97,7 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
 
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(ProcessLibWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.variantName.set(variantName)
             it.aaptFriendlyManifestOutputFile.set(aaptFriendlyManifestOutputFile)
             it.namespaced.set(isNamespaced)

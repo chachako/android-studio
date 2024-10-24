@@ -51,7 +51,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.PrivacySandboxSdkVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -494,7 +494,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
     }
     /** Creates the lint Report Task for Privacy Sandbox Sdk. */
-    class PrivacySandboxSdkReportingCreationAction(variantScope: PrivacySandboxSdkVariantScope) : PrivacySandboxSdkLintTaskCreationAction(variantScope) {
+    class PrivacySandboxSdkReportingCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope)
+        : PrivacySandboxSdkLintTaskCreationAction(variantScope) {
 
         override val name: String = "lintReport"
         override val fatalOnly: Boolean get() = false
@@ -535,7 +537,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     }
 
     /** Creates the lintFix task for Privacy Sandbox SDK . */
-    class PrivacySandboxSdkFixCreationAction(variantScope: PrivacySandboxSdkVariantScope) : PrivacySandboxSdkLintTaskCreationAction(variantScope) {
+    class PrivacySandboxSdkFixCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope)
+        : PrivacySandboxSdkLintTaskCreationAction(variantScope) {
         override val name: String = "lintFix"
         override val fatalOnly: Boolean get() = false
         override val autoFix: Boolean get() = true
@@ -576,7 +580,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     }
 
     /** CreationAction for the lintVital task for Privacy Sandbox Sdk. */
-    class PrivacySandboxLintVitalCreationAction(variantScope: PrivacySandboxSdkVariantScope) :
+    class PrivacySandboxLintVitalCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope) :
         PrivacySandboxSdkLintTaskCreationAction(variantScope) {
         override val name: String = "lintVitalReport"
         override val fatalOnly: Boolean get() = true
@@ -612,7 +617,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
     }
 
-    class PrivacySandboxSdkUpdateBaselineCreationAction(variantScope: PrivacySandboxSdkVariantScope,
+    class PrivacySandboxSdkUpdateBaselineCreationAction(
+        variantScope: PrivacySandboxSdkVariantScope,
     ) : PrivacySandboxSdkLintTaskCreationAction(variantScope) {
         override val name: String = "updateLintBaseline"
         override val fatalOnly: Boolean get() = false
@@ -626,8 +632,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
     }
 
-    abstract class PrivacySandboxSdkLintTaskCreationAction(variantScope: PrivacySandboxSdkVariantScope)
-        : PrivacySandboxSdkTaskCreationAction<AndroidLintTask>(variantScope) {
+    abstract class PrivacySandboxSdkLintTaskCreationAction(
+        private val variantScope: PrivacySandboxSdkVariantScope)
+        : PrivacySandboxSdkVariantTaskCreationAction<AndroidLintTask>() {
         final override val type: Class<AndroidLintTask> get() = AndroidLintTask::class.java
 
         abstract val fatalOnly: Boolean

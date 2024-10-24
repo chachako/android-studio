@@ -24,12 +24,11 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
 import com.android.build.gradle.internal.tasks.Workers
-import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.resources.CopyToOutputDirectoryResourceCompilationService
 import com.android.ide.common.workers.WorkerExecutorFacade
-import org.gradle.api.attributes.Usage
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
@@ -99,8 +98,8 @@ abstract class FusedLibraryMergeResourcesTask : NonIncrementalGlobalTask() {
                 logger = logger)
     }
 
-    class CreationAction(val creationConfig: FusedLibraryGlobalScope) :
-            TaskCreationAction<FusedLibraryMergeResourcesTask>() {
+    class CreationAction(private val creationConfig: FusedLibraryGlobalScope) :
+        GlobalTaskCreationAction<FusedLibraryMergeResourcesTask>() {
 
         override val name: String
             get() = "mergeResources"

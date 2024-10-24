@@ -199,8 +199,8 @@ abstract class ManagedDeviceInstrumentationTestSetupTask: NonIncrementalGlobalTa
         private val hardwareProfile: String,
         private val managedDeviceName: String,
         private val require64Bit: Boolean,
-        creationConfig: GlobalTaskCreationConfig
-    ) : GlobalTaskCreationAction<ManagedDeviceInstrumentationTestSetupTask>(creationConfig) {
+        private val creationConfig: GlobalTaskCreationConfig
+    ) : GlobalTaskCreationAction<ManagedDeviceInstrumentationTestSetupTask>() {
 
         constructor(
             name: String,

@@ -22,9 +22,9 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.namespaced.NamespaceRewriter
 import com.android.build.gradle.internal.services.SymbolTableBuildService
-import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.NonIncrementalTask
+import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.utils.toImmutableList
 import com.android.buildanalyzer.common.TaskCategory
@@ -56,7 +56,7 @@ import java.io.File
  */
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.COMPILED_CLASSES, secondaryTaskCategories = [TaskCategory.SOURCE_PROCESSING])
-abstract class FusedLibraryClassesRewriteTask : NonIncrementalTask() {
+abstract class FusedLibraryClassesRewriteTask : NonIncrementalGlobalTask() {
 
     @get:OutputDirectory
     abstract val rewrittenClassesDirectory: DirectoryProperty
@@ -123,7 +123,7 @@ abstract class FusedLibraryClassesRewriteTask : NonIncrementalTask() {
     }
 
     class CreationAction(val creationConfig: FusedLibraryGlobalScope) :
-        AndroidVariantTaskCreationAction<FusedLibraryClassesRewriteTask>() {
+        GlobalTaskCreationAction<FusedLibraryClassesRewriteTask>() {
 
         override val name: String
             get() = "rewriteClasses"

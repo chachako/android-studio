@@ -180,7 +180,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
         if (!mergedArtProfile.isPresent || !mergedArtProfile.get().asFile.exists()) return
 
         workerExecutor.noIsolation().submit(CompileArtProfileWorkAction::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.mergedArtProfile.set(mergedArtProfile)
             it.dexFolders.from(dexFolders)
             if (useMappingFile.get()) {

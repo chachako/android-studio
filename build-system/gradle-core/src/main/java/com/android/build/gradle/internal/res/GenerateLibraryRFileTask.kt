@@ -41,7 +41,6 @@ import com.android.ide.common.symbols.SymbolTable
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -120,7 +119,7 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
 
     override fun doTaskAction(inputChanges: InputChanges) {
         workerExecutor.noIsolation().submit(GenerateLibRFileRunnable::class.java) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.localResourcesFile.set(localResourcesFile)
             it.androidJar.from(platformAttrRTxt)
             it.dependencies.from(dependencies)

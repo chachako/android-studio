@@ -109,7 +109,7 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
         workerExecutor.noIsolation().submit(
             L8DexWorkAction::class.java
         ) {
-            it.initializeFromAndroidVariantTask(this)
+            it.initializeFromBaseTask(this)
             it.desugarLibJar.from(desugarLibJar)
             it.desugarLibDex.set(desugarLibDex)
             it.libConfiguration.set(libConfiguration)
