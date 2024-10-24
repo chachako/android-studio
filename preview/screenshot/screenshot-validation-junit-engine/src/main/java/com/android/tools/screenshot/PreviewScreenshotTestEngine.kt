@@ -152,7 +152,6 @@ class PreviewScreenshotTestEngine : TestEngine {
         testDisplayName: String,
         startTime: Long
     ): PreviewResult {
-        // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
         val referencePath = Path(parameters.referenceImageDirPath).resolve(composeScreenshot.imagePath)
         val actualPath = Path("${parameters.renderTaskOutputDir}").resolve(composeScreenshot.imagePath)
         val diffPath = Paths.get(parameters.diffImageDirPath, composeScreenshot.imagePath)
