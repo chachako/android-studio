@@ -17,6 +17,9 @@
 package com.android.tools.apk.analyzer;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
+import com.android.tools.apk.analyzer.dex.ProguardMappings;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -49,6 +52,16 @@ public interface Archive extends AutoCloseable {
      * profile binary file.
      */
     boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content);
+
+    /**
+     * Loads a Proguard Mapping File
+     *
+     * @return The contents of the Proguard mapping file if found. Otherwise, null.
+     */
+    @Nullable
+    default ProguardMappings loadProguardMapping() {
+        return null;
+    }
 
     /** Closes the archive file */
     @Override

@@ -18,12 +18,19 @@ package com.android.tools.apk.analyzer.internal;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.tools.apk.analyzer.Archive;
+import com.android.tools.apk.analyzer.dex.ProguardMappings;
+import com.android.tools.proguard.ProguardMap;
 import com.android.utils.FileUtils;
 import com.android.utils.XmlUtils;
+
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.ParseException;
 
 /**
  * Implementation of {@link Archive} for an &quot;Android App Bundle&quot; zip file.
@@ -44,6 +51,9 @@ public class AppBundleArchive extends AbstractArchive {
                     "/BUNDLE-METADATA/%s/%s",
                     SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_AAB,
                     SdkConstants.FN_BINARY_ART_PROFILE_METADATA);
+
+    private static final String BUNDLE_PROGUARD_MAPPING_PATh =
+            "/BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map";
 
     @NonNull private final FileSystem zipFileSystem;
 
@@ -96,6 +106,21 @@ public class AppBundleArchive extends AbstractArchive {
 
         return path.equals(BUNDLE_BASELINE_PROFILE_PATH)
                 || path.equals(BUNDLE_BASELINE_PROFILE_METADATA_PATH);
+    }
+
+    @Override
+    @Nullable
+    public ProguardMappings loadProguardMapping() {
+        Path path = getContentRoot().resolve(BUNDLE_PROGUARD_MAPPING_PATh);
+        try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(path))) {
+            ProguardMap proguardMap = new ProguardMap();
+            proguardMap.readFromReader(reader);
+            return new ProguardMappings(proguardMap, null, null);
+        } catch (IOException e) {
+            return null;
+        } catch (ParseException e) {
+            throw new RuntimeException("Invalid Proguard mapping file", e);
+        }
     }
 
     private static boolean isManifestFile(@NonNull Path p) {
