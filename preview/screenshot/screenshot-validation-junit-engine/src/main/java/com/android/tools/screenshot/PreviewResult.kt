@@ -17,7 +17,6 @@
 package com.android.tools.screenshot
 
 import com.android.tools.render.compose.ImagePathOrMessage
-import java.nio.file.Path
 
 /*
 * Result of a rendered preview that indicates if the preview was rendered successfully

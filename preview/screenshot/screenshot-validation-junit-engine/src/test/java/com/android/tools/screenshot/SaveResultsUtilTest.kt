@@ -22,7 +22,6 @@ import com.android.tools.render.compose.RenderProblem
 import com.android.tools.render.compose.ScreenshotError
 import com.google.common.truth.Truth.assertThat
 import java.io.File
-import java.nio.file.Path
 import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.Test
