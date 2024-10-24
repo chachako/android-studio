@@ -203,6 +203,7 @@ dependencies {
     testImplementation libs.truth_java8_extension
     testImplementation libs.kotlin_test
     testImplementation libs.mockito_core
+    testImplementation libs.mockito_kotlin
     testImplementation libs.guava
     testImplementation libs.grpc_testing
     testImplementation libs.jimfs
