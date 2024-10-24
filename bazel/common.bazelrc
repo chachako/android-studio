@@ -106,11 +106,6 @@ build --tool_java_runtime_version=jdk17
 
 # Use prebuilt native toolchain
 build --crosstool_top=@native_toolchain//:toolchain
-
-# cpp sandbox is very slow on mac and linux
-build --strategy=CppCompile=local
-build --strategy=CppLink=local
-build --strategy=CcStrip=local
 build --stripopt=--strip-unneeded
 
 # lnzipper expects workspace filesystem state (i.e. symlinks) which may not
@@ -199,8 +194,6 @@ build:rcache_no_sponge --config=_rcache
 ## Enables remote execution so actions are performed on the remote systems.
 build:remote-exec --remote_executor=remotebuildexecution.googleapis.com
 build:remote-exec --remote_timeout=3600
-build:remote-exec --strategy=CppCompile=remote
-build:remote-exec --strategy=CppLink=remote
 build:remote-exec --show_timestamps
 # Depending on how many machines are in the remote execution instance, setting
 # this higher can make builds faster by allowing more jobs to run in parallel.
