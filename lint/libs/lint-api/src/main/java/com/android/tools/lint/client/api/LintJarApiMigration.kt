@@ -949,8 +949,7 @@ class LintJarApiMigration(private val client: LintClient) {
       }
 
       if (
-        (cn.name == "androidx/navigation/lint/common/LintUtilKt" ||
-          cn.name == "androidx/navigation/common/lint/LintUtilKt") &&
+        cn.name.startsWith("androidx/navigation/") &&
           (method.name == "isClassReference" || method.name == "isClassReference\$default")
       ) {
         if (handleLintUtilRedirection(method)) {
