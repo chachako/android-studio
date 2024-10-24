@@ -219,15 +219,13 @@ cc_toolchain_config(
         "-no-canonical-prefixes",
         "-undefined",
         "dynamic_lookup",
+        "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib",
+        "-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
     ] + select({
         "@platforms//cpu:arm64": [
-            "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
-            "-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks",
             "--target=arm64-apple-macos11",
         ],
         "@platforms//cpu:x86_64": [
-            "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib",
-            "-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
             "--target=x86_64-apple-macos11",
         ],
     }),
