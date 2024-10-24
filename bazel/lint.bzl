@@ -1,8 +1,17 @@
 """This module implements the lint_test rule."""
 
 script_template = """\
-#!/bin/bash
+:<<"::CMDLITERAL"
+@ECHO OFF
+GOTO :CMDSCRIPT
+::CMDLITERAL
+
 {binary} {xml} {baseline} {extraArgs}
+exit $?
+:CMDSCRIPT
+
+{win_binary} {win_xml} {win_baseline} {extraArgs}
+EXIT /B %ERRORLEVEL%
 """
 
 def _lint_test_impl(ctx):
@@ -44,8 +53,11 @@ def _lint_test_impl(ctx):
         output = ctx.outputs.launcher_script,
         content = script_template.format(
             binary = ctx.executable._binary.short_path,
+            win_binary = ctx.executable._binary.short_path.replace("/", "\\"),
             xml = ctx.outputs.project_xml.short_path,
+            win_xml = ctx.outputs.project_xml.short_path.replace("/", "\\"),
             baseline = "--lint-baseline " + ctx.file.baseline.path if ctx.file.baseline else "",
+            win_baseline = "--lint-baseline " + ctx.file.baseline.path.replace("/", "\\") if ctx.file.baseline else "",
             extraArgs = " ".join(ctx.attr.extra_args),
         ),
         is_executable = True,
@@ -86,7 +98,7 @@ lint_test = rule(
         ),
     },
     outputs = {
-        "launcher_script": "%{name}.sh",
+        "launcher_script": "%{name}.cmd",
         "project_xml": "%{name}_project.xml",
     },
     implementation = _lint_test_impl,

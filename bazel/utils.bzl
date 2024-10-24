@@ -234,7 +234,7 @@ def _replace_manifest_iml(ctx):
     ctx.actions.run_shell(
         inputs = [ctx.file.original_jar, ctx.file.manifest] + ctx.files._jdk,
         outputs = [ctx.outputs.output_jar],
-        command = "cp {input} {output}; {jar} ufm {output} {manifest}".format(
+        command = "cp {input} {output}; chmod +w {output}; {jar} ufm {output} {manifest}".format(
             input = ctx.file.original_jar.path,
             output = ctx.outputs.output_jar.path,
             jar = jar_path,
