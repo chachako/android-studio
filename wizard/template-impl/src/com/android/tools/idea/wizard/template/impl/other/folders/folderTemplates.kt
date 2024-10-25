@@ -177,12 +177,6 @@ internal val folderTemplates = listOf(
     SourceSetType.RESOURCES,
     "resources"
   ),
-  getSourceSetFolderTemplate(
-    "RenderScript Folder",
-    "Creates a source root for RenderScript files",
-    SourceSetType.RENDERSCRIPT,
-    "rs"
-  ),
   getSimpleFolderTemplate(
     "XML Resources Folder",
     "Creates a folder for arbitrary XML files to be included in the APK",
