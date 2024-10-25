@@ -60,7 +60,6 @@ import com.android.tools.idea.wizard.template.impl.other.broadcastReceiver.broad
 import com.android.tools.idea.wizard.template.impl.other.contentProvider.contentProviderTemplate
 import com.android.tools.idea.wizard.template.impl.other.customView.customViewTemplate
 import com.android.tools.idea.wizard.template.impl.other.files.aidlFile.aidlFileTemplate
-import com.android.tools.idea.wizard.template.impl.other.files.appActionsResourceFile.appActionsResourceFileTemplate
 import com.android.tools.idea.wizard.template.impl.other.files.layoutResourceFile.layoutResourceFileTemplate
 import com.android.tools.idea.wizard.template.impl.other.files.shortcutResourceFile.shortcutsResourceFileTemplate
 import com.android.tools.idea.wizard.template.impl.other.files.valueResourceFile.valueResourceFileTemplate
@@ -124,7 +123,6 @@ class WizardTemplateProviderImpl : WizardTemplateProvider() {
 
   private val fileTemplates = listOf(
     aidlFileTemplate,
-    appActionsResourceFileTemplate,
     layoutResourceFileTemplate,
     shortcutsResourceFileTemplate,
     valueResourceFileTemplate
