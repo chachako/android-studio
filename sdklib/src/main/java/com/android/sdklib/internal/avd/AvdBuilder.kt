@@ -156,8 +156,10 @@ class AvdBuilder(var metadataIniPath: Path, avdFolder: Path, var device: Device)
         AvdBuilder::screenOrientation bindToKey HardwareProperties.HW_INITIAL_ORIENTATION,
         AvdBuilder::showDeviceFrame bindToKey ConfigKey.SHOW_DEVICE_FRAME,
         AvdBuilder::cpuCoreCount bindToKey ConfigKey.CPU_CORES,
-        AvdBuilder::ram bindVia StorageConverter() toKey ConfigKey.RAM_SIZE,
-        AvdBuilder::vmHeap bindVia StorageConverter() toKey ConfigKey.VM_HEAP_SIZE,
+        AvdBuilder::ram bindVia StorageConverter(allowUnitSuffix = false) toKey ConfigKey.RAM_SIZE,
+        AvdBuilder::vmHeap bindVia
+          StorageConverter(allowUnitSuffix = false) toKey
+          ConfigKey.VM_HEAP_SIZE,
         AvdBuilder::internalStorage bindVia
           StorageConverter(defaultUnit = Storage.Unit.B) toKey
           ConfigKey.DATA_PARTITION_SIZE,

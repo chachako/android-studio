@@ -19,6 +19,7 @@ import com.android.prefs.AbstractAndroidLocations
 import com.android.repository.testframework.FakeProgressIndicator
 import com.android.resources.ScreenOrientation
 import com.android.sdklib.devices.DeviceManager
+import com.android.sdklib.devices.Storage
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.testutils.file.createInMemoryFileSystem
 import com.android.testutils.file.recordExistingFile
@@ -76,6 +77,16 @@ class AvdBuilderTest {
 
       assertThat(bootMode).isEqualTo(QuickBoot)
     }
+  }
+
+  @Test
+  fun memory() {
+    val builder = createPixel8Builder()
+    builder.ram = Storage(4, Storage.Unit.GiB)
+    builder.vmHeap = Storage(1, Storage.Unit.GiB)
+
+    assertThat(builder.configProperties()).containsEntry(ConfigKey.RAM_SIZE, "4096")
+    assertThat(builder.configProperties()).containsEntry(ConfigKey.VM_HEAP_SIZE, "1024")
   }
 
   @Test
