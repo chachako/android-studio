@@ -2301,17 +2301,6 @@
     </issue>
 
     <issue
-        id="UseValueOf"
-        message="Use `Long.valueOf(22)` instead"
-        errorLine1="        assertThat(parseInteger(new Long(22))).isEqualTo(22);"
-        errorLine2="                                ~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/options/ProjectOptionsTest.java"
-            line="158"
-            column="33"/>
-    </issue>
-
-    <issue
         id="FileComparisons"
         message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
         errorLine1="                    assertThat(compiler === lastCompiler).isTrue()"

@@ -154,8 +154,7 @@ public class ProjectOptionsTest {
 
         assertThat(parseInteger("20")).isEqualTo(20);
         assertThat(parseInteger(21)).isEqualTo(21);
-        //noinspection UnnecessaryBoxing
-        assertThat(parseInteger(new Long(22))).isEqualTo(22);
+        assertThat(parseInteger(22L)).isEqualTo(22);
         assertThat(parseInteger(asGroovyString(23))).isEqualTo(23);
 
         try {
