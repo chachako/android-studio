@@ -18,6 +18,8 @@ package com.android.tools.render
 
 import com.android.ide.common.rendering.api.Result
 import com.android.testutils.TestUtils
+import com.android.testutils.ignore.IgnoreWithCondition
+import com.android.testutils.ignore.OnWindows
 import com.android.tools.rendering.RenderService
 import com.android.tools.sdk.AndroidTargetData
 import com.android.tools.sdk.EmbeddedRenderTarget
@@ -63,6 +65,10 @@ class RendererTest {
         AndroidTargetData.clearCache()
     }
 
+    @IgnoreWithCondition(
+        reason = "b/375482431 This test is 10% flaky on windows",
+        condition = OnWindows::class
+    )
     @Test
     fun testSimpleLayoutRendering() {
         // language=xml
