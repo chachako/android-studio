@@ -60008,10 +60008,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-foundation-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-foundation-242/0.26.0/jewel-foundation-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-foundation-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-foundation-242/0.26.2/jewel-foundation-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-foundation-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-foundation-242/0.26.2",
     deps = [
         "org.jetbrains.compose.foundation.foundation-desktop_1.7.0",
     ],
@@ -60019,93 +60019,93 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-242/0.26.0/jewel-ide-laf-bridge-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-242/0.26.2/jewel-ide-laf-bridge-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-ui-242_0.26.0",
+        "org.jetbrains.jewel.jewel-ui-242_0.26.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-int-ui-standalone-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone-242/0.26.0/jewel-int-ui-standalone-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-int-ui-standalone-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone-242/0.26.2/jewel-int-ui-standalone-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-ui-242_0.26.0",
+        "org.jetbrains.jewel.jewel-ui-242_0.26.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-markdown-core-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-markdown-core-242/0.26.0/jewel-markdown-core-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-markdown-core-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-markdown-core-242/0.26.2/jewel-markdown-core-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-markdown-core-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-markdown-core-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-ui-242_0.26.0",
+        "org.jetbrains.jewel.jewel-ui-242_0.26.2",
         "org.commonmark.commonmark_0.22.0",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-markdown-extension-autolink-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-markdown-extension-autolink-242/0.26.0/jewel-markdown-extension-autolink-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-markdown-extension-autolink-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-markdown-extension-autolink-242/0.26.2/jewel-markdown-extension-autolink-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-markdown-extension-autolink-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-markdown-extension-autolink-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.0",
+        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.2",
         "org.commonmark.commonmark-ext-autolink_0.22.0",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-markdown-extension-gfm-alerts-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-markdown-extension-gfm-alerts-242/0.26.0/jewel-markdown-extension-gfm-alerts-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-markdown-extension-gfm-alerts-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-markdown-extension-gfm-alerts-242/0.26.2/jewel-markdown-extension-gfm-alerts-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-markdown-extension-gfm-alerts-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-markdown-extension-gfm-alerts-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.0",
+        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-markdown-ide-laf-bridge-styling-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-markdown-ide-laf-bridge-styling-242/0.26.0/jewel-markdown-ide-laf-bridge-styling-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-markdown-ide-laf-bridge-styling-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-markdown-ide-laf-bridge-styling-242/0.26.2/jewel-markdown-ide-laf-bridge-styling-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-markdown-ide-laf-bridge-styling-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-markdown-ide-laf-bridge-styling-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.0",
-        "org.jetbrains.jewel.jewel-ide-laf-bridge-242_0.26.0",
+        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.2",
+        "org.jetbrains.jewel.jewel-ide-laf-bridge-242_0.26.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-markdown-int-ui-standalone-styling-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-markdown-int-ui-standalone-styling-242/0.26.0/jewel-markdown-int-ui-standalone-styling-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-markdown-int-ui-standalone-styling-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-markdown-int-ui-standalone-styling-242/0.26.2/jewel-markdown-int-ui-standalone-styling-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-markdown-int-ui-standalone-styling-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-markdown-int-ui-standalone-styling-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.0",
-        "org.jetbrains.jewel.jewel-int-ui-standalone-242_0.26.0",
+        "org.jetbrains.jewel.jewel-markdown-core-242_0.26.2",
+        "org.jetbrains.jewel.jewel-int-ui-standalone-242_0.26.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ui-242_0.26.0",
-    pom = "repository/org/jetbrains/jewel/jewel-ui-242/0.26.0/jewel-ui-242-0.26.0.pom",
+    name = "org.jetbrains.jewel.jewel-ui-242_0.26.2",
+    pom = "repository/org/jetbrains/jewel/jewel-ui-242/0.26.2/jewel-ui-242-0.26.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ui-242/0.26.0",
+    repo_path = "org/jetbrains/jewel/jewel-ui-242/0.26.2",
     deps = [
-        "org.jetbrains.jewel.jewel-foundation-242_0.26.0",
+        "org.jetbrains.jewel.jewel-foundation-242_0.26.2",
         "org.jetbrains.compose.components.components-resources-desktop_1.7.0",
     ],
     visibility = ["//visibility:public"],
@@ -70021,12 +70021,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko-awt-runtime-linux-x64_0.8.15",
-    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-linux-x64/0.8.15/skiko-awt-runtime-linux-x64-0.8.15.pom",
+    name = "org.jetbrains.skiko.skiko-awt-runtime-linux-x64_0.8.17",
+    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-linux-x64/0.8.17/skiko-awt-runtime-linux-x64-0.8.17.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-linux-x64/0.8.15",
+    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-linux-x64/0.8.17",
     deps = [
-        "org.jetbrains.skiko.skiko-awt_0.8.15",
+        "org.jetbrains.skiko.skiko-awt_0.8.17",
     ],
     visibility = ["//visibility:public"],
 )
@@ -70040,12 +70040,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko-awt-runtime-macos-arm64_0.8.15",
-    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-macos-arm64/0.8.15/skiko-awt-runtime-macos-arm64-0.8.15.pom",
+    name = "org.jetbrains.skiko.skiko-awt-runtime-macos-arm64_0.8.17",
+    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-macos-arm64/0.8.17/skiko-awt-runtime-macos-arm64-0.8.17.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-macos-arm64/0.8.15",
+    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-macos-arm64/0.8.17",
     deps = [
-        "org.jetbrains.skiko.skiko-awt_0.8.15",
+        "org.jetbrains.skiko.skiko-awt_0.8.17",
     ],
     visibility = ["//visibility:public"],
 )
@@ -70059,12 +70059,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko-awt-runtime-macos-x64_0.8.15",
-    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-macos-x64/0.8.15/skiko-awt-runtime-macos-x64-0.8.15.pom",
+    name = "org.jetbrains.skiko.skiko-awt-runtime-macos-x64_0.8.17",
+    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-macos-x64/0.8.17/skiko-awt-runtime-macos-x64-0.8.17.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-macos-x64/0.8.15",
+    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-macos-x64/0.8.17",
     deps = [
-        "org.jetbrains.skiko.skiko-awt_0.8.15",
+        "org.jetbrains.skiko.skiko-awt_0.8.17",
     ],
     visibility = ["//visibility:public"],
 )
@@ -70078,12 +70078,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko-awt-runtime-windows-x64_0.8.15",
-    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.8.15/skiko-awt-runtime-windows-x64-0.8.15.pom",
+    name = "org.jetbrains.skiko.skiko-awt-runtime-windows-x64_0.8.17",
+    pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.8.17/skiko-awt-runtime-windows-x64-0.8.17.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.8.15",
+    repo_path = "org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.8.17",
     deps = [
-        "org.jetbrains.skiko.skiko-awt_0.8.15",
+        "org.jetbrains.skiko.skiko-awt_0.8.17",
     ],
     visibility = ["//visibility:public"],
 )
@@ -70107,6 +70107,18 @@ maven_artifact(
     pom = "repository/org/jetbrains/skiko/skiko-awt/0.8.15/skiko-awt-0.8.15.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/skiko/skiko-awt/0.8.15",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.skiko.skiko-awt_0.8.17",
+    pom = "repository/org/jetbrains/skiko/skiko-awt/0.8.17/skiko-awt-0.8.17.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/skiko/skiko-awt/0.8.17",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0",
