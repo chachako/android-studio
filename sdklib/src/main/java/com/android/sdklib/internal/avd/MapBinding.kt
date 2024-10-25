@@ -143,11 +143,16 @@ internal class StorageConverter(
   val defaultUnit: Storage.Unit = Storage.Unit.MiB,
   val allowUnitSuffix: Boolean = true,
 ) : ValueConverter<Storage> {
+  init {
+    check(defaultUnit != Storage.Unit.TiB)
+  }
+
   override fun fromString(string: String): Storage? =
     Storage.getStorageFromString(string, defaultUnit)
 
   override fun toString(value: Storage): String {
-    val unit = if (allowUnitSuffix) value.appropriateUnits else defaultUnit
+    val unit =
+      if (allowUnitSuffix) value.appropriateUnits.coerceAtMost(Storage.Unit.GiB) else defaultUnit
     val unitString = if (unit == defaultUnit) "" else unit.toString().substring(0, 1)
     return "${value.getSizeAsUnit(unit)}$unitString"
   }

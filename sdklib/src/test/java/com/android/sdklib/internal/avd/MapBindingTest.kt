@@ -96,6 +96,7 @@ class MapBindingTest {
       assertThat(it.toString(Storage(30, Storage.Unit.KiB))).isEqualTo("30K")
       assertThat(it.toString(Storage(30, Storage.Unit.MiB))).isEqualTo("30")
       assertThat(it.toString(Storage(30, Storage.Unit.GiB))).isEqualTo("30G")
+      assertThat(it.toString(Storage(1024, Storage.Unit.GiB))).isEqualTo("1024G")
     }
     StorageConverter(defaultUnit = Storage.Unit.MiB, allowUnitSuffix = false).let {
       assertThat(it.toString(Storage(30, Storage.Unit.B))).isEqualTo("0")
