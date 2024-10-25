@@ -36,7 +36,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import org.gradle.api.tasks.util.PatternSet
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -80,7 +79,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
             val filteredResults = if (!filterPattens.get().isNullOrEmpty()) {
                 results.filter { result ->
                     filterPattens.get().any { pattern ->
-                        result.methodFQN.matches(Regex(pattern.replace("*", ".*")))
+                        result.methodFQN.matches(wildcardToRegex(pattern))
                     }
                 }
             } else results
@@ -90,6 +89,34 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         } else {
             this.logger.lifecycle("No reference images were updated because no previews were found.")
         }
+    }
+
+    /**
+     * Converts a wildcard pattern to a regular expression.
+     *
+     * This method takes a string containing a wildcard pattern and converts it into
+     * a regular expression that can be used for pattern matching.
+     *
+     * For example:
+     * - The wildcard pattern "ab*cd*ef" is converted to the regular expression "ab.*cd.*ef".
+     * - The wildcard pattern "*com.example*" is converted to the regular expression ".*com\.example.*".
+     * 
+     * Reference from https://github.com/gradle/gradle/blob/2afedb20b3ba147a16c82a0221399fbf0527a21b/platforms/software/testing-base-infrastructure/src/main/java/org/gradle/api/internal/tasks/testing/filter/TestSelectionMatcher.java#L167
+     */
+    private fun wildcardToRegex(input: String): Regex {
+        val pattern = StringBuilder()
+        val split = input.split('*')
+        for ((index, s) in split.withIndex()) {
+            if (s.isEmpty()) {
+                pattern.append(".*")
+            } else {
+                if (index > 0) {
+                    pattern.append(".*")
+                }
+                pattern.append(Regex.escape(s))
+            }
+        }
+        return pattern.toString().toRegex()
     }
 
     private fun removeUnusedRefImages() {

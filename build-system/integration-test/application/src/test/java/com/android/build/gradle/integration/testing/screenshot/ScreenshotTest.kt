@@ -711,7 +711,7 @@ class ScreenshotTest {
                     setTestNameIncludePatterns(['*simpleComposableTest*'])
                 }
                 tasks.named("updateDebugScreenshotTest", PreviewScreenshotUpdateTask) {
-                    setUpdateFilter(["*simpleComposableTest*"])
+                    setUpdateFilter(["*pkg.name.*.simpleComposableTest*"])
                 }
             }
             """.trimIndent()
