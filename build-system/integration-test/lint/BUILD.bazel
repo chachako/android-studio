@@ -1,3 +1,4 @@
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_VERSION_FOR_TESTS")
 load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test")
@@ -12,7 +13,7 @@ DATA = [
 ]
 
 # keep sorted
-DEPS = [
+DEPS_WITHOUT_UTILS = [
     "//tools/base/annotations",
     "//tools/base/build-system:gradle-api",
     "//tools/base/build-system/builder",
@@ -40,6 +41,18 @@ MAVEN_REPOS = [
     "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
 ]
 
+UTILS = [
+    "src/test/java/com/android/build/gradle/integration/lint/createGradleTestProject.kt",
+]
+
+kotlin_library(
+    name = "utils",
+    srcs = glob(include = UTILS),
+    deps = DEPS_WITHOUT_UTILS,
+)
+
+DEPS = DEPS_WITHOUT_UTILS + [":utils"]
+
 LONG_RUNNING_TESTS = [
     "src/test/java/com/android/build/gradle/integration/lint/AndroidLintAnalysisTaskTest.kt",
     "src/test/java/com/android/build/gradle/integration/lint/LintFixTest.java",
@@ -49,6 +62,22 @@ LONG_RUNNING_TESTS = [
 
 KOTLIN_MULTIPLATFORM_TESTS = [
     "src/test/java/com/android/build/gradle/integration/lint/KotlinMultiplatformAndroidLintTest.kt",
+]
+
+LINT_DYNAMIC_FEATURE_TEST = [
+    "src/test/java/com/android/build/gradle/integration/lint/LintDynamicFeatureTest.kt",
+]
+
+LINT_ALIGN_UAST_TEST = [
+    "src/test/java/com/android/build/gradle/integration/lint/LintAlignUastWithLanguageVersionTest.kt",
+]
+
+LINT_CLASSLOADER_TEST = [
+    "src/test/java/com/android/build/gradle/integration/lint/LintClassLoaderTest.kt",
+]
+
+LINT_ANALYSIS_CACHEABILITY_TEST = [
+    "src/test/java/com/android/build/gradle/integration/lint/AndroidLintAnalysisTaskCacheabilityTest.kt",
 ]
 
 PRIVACY_SANDBOX_SDK_TESTS = [
@@ -103,6 +132,53 @@ gradle_integration_test(
 )
 
 gradle_integration_test(
+    name = "LintDynamicFeatureTest",
+    srcs = glob(
+        include = LINT_DYNAMIC_FEATURE_TEST,
+    ),
+    data = DATA + [
+        "//tools/base/build-system/integration-test:test-projects/dynamicApp",
+    ],
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
+gradle_integration_test(
+    name = "LintAlighUastWithLanguageVersionTest",
+    srcs = glob(
+        include = LINT_ALIGN_UAST_TEST,
+    ),
+    data = DATA,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    shard_count = 3,
+    deps = DEPS,
+)
+
+gradle_integration_test(
+    name = "LintClassLoaderTest",
+    srcs = glob(
+        include = LINT_CLASSLOADER_TEST,
+    ),
+    data = DATA,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
+gradle_integration_test(
+    name = "AndroidLintAnalysisTaskCacheabilityTest",
+    srcs = glob(
+        include = LINT_ANALYSIS_CACHEABILITY_TEST,
+    ),
+    data = DATA,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
+gradle_integration_test(
     name = "tests",
     timeout = "long",
     srcs = glob(
@@ -110,10 +186,9 @@ gradle_integration_test(
             "src/test/java/**/*.java",
             "src/test/java/**/*.kt",
         ],
-        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS + PRIVACY_SANDBOX_SDK_TESTS,
+        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS + PRIVACY_SANDBOX_SDK_TESTS + LINT_DYNAMIC_FEATURE_TEST + LINT_ALIGN_UAST_TEST + LINT_CLASSLOADER_TEST + LINT_ANALYSIS_CACHEABILITY_TEST + UTILS,
     ),
     data = DATA + [
-        "//tools/base/build-system/integration-test:test-projects/dynamicApp",
         "//tools/base/build-system/integration-test:test-projects/lintBaseline",
         "//tools/base/build-system/integration-test:test-projects/lintCustomLocalAndPublishRules",
         "//tools/base/build-system/integration-test:test-projects/lintCustomRules",
