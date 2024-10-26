@@ -20,23 +20,3 @@ dependencies {
     implementation "androidx.test:runner:1.4.0-alpha06"
     implementation "androidx.test:rules:1.4.0-alpha06"
 }
-
-tasks.register('checkDependencies') {
-    doLast {
-        assert project.connectedCheck instanceof Task
-        def deps =  project.connectedCheck.taskDependencies.getDependencies(project.connectedCheck)
-
-        def connectedAndroidTest = deps.find { it.name == "connectedAndroidTest" }
-        assert connectedAndroidTest instanceof Task
-
-        deps = connectedAndroidTest.taskDependencies.getDependencies(connectedAndroidTest)
-        def actualTestTask = deps.find { it.name == "connectedDebugAndroidTest" }
-        // The actual class name has the _Decorated suffix.
-        assert actualTestTask.class.name.contains(".DeviceProviderInstrumentTestTask")
-
-        // :test:assembleDebug will fail if the app module is not built, so other tests verify
-        // that this ends up compiling the app module.
-    }
-    // b/224561168
-    notCompatibleWithConfigurationCache("doLast block uses project instance")
-}

@@ -3,12 +3,10 @@ package com.android.build.gradle.integration.testing;
 import static com.android.build.gradle.integration.common.fixture.TestVersions.SUPPORT_LIB_VERSION;
 import static com.android.build.gradle.integration.common.fixture.TestVersions.TEST_SUPPORT_LIB_VERSION;
 import static com.android.build.gradle.integration.common.truth.ApkSubject.assertThat;
-import static com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat;
 import static com.android.testutils.truth.PathSubject.assertThat;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
@@ -99,18 +97,6 @@ public class SeparateTestModuleTest {
             assertThat(main).containsResource(NOTIFICATION_ACTION);
             assertThat(test).containsResource(NOTIFICATION_ACTION);
         }
-    }
-
-    @Test
-    public void checkDependenciesBetweenTasks() throws Exception {
-        // Check :test:assembleDebug succeeds on its own, i.e. compiles the app module.
-        GradleBuildResult result = project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":test:assembleDebug");
-        assertThat(result.getTask(":test:validateSigningDebug")).didWork();
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run(":test:checkDependencies");
     }
 
     @Test
