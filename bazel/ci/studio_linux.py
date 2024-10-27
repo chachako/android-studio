@@ -45,7 +45,6 @@ _EXTRA_TARGETS = [
     '//tools/vendor/google/asfp/studio:asfp.deb',
     '//tools/vendor/intel:android-studio-intel-haxm.zip',
     '//tools/vendor/google/ml:aiplugin',
-    '//tools/vendor/google/ml:studiobot-dogfood-plugin',
     '//tools/adt/idea/aswb/aswb:aswb_bazel_zip',
 ]
 
@@ -70,7 +69,6 @@ _ARTIFACTS = [
     ('tools/vendor/google/skia/skiaparser.zip', 'artifacts'),
     ('tools/vendor/google/skia/skia_test_support.zip', 'artifacts'),
     ('tools/vendor/google/ml/aiplugin*.zip', 'artifacts'),
-    ('tools/vendor/google/ml/studiobot-dogfood-plugin*.zip', 'artifacts'),
 
     ('tools/base/sdklib/commandlinetools_*.zip', 'artifacts'),
     ('tools/base/ddmlib/tools.ddmlib.jar', 'artifacts/ddmlib.jar'),
