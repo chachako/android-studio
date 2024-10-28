@@ -3093,7 +3093,8 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
     //      .expectFixDiffs("")
   }
 
-  fun test_splitToWebAndCustomSchemes() {
+  // TODO(b/375352603): Re-enable this test.
+  /*fun test_splitToWebAndCustomSchemes() {
     lint()
       .files(
         xml(
@@ -3188,5 +3189,5 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       +                 <data android:path="@string/path" />
       """
       )
-  }
+  }*/
 }

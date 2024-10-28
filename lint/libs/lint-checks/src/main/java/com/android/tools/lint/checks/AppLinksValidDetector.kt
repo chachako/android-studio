@@ -507,7 +507,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           "Missing required elements/attributes for Android App Links",
           fix,
         )
-      } else {
+      }
+      /* else {
         // If intent filter contains both web and non-web schemes
         val webSchemes = intentFilterData.schemes.filter { isWebScheme(it) }
         val customSchemes = intentFilterData.schemes.filterNot { isWebScheme(it) }
@@ -599,7 +600,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             fix().replace().with(replacementText.toString()).build(),
           )
         }
-      }
+      } */
     }
 
     val showMissingSchemeCheck =
