@@ -16,7 +16,6 @@ build:linux --dynamic_local_strategy=worker,sandboxed,local
 #
 common:windows --repo_env=ANDROID_NDK_HOME=$WORKSPACE_ROOT/prebuilts/studio/sdk/windows/ndk/27.0.12077973
 common:windows --repo_env=ANDROID_HOME=prebuilts/studio/sdk/windows
-common:windows --@native_toolchain//:enable_legacy
 
 build:windows --bes_keywords=windows
 build:windows --host_platform=//tools/base/bazel/platforms:windows
