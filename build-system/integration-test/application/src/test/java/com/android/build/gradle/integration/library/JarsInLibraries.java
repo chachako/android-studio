@@ -18,21 +18,22 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.ide.common.process.ProcessException;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
+
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import java.io.File;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 /** Assemble tests for jars inside libraries as assets, res, java res and actual dependencies. */
 public class JarsInLibraries {
@@ -95,9 +96,7 @@ public class JarsInLibraries {
         Files.write(simpleJarDataD, new File(resRawDir, "d1.jar"));
 
         // Run the project.
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "assembleDebug");
+        project.executor().run("clean", "assembleDebug");
     }
 
     @Test

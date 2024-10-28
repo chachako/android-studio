@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.library
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.build.gradle.integration.common.truth.TruthHelper
@@ -42,16 +41,12 @@ class LocalJarsTest : ModelComparator() {
 
     @Test
     fun lint() {
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("lint")
+        project.executor().run("lint")
     }
 
     @Test
     fun checkBuildResult() {
-        val result = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-            .run("clean", "assembleDebug")
+        val result = project.executor().run("clean", "assembleDebug")
         TruthHelper.assertThat(result.getTask(":baseLibrary:noop"))
             .ranBefore(":baseLibrary:copyDebugJniLibsProjectAndLocalJars")
     }

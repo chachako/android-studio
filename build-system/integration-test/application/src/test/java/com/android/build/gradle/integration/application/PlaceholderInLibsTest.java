@@ -17,22 +17,24 @@
 package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ApkSubject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.builder.model.v2.ide.Variant;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
 
 /** Test for unresolved placeholders in libraries. */
 public class PlaceholderInLibsTest {
@@ -45,7 +47,6 @@ public class PlaceholderInLibsTest {
     public void testLibraryPlaceholderSubstitutionInFinalApk()
             throws IOException, InterruptedException {
         project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .run(
                 "clean",
                 ":examplelibrary:generateDebugAndroidTestSources",
@@ -86,8 +87,6 @@ public class PlaceholderInLibsTest {
     @Test
     public void testVerifyResourcesWithLibraryManifestPlaceholders()
             throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("examplelibrary:verifyReleaseResources");
+        project.executor().run("examplelibrary:verifyReleaseResources");
     }
 }

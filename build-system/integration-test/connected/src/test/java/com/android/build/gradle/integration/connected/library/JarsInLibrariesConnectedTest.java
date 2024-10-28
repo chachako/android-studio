@@ -16,21 +16,23 @@
 
 package com.android.build.gradle.integration.connected.library;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.utils.FileUtils;
+
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import java.io.File;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import java.io.File;
+import java.io.IOException;
 
 public class JarsInLibrariesConnectedTest {
     byte[] simpleJarDataA;
@@ -98,23 +100,17 @@ public class JarsInLibrariesConnectedTest {
         Files.write(simpleJarDataD, new File(resRawDir, "d1.jar"));
 
         // Run the project.
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "assembleDebug");
+        project.executor().run("clean", "assembleDebug");
 
         // fail fast if no response
         project.addAdbTimeout();
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("uninstallAll");
+        project.executor().run("uninstallAll");
     }
 
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("connectedCheck");
+        project.executor().run("connectedCheck");
     }
 }

@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.library
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
@@ -105,7 +104,6 @@ class LibWithLocalDepsTest {
 
     private fun executor(): GradleTaskExecutor {
         return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 
     /**

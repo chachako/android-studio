@@ -19,13 +19,16 @@ package com.android.build.gradle.integration.connected.library;
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import java.io.IOException;
 
 public class MultiProjectConnectedTest {
     @Rule
@@ -45,6 +48,7 @@ public class MultiProjectConnectedTest {
 
     @Test
     public void connectedCheckAndReport() throws IOException, InterruptedException {
+        TestFileUtils.appendToFile(project.getBuildFile(), "apply plugin: 'android-reporting'");
         executor().run("connectedCheck");
         // android-reporting plugin currently executes connected tasks.
         executor().run("mergeAndroidReports");

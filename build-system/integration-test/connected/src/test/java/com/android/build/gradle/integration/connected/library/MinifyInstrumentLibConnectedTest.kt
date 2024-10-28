@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.connected.library
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -40,7 +39,6 @@ class MinifyInstrumentLibConnectedTest {
     @Test
     fun testNonMinify() {
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run("lib:connectedAndroidTest")
     }
 
@@ -86,7 +84,6 @@ class MinifyInstrumentLibConnectedTest {
             "android.buildTypes.debug.testProguardFiles('$testProguardFileName')"
         )
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run("lib:connectedAndroidTest")
         // aapt generated keep rules from android test manifest are consumed by R8, regression test
         // for b/328649293

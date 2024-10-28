@@ -1,6 +1,7 @@
 package com.android.build.gradle.integration.application;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
+import static com.google.common.truth.Truth.assertThat;
+
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.truth.ApkSubject;
@@ -9,14 +10,13 @@ import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.builder.model.v2.models.AndroidProject;
+
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-
-import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests for @{applicationId} placeholder presence in library manifest files. Such placeholders
@@ -31,9 +31,7 @@ public class ApplicationIdInLibsTest {
 
     @Test
     public void testLibPlaceholderSubstitutionInFinalApk() throws Exception {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "app:assembleDebug");
+        project.executor().run("clean", "app:assembleDebug");
         ModelContainerV2 outputModels =
                 project.modelV2().fetchModels("debug", null).getContainer();
         assertThat(
@@ -47,9 +45,7 @@ public class ApplicationIdInLibsTest {
                 "manifest_merger_example.flavor",
                 "manifest_merger_example.change");
 
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "app:assembleDebug");
+        project.executor().run("clean", "app:assembleDebug");
         outputModels = project.modelV2().fetchModels("debug", null).getContainer();
         assertThat(
                         checkPermissionPresent(

@@ -18,16 +18,19 @@ package com.android.build.gradle.integration.library;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.utils.XmlUtils;
 import com.android.xml.AndroidXPathFactory;
+
 import com.google.common.io.Files;
-import java.nio.charset.StandardCharsets;
-import javax.xml.xpath.XPath;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
+
+import java.nio.charset.StandardCharsets;
+
+import javax.xml.xpath.XPath;
 
 public class LibsTestTest {
 
@@ -37,9 +40,7 @@ public class LibsTestTest {
 
     @Test
     public void testManifest() throws Exception {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run(":lib1:assembleAndroidTest");
+        project.executor().run(":lib1:assembleAndroidTest");
 
         String manifestContent =
                 Files.toString(

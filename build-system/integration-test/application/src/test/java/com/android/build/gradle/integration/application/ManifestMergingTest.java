@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.android.SdkConstants;
 import com.android.build.api.artifact.SingleArtifact;
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
@@ -69,9 +68,7 @@ public class ManifestMergingTest {
 
     @Test
     public void checkManifestMergingForLibraries() throws Exception {
-        libsTest.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "build");
+        libsTest.executor().run("clean", "build");
         File fileOutput =
                 libsTest.file(
                         "libapp/build/"
@@ -157,9 +154,7 @@ public class ManifestMergingTest {
                     + "        targetSdkVersion 'N'\n"
                     + "    }\n"
                     + "}");
-        libsTest.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:build");
+        libsTest.executor().run("clean", ":app:build");
         assertThat(
                         appProject.file(
                                 "build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml"))
@@ -169,7 +164,6 @@ public class ManifestMergingTest {
                         "android:testOnly=\"true\"");
 
         libsTest.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
                 .with(OptionalBooleanOption.IDE_TEST_ONLY, false)
                 .run(":app:assembleDebug");
 
@@ -193,9 +187,7 @@ public class ManifestMergingTest {
                     + "        targetSdkVersion 15\n"
                     + "    }\n"
                     + "}");
-        libsTest.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:assembleDebug");
+        libsTest.executor().run("clean", ":app:assembleDebug");
         assertThat(
                         appProject.file(
                                 "build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml"))
@@ -234,9 +226,7 @@ public class ManifestMergingTest {
      */
     @Test
     public void checkManifestMergingWithNavigationFiles() throws Exception {
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:assembleF1Debug");
+        navigation.executor().run("clean", ":app:assembleF1Debug");
         File manifestFile =
                 navigation.file(
                         "app/build/intermediates/packaged_manifests/f1Debug/processF1DebugManifestForPackage/AndroidManifest.xml");
@@ -323,9 +313,7 @@ public class ManifestMergingTest {
             TestFileUtils.replaceLine(navigation.getSubproject("app").getBuildFile(), i, "");
         }
 
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:processDebugManifest");
+        navigation.executor().run("clean", ":app:processDebugManifest");
 
         File manifestFile =
                 navigation.file(
@@ -349,9 +337,7 @@ public class ManifestMergingTest {
                 "</activity>",
                 "        <nav-graph android:value=\"@navigation/nav1\"/>\n    </activity>");
 
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":library:assembleDebugAndroidTest");
+        navigation.executor().run("clean", ":library:assembleDebugAndroidTest");
 
         File manifestFile =
                 navigation.file(
@@ -362,9 +348,7 @@ public class ManifestMergingTest {
     @Test
     public void checkManifestFile_doesNotRebuildWhenNonNavigationResourceAreChanged()
             throws Exception {
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:assembleDebug");
+        navigation.executor().run("clean", ":app:assembleDebug");
         File manifestFile =
                 navigation.file(
                         "app/build/intermediates/packaged_manifests/f1Debug/AndroidManifest.xml");
@@ -389,18 +373,14 @@ public class ManifestMergingTest {
                     + "    android:orientation=\"vertical\" >\n"
                     + "</LinearLayout>");
 
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run(":app:assembleDebug");
+        navigation.executor().run(":app:assembleDebug");
 
         Truth.assertThat(timestampAfterFirstBuild).isEqualTo(manifestFile.lastModified());
     }
 
     @Test
     public void checkManifestFile_rebuildsWhenNavigationResourceAreChanged() throws Exception {
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", ":app:assembleDebug");
+        navigation.executor().run("clean", ":app:assembleDebug");
         File manifestFile =
                 navigation.file(
                         "app/build/intermediates/packaged_manifests/f1Debug/processF1DebugManifestForPackage/AndroidManifest.xml");
@@ -413,9 +393,7 @@ public class ManifestMergingTest {
                 "<deepLink app:uri=\"www.example.com/library/nav5\" />",
                 "<deepLink app:uri=\"www.example.com/library_updated/nav5\" />");
 
-        navigation.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run(":app:assembleDebug");
+        navigation.executor().run(":app:assembleDebug");
 
         Truth.assertThat(timestampAfterFirstBuild).isLessThan(manifestFile.lastModified());
     }

@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.api
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -100,7 +99,6 @@ class TransformMergedManifestTest {
             feature.buildFile.appendText(updateManifestTaskRegistration)
         }
         val result = project2.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run(":lib1:assemble")
         assertThat(result.didWorkTasks).contains(":lib1:debugManifestUpdater")
         assertThat(result.didWorkTasks).contains(":lib1:releaseManifestUpdater")

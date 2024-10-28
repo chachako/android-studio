@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.ndk
 
 import com.android.SdkConstants.ABI_ARMEABI_V7A
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.internal.tasks.MergeNativeLibsTask
 import com.android.utils.FileUtils
@@ -36,7 +35,6 @@ class MergeNativeLibsTaskTest {
     @Test
     fun testTaskSkippedWhenNoNativeLibs() {
         val executor = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
         val result1 = executor.run("app:mergeDebugNativeLibs")
         assertThat(result1.skippedTasks).contains(":app:mergeDebugNativeLibs")
         // then test that the task does work after adding native libraries.

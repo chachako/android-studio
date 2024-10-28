@@ -18,13 +18,14 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.testutils.truth.PathSubject.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import java.io.File;
-import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 /** Assemble tests for libMinifyLibDep. */
 public class LibMinifyLibDepTest {
@@ -44,8 +45,10 @@ public class LibMinifyLibDepTest {
         // Check classes are obfuscated unless it is kept by the proguard configuration.
         assertThat(mapping)
                 .containsAllOf(
-                        "com.android.tests.basic.StringGetter -> com.android.tests.basic.StringGetter",
-                        "com.android.tests.internal.StringGetterInternal -> com.android.tests.internal.StringGetterInternal");
+                        "com.android.tests.basic.StringGetter ->"
+                                + " com.android.tests.basic.StringGetter",
+                        "com.android.tests.internal.StringGetterInternal ->"
+                                + " com.android.tests.internal.StringGetterInternal");
     }
 
     @Test
@@ -54,7 +57,6 @@ public class LibMinifyLibDepTest {
     }
 
     public GradleTaskExecutor executor() {
-        return project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
+        return project.executor();
     }
 }

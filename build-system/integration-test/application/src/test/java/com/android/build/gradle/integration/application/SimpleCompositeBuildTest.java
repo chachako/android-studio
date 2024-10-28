@@ -16,15 +16,16 @@
 
 package com.android.build.gradle.integration.application;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+
 import com.google.common.truth.Truth;
+
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 public class SimpleCompositeBuildTest {
 
@@ -37,9 +38,7 @@ public class SimpleCompositeBuildTest {
 
     @Test
     public void testBuild() throws IOException, InterruptedException {
-        project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
-                .run("clean", "assembleDebug");
+        project.executor().run("clean", "assembleDebug");
         ModelContainerV2.ModelInfo modelInfo = project.modelV2()
                 .fetchVariantDependencies("debug")
                 .getContainer()
@@ -58,6 +57,10 @@ public class SimpleCompositeBuildTest {
                                         "org.gradle.jvm.version>" + Runtime.version().feature(),
                                         "org.gradle.jvm.version>{Java_Version}"))
                 .isEqualTo(
-                        ":string-utils|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>{Java_Version}, org.gradle.libraryelements>jar, org.gradle.usage>java-api|org.sample:string-utils:1.0");
+                        ":string-utils|:|org.gradle.category>library,"
+                                + " org.gradle.dependency.bundling>external,"
+                                + " org.gradle.jvm.version>{Java_Version},"
+                                + " org.gradle.libraryelements>jar,"
+                                + " org.gradle.usage>java-api|org.sample:string-utils:1.0");
     }
 }

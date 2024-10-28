@@ -16,13 +16,14 @@
 
 package com.android.build.gradle.integration.library;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /** Assemble tests for sameNamedLibs. */
 public class SameNamedLibsTest {
@@ -41,7 +42,6 @@ public class SameNamedLibsTest {
     }
 
     public GradleTaskExecutor executor() {
-        return project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
+        return project.executor();
     }
 }

@@ -20,21 +20,23 @@ import static com.android.build.gradle.integration.common.truth.TruthHelper.asse
 import static com.android.build.gradle.integration.desugar.DesugaringProjectConfigurator.configureR8Desugaring;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.testutils.apk.Apk;
+
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /** Test desugaring for multi-project setups. */
 @RunWith(FilterableParameterized.class)
@@ -257,7 +259,6 @@ public class DesugarMultiProjectTest {
 
     @NonNull
     private GradleTaskExecutor executor() {
-        return project.executor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON);
+        return project.executor();
     }
 }

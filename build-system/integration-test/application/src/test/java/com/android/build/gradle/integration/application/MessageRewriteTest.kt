@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TemporaryProjectModification
 import com.android.build.gradle.integration.common.truth.ScannerSubject
@@ -24,8 +23,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.Scanner
 
 /** Tests the error message rewriting logic.  */
@@ -37,7 +34,6 @@ class MessageRewriteTest {
     @Test
     fun invalidAppLayoutFile() {
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
             .run("assembleDebug")
         TemporaryProjectModification.doTest(project) {
             it.replaceInFile("app/src/main/res/layout/main.xml", "</LinearLayout>", "")

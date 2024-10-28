@@ -70,7 +70,9 @@ class FlavorlibTest : ModelComparator() {
 
     @Test
     fun report() {
-        executor().run("androidDependencies", "signingReport")
+        executor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
+            .run("androidDependencies", "signingReport")
         // run twice to verify config cached run works
         executor().run("signingReport")
     }
@@ -85,6 +87,5 @@ class FlavorlibTest : ModelComparator() {
 
     private fun executor(): GradleTaskExecutor {
         return project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.ON)
     }
 }
