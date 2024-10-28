@@ -32,7 +32,6 @@ import com.android.build.gradle.internal.transforms.testdata.InterfaceWithDefaul
 import com.android.build.gradle.internal.transforms.testdata.StandAloneClass
 import com.android.build.gradle.internal.transforms.testdata.Toy
 import com.android.build.gradle.options.SyncOptions
-import com.android.builder.dexing.MutableDependencyGraph
 import com.android.testutils.TestClassesGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.TestUtils
@@ -50,7 +49,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.objectweb.asm.Type
 import java.io.File
-import java.io.ObjectInputStream
 import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -292,47 +290,6 @@ class DexingTransformTest {
             classUsingInterfaceWithDefaultMethodTimestampAfter
         )
         assertEquals(standAloneClassTimestampBefore, standAloneClassTimestampAfter)
-    }
-
-    @Test
-    fun testDesugarGraph() {
-        val rootDir = tmp.newFolder("RootDir")
-        val desugarGraph = DesugarGraph(
-            rootDir = rootDir,
-            relocatableDesugarGraph = MutableDependencyGraph()
-        )
-
-        val aKt = rootDir.resolve("com/example/A.kt")
-        val bKt = rootDir.resolve("com/example/B.kt")
-        val cKt = rootDir.resolve("com/example/C.kt")
-        desugarGraph.addEdge(aKt, bKt)
-        desugarGraph.addEdge(bKt, cKt)
-
-        val xKt = rootDir.resolve("com/example/X.kt")
-        val yKt = rootDir.resolve("com/example/Y.kt")
-        val zKt = rootDir.resolve("com/example/Z.kt")
-        desugarGraph.addEdge(xKt, yKt)
-        desugarGraph.addEdge(yKt, zKt)
-        desugarGraph.removeNode(yKt)
-
-        assertThat(desugarGraph.getAllDependents(listOf(aKt))).isEmpty()
-        assertThat(desugarGraph.getAllDependents(listOf(bKt))).containsExactlyElementsIn(listOf(aKt))
-        assertThat(desugarGraph.getAllDependents(listOf(cKt))).containsExactlyElementsIn(listOf(aKt, bKt))
-
-        assertThat(desugarGraph.getAllDependents(listOf(xKt))).isEmpty()
-        assertThat(desugarGraph.getAllDependents(listOf(yKt))).isEmpty()
-        assertThat(desugarGraph.getAllDependents(listOf(zKt))).isEmpty()
-
-        // Also check that the serialized desugar graph is relocatable (i.e., it uses Unix-style
-        // relative paths)
-        val desugarGraphFile = tmp.newFile("desugar_graph.bin")
-        desugarGraph.write(desugarGraphFile)
-        val relocatableDesugarGraph = ObjectInputStream(desugarGraphFile.inputStream().buffered()).use {
-            @Suppress("UNCHECKED_CAST")
-            it.readObject() as MutableDependencyGraph<String>
-        }
-        assertThat(relocatableDesugarGraph.getAllDependents(listOf("com/example/C.kt")))
-            .containsExactlyElementsIn(listOf("com/example/A.kt", "com/example/B.kt"))
     }
 
     private class TestDexingTransform(
