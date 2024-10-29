@@ -21,7 +21,7 @@ def main():
   else:
     sys.exit('Platform %s is not yet supported.' % sys.platform)
 
-  env = {}
+  env = {k: v for k, v in os.environ.items()}
   env['USE_BAZEL_VERSION'] = os.environ.get('USE_BAZEL_VERSION', '')
   bazel = [
       os.path.join(
@@ -52,12 +52,6 @@ def main():
   env['BUILD_NUMBER'] = os.environ.get('BUILD_NUMBER', '')
   env['BUILD_TARGET_NAME'] = os.environ.get('BUILD_TARGET_NAME', '')
   env['DIST_DIR'] = os.environ.get('DIST_DIR', '')
-  if 'TMPDIR' in os.environ:
-    env['TMPDIR'] = os.environ.get('TMPDIR')
-  if 'GCE_METADATA_HOST' in os.environ:
-    env['GCE_METADATA_HOST'] = os.environ.get('GCE_METADATA_HOST')
-  if 'QA_ANDROID_SDK_ROOT' in os.environ:
-    env['QA_ANDROID_SDK_ROOT'] = os.environ['QA_ANDROID_SDK_ROOT']
   if sys.platform == 'darwin':
     if not os.path.exists('/Library/Developer/CommandLineTools'):
       print(
