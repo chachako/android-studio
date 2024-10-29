@@ -321,7 +321,7 @@ class ManagedDeviceTestRunnerTest {
         // use a real device lock manager to ensure blocking behavior.
         val avdFolder = temporaryFolderRule.newFolder()
         whenever(androidLocations.gradleAvdLocation).thenReturn(avdFolder.toPath())
-        val deviceLockManager = ManagedVirtualDeviceLockManager(androidLocations, 1, 0L)
+        val deviceLockManager = ManagedVirtualDeviceLockManager(androidLocations, 1) {}
         whenever(mockAvdComponents.lockManager).thenReturn(deviceLockManager)
 
         // contains the list of blocking actions in order.
