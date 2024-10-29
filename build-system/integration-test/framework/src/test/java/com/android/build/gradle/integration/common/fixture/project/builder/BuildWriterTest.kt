@@ -41,7 +41,7 @@ class BuildWriterTest {
     }
 
     @Test
-    fun basicBlock() {
+    fun ktsStrings() {
         val p = Person("John", "Doe")
         val writer =  p.writeBlock(kts)
 
@@ -55,7 +55,7 @@ class BuildWriterTest {
     }
 
     @Test
-    fun groovyBlock() {
+    fun groovyStrings() {
         val p = Person("John", "Doe")
         val writer =  p.writeBlock(groovy)
 
@@ -66,6 +66,77 @@ class BuildWriterTest {
             }
 
         """.trimIndent())
+    }
+
+    @Test
+    fun testPlugins() {
+        testWriterOutput(expected = """
+            id("plugin1") version "3.2"
+            id("plugin2")
+            id("plugin3") version "1.3" apply false
+            id("plugin4") apply false
+
+        """.trimIndent()) {
+            pluginId("plugin1", "3.2", true)
+            pluginId("plugin2", null)
+            pluginId("plugin3", "1.3", false)
+            pluginId("plugin4", null, false)
+        }
+    }
+
+    @Test
+    fun testRawString() {
+        testWriterOutput(expected = """
+            a = b
+            b = foo(12)
+
+        """.trimIndent()) {
+            set("a", rawString("b"))
+            set("b", rawMethod("foo", 12))
+        }
+    }
+
+    @Test
+    fun testMethods() {
+        testWriterOutput(expected = """
+            foo("bar")
+            foo("bar", 12, false)
+            foo(bar(12, false))
+
+        """.trimIndent()) {
+            method("foo", "bar")
+            method("foo", "bar", 12, false)
+            method("foo", rawMethod("bar", 12, false))
+        }
+    }
+
+    @Test
+    fun testNamedMethodsInKTS() {
+        testWriterOutput(expected = """
+            foo(bar = 12, something = false)
+            foo(bar = 12, something = bar(value = 12))
+
+        """.trimIndent(), kts) {
+            method("foo", listOf("bar" to 12, "something" to false))
+            method("foo", listOf("bar" to 12, "something" to rawMethod("bar", listOf("value" to 12))))
+        }
+    }
+
+    @Test
+    fun testNamedMethodsInGroovy() {
+        testWriterOutput(expected = """
+            foo(bar: 12, something: false)
+            foo(bar: 12, something: bar(value: 12))
+
+        """.trimIndent(), groovy) {
+            method("foo", listOf("bar" to 12, "something" to false))
+            method("foo", listOf("bar" to 12, "something" to rawMethod("bar", listOf("value" to 12))))
+        }
+    }
+
+    private fun testWriterOutput(expected: String, writer: BuildWriter = kts, action: BuildWriter.() -> Unit) {
+        action(writer)
+        Truth.assertThat(writer.toString()).isEqualTo(expected)
     }
 
     private val kts: BuildWriter

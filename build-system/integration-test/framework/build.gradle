@@ -21,6 +21,7 @@ dependencies {
     implementation project(':base:builder')
     implementation project(':base:builder-model')
     implementation project(':base:build-system:gradle-core')
+    implementation project(':base:build-system:gradle-settings')
     implementation libs.com.android.tools.sdkCommon
     api libs.com.android.tools.ddms.ddmlib
     implementation libs.com.android.tools.sdklib

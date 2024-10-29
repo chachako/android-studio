@@ -18,6 +18,7 @@ kotlin_library(
         "//tools/base/build-system/builder-test-api:tools.builder-test-api",
         "//tools/base/build-system/gradle-api",
         "//tools/base/build-system/gradle-core",
+        "//tools/base/build-system/gradle-settings",
         "//tools/base/build-system/integration-test/framework/src/main/proto",
         "//tools/base/common:tools.common",
         "//tools/base/ddmlib:tools.ddmlib",

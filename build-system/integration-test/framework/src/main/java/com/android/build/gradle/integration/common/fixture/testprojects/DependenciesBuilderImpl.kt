@@ -16,10 +16,13 @@
 
 package com.android.build.gradle.integration.common.fixture.testprojects
 
+import com.android.build.gradle.integration.common.fixture.project.builder.BuildWriter
+import com.android.build.gradle.integration.common.fixture.project.builder.GroovyBuildWriter
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.utils.FileUtils
 import java.io.File
+import java.nio.file.Path
 
 class DependenciesBuilderImpl() : DependenciesBuilder {
     private val dependencies = mutableListOf<Pair<String, Any>>()
@@ -137,6 +140,50 @@ class DependenciesBuilderImpl() : DependenciesBuilder {
         }
 
         sb.append("}\n")
+    }
+
+    fun write(buildWriter: BuildWriter, projectLocation: Path) {
+        buildWriter.apply {
+            block("dependencies") {
+                for ((scope, dependency) in dependencies) {
+                    when (dependency) {
+                        is String -> dependency(scope, dependency)
+                        is ExternalDependencyBuilder -> {
+                            if (dependency.testFixtures) {
+                                dependency(scope, rawMethod("testFixtures", dependency.coordinate))
+                            } else {
+                                dependency(scope, dependency.coordinate)
+                            }
+                        }
+
+                        is ProjectDependencyBuilder -> {
+                            val projectNotation = dependency.configuration?.let { configName ->
+                                rawMethod("project", listOf(
+                                    "path" to dependency.path,
+                                    "configuration" to configName
+                                ))
+                            } ?: rawMethod("project", dependency.path)
+
+                            val dep = if (dependency.testFixtures) {
+                                rawMethod("testFixtures", projectNotation)
+                            } else {
+                                projectNotation
+                            }
+
+                            dependency(scope, dep)
+                        }
+
+                        is MavenRepoGenerator.Library -> dependency(scope, dependency.mavenCoordinate.toString())
+                        is LocalJarBuilderImpl -> {
+                            val path = createLocalJar(dependency, projectLocation.toFile())
+                            dependency(scope, rawMethod("files", path))
+                        }
+
+                        else -> throw RuntimeException("unsupported dependency type: ${dependency.javaClass}")
+                    }
+                }
+            }
+        }
     }
 
     private fun createLocalJar(
