@@ -27,17 +27,28 @@ import com.android.build.gradle.options.BooleanOption
 const val APP_PACKAGE_NAME = "com.example.privacysandbox.client"
 const val SDK_PACKAGE_NAME = "com.example.sdk"
 private const val TEST_PACKAGE_NAME = "com.example.privacysandbox.client.test"
-
+private const val MAX_ATTEMPTS_POLLING_SERVICES_SANDBOX_SDK = 10
+private const val POLLING_SERVICES_WAIT_TIME_SANDBOX_SDK = 1000L
 interface PrivacySandboxSdkTestBase {
     var project:GradleTestProject
     companion object {
         fun setupDevice() {
-            if (!deviceSupportsPrivacySandbox()) {
-                enablePrivacySandboxOnTestDevice()
-            }
+            ensureDeviceSupportsPrivacySandbox()
             uninstallIfExists(APP_PACKAGE_NAME)
             uninstallIfExists(TEST_PACKAGE_NAME)
             uninstallIfExists(SDK_PACKAGE_NAME, isLibrary = true)
+        }
+        private fun ensureDeviceSupportsPrivacySandbox() {
+            if (!deviceSupportsPrivacySandbox()) {
+                enablePrivacySandboxOnTestDevice()
+                repeat(MAX_ATTEMPTS_POLLING_SERVICES_SANDBOX_SDK) {
+                    if (deviceSupportsPrivacySandbox()) {
+                        return
+                    }
+                    Thread.sleep(POLLING_SERVICES_WAIT_TIME_SANDBOX_SDK)
+                }
+                throw RuntimeException("Device does not support Privacy Sandbox after $MAX_ATTEMPTS_POLLING_SERVICES_SANDBOX_SDK attempts.")
+            }
         }
         private fun uninstallIfExists(packageName: String, isLibrary: Boolean = false) {
             if (packageExists(packageName, isLibrary = isLibrary)) {

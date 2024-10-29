@@ -460,6 +460,9 @@ fun privacySandboxSdkAppLargeSampleProjectWithTestModule(): GradleTestProject {
                 implementation("androidx.test:core:1.5.0")
                 implementation("androidx.test:core-ktx:1.5.0")
                 implementation("androidx.test.ext:junit:1.1.5")
+                implementation("androidx.test.ext:junit-ktx:1.1.4")
+                implementation("androidx.test:runner:1.5.0")
+                implementation("androidx.test.espresso:espresso-core:3.4.0")
             }
             addFile("src/androidTest/java/com/example/client.test",
                     getAndroidTestSource("package com.example.client.test"))
@@ -483,6 +486,7 @@ fun GradleTestProjectBuilder.configurePrivacySandboxTestProject():GradleTestProj
         .addGradleProperties("${BooleanOption.USE_ANDROID_X}=true")
         .addGradleProperties("${BooleanOption.NON_TRANSITIVE_R_CLASS}=true")
         .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT}=true")
+        .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT}=true")
         .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES}=false")
         .addGradleProperties("${BooleanOption.USE_NON_FINAL_RES_IDS}=false")
         .addGradleProperties("${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES}=androidx.privacysandbox.tools:tools-apigenerator:$androidxPrivacySandboxVersion,org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION_FOR_TESTS,org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0,androidx.privacysandbox.activity:activity-core:$androidxPrivacySandboxActivityVersion,androidx.privacysandbox.activity:activity-client:$androidxPrivacySandboxActivityVersion,androidx.privacysandbox.activity:activity-provider:$androidxPrivacySandboxActivityVersion,androidx.privacysandbox.ui:ui-core:$androidxPrivacySandboxVersion,androidx.privacysandbox.ui:ui-client:$androidxPrivacySandboxVersion")
@@ -541,6 +545,9 @@ fun SubProjectBuilder.buildExampleSdkConsumerApp() {
         androidTestImplementation("androidx.test:core:1.5.0")
         androidTestImplementation("androidx.test:core-ktx:1.5.0")
         androidTestImplementation("androidx.test.ext:junit:1.1.5")
+        androidTestImplementation("androidx.test.ext:junit-ktx:1.1.4")
+        androidTestImplementation("androidx.test:runner:1.5.0")
+        androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
     }
     appendToBuildFile { //language=groovy
         """
@@ -861,12 +868,14 @@ fun getAndroidTestSource(packageDeclaration:String):String =
             $packageDeclaration
 
             import android.app.Activity
+            import android.util.Log
             import android.view.SurfaceView
             import android.view.View
             import android.widget.LinearLayout
             import androidx.core.view.isVisible
             import androidx.privacysandbox.ui.client.view.SandboxedSdkView
             import androidx.test.espresso.Espresso.onView
+            import androidx.test.espresso.IdlingPolicies
             import androidx.test.espresso.IdlingRegistry
             import androidx.test.espresso.IdlingResource
             import androidx.test.espresso.action.ViewActions.click
@@ -879,10 +888,12 @@ fun getAndroidTestSource(packageDeclaration:String):String =
             import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
             import androidx.test.runner.lifecycle.Stage
             import com.example.privacysandbox.client.R
+            import java.util.concurrent.TimeUnit
             import org.hamcrest.Description
             import org.hamcrest.Matcher
             import org.hamcrest.TypeSafeMatcher
             import org.junit.Rule
+            import org.junit.Before
             import org.junit.Test
             import org.junit.runner.RunWith
 
@@ -891,6 +902,13 @@ fun getAndroidTestSource(packageDeclaration:String):String =
                 @get:Rule
                 var activityScenarioRule = activityScenarioRule<MainActivity>()
                 private var idlingResource: IdlingResource? = null
+
+                @Before
+                fun setUp() {
+                    // Increase the timeout to 2 minutes
+                    IdlingPolicies.setMasterPolicyTimeout(120, TimeUnit.SECONDS)
+                    IdlingPolicies.setIdlingResourceTimeout(120, TimeUnit.SECONDS)
+                }
 
                 @Test
                 fun loadSdkBannerViewTest() {
@@ -950,9 +968,11 @@ fun getAndroidTestSource(packageDeclaration:String):String =
 
                     override fun isIdleNow(): Boolean {
                         activityRule.scenario.onActivity {
-                            val view = it.findViewById<LinearLayout>(R.id.banner_ad) // Replace with actual container ID
+                            val view = it.findViewById<LinearLayout>(R.id.banner_ad)
                             if (view != null && view.childCount > 0) {
+                                Log.w("BannerAdIdlingResource", "Found view: ${'$'}{view.getChildAt(0)}")
                                 val sandboxedSdkView = view.getChildAt(0) as? SandboxedSdkView
+                                Log.w("BannerAdIdlingResource", "Found SandboxedSdkView: ${'$'}{sandboxedSdkView?.getChildAt(0)}")
                                 val surfaceView = sandboxedSdkView?.getChildAt(0) as? SurfaceView
                                 if (surfaceView != null) {
                                         isIdle = true

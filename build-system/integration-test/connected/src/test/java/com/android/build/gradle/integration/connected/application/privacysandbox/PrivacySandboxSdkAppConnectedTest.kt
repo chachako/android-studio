@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.connected.application.privacysandbox
 
-import com.android.build.gradle.integration.common.fixture.deviceSupportsPrivacySandbox
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSdkAppLargeSampleProject
 import com.android.build.gradle.integration.connected.application.privacysandbox.PrivacySandboxSdkTestBase.Companion.packageExists
 import com.android.build.gradle.integration.connected.application.privacysandbox.PrivacySandboxSdkTestBase.Companion.setupDevice
@@ -25,7 +24,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -49,16 +47,12 @@ class PrivacySandboxSdkAppConnectedTest: PrivacySandboxSdkTestBase {
     }
 
     @Test
-    @Ignore("b/375067940")
     fun `install and uninstall works for both SDK and APK for application`() {
-        val deviceSupportsPrivacySandbox = deviceSupportsPrivacySandbox()
         executor()
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
                 .run(":client-app:installDebug")
         Truth.assertThat(packageExists(APP_PACKAGE_NAME)).isTrue()
-        if (deviceSupportsPrivacySandbox) {
-            Truth.assertThat(packageExists(SDK_PACKAGE_NAME, isLibrary = true)).isTrue()
-        }
+        Truth.assertThat(packageExists(SDK_PACKAGE_NAME, isLibrary = true)).isTrue()
 
         // project.execute(":app:uninstallAll")
         // TODO: uninstall not supported yet, verify both APKs are deleted here
