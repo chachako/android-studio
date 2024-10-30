@@ -18,19 +18,12 @@ package com.android.tools.render
 
 import com.android.ide.common.rendering.api.Result
 import com.android.testutils.TestUtils
-import com.android.testutils.ignore.IgnoreTestRule
-import com.android.testutils.ignore.IgnoreWithCondition
-import com.android.testutils.ignore.OnWindows
-import com.android.tools.rendering.RenderService
-import com.android.tools.sdk.AndroidTargetData
-import com.android.tools.sdk.EmbeddedRenderTarget
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -46,8 +39,8 @@ class RendererTest {
     @JvmField @Rule
     val tmpFolder = TemporaryFolder()
 
-    @get:Rule
-    val ignoreTestRule = IgnoreTestRule()
+    @JvmField @Rule
+    val renderTest = RenderTestRule()
 
     companion object {
         @AfterClass
@@ -62,17 +55,6 @@ class RendererTest {
         private const val THRESHOLD = 1
     }
 
-    @Before
-    fun setUp() {
-        EmbeddedRenderTarget.resetRenderTarget()
-        RenderService.initializeRenderExecutor()
-        AndroidTargetData.clearCache()
-    }
-
-    @IgnoreWithCondition(
-        reason = "b/375482431 This test is 10% flaky on windows",
-        condition = OnWindows::class
-    )
     @Test
     fun testSimpleLayoutRendering() {
         // language=xml
