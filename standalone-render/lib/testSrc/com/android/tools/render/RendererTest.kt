@@ -18,6 +18,7 @@ package com.android.tools.render
 
 import com.android.ide.common.rendering.api.Result
 import com.android.testutils.TestUtils
+import com.android.testutils.ignore.IgnoreTestRule
 import com.android.testutils.ignore.IgnoreWithCondition
 import com.android.testutils.ignore.OnWindows
 import com.android.tools.rendering.RenderService
@@ -44,6 +45,9 @@ import kotlin.math.max
 class RendererTest {
     @JvmField @Rule
     val tmpFolder = TemporaryFolder()
+
+    @get:Rule
+    val ignoreTestRule = IgnoreTestRule()
 
     companion object {
         @AfterClass
