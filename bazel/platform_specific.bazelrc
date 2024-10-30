@@ -39,5 +39,4 @@ common:macos --repo_env=ANDROID_HOME=prebuilts/studio/sdk/darwin
 build:macos --bes_keywords=macos
 build:macos --host_platform=//tools/base/bazel/platforms:macos
 build:macos --platforms=//tools/base/bazel/platforms:macos
-build:macos --action_env=BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
 build:macos --watchfs
