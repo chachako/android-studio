@@ -645,7 +645,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 FileUtils.join(
                     project.getSubproject("kmpFirstLib").projectDir,
                     "src",
-                    "androidTestOnJvm",
+                    "androidHostTest",
                     "kotlin",
                     "com",
                     "example",

@@ -73,10 +73,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:mergeAndroidTestOnDeviceJavaResource")
+            .run(":kmpFirstLib:mergeAndroidDeviceTestJavaResource")
 
         val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(
-            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidTestOnDevice/mergeAndroidTestOnDeviceJavaResource/feature-kmpFirstLib.jar"
+            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidDeviceTest/mergeAndroidDeviceTestJavaResource/feature-kmpFirstLib.jar"
         )
 
         assertThat(androidTestMergedRes.exists()).isTrue()
@@ -103,7 +103,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:createAndroidTestOnJvmCoverageReport")
+            .run(":kmpFirstLib:createAndroidHostTestCoverageReport")
 
         assertWithMessage(
             "Running kmp unit tests should run common tests as well"
@@ -112,7 +112,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 project.getSubproject("kmpFirstLib").buildDir,
                 "reports",
                 "tests",
-                "testAndroidTestOnJvm",
+                "testAndroidHostTest",
                 "classes"
             ).listFiles()!!.map { it.name }
         ).containsExactly(
@@ -289,7 +289,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         project.executor()
-            .run(":kmpFirstLib:assembleTestOnDevice")
+            .run(":kmpFirstLib:assembleDeviceTest")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
@@ -366,8 +366,8 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         val apkIdeRedirectFile = FileUtils.join(
             project.getSubproject("kmpFirstLib").intermediatesDir,
             "apk_ide_redirect_file",
-            "androidTestOnDevice",
-            "createAndroidTestOnDeviceApkListingFileRedirect",
+            "androidDeviceTest",
+            "createAndroidDeviceTestApkListingFileRedirect",
             "redirect.txt"
         )
         assertThat(apkIdeRedirectFile.exists()).isTrue()

@@ -24,7 +24,7 @@ kotlin {
       }
     }
 
-    sourceSets.getByName("androidTestOnDevice") {
+    sourceSets.getByName("androidDeviceTest") {
       dependencies {
         implementation("androidx.test:runner:1.4.0-alpha06", {
             exclude(group="com.google.guava", module="listenablefuture")
@@ -38,7 +38,7 @@ kotlin {
       }
     }
 
-    compilations.getByName("testOnDevice") {
+    compilations.getByName("deviceTest") {
         kotlinOptions.languageVersion = "1.8"
     }
 

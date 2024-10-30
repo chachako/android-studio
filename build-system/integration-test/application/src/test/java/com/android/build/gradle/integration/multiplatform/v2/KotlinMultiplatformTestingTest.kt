@@ -52,7 +52,7 @@ class KotlinMultiplatformTestingTest {
             FileUtils.join(
                 kmpFirstLib.projectDir,
                 "src",
-                "androidTestOnJvm",
+                "androidHostTest",
                 "kotlin",
                 "com",
                 "example",
@@ -97,7 +97,7 @@ class KotlinMultiplatformTestingTest {
         )
 
         // Check that the test runs successfully
-        project.executor().run(":kmpFirstLib:testAndroidTestOnJvm")
+        project.executor().run(":kmpFirstLib:testAndroidHostTest")
 
         // Check that the test fails as expected after toggling isReturnDefaultValues to false
         TestFileUtils.searchAndReplace(
@@ -105,6 +105,6 @@ class KotlinMultiplatformTestingTest {
             "isReturnDefaultValues = true",
             "isReturnDefaultValues = false"
         )
-        project.executor().expectFailure().run(":kmpFirstLib:testAndroidTestOnJvm")
+        project.executor().expectFailure().run(":kmpFirstLib:testAndroidHostTest")
     }
 }

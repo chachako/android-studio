@@ -118,8 +118,8 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         previousConfiguration?.let {
             val type = when (compilationType) {
                 KmpAndroidCompilationType.MAIN -> "main"
-                KmpAndroidCompilationType.TEST_ON_JVM -> "jvm"
-                KmpAndroidCompilationType.TEST_ON_DEVICE -> "device"
+                KmpAndroidCompilationType.HOST_TEST -> "jvm"
+                KmpAndroidCompilationType.DEVICE_TEST -> "device"
             }
 
             throw IllegalStateException(
@@ -150,7 +150,7 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
     ): HasConfigurableValue<KotlinMultiplatformAndroidHostTest> {
         androidTestOnJvmBuilder = withTestBuilder(
-            KmpAndroidCompilationType.TEST_ON_JVM,
+            KmpAndroidCompilationType.HOST_TEST,
             androidTestOnJvmBuilder
         )
         androidTestOnJvmOptions = dslServices.newDecoratedInstance(
@@ -186,7 +186,7 @@ internal abstract class KotlinMultiplatformAndroidLibraryExtensionImpl @Inject @
         action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
     ): HasConfigurableValue<KotlinMultiplatformAndroidDeviceTest> {
         androidTestOnDeviceBuilder = withTestBuilder(
-            KmpAndroidCompilationType.TEST_ON_DEVICE,
+            KmpAndroidCompilationType.DEVICE_TEST,
             androidTestOnDeviceBuilder
         )
         androidTestOnDeviceOptions = dslServices.newDecoratedInstance(

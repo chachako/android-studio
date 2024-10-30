@@ -234,7 +234,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * object with the following defaults (You can change these defaults by using
      * [withHostTestBuilder] instead):
      *
-     * * compilation name is "testOnJvm"
+     * * compilation name is "hostTest"
      * * default sourceSet name is "androidTestOnJvm" (sources would be located at `$project/src/androidTestOnJvm`)
      * * sourceSet tree is `test`, which means that the `commonTest` sourceSet would be included in
      *   the compilation.
@@ -305,7 +305,7 @@ interface KotlinMultiplatformAndroidLibraryExtension {
      * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidDeviceTestCompilation]
      * object with the following defaults:
      *
-     * * compilation name is "testOnDevice"
+     * * compilation name is "deviceTest"
      * * default sourceSet name is "androidTestOnDevice" (sources would be located at `$project/src/androidTestOnDevice`)
      * * sourceSet tree is `null`, which means that the `commonTest` sourceSet will **not** be included in
      *   the compilation.

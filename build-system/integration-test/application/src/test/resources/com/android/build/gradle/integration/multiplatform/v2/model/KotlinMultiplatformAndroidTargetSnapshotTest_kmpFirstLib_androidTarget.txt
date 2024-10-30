@@ -2,6 +2,104 @@
   "targetName": "android",
   "compilations": [
     {
+      "compilationName": "deviceTest",
+      "defaultSourceSet": {
+        "sourceSetName": "androidDeviceTest",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
+            "sourceProvider": {
+              "manifestFile": {
+                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/src/androidDeviceTest/AndroidManifest.xml"
+              }
+            }
+          }
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidDeviceTest"
+        }
+      ],
+      "extras": {
+        "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
+        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {},
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
+          "type": "INSTRUMENTED_TEST",
+          "instrumentedTestInfo": {
+            "namespace": "com.example.kmpfirstlib.test",
+            "testInstrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+            "testInstrumentationRunnerArguments": {},
+            "signingConfig": {
+              "name": "debug",
+              "storeFile": {
+                "absolutePath": "{ANDROID_PREFS}/.android/debug.keystore"
+              },
+              "storePassword": "android",
+              "keyAlias": "AndroidDebugKey",
+              "keyPassword": "android",
+              "enableV1Signing": true,
+              "enableV2Signing": true,
+              "enableV3Signing": false,
+              "enableV4Signing": false,
+              "isSigningReady": true
+            },
+            "assembleTaskOutputListingFile": {
+              "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/build/intermediates/apk_ide_redirect_file/androidDeviceTest/createAndroidDeviceTestApkListingFileRedirect/redirect.txt"
+            }
+          },
+          "defaultSourceSetName": "androidDeviceTest",
+          "assembleTaskName": "assembleAndroidDeviceTest",
+          "kotlinCompileTaskName": "compileAndroidDeviceTest"
+        }
+      }
+    },
+    {
+      "compilationName": "hostTest",
+      "defaultSourceSet": {
+        "sourceSetName": "androidHostTest",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
+            "sourceProvider": {
+              "manifestFile": {
+                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/src/androidHostTest/AndroidManifest.xml"
+              }
+            }
+          }
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidHostTest"
+        },
+        {
+          "sourceSetName": "commonTest"
+        }
+      ],
+      "extras": {
+        "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
+        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {
+          "name": "test"
+        },
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
+          "type": "UNIT_TEST",
+          "unitTestInfo": {
+            "namespace": "com.example.kmpfirstlib.test",
+            "mockablePlatformJar": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/android.jar"
+            },
+            "unitTestTaskName": "testAndroidHostTest"
+          },
+          "defaultSourceSetName": "androidHostTest",
+          "assembleTaskName": "assembleAndroidHostTest",
+          "kotlinCompileTaskName": "compileAndroidHostTest"
+        }
+      }
+    },
+    {
       "compilationName": "main",
       "defaultSourceSet": {
         "sourceSetName": "androidMain",
@@ -50,104 +148,6 @@
           "kotlinCompileTaskName": "compileAndroidMain"
         }
       }
-    },
-    {
-      "compilationName": "testOnDevice",
-      "defaultSourceSet": {
-        "sourceSetName": "androidTestOnDevice",
-        "extras": {
-          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
-          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
-            "sourceProvider": {
-              "manifestFile": {
-                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/src/androidTestOnDevice/AndroidManifest.xml"
-              }
-            }
-          }
-        }
-      },
-      "allSourceSets": [
-        {
-          "sourceSetName": "androidTestOnDevice"
-        }
-      ],
-      "extras": {
-        "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
-        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {},
-        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
-          "type": "INSTRUMENTED_TEST",
-          "instrumentedTestInfo": {
-            "namespace": "com.example.kmpfirstlib.test",
-            "testInstrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
-            "testInstrumentationRunnerArguments": {},
-            "signingConfig": {
-              "name": "debug",
-              "storeFile": {
-                "absolutePath": "{ANDROID_PREFS}/.android/debug.keystore"
-              },
-              "storePassword": "android",
-              "keyAlias": "AndroidDebugKey",
-              "keyPassword": "android",
-              "enableV1Signing": true,
-              "enableV2Signing": true,
-              "enableV3Signing": false,
-              "enableV4Signing": false,
-              "isSigningReady": true
-            },
-            "assembleTaskOutputListingFile": {
-              "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/build/intermediates/apk_ide_redirect_file/androidTestOnDevice/createAndroidTestOnDeviceApkListingFileRedirect/redirect.txt"
-            }
-          },
-          "defaultSourceSetName": "androidTestOnDevice",
-          "assembleTaskName": "assembleAndroidTestOnDevice",
-          "kotlinCompileTaskName": "compileAndroidTestOnDevice"
-        }
-      }
-    },
-    {
-      "compilationName": "testOnJvm",
-      "defaultSourceSet": {
-        "sourceSetName": "androidTestOnJvm",
-        "extras": {
-          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
-          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
-            "sourceProvider": {
-              "manifestFile": {
-                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/src/androidTestOnJvm/AndroidManifest.xml"
-              }
-            }
-          }
-        }
-      },
-      "allSourceSets": [
-        {
-          "sourceSetName": "androidTestOnJvm"
-        },
-        {
-          "sourceSetName": "commonTest"
-        }
-      ],
-      "extras": {
-        "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
-        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {
-          "name": "test"
-        },
-        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
-          "type": "UNIT_TEST",
-          "unitTestInfo": {
-            "namespace": "com.example.kmpfirstlib.test",
-            "mockablePlatformJar": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/android.jar"
-            },
-            "unitTestTaskName": "testAndroidTestOnJvm"
-          },
-          "defaultSourceSetName": "androidTestOnJvm",
-          "assembleTaskName": "assembleAndroidTestOnJvm",
-          "kotlinCompileTaskName": "compileAndroidTestOnJvm"
-        }
-      }
     }
   ],
   "extras": {
@@ -166,7 +166,7 @@
         "animationsDisabled": false,
         "execution": "HOST",
         "additionalRuntimeApks": [],
-        "instrumentedTestTaskName": "connectedAndroidTestOnDevice"
+        "instrumentedTestTaskName": "connectedAndroidDeviceTest"
       },
       "flags": {
         "booleanFlagValues": [

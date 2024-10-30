@@ -95,7 +95,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
-            "Android tests on jvm has already been enabled, and a corresponding compilation (`testOnJvm`) has already been created."
+            "Android tests on jvm has already been enabled, and a corresponding compilation (`hostTest`) has already been created."
         )
     }
 
@@ -110,9 +110,9 @@ class KotlinMultiplatformAndroidPluginBasicTest {
                             compilations {
                                 val main by getting {
                                 }
-                                val testOnJvm by getting {
+                                val hostTest by getting {
                                 }
-                                val testOnDevice by getting {
+                                val deviceTest by getting {
                                 }
                             }
                         }
@@ -147,13 +147,13 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         val manifest = FileUtils.join(
             project.getSubproject("kmpFirstLib").projectDir,
             "src",
-            "androidTestOnDevice",
+            "androidDeviceTest",
             "AndroidManifest.xml"
         ).toPath()
 
         val deleted = Files.deleteIfExists(manifest)
         Truth.assertThat(deleted).isTrue()
-        val result = project.executor().run(":kmpFirstLib:packageAndroidTestOnDevice")
+        val result = project.executor().run(":kmpFirstLib:packageAndroidDeviceTest")
 
         ScannerSubject.assertThat(result.stderr).doesNotContain(
             "Manifest file does not exist"
@@ -180,7 +180,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             .run(":kmpFirstLib:printAndroidComponents")
 
         ScannerSubject.assertThat(result.stdout).contains("androidMain")
-        ScannerSubject.assertThat(result.stdout).contains("androidTestOnJvm")
-        ScannerSubject.assertThat(result.stdout).contains("androidTestOnDevice")
+        ScannerSubject.assertThat(result.stdout).contains("androidHostTest")
+        ScannerSubject.assertThat(result.stdout).contains("androidDeviceTest")
     }
 }

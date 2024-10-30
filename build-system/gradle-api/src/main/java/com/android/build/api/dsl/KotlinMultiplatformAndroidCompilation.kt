@@ -46,8 +46,8 @@ interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonO
      * Consists of the compilation name prefixed by the android target name (e.g "android")
      * The default component names for the default compilations would be:
      *   - androidMain
-     *   - androidTestOnJvm
-     *   - androidTestOnDevice
+     *   - androidHostTest
+     *   - androidDeviceTest
      */
     @get:Incubating
     val componentName: String

@@ -88,7 +88,7 @@ class KotlinMultiplatformAndroidDexingTest {
 
         val result = project.executor()
             .expectFailure()
-            .run(":kmpFirstLib:assembleTestOnDevice")
+            .run(":kmpFirstLib:assembleDeviceTest")
 
         ScannerSubject.assertThat(result.stderr).contains(
             "In order to use core library desugaring, please enable multidex."
@@ -98,7 +98,7 @@ class KotlinMultiplatformAndroidDexingTest {
     @Test
     fun testDesugaringForInstrumentedTestApk() {
         project.executor()
-            .run(":kmpFirstLib:assembleTestOnDevice")
+            .run(":kmpFirstLib:assembleDeviceTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )
@@ -154,7 +154,7 @@ class KotlinMultiplatformAndroidDexingTest {
         )
 
         project.executor()
-            .run(":kmpFirstLib:assembleTestOnDevice")
+            .run(":kmpFirstLib:assembleDeviceTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )

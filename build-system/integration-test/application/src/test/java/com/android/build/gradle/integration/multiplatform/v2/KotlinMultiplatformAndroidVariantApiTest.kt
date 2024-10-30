@@ -50,8 +50,8 @@ class KotlinMultiplatformAndroidVariantApiTest {
 
         val result = project.executor().run(":kmpFirstLib:assemble")
 
-        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidTestOnJvm")
-        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidTestOnDevice")
+        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidHostTest")
+        ScannerSubject.assertThat(result.stdout).contains("androidMain:androidDeviceTest")
     }
 
     @Test
@@ -106,7 +106,7 @@ class KotlinMultiplatformAndroidVariantApiTest {
         val aarFile = project.getSubproject("kmpFirstLib").getOutputFile("aar", "kmpFirstLib.aar")
         Aar(aarFile).use { aar -> assertThat(aar.getEntry("assets/asset.txt")).isNotNull() }
 
-        project.executor().run(":kmpFirstLib:assembleTestOnDevice")
+        project.executor().run(":kmpFirstLib:assembleDeviceTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )
@@ -140,7 +140,7 @@ class KotlinMultiplatformAndroidVariantApiTest {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:assembleTestOnDevice")
+        project.executor().run(":kmpFirstLib:assembleDeviceTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )

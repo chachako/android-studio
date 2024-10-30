@@ -70,12 +70,12 @@ internal enum class KmpAndroidCompilationType(
         defaultCompilationName = "main",
         defaultSourceSetTreeName = KotlinSourceSetTree.main.name
     ),
-    TEST_ON_JVM(
-        defaultCompilationName = "testOnJvm",
+    HOST_TEST(
+        defaultCompilationName = "hostTest",
         defaultSourceSetTreeName = KotlinSourceSetTree.test.name
     ),
-    TEST_ON_DEVICE(
-        defaultCompilationName = "testOnDevice",
+    DEVICE_TEST(
+        defaultCompilationName = "deviceTest",
         defaultSourceSetTreeName = null
     )
 }
