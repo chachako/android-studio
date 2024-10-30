@@ -25,7 +25,8 @@ import com.android.adblib.isKnownDevice
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.sdklib.deviceprovisioner.SetChange.Add
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,7 +43,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.time.withTimeoutOrNull
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Central access point for devices and device templates. [DeviceProvisionerPlugin] instances
@@ -105,7 +106,7 @@ private constructor(
    */
   suspend fun findConnectedDeviceHandle(
     deviceSelector: DeviceSelector,
-    timeout: Duration = Duration.ofSeconds(2),
+    timeout: Duration = 2.seconds,
   ): DeviceHandle? =
     withTimeoutOrNull(timeout) {
       val serialNumber = adbSession.hostServices.getSerialNo(deviceSelector)

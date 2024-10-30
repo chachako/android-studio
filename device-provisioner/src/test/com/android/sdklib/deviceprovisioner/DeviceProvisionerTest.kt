@@ -23,7 +23,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.google.common.truth.Truth.assertThat
-import java.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -52,7 +52,7 @@ class DeviceProvisionerTest : DeviceProvisionerTestFixture() {
         async(Dispatchers.IO) {
           provisioner.findConnectedDeviceHandle(
             DeviceSelector.fromSerialNumber(SerialNumbers.EMULATOR),
-            Duration.ofSeconds(5),
+            5.seconds,
           )
         }
 
