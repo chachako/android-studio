@@ -23,6 +23,7 @@ import android.app.Application;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.GuardedBy;
 import androidx.inspection.ArtTooling;
 import androidx.inspection.ArtTooling.EntryHook;
 import androidx.inspection.ArtTooling.ExitHook;
@@ -49,6 +50,8 @@ import java.util.function.Function;
 public class AppInspectionService {
 
     private static AppInspectionService sInstance;
+    // Lock to prevent race condition when registering hooks. See b/376717110.
+    private static final Object lock = new Object();
 
     public static AppInspectionService instance() {
         if (sInstance == null) {
@@ -283,7 +286,9 @@ public class AppInspectionService {
 
                             @Override
                             public List<HookInfo<EntryHook>> apply(String key) {
-                                nativeRegisterEntryHook(sInstance.mNativePtr, origin, method);
+                                synchronized (lock) {
+                                    nativeRegisterEntryHook(sInstance.mNativePtr, origin, method);
+                                }
                                 return new CopyOnWriteArrayList<>();
                             }
                         });
@@ -299,7 +304,9 @@ public class AppInspectionService {
 
                             @Override
                             public List<HookInfo<ExitHook>> apply(String key) {
-                                nativeRegisterExitHook(sInstance.mNativePtr, origin, method);
+                                synchronized (lock) {
+                                    nativeRegisterExitHook(sInstance.mNativePtr, origin, method);
+                                }
                                 return new CopyOnWriteArrayList<>();
                             }
                         });
@@ -446,9 +453,11 @@ public class AppInspectionService {
 
     private static native AppInspectionService createAppInspectionService();
 
+    @GuardedBy("lock")
     private static native void nativeRegisterEntryHook(
             long servicePtr, Class<?> originClass, String originMethod);
 
+    @GuardedBy("lock")
     private static native void nativeRegisterExitHook(
             long servicePtr, Class<?> originClass, String originMethod);
 
