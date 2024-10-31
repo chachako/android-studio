@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.RELEASE
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.BooleanOption
@@ -35,6 +36,7 @@ import com.android.utils.FileUtils
 import com.android.utils.StdLogger
 import com.google.common.io.ByteStreams
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,26 +47,47 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 @RunWith(Parameterized::class)
-class ResourceShrinkerTest(private val r8IntegratedResourceShrinking: Boolean) {
+class ResourceShrinkerTest(
+    private val nonFinalResIds: Boolean,
+    private val r8IntegratedResourceShrinking: Boolean
+) {
 
     companion object {
 
-        @Parameterized.Parameters(name = "r8IntegratedResourceShrinking_{0}")
+        @Parameterized.Parameters(name = "nonFinalResIds_{0}_r8IntegratedResourceShrinking_{1}")
         @JvmStatic
-        fun parameters() = listOf(true, false)
+        fun parameters() = listOf(
+            arrayOf(true, false),
+            arrayOf(true, true),
+            // Testing nonFinalResIds=false once is enough
+            arrayOf(false, BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING.defaultValue),
+        )
     }
 
     @get:Rule
     var project = builder().fromTestProject("shrink")
+        .addGradleProperty(BooleanOption.USE_NON_FINAL_RES_IDS, nonFinalResIds)
         .addGradleProperty(BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING, r8IntegratedResourceShrinking)
         .create()
 
     @get:Rule
     var projectWithDynamicFeatureModules = builder().fromTestProject("shrinkDynamicFeatureModules")
+        .addGradleProperty(BooleanOption.USE_NON_FINAL_RES_IDS, nonFinalResIds)
         .addGradleProperty(BooleanOption.R8_INTEGRATED_RESOURCE_SHRINKING, r8IntegratedResourceShrinking)
         .create()
 
     private val testAapt2 = TestUtils.getAapt2().toFile().absoluteFile
+
+    @Before
+    fun setUp() {
+        for (project in listOf(project, projectWithDynamicFeatureModules.getSubproject("base"))) {
+            TestFileUtils.searchAndReplace(
+                project.mainSrcDir.resolve("com/android/tests/shrink/RootActivity.java"),
+                "/* Use if android.nonFinalResIds=$nonFinalResIds */ // ",
+                ""
+            )
+        }
+    }
 
     @Test
     fun `shrink resources for APKs`() {
@@ -145,18 +168,20 @@ class ResourceShrinkerTest(private val r8IntegratedResourceShrinking: Boolean) {
 
         val debugApk = project.getApk(DEBUG)
         val releaseApk = project.getApk(RELEASE)
-        val debugResourcePaths = getZipPaths(debugApk.file.toFile())
-        val releaseResourcePaths = getZipPaths(releaseApk.file.toFile())
-        val numberOfDebugApkEntries = 119
-        val debugMetaFiles =
-                listOf("META-INF/CERT.RSA", "META-INF/CERT.SF", "META-INF/MANIFEST.MF")
-        assertThat(debugResourcePaths.size)
-                .isEqualTo(numberOfDebugApkEntries)
-        assertThat(debugResourcePaths).containsAtLeastElementsIn(debugMetaFiles)
-        val numberOfReleaseApkEntries = 120 // include the version-control-metadata.properties. file
-        assertThat(releaseResourcePaths.size)
-                .isEqualTo(numberOfReleaseApkEntries -
-                                   (debugMetaFiles.size + removedFiles.size))
+        val debugEntries = getZipPaths(debugApk.file.toFile())
+        val releaseEntries = getZipPaths(releaseApk.file.toFile())
+        val (debugResEntries, debugNonResEntries) = debugEntries.partition { it.startsWith("res/") }
+        val (releaseResEntries, releaseNonResEntries) = releaseEntries.partition { it.startsWith("res/") }
+        assertThat(debugResEntries.size).isEqualTo(87)
+        assertThat(debugNonResEntries.size).isEqualTo(32)
+        assertThat(releaseResEntries.size).isEqualTo((debugResEntries - removedFiles.toSet()).size)
+        assertThat(releaseNonResEntries).containsExactlyElementsIn(
+            debugNonResEntries
+                    // Only in debug APK
+                    - setOf("META-INF/CERT.RSA", "META-INF/CERT.SF", "META-INF/MANIFEST.MF")
+                    // Only in release APK
+                    + "META-INF/version-control-info.textproto"
+        )
 
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
@@ -206,7 +231,8 @@ class ResourceShrinkerTest(private val r8IntegratedResourceShrinking: Boolean) {
         )
         // Ensure that report file is created and near mapping file
         assertThat(project.file("build/outputs/mapping/release/mapping.txt")).exists()
-        assertThat(project.file("build/outputs/mapping/release/resources.txt").readLines()).hasSize(570)
+        assertThat(project.file("build/outputs/mapping/release/resources.txt").readLines())
+            .hasSize(if (nonFinalResIds) 561 else 570)
     }
 
     private fun checkUnusedResourcesAreReplacedInApk(
@@ -436,7 +462,7 @@ class ResourceShrinkerTest(private val r8IntegratedResourceShrinking: Boolean) {
         assertThat(
             projectWithDynamicFeatureModules.getSubproject("base")
                 .file("build/outputs/mapping/release/resources.txt").readLines()
-        ).hasSize(173)
+        ).hasSize(if (nonFinalResIds) 159 else 173)
     }
 
     @Test

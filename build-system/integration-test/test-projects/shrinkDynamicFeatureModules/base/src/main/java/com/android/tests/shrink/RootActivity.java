@@ -62,20 +62,22 @@ public class RootActivity extends Activity {
     }
 
 
-    @Layout(R.layout.used17)
+    /* Use if android.nonFinalResIds=false */ // @Layout(R.layout.used17)
     @Retention(RetentionPolicy.RUNTIME)
     @Target({METHOD, PARAMETER, TYPE, LOCAL_VARIABLE, FIELD})
     public @interface Indirect {
         int[] value();
     }
 
-    @Layout(R.layout.used16)
+    /* Use if android.nonFinalResIds=false */ // @Layout(R.layout.used16)
     private static class ScreenType1 {
+        /* Use if android.nonFinalResIds=true */ // private static final int[] layout_ids = {R.layout.used16, R.layout.used17};
     }
 
     @Indirect(5)
-    @Layouts({R.layout.used18,R.layout.used19})
+    /* Use if android.nonFinalResIds=false */ // @Layouts({R.layout.used18,R.layout.used19})
     private static class ScreenType2 {
+        /* Use if android.nonFinalResIds=true */ // private static final int[] layout_ids = {R.layout.used18, R.layout.used19};
     }
 
     private static final int[] layout_ids = { R.layout.used20 };
