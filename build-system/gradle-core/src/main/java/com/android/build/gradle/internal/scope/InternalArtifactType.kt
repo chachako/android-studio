@@ -500,8 +500,6 @@ InternalArtifactType<T : FileSystemLocation>(
     // processor (for feature compilation). Created by DataBindingExportFeatureInfoTask and passed
     // into the annotation processor via processor args.
     object FEATURE_DATA_BINDING_FEATURE_INFO: InternalArtifactType<Directory>(DIRECTORY), Replaceable
-    // The base dex files output by the DexSplitter.
-    object BASE_DEX: InternalArtifactType<Directory>(DIRECTORY), Replaceable
     // The feature dex files output by the DexSplitter from the base. The base produces and
     // publishes these files when there's multi-apk code shrinking.
     object FEATURE_DEX: InternalArtifactType<Directory>(DIRECTORY), Replaceable

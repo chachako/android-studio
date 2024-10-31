@@ -363,7 +363,7 @@ abstract class TaskManager(
 
         }
 
-        // if consumesFeatureJars, add streams of classes from features or
+        // if consumesDynamicFeatures, add streams of classes from features or
         // dynamic-features.
         // The main dex list calculation for the bundle also needs the feature classes for reference
         // only

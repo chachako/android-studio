@@ -363,13 +363,9 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             task.fileName.disallowChanges()
 
             if (componentType.isBaseModule) {
-                if ((creationConfig as ApplicationCreationConfig).consumesDynamicFeatures) {
-                    task.dexDirectories.from(artifacts.get(InternalArtifactType.BASE_DEX))
-                } else {
-                    task.dexDirectories.from(artifacts.getAll(InternalMultipleArtifactType.DEX))
-                }
-                // DESUGAR_LIB_DEX and GLOBAL_SYNTHETICS_DEX are separate from DEX/BASE_DEX and are
-                // only packaged in base module, not in dynamic feature modules
+                task.dexDirectories.from(artifacts.getAll(InternalMultipleArtifactType.DEX))
+                // DESUGAR_LIB_DEX and GLOBAL_SYNTHETICS_DEX are separate from DEX and are only
+                // packaged in base module, not in dynamic feature modules
                 if (creationConfig.dexing.shouldPackageDesugarLibDex) {
                     task.dexDirectories.from(artifacts.get(InternalArtifactType.DESUGAR_LIB_DEX))
                 }

@@ -177,10 +177,6 @@ abstract class R8Task @Inject constructor(
 
     @get:Optional
     @get:OutputDirectory
-    abstract val baseDexDir: DirectoryProperty
-
-    @get:Optional
-    @get:OutputDirectory
     abstract val featureDexDir: DirectoryProperty
 
     @get:Optional
@@ -368,41 +364,41 @@ abstract class R8Task @Inject constructor(
             super.handleProvider(taskProvider)
 
             when {
-                componentType.isAar -> creationConfig.artifacts.setInitialProvider(
-                    taskProvider,
-                    R8Task::outputClasses)
-                    .withName("shrunkClasses.jar")
-                    .on(InternalArtifactType.SHRUNK_CLASSES)
-
-                (creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true -> {
-                    creationConfig.artifacts.setInitialProvider(
-                        taskProvider,
-                        R8Task::baseDexDir
-                    ).on(InternalArtifactType.BASE_DEX)
-
-                    creationConfig.artifacts.setInitialProvider(
-                        taskProvider,
-                        R8Task::featureDexDir
-                    ).on(InternalArtifactType.FEATURE_DEX)
-
-                    creationConfig.artifacts.setInitialProvider(
-                        taskProvider,
-                        R8Task::featureJavaResourceOutputDir
-                    ).on(InternalArtifactType.FEATURE_SHRUNK_JAVA_RES)
+                componentType.isAar -> {
+                    creationConfig.artifacts
+                        .setInitialProvider(taskProvider, R8Task::outputClasses)
+                        .withName("shrunkClasses.jar")
+                        .on(InternalArtifactType.SHRUNK_CLASSES)
                 }
-                creationConfig is ApkCreationConfig -> {
-                    creationConfig.artifacts.use(taskProvider)
-                        .wiredWith(R8Task::outputDex)
+
+                componentType.isApk -> {
+                    creationConfig as ApkCreationConfig
+                    creationConfig.artifacts
+                        .use(taskProvider).wiredWith(R8Task::outputDex)
                         .toAppendTo(InternalMultipleArtifactType.DEX)
+
+                    if (creationConfig.runResourceShrinkingWithR8()) {
+                        creationConfig.artifacts.setInitialProvider(taskProvider) {
+                            it.resourceShrinkingParams.shrunkResourcesOutputDir
+                        }.on(InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT)
+                    }
                 }
-                else -> {
-                    throw RuntimeException("Unrecognized type")
-                }
+
+                else -> error("Unexpected component type: $componentType")
             }
 
             creationConfig.artifacts.use(taskProvider)
                 .wiredWithFiles(R8Task::resourcesJar, R8Task::outputResources)
                 .toTransform(InternalArtifactType.MERGED_JAVA_RES)
+
+            if ((creationConfig as? ApplicationCreationConfig)?.consumesDynamicFeatures == true) {
+                creationConfig.artifacts
+                    .setInitialProvider(taskProvider, R8Task::featureDexDir)
+                    .on(InternalArtifactType.FEATURE_DEX)
+                creationConfig.artifacts
+                    .setInitialProvider(taskProvider, R8Task::featureJavaResourceOutputDir)
+                    .on(InternalArtifactType.FEATURE_SHRUNK_JAVA_RES)
+            }
 
             if (creationConfig is ApkCreationConfig) {
                 when {
@@ -432,12 +428,6 @@ abstract class R8Task @Inject constructor(
                 taskProvider,
                 R8Task::r8Metadata
             ).on(InternalArtifactType.R8_METADATA)
-
-            if (creationConfig.runResourceShrinkingWithR8()) {
-                creationConfig.artifacts.setInitialProvider(taskProvider) {
-                    it.resourceShrinkingParams.shrunkResourcesOutputDir
-                }.on(InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT)
-            }
         }
 
         override fun configure(
@@ -592,7 +582,6 @@ abstract class R8Task @Inject constructor(
         val output: Property<out FileSystemLocation> =
             when {
                 componentType.orNull?.isAar == true -> outputClasses
-                includeFeaturesInScopes.get() -> baseDexDir
                 else -> outputDex
             }
 
