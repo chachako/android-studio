@@ -230,6 +230,7 @@ public final class DexArchiveTestUtil {
                 null,
                 libraryFiles,
                 null,
+                null,
                 null);
     }
 }

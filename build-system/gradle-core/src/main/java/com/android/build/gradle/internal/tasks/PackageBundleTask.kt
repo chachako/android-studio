@@ -132,6 +132,11 @@ abstract class PackageBundleTask : NonIncrementalTask() {
     @get:InputFile
     @get:Optional
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val d8Metadata: RegularFileProperty
+
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val r8Metadata: RegularFileProperty
 
     @get:Input
@@ -208,6 +213,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
             it.bundleDeps.set(bundleDeps)
             it.bundleNeedsFusedStandaloneConfig.set(bundleNeedsFusedStandaloneConfig)
             it.appMetadata.set(appMetadata)
+            it.d8Metadata.set(d8Metadata)
             it.r8Metadata.set(r8Metadata)
             it.abiFilters.set(abiFilters)
             it.binaryArtProfiler.set(binaryArtProfile)
@@ -241,6 +247,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
         abstract val bundleDeps: RegularFileProperty
         abstract val bundleNeedsFusedStandaloneConfig: Property<Boolean>
         abstract val appMetadata: RegularFileProperty
+        abstract val d8Metadata: RegularFileProperty
         abstract val r8Metadata: RegularFileProperty
         abstract val abiFilters: SetProperty<String>
         abstract val binaryArtProfiler: RegularFileProperty
@@ -484,6 +491,14 @@ abstract class PackageBundleTask : NonIncrementalTask() {
                     parameters.appMetadata.asFile.get().toPath()
             )
 
+            parameters.d8Metadata.orNull?.let { d8Metadata ->
+                command.addMetadataFile(
+                    "com.android.tools",
+                    "d8.json",
+                    d8Metadata.asFile.toPath()
+                )
+            }
+
             parameters.r8Metadata.orNull?.let { r8Metadata ->
                 command.addMetadataFile(
                     "com.android.tools",
@@ -615,6 +630,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
                 InternalArtifactType.APP_METADATA,
                 task.appMetadata
             )
+            task.d8Metadata.disallowChanges()
             task.r8Metadata.disallowChanges()
             task.deviceGroupConfig.set(
                 ModulePropertyKey.OptionalFile.DTTV2_DEVICE_GROUP_CONFIG.getValue(
@@ -731,6 +747,10 @@ abstract class PackageBundleTask : NonIncrementalTask() {
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.APP_METADATA,
                 task.appMetadata
+            )
+            creationConfig.artifacts.setTaskInputToFinalProduct(
+                InternalArtifactType.D8_METADATA,
+                task.d8Metadata
             )
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.R8_METADATA,

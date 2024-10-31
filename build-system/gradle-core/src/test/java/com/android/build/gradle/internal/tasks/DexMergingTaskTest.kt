@@ -345,7 +345,8 @@ class DexMergingTaskTest {
             inputChanges: InputChanges = FakeInputChanges(),
             libraryClasses: List<File> = listOf(),
             multidexProguardRulesFile: File? = null,
-            mainDexListOutput: File? = null
+            mainDexListOutput: File? = null,
+            d8Metadata: File? = null,
     ) {
         val project = ProjectBuilder.builder().withProjectDir(tmp.newFolder()).build()
         object : DexMergingTaskDelegate() {
@@ -389,6 +390,8 @@ class DexMergingTaskTest {
                             FakeObjectFactory.factory.directoryProperty().fileValue(outputDir)
                     override val mainDexListOutput =
                         FakeObjectFactory.factory.fileProperty().fileValue(mainDexListOutput)
+                    override val d8Metadata =
+                        FakeObjectFactory.factory.fileProperty().fileValue(d8Metadata)
                     override val incremental = FakeGradleProperty(inputChanges.isIncremental)
                     override val fileChanges = FakeGradleProperty(
                             inputChanges.getFileChanges(

@@ -99,7 +99,8 @@ class DynamicAppTest {
 
     // Debuggable Bundles are always unsigned.
     private val debugUnsignedContent: Array<String> = bundleContent.plus(arrayOf(
-        "/base/dex/classes2.dex" // Legacy multidex has minimal main dex in debug mode
+        "/base/dex/classes2.dex", // Legacy multidex has minimal main dex in debug mode
+        "/BUNDLE-METADATA/com.android.tools/d8.json", // D8 is used
     ))
 
     private val releaseUnsignedContent: Array<String> = bundleContent.toList().plus(
