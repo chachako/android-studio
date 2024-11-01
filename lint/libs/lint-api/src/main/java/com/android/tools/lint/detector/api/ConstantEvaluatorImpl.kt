@@ -246,7 +246,12 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                           else -> null
                         }
                       }
-                    else -> null
+                    else -> {
+                      if (resolved is PsiMethod)
+                        node.evaluate() ?: evaluate(resolved)
+                      else
+                        node.evaluate()
+                    }
                   }
                 }
                 selector is UCallExpression -> {
@@ -277,10 +282,10 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                         }
                       )
                     }
-                    else -> null
+                    else -> node.evaluate()
                   }
                 }
-                else -> null
+                else -> node.evaluate()
               }
             }
             resolved is PsiMethod -> node.evaluate() ?: evaluate(resolved)

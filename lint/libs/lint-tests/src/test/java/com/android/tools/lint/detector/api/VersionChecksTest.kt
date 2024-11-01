@@ -5985,8 +5985,6 @@ class VersionChecksTest : AbstractCheckTest() {
         SUPPORT_ANNOTATIONS_JAR,
         newAndroidOsBuildStub,
       )
-      // Limitation in constant evaluator, to be fixed separately
-      .skipTestModes(TestMode.FULLY_QUALIFIED)
       .run()
       .expect(
         """

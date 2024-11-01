@@ -17,26 +17,33 @@
 package com.android.tools.lint.detector.api;
 
 import com.android.tools.lint.UastEnvironment;
+import com.android.tools.lint.checks.infrastructure.TestFile;
+import com.android.tools.lint.checks.infrastructure.TestFiles;
 import com.android.utils.Pair;
+
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.PsiVariable;
-import java.io.File;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
+
 import junit.framework.TestCase;
+
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtProperty;
 import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.UFile;
+import org.jetbrains.uast.UQualifiedReferenceExpression;
 import org.jetbrains.uast.UReferenceExpression;
 import org.jetbrains.uast.UVariable;
 import org.jetbrains.uast.visitor.AbstractUastVisitor;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings("ClassNameDiffersFromFileName")
 public class ConstantEvaluatorTest extends TestCase {
@@ -263,10 +270,11 @@ public class ConstantEvaluatorTest extends TestCase {
     }
 
     private static void checkExpression(Object expected, String expressionSource) {
-      checkExpression(expected, expressionSource, true);
+        checkExpression(expected, expressionSource, true);
     }
 
-    private static void checkExpression(Object expected, String expressionSource, boolean includePsi) {
+    private static void checkExpression(
+            Object expected, String expressionSource, boolean includePsi) {
         @Language("JAVA")
         String source =
                 ""
@@ -283,19 +291,24 @@ public class ConstantEvaluatorTest extends TestCase {
 
         check(expected, source, "expression");
         if (includePsi) {
-          check(expected, source, "reference");
+            check(expected, source, "reference");
         }
     }
 
-    private static void checkKotlinExpression(Object expected, String expressionSource, boolean handlePsiRef) {
+    private static void checkKotlinExpression(
+            Object expected, String expressionSource, boolean handlePsiRef) {
         @Language("Kt")
         String source =
                 ""
                         + "package test.pkg\n"
                         + "class Test {\n"
                         + "    companion object {\n"
-                        + "        val expression = " + expressionSource + "\n"
-                        + "        private val expressionField = " + expressionSource + "\n"
+                        + "        val expression = "
+                        + expressionSource
+                        + "\n"
+                        + "        private val expressionField = "
+                        + expressionSource
+                        + "\n"
                         + "        val methodRef = expression\n"
                         + "        val fieldRef = expressionField\n"
                         + "        const val MY_INT_FIELD = 5;\n"
@@ -593,5 +606,71 @@ public class ConstantEvaluatorTest extends TestCase {
                         + "}\n"
                         + "var y = z;\n",
                 "y");
+    }
+
+    public void testIndirectConstants() {
+        // Scenario reduced from VersionChecksTest#testMinorVersionsOperators under
+        // TestMode.FULLY_QUALIFIED
+        TestFile file1 =
+                TestFiles.kotlin(
+                        "\n"
+                            + "package test.pkg\n"
+                            + "\n"
+                            + "fun testOperatorCornerCases() {\n"
+                            + "    if (1 < test.pkg.CONSTANT_1) { }\n"
+                            + "    if (2 < test.pkg.CONSTANT_2) { }\n"
+                            + "}\n"
+                            + "val CONSTANT_1 ="
+                            + " android.os.Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_1\n"
+                            + "const val CONSTANT_2 ="
+                            + " android.os.Build.VERSION_CODES_FULL.VANILLA_ICE_CREAM_1\n");
+
+        TestFile file2 =
+                TestFiles.java(
+                        "package android.os;\n"
+                            + "\n"
+                            + "public class Build {\n"
+                            + "    public static class VERSION_CODES {\n"
+                            + "        public static final int VANILLA_ICE_CREAM = 35;\n"
+                            + "    }\n"
+                            + "    public static class VERSION_CODES_FULL {\n"
+                            + "        private VERSION_CODES_FULL() {}\n"
+                            + "\n"
+                            + "        private static final int SDK_INT_MULTIPLIER = 100000;\n"
+                            + "\n"
+                            + "        public static final int VANILLA_ICE_CREAM_1 ="
+                            + " android.os.Build.VERSION_CODES_FULL.SDK_INT_MULTIPLIER *"
+                            + " android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM + 1;\n"
+                            + "    }\n"
+                            + "}");
+        Pair<List<JavaContext>, Disposable> parsed = LintUtilsTest.parseAll(file1, file2);
+        List<JavaContext> contexts = parsed.getFirst();
+        Disposable disposable = parsed.getSecond();
+        try {
+            JavaContext kotlinFile =
+                    contexts.get(0).file.getName().equals("Build.java")
+                            ? contexts.get(1)
+                            : contexts.get(0);
+            kotlinFile
+                    .getUastFile()
+                    .accept(
+                            new AbstractUastVisitor() {
+                                @Override
+                                public boolean visitQualifiedReferenceExpression(
+                                        @NotNull UQualifiedReferenceExpression node) {
+                                    PsiElement sourcePsi = node.getSourcePsi();
+                                    if (sourcePsi != null
+                                            && sourcePsi
+                                                    .getText()
+                                                    .startsWith("test.pkg.CONSTANT_")) {
+                                        Object constant = ConstantEvaluator.evaluate(null, node);
+                                        assertEquals(3500001, constant);
+                                    }
+                                    return super.visitQualifiedReferenceExpression(node);
+                                }
+                            });
+        } finally {
+            Disposer.dispose(disposable);
+        }
     }
 }
