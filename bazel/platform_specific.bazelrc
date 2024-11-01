@@ -10,7 +10,6 @@ build:linux --platforms=//tools/base/bazel/platforms:linux
 # Block network by default on linux
 build:linux --nosandbox_default_allow_network
 build:linux --dynamic_local_strategy=worker,sandboxed,local
-build:linux --workspace_status_command="prebuilts/python/linux-x86/bin/python3 tools/base/bazel/workspace.py"
 
 #
 # Windows
@@ -30,7 +29,6 @@ build:windows --features=static_link_msvcrt
 build:windows --dynamic_local_strategy=worker,local
 # Workaround for b/277781554 where bazel fails to clean up python zips
 build:windows --nobuild_python_zip
-build:windows --workspace_status_command="tools/base/bazel/workspace.cmd"
 
 #
 # Mac
@@ -42,4 +40,3 @@ build:macos --bes_keywords=macos
 build:macos --host_platform=//tools/base/bazel/platforms:macos
 build:macos --platforms=//tools/base/bazel/platforms:macos
 build:macos --watchfs
-build:macos --workspace_status_command="prebuilts/python/darwin-x86/bin/python3 tools/base/bazel/workspace.py"

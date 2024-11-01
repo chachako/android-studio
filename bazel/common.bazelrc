@@ -153,6 +153,7 @@ build:_remote_base --strategy=zipper=local
 build:sponge --bes_keywords=android-devtools
 build:sponge --bes_backend=buildeventservice-pa.googleapis.com
 build:sponge --bes_results_url=https://fusion2.corp.google.com/invocations/
+build:sponge --workspace_status_command="python3 tools/base/bazel/workspace.py"
 
 # Enable go/antswatcher to process test results.
 # This config must be used with the sponge config as it relies on the same bes_backend.
