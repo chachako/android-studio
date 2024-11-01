@@ -123,7 +123,7 @@ maven_repository(
     visibility = ["//visibility:public"],
 )
 
-LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS = "2.1.20-dev-1129"
+LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS = "2.1.0-dev-9026"
 
 maven_repository(
     name = "latest_kotlin_gradle_plugin_prebuilts_for_sync_benchmarks",
